@@ -47,7 +47,6 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - php-fpm --nodaemonize
     - php bin/console doctrine:cache:clear-metadata
   only:
     - master
