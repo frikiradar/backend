@@ -17,6 +17,18 @@ build:
     - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
     - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
+  artifacts:
+    paths:
+      - bin/
+      - config/
+      - public/
+      - src/
+      - templates/
+      - tests/
+      - translations/
+      - var/
+      - vendor/
+      - ./*.*
 
 .phpunit:
   stage: test
