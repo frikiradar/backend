@@ -47,7 +47,7 @@ deploy-prod:
   dependencies:
     - build
   tags:
-    - deploy-prod
+    - deploy-backend
   script:
     - cp -af ./ /root/backend/
     - cd /root/backend
