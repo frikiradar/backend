@@ -259,6 +259,10 @@
     <parameter key="doctrine_migrations.dir_name">/home/albertoi/Proyectos/FrikiRadar/frikiradar/backend/src/Migrations</parameter>
     <parameter key="doctrine_migrations.namespace">DoctrineMigrations</parameter>
     <parameter key="doctrine_migrations.table_name">migration_versions</parameter>
+    <parameter key="doctrine_migrations.column_name">version</parameter>
+    <parameter key="doctrine_migrations.column_length">14</parameter>
+    <parameter key="doctrine_migrations.executed_at_column_name">executed_at</parameter>
+    <parameter key="doctrine_migrations.all_or_nothing">false</parameter>
     <parameter key="doctrine_migrations.name">Application Migrations</parameter>
     <parameter key="doctrine_migrations.custom_template">null</parameter>
     <parameter key="doctrine_migrations.organize_migrations">false</parameter>
@@ -432,11 +436,14 @@
       <parameter>console.command.public_alias.doctrine_cache.flush_command</parameter>
       <parameter>console.command.public_alias.doctrine_cache.stats_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.diff_command</parameter>
+      <parameter>console.command.public_alias.doctrine_migrations.dump_schema_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.execute_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.generate_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.latest_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.migrate_command</parameter>
+      <parameter>console.command.public_alias.doctrine_migrations.rollup_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.status_command</parameter>
+      <parameter>console.command.public_alias.doctrine_migrations.up_to_date_command</parameter>
       <parameter>console.command.public_alias.doctrine_migrations.version_command</parameter>
     </parameter>
   </parameters>
@@ -1919,6 +1926,14 @@
         <argument>2048</argument>
       </call>
       <call method="addListener">
+        <argument>console.command</argument>
+        <argument type="collection">
+          <argument type="service" id="debug.debug_handlers_listener"/>
+          <argument>configure</argument>
+        </argument>
+        <argument>2048</argument>
+      </call>
+      <call method="addListener">
         <argument>kernel.request</argument>
         <argument type="collection">
           <argument type="service" id="router_listener"/>
@@ -2819,6 +2834,9 @@
     <service id="doctrine_migrations.diff_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsDiffDoctrineCommand">
       <tag name="console.command"/>
     </service>
+    <service id="doctrine_migrations.dump_schema_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsDumpSchemaDoctrineCommand">
+      <tag name="console.command"/>
+    </service>
     <service id="doctrine_migrations.execute_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsExecuteDoctrineCommand">
       <tag name="console.command"/>
     </service>
@@ -2831,7 +2849,13 @@
     <service id="doctrine_migrations.migrate_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsMigrateDoctrineCommand">
       <tag name="console.command"/>
     </service>
+    <service id="doctrine_migrations.rollup_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsRollupDoctrineCommand">
+      <tag name="console.command"/>
+    </service>
     <service id="doctrine_migrations.status_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsStatusDoctrineCommand">
+      <tag name="console.command"/>
+    </service>
+    <service id="doctrine_migrations.up_to_date_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsUpToDateDoctrineCommand">
       <tag name="console.command"/>
     </service>
     <service id="doctrine_migrations.version_command" class="Doctrine\Bundle\MigrationsBundle\Command\MigrationsVersionDoctrineCommand">
@@ -4496,23 +4520,24 @@
     <service id="jms_serializer.constraint_violation_handler" class="JMS\Serializer\Handler\ConstraintViolationHandler" public="false">
       <tag name="jms_serializer.subscribing_handler"/>
     </service>
+    <service id="jms_serializer.type_parser" class="JMS\Serializer\Type\Parser" public="false"/>
     <service id="jms_serializer.metadata.file_locator" class="Metadata\Driver\FileLocator" public="false">
       <argument type="collection"/>
     </service>
     <service id="jms_serializer.metadata.yaml_driver" class="JMS\Serializer\Metadata\Driver\YamlDriver" public="false">
       <argument type="service" id="jms_serializer.metadata.file_locator"/>
       <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
-      <argument>null</argument>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
     </service>
     <service id="jms_serializer.metadata.xml_driver" class="JMS\Serializer\Metadata\Driver\XmlDriver" public="false">
       <argument type="service" id="jms_serializer.metadata.file_locator"/>
       <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
-      <argument>null</argument>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
     </service>
     <service id="jms_serializer.metadata.annotation_driver" class="JMS\Serializer\Metadata\Driver\AnnotationDriver" public="false">
       <argument type="service" id="annotations.cached_reader"/>
       <argument type="service" id="jms_serializer.serialized_name_annotation_strategy"/>
-      <argument>null</argument>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
     </service>
     <service id="jms_serializer.metadata.chain_driver" class="Metadata\Driver\DriverChain" public="false">
       <argument type="collection">
@@ -4579,7 +4604,7 @@
       </argument>
       <argument type="service" id="jms_serializer.configured_serialization_context_factory"/>
       <argument type="service" id="jms_serializer.configured_deserialization_context_factory"/>
-      <argument>null</argument>
+      <argument type="service" id="jms_serializer.type_parser" on-invalid="null"/>
     </service>
     <service id="jms_serializer.deserialization_graph_navigator_factory" class="JMS\Serializer\GraphNavigator\Factory\DeserializationGraphNavigatorFactory" public="false">
       <argument type="service" id="jms_serializer.metadata_factory"/>
@@ -4607,7 +4632,9 @@
         <argument type="service" id="jms_serializer.expression_language.function_provider"/>
       </call>
     </service>
-    <service id="jms_serializer.expression_language.function_provider" class="JMS\SerializerBundle\ExpressionLanguage\BasicSerializerFunctionsProvider" public="false"/>
+    <service id="jms_serializer.expression_language.function_provider" class="JMS\SerializerBundle\ExpressionLanguage\BasicSerializerFunctionsProvider" public="false">
+      <tag name="jms.expression.function_provider"/>
+    </service>
     <service id="jms_serializer.twig_extension.serializer" class="JMS\Serializer\Twig\SerializerRuntimeExtension" public="false">
       <tag name="twig.extension"/>
     </service>
@@ -4820,15 +4847,12 @@
     <service id="Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension" class="Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension">
       <tag name="form.type_extension" extended_type="Symfony\Component\Form\Extension\Core\Type\FormType" extended-type="Symfony\Component\Form\Extension\Core\Type\FormType"/>
     </service>
-    <service id="nelmio_api_doc.generator.default" class="Nelmio\ApiDocBundle\ApiDocGenerator" public="false">
+    <service id="nelmio_api_doc.generator.default" class="Nelmio\ApiDocBundle\ApiDocGenerator" public="true">
       <argument type="tagged" tag="nelmio_api_doc.describer.default"/>
       <argument type="tagged" tag="nelmio_api_doc.model_describer"/>
       <call method="setAlternativeNames">
         <argument type="collection"/>
       </call>
-    </service>
-    <service id="nelmio_api_doc.routes.default" class="Symfony\Component\Routing\RouteCollection" public="false">
-      <factory service="router.default" method="getRouteCollection"/>
     </service>
     <service id="nelmio_api_doc.describers.route.default" class="Nelmio\ApiDocBundle\Describer\RouteDescriber" public="false">
       <tag name="nelmio_api_doc.describer.default" priority="-400"/>
@@ -4842,6 +4866,14 @@
       <argument type="service" id="nelmio_api_doc.controller_reflector"/>
       <argument type="service" id="annotations.cached_reader"/>
       <argument type="service" id="monolog.logger"/>
+    </service>
+    <service id="nelmio_api_doc.describers.config.default" class="Nelmio\ApiDocBundle\Describer\ExternalDocDescriber" public="false">
+      <tag name="nelmio_api_doc.describer.default" priority="990"/>
+      <argument type="collection"/>
+      <argument>true</argument>
+    </service>
+    <service id="nelmio_api_doc.routes.default" class="Symfony\Component\Routing\RouteCollection" public="false">
+      <factory service="router.default" method="getRouteCollection"/>
     </service>
     <service id="nelmio_api_doc.generator_locator" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
@@ -6225,11 +6257,14 @@
     <service id="console.command.public_alias.doctrine_cache.flush_command" alias="doctrine_cache.flush_command" public="true"/>
     <service id="console.command.public_alias.doctrine_cache.stats_command" alias="doctrine_cache.stats_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.diff_command" alias="doctrine_migrations.diff_command" public="true"/>
+    <service id="console.command.public_alias.doctrine_migrations.dump_schema_command" alias="doctrine_migrations.dump_schema_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.execute_command" alias="doctrine_migrations.execute_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.generate_command" alias="doctrine_migrations.generate_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.latest_command" alias="doctrine_migrations.latest_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.migrate_command" alias="doctrine_migrations.migrate_command" public="true"/>
+    <service id="console.command.public_alias.doctrine_migrations.rollup_command" alias="doctrine_migrations.rollup_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.status_command" alias="doctrine_migrations.status_command" public="true"/>
+    <service id="console.command.public_alias.doctrine_migrations.up_to_date_command" alias="doctrine_migrations.up_to_date_command" public="true"/>
     <service id="console.command.public_alias.doctrine_migrations.version_command" alias="doctrine_migrations.version_command" public="true"/>
     <service id="jms_serializer.metadata_driver" alias="jms_serializer.metadata.doctrine_type_driver" public="true"/>
     <service id="jms_serializer.object_constructor" alias="jms_serializer.doctrine_object_constructor" public="true"/>

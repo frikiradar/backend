@@ -104,6 +104,10 @@ class TestKernel extends Kernel
             'serializer' => ['enable_annotations' => true],
         ]);
 
+        $c->loadFromExtension('twig', [
+            'strict_variables' => '%kernel.debug%',
+        ]);
+
         $c->loadFromExtension('fos_rest', [
             'format_listener' => [
                 'rules' => [
@@ -119,7 +123,7 @@ class TestKernel extends Kernel
         $c->loadFromExtension('nelmio_api_doc', [
             'documentation' => [
                 'info' => [
-                    'title' => 'My Test App',
+                    'title' => 'My Default App',
                 ],
                 'definitions' => [
                     'Test' => [
@@ -133,10 +137,26 @@ class TestKernel extends Kernel
                         'required' => true,
                     ],
                 ],
+                'responses' => [
+                    '201' => [
+                        'description' => 'Awesome description',
+                    ],
+                ],
             ],
            'areas' => [
-               'default' => ['path_patterns' => ['^/api(?!/admin)'], 'host_patterns' => ['^api\.']],
-               'test' => ['path_patterns' => ['^/test'], 'host_patterns' => ['^api-test\.']],
+               'default' => [
+                   'path_patterns' => ['^/api(?!/admin)'],
+                   'host_patterns' => ['^api\.'],
+               ],
+               'test' => [
+                   'path_patterns' => ['^/test'],
+                   'host_patterns' => ['^api-test\.'],
+                   'documentation' => [
+                       'info' => [
+                           'title' => 'My Test App',
+                       ],
+                   ],
+               ],
             ],
         ]);
     }

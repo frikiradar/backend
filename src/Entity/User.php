@@ -48,7 +48,6 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Serializer\ReadOnly()
      */
     private $email;
 
@@ -121,6 +120,12 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $longitude;
+
+    /**
+     * @var array
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $interesting = [];
 
     public function getId() : ? int
     {
@@ -383,6 +388,18 @@ class User implements UserInterface
     public function setStatus(? string $status) : self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getInteresting() : ? array
+    {
+        return $this->interesting;
+    }
+
+    public function setInteresting(? array $interesting) : self
+    {
+        $this->interesting = $interesting;
 
         return $this;
     }
