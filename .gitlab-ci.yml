@@ -15,22 +15,8 @@ build:
   retry: 1
   script:
     - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
-    #- mv app/config/parameters.yml.env app/config/parameters.yml
+    - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
-    #- rm -f web/app_dev.php
-  #artifacts:
-  #  paths:
-  #    - app/
-  #    - bin/
-  #    - src/
-  #    - tests/
-  #    - translations/
-  #    - var/
-  #    - web/
-  #    - ./*.*
-
-# RUN chmod -R +777 var
-# RUN chown -R www-data:www-data /var/www/api
 
 .phpunit:
   stage: test
@@ -52,8 +38,7 @@ deploy-prod:
     - cp -af ./ /root/backend/
     - cd /root/backend
     - export $(cat /root/env.list | xargs)
-    - composer run deploy-scripts
-  #    - php bin/console doctrine:cache:clear-metadata
+    - php bin/console doctrine:cache:clear-metadata
   only:
     - master
   environment:
