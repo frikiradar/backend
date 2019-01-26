@@ -1528,3 +1528,8 @@ ddfff6,127.0.0.1,OPTIONS,http://127.0.0.1:8000/api/login,1548467109,,200
 e988f8,127.0.0.1,GET,http://127.0.0.1:8000/api/v1/user,1548467109,,200
 8b0585,127.0.0.1,OPTIONS,http://127.0.0.1:8000/api/v1/coordinates,1548467109,,200
 b4999b,127.0.0.1,PUT,http://127.0.0.1:8000/api/v1/coordinates,1548467109,,200
+cf8c3e,127.0.0.1,GET,http://localhost:8000/,1548467846,,404
+792f3f,127.0.0.1,GET,http://localhost:8000/robots.txt,1548467846,241016,200
+241016,127.0.0.1,GET,http://localhost:8000/robots.txt,1548467846,,404
+336192,127.0.0.1,GET,http://localhost:8000/favicon.ico,1548467846,23c16a,200
+23c16a,127.0.0.1,GET,http://localhost:8000/favicon.ico,1548467846,,404

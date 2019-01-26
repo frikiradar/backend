@@ -39,6 +39,7 @@ deploy-prod:
     - cd /root/backend
     - export $(cat /root/env.list | xargs)
     - php bin/console doctrine:cache:clear-metadata
+    - php bin/console server:run
   only:
     - master
   environment:
