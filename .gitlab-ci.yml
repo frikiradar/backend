@@ -35,9 +35,6 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - cp -af ./ /root/backend/
-    - cd /root/backend
-    - export $(cat /root/env.list | xargs)
     - php bin/console doctrine:cache:clear-metadata
   only:
     - master
