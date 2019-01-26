@@ -35,6 +35,7 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
+    - php-fpm
     - php bin/console doctrine:cache:clear-metadata
   only:
     - master
