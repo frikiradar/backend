@@ -38,8 +38,12 @@ deploy-prod:
     - cp -af ./ /root/backend/
     - cd /root/backend
     - export $(cat /root/env.list | xargs)
-    - php bin/console doctrine:cache:clear-metadata
-    - php bin/console server:run
+    - composer install --no-dev --optimize-autoloader
+    - php bin/console doctrine:database:create
+    - php bin/console doctrine:schema:create
+    - php bin/console doctrine:fixtures:load
+    - php bin/console cache:clear --no-warmup
+    - php bin/console cache:warmup
   only:
     - master
   environment:
