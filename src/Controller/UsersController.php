@@ -154,6 +154,16 @@ class UsersController extends FOSRestController
     /**
      * @Rest\Get("/v1/user")
      * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario obtenido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener el usuario"
+     * )
+     * 
      * @SWG\Tag(name="Get User")
      */
     public function getAction()
@@ -165,6 +175,17 @@ class UsersController extends FOSRestController
 
     /**
      * @Rest\Put("/v1/user")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario actualizado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar el usuario"
+     * )
+     * 
      * @ParamConverter("user", converter="fos_rest.request_body")
      * @param User $user
      */
@@ -214,6 +235,16 @@ class UsersController extends FOSRestController
     /**
      * @Rest\Put("/v1/coordinates", name="coordinates")
      *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Coordenadas actualizadas correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar las coordenadas"
+     * )
+     * 
      * @SWG\Parameter(
      *     name="latitude",
      *     in="body",

@@ -124,8 +124,26 @@ class User implements UserInterface
     /**
      * @var array
      * @ORM\Column(type="json", nullable=true)
+     * @Type("array")
      */
-    private $interesting = [];
+    private $lovegender = [];
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $minage;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $maxage;
+
+    /**
+     * @var array
+     * @ORM\Column(type="json", nullable=true)
+     * @Type("array")
+     */
+    private $connection;
 
     public function getId() : ? int
     {
@@ -392,14 +410,50 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getInteresting() : ? array
+    public function getLovegender() : ? array
     {
-        return $this->interesting;
+        return $this->lovegender;
     }
 
-    public function setInteresting(? array $interesting) : self
+    public function setLovegender(? array $lovegender) : self
     {
-        $this->interesting = $interesting;
+        $this->lovegender = $lovegender;
+
+        return $this;
+    }
+
+    public function getMinage() : ? int
+    {
+        return $this->minage;
+    }
+
+    public function setMinage(? int $minage) : self
+    {
+        $this->minage = $minage;
+
+        return $this;
+    }
+
+    public function getMaxage() : ? int
+    {
+        return $this->maxage;
+    }
+
+    public function setMaxage(? int $maxage) : self
+    {
+        $this->maxage = $maxage;
+
+        return $this;
+    }
+
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    public function setConnection($connection) : self
+    {
+        $this->connection = $connection;
 
         return $this;
     }
