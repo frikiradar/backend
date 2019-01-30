@@ -14,9 +14,8 @@ build:
   stage: build
   retry: 1
   script:
-    - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
+    - composer install --no-interaction --optimize-autoloader
     - mv .env.prod .env
-    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - bin/
@@ -47,7 +46,9 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - php bin/console doctrine:cache:clear-metadata
+    - rm -rf var/cache/*
+    - rm -rf var/log/*
+    - php bin/console doctrine:schema:update --dump-sql --force
   only:
     - master
   environment:
