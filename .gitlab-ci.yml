@@ -2,7 +2,6 @@ image: fabianmartin/php-symfony
 
 stages:
   - build
-  - test
   - deploy
 
 cache:
@@ -48,7 +47,10 @@ deploy-prod:
   script:
     - rm -rf var/cache/*
     - rm -rf var/log/*
+    - cp -af ./ /root/backend/
+    - cd /root/backend
     - php bin/console doctrine:schema:update --dump-sql --force
+    - php bin/console doctrine:cache:clear-metadata
   only:
     - master
   environment:
