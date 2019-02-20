@@ -34,7 +34,7 @@ class TagRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-    */
+     */
 
     /*
     public function findOneBySomeField($value): ?Tag
@@ -46,5 +46,26 @@ class TagRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-    */
+     */
+
+    public function searchTags(string $query, string $category)
+    {
+        $em = $this->getEntityManager();
+
+        return $this->createQueryBuilder('t')
+            ->select(array(
+                't.name',
+                'COUNT(t) total'
+            ))
+            ->where('t.name LIKE :name')
+            ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)')
+            ->groupBy('t.name')
+            ->orderBy('total', 'DESC')
+            ->setParameters(array(
+                'name' => '%' . $query . '%',
+                'category' => $category
+            ))
+            ->getQuery()
+            ->getResult();
+    }
 }

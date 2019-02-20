@@ -12,6 +12,10 @@ final class Versions
 {
     const ROOT_PACKAGE_NAME = '__root__';
     const VERSIONS = array (
+  'creof/doctrine2-spatial' => '1.2.0@58ea5fae1c1b450ee08d7dac25cd9e8f5e6fdebd',
+  'creof/geo-parser' => '2.1.0@14fbd732207bc264cfeff836230ef6022bb751b6',
+  'creof/wkb-parser' => 'v2.3.0@1ddb69da8cc90607dd528fd9992ef1fc10cc8839',
+  'creof/wkt-parser' => '2.2.0@bc4c051b7a4e99b4943e2ec358218ed200aa991e',
   'doctrine/annotations' => 'v1.6.0@c7f2050c68a9ab0bdb0f98567ec08d80ea7d24d5',
   'doctrine/cache' => 'v1.8.0@d768d58baee9a4862ca783840eca1b9add7a7f57',
   'doctrine/collections' => 'v1.5.0@a01ee38fcd999f34d9bfbcee59dbda5105449cbf',
@@ -133,13 +137,13 @@ final class Versions
   'symfony/var-dumper' => 'v4.1.10@5fa94d64830d115f21a2a2b91643cf7c986c9be0',
   'symfony/web-profiler-bundle' => 'v4.1.10@fc3c3010aefeca07e75c01a8c13451035175906d',
   'symfony/web-server-bundle' => 'v4.1.10@49e079bac72c94d12ab75470cba4ea1f641dad21',
-  'paragonie/random_compat' => '2.*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  'symfony/polyfill-ctype' => '*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  'symfony/polyfill-iconv' => '*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  'symfony/polyfill-php71' => '*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  'symfony/polyfill-php70' => '*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  'symfony/polyfill-php56' => '*@9560009ebea670c99fda5eb55e0be3331cda54a8',
-  '__root__' => 'dev-master@9560009ebea670c99fda5eb55e0be3331cda54a8',
+  'paragonie/random_compat' => '2.*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  'symfony/polyfill-ctype' => '*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  'symfony/polyfill-iconv' => '*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  'symfony/polyfill-php71' => '*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  'symfony/polyfill-php70' => '*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  'symfony/polyfill-php56' => '*@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
+  '__root__' => 'dev-master@4ec05e9fe7eb6e3522c7e93de6b84c5ca3e9d150',
 );
 
     private function __construct()

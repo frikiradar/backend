@@ -2,12 +2,15 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\Type;
 use JMS\Serializer\Annotation as Serializer;
+use CrEOF\Spatial\PHP\Types\Geometry\Point;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -43,11 +46,12 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Groups({"private"})
+     * @Serializer\ReadOnly()
      */
     private $password;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $email;
 
@@ -112,16 +116,6 @@ class User implements UserInterface
     private $last_login;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $latitude;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $longitude;
-
-    /**
      * @var array
      * @ORM\Column(type="json", nullable=true)
      * @Type("array")
@@ -144,6 +138,23 @@ class User implements UserInterface
      * @Type("array")
      */
     private $connection;
+
+    /**
+     * @ORM\Column(type="point", nullable=true)
+     * @Serializer\ReadOnly()
+     * @Groups({"coordinates"})
+     */
+    private $coordinates;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Tag", mappedBy="user", orphanRemoval=true, cascade={"persist","merge"})
+     */
+    private $tags;
+
+    public function __construct()
+    {
+        $this->tags = new ArrayCollection();
+    }
 
     public function getId() : ? int
     {
@@ -326,30 +337,6 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLatitude() : ? string
-    {
-        return $this->latitude;
-    }
-
-    public function setLatitude(? string $latitude) : self
-    {
-        $this->latitude = $latitude;
-
-        return $this;
-    }
-
-    public function getLongitude() : ? string
-    {
-        return $this->longitude;
-    }
-
-    public function setLongitude(? string $longitude) : self
-    {
-        $this->longitude = $longitude;
-
-        return $this;
-    }
-
     public function getDescription() : ? string
     {
         return $this->description;
@@ -454,6 +441,67 @@ class User implements UserInterface
     public function setConnection($connection) : self
     {
         $this->connection = $connection;
+
+        return $this;
+    }
+
+    /**
+     * @return Point
+     */
+    public function getCoordinates()
+    {
+        return $this->coordinates;
+    }
+
+    /**
+     * @param Point $coordinates
+     */
+    public function setCoordinates(Point $coordinates) : self
+    {
+        $this->coordinates = $coordinates;
+
+        return $this;
+    }
+
+    public function setTags($tags)
+    {
+        if (count($tags) > 0) {
+            foreach ($tags as $tag) {
+                $this->addTag($tag);
+            }
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection|Tag[]
+     */
+    public function getTags() : Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag) : self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+            $tag->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag) : self
+    {
+        if ($this->tags->contains($tag)) {
+            $this->tags->removeElement($tag);
+            // set the owning side to null (unless already changed)
+            if ($tag->getUser() === $this) {
+                $tag->setUser(null);
+            }
+        }
 
         return $this;
     }

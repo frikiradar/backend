@@ -11,4 +11,8 @@ return array(
     'JsonpCallbackValidator' => array($vendorDir . '/willdurand/jsonp-callback-validator/src'),
     'Doctrine\\Common\\Lexer\\' => array($vendorDir . '/doctrine/lexer/lib'),
     'Doctrine\\Common\\Collections\\' => array($vendorDir . '/doctrine/collections/lib'),
+    'CrEOF\\Spatial' => array($vendorDir . '/creof/doctrine2-spatial/lib'),
+    'CrEOF\\Geo\\WKT' => array($vendorDir . '/creof/wkt-parser/lib'),
+    'CrEOF\\Geo\\WKB' => array($vendorDir . '/creof/wkb-parser/lib'),
+    'CrEOF\\Geo\\String' => array($vendorDir . '/creof/geo-parser/lib'),
 );

@@ -14,6 +14,8 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Tag;
+use App\Entity\Category;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -25,6 +27,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use CrEOF\Spatial\PHP\Types\Geometry\Point;
 
 /**
  * Class UsersController
@@ -169,8 +172,9 @@ class UsersController extends FOSRestController
     public function getAction()
     {
         $serializer = $this->get('jms_serializer');
-        $response = $this->getUser();
-        return new Response($serializer->serialize($response, "json"));
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('App:User')->findeOneUser($this->getUser()->getId());
+        return new Response($serializer->serialize($user, "json"));
     }
 
     /**
@@ -186,10 +190,10 @@ class UsersController extends FOSRestController
      *     description="Error al actualizar el usuario"
      * )
      * 
-     * @ParamConverter("user", converter="fos_rest.request_body")
-     * @param User $user
+     * @ParamConverter("newUser", converter="fos_rest.request_body")
+     * @param User $newUser
      */
-    public function putAction(User $user)
+    public function putAction(User $newUser)
     {
         $serializer = $this->get('jms_serializer');
         $message = "";
@@ -198,13 +202,54 @@ class UsersController extends FOSRestController
             $code = 200;
             $error = false;
 
-            if ($user->getId() == $this->getUser()->getId()) {
+            if ($newUser->getId() == $this->getUser()->getId()) {
                 $em = $this->getDoctrine()->getManager();
 
-                $auxUser = $em->getRepository('App:User')->find($user->getId());
-                $user->setPassword($auxUser->getPassword());
+                $user = $this->getUser();
+                $user->setDescription($newUser->getDescription());
+                $user->setBirthday($newUser->getBirthday());
+                $user->setGender($newUser->getGender());
+                $user->setPronoun($newUser->getPronoun());
+                $user->setRelationship($newUser->getRelationship());
+                $user->setStatus($newUser->getStatus());
+                $user->setMinage($newUser->getMinage());
+                $user->setMaxage($newUser->getMaxage());
+                $user->setLovegender($newUser->getLovegender());
+                $user->setConnection($newUser->getConnection());
 
+
+                foreach ($user->getTags() as $tag) {
+                    $em->remove($tag);
+                }
                 $em->merge($user);
+                $em->flush();
+
+                foreach ($newUser->getTags() as $tag) {
+                    $category = $em->getRepository('App:Category')->findOneBy(array('name' => $tag->getCategory()->getName()));
+                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+
+                    if (empty($oldTag)) {
+                        $newTag = new Tag();
+                        $newTag->setUser($user);
+                        $newTag->setName($tag->getName());
+
+                        if (!empty($category)) {
+                            $newTag->setCategory($category);
+                        } else {
+                            $newCategory = new Category();
+                            $newCategory->setName($tag->getCategory()->getName());
+                            $newTag->setCategory($newCategory);
+
+                            $em->persist($newCategory);
+                        }
+
+                        $user->addTag($newTag);
+                    }
+                    $em->persist($user);
+                    $em->flush();
+                }
+
+                $em->persist($user);
                 $em->flush();
                 $response = $user;
             } else {
@@ -260,6 +305,8 @@ class UsersController extends FOSRestController
      *     description="Longitude",
      *     schema={}
      * )
+     *
+     * @Rest\View(serializerGroups={"coordinates"})
      */
     public function putCoordinatesAction(Request $request)
     {
@@ -274,12 +321,61 @@ class UsersController extends FOSRestController
             $error = false;
 
             $user = $this->getUser();
-            $user->setLatitude($request->request->get('latitude'));
-            $user->setLongitude($request->request->get('longitude'));
+
+            $coords = new Point(0, 0);
+            $coords
+                ->setLatitude($request->request->get('latitude'))
+                ->setLongitude($request->request->get('longitude'));
+
+            $user->setCoordinates($coords);
 
             $em->persist($user);
             $em->flush();
 
+            $response = $user;
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al registrar coordenadas - Error: {$ex->getMessage()}"
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Get("/v1/radar", name="radar")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Coordenadas actualizadas correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar las coordenadas"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="ratio",
+     *     in="body",
+     *     type="integer",
+     *     description="Ratio",
+     *     schema={}
+     * )
+     */
+    public function getRadarUsers(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $code = 200;
+            $error = false;
+
+            $user = $this->getUser();
+            $users = $em->getRepository('App:User')->getUsersByDistance($user, 10000);
         } catch (Exception $ex) {
             $code = 500;
             $error = true;
@@ -289,7 +385,7 @@ class UsersController extends FOSRestController
         $response = [
             'code' => $code,
             'error' => $error,
-            'data' => $code == 200 ? $user : $message,
+            'data' => $code == 200 ? $users : $message,
         ];
 
         return new Response($serializer->serialize($response, "json"));

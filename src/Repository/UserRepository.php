@@ -6,6 +6,12 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
+use CrEOF\Spatial\Tests\Fixtures\LineStringEntity;
+use CrEOF\Spatial\PHP\Types\Geometry\LineString;
+use CrEOF\Spatial\PHP\Types\Geometry\Point;
+use CrEOF\Spatial\Tests\OrmTestCase;
+use Doctrine\ORM\Query;
+
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
@@ -48,25 +54,55 @@ class UserRepository extends ServiceEntityRepository
     }
      */
 
-    public function findOneByUsername($value)
+    public function findeOneUser(int $id)
     {
+        $em = $this->getEntityManager();
+        $dql = 'SELECT u FROM App:User u  WHERE u.id=:id';
+        $query = $em->createQuery($dql)->setParameters(['id' => $id]);
+
+        /* @var \AppBundle\Entity\User $user */
+        $user = $query->getOneOrNullResult();
+        return $user;
+    }
+
+    public function getUsersByDistance(User $user, int $ratio)
+    {
+        $em = $this->getEntityManager();
+
+        $latitude = $user->getCoordinates()->getLatitude();
+        $longitude = $user->getCoordinates()->getLongitude();
+
         return $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
                 'u.username',
                 'u.description',
-                'u.birthday',
+                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.gender',
                 'u.orientation',
                 'u.pronoun',
                 'u.relationship',
                 'u.status',
-                'u.latitude',
-                'u.longitude'
+                'u.lovegender',
+                'u.minage',
+                'u.maxage',
+                'u.connection',
+                "GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
+                        )
+                    ) distance"
             ))
-            ->andWhere('u.username = :val')
-            ->setParameter('val', $value)
+            ->andHaving('age BETWEEN :minage AND :maxage')
+            ->orderBy('distance', 'ASC')
+            ->setParameters(array(
+                'minage' => $user->getMinage(),
+                'maxage' => $user->getMaxage()
+            ))
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 }
