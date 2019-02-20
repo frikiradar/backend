@@ -2,6 +2,7 @@ image: fabianmartin/php-symfony
 
 stages:
   - build
+  - test
   - deploy
 
 cache:
