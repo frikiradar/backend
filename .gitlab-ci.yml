@@ -1,4 +1,4 @@
-image: fabianmartin/php-symfony
+image: phpmentors/symfony-app
 
 stages:
   - build
