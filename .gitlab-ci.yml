@@ -1,4 +1,4 @@
-image: phpmentors/symfony-app
+image: vinnyfs89/docker-symfony-4
 
 stages:
   - build
