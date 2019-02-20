@@ -87,7 +87,6 @@ class UsersController extends FOSRestController
      *     description="User was not successfully registered"
      * )
      *
-     *
      * @SWG\Parameter(
      *     name="email",
      *     in="body",
