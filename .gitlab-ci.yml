@@ -1,4 +1,4 @@
-image: vinnyfs89/docker-symfony-4
+image: fabianmartin/php-symfony
 
 stages:
   - build
