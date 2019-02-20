@@ -13,7 +13,7 @@ build:
   stage: build
   retry: 1
   script:
-    - composer install --no-interaction --optimize-autoloader
+    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
     - mv .env.prod .env
   artifacts:
     paths:
@@ -45,10 +45,6 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - rm -rf var/cache/*
-    - rm -rf var/log/*
-    - cp -af ./ /root/backend/
-    - cd /root/backend
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
   only:
