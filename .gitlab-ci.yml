@@ -1,5 +1,3 @@
-image: fabianmartin/php-symfony
-
 stages:
   - build
   - deploy
@@ -36,6 +34,9 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
+    - cp -af ./ /root/frikiradar/symfony
+    - cd /root/frikiradar
+    - docker-compose up -d
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
   only:
