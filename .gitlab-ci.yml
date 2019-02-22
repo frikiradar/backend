@@ -13,6 +13,7 @@ build:
   stage: build
   retry: 1
   script:
+    - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
     - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
@@ -36,7 +37,6 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - pwd
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
     - docker-compose up -d
