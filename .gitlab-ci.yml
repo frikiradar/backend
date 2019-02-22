@@ -2,7 +2,6 @@ image: fabianmartin/php-symfony
 
 stages:
   - build
-  - test
   - deploy
 
 cache:
@@ -28,15 +27,6 @@ build:
       - var/
       - vendor/
       - ./*.*
-
-.phpunit:
-  stage: test
-  variables:
-    GIT_STRATEGY: none
-  allow_failure: true # XXX
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker run $CONTAINER_TEST_IMAGE phpunit
 
 deploy-prod:
   stage: deploy
