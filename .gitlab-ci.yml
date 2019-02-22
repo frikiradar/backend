@@ -15,18 +15,6 @@ build:
   script:
     - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
-  artifacts:
-    paths:
-      - bin/
-      - config/
-      - public/
-      - src/
-      - templates/
-      - tests/
-      - translations/
-      - var/
-      - vendor/
-      - ./*.*
 
 deploy-prod:
   stage: deploy
