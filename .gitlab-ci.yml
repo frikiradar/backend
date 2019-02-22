@@ -36,6 +36,7 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
+    - pwd
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
     - docker-compose up -d
