@@ -13,8 +13,8 @@ build:
   stage: build
   retry: 1
   script:
-    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
     - mv .env.prod .env
+    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - bin/
