@@ -71,8 +71,7 @@ class UsersController extends FOSRestController
      * @SWG\Tag(name="User")
      */
     public function getLoginAction()
-    {
-    }
+    { }
 
     /**
      * @Rest\Post("/register", name="user_register")
@@ -137,7 +136,6 @@ class UsersController extends FOSRestController
 
             $em->persist($user);
             $em->flush();
-
         } catch (Exception $ex) {
             $code = 500;
             $error = true;
@@ -297,6 +295,7 @@ class UsersController extends FOSRestController
      *     schema={}
      * )
      *
+     * 
      * @SWG\Parameter(
      *     name="longitude",
      *     in="body",
