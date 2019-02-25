@@ -1,4 +1,4 @@
-image: otezvikentiy/php7.2-fpm:lastest
+image: otezvikentiy/php7.2-fpm
 
 stages:
   - build
