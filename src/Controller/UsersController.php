@@ -343,6 +343,37 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Post("/v1/avatar", name="avatar")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Avatar actualizado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar el avatar"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="avatar",
+     *     in="formData",
+     *     type="file",
+     *     description="avatar",
+     *     schema={}
+     * )
+     *
+     */
+     public function putAvatarAction(Request $request)
+     {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+        var_dump($request->files->get('avatar'));
+
+        // return new Response($serializer->serialize($response, "json"));
+     }
+
+    /**
      * @Rest\Get("/v1/radar", name="radar")
      *
      * @SWG\Response(
