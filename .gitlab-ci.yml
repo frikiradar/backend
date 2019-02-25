@@ -45,7 +45,6 @@ deploy-prod:
   script:
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
-    - docker-compose stop || docker-compose kill || true
     - docker run -it --entrypoint '' docker/compose:1.17.1 -d --force-recreate
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
