@@ -1,4 +1,4 @@
-image: jonaskello/docker-and-compose
+image: composer/composer:php7
 
 services:
   - docker:dind
@@ -21,7 +21,7 @@ build:
   script:
     - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
     - mv .env.prod .env
-    - docker-compose exec --user www-data -T alpine composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
+    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - bin/
@@ -46,8 +46,8 @@ deploy-prod:
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
     - docker-compose up -d --force-recreate
-    - docker-compose exec --user www-data -T alpine php bin/console doctrine:schema:update --dump-sql --force
-    - docker-compose exec --user www-data -T alpine php bin/console doctrine:cache:clear-metadata
+    - php bin/console doctrine:schema:update --dump-sql --force
+    - php bin/console doctrine:cache:clear-metadata
   only:
     - master
   environment:
