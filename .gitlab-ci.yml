@@ -14,7 +14,7 @@ build:
   retry: 1
   script:
     - mv .env.prod .env
-    - docker-compose exec php composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
+    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - bin/
