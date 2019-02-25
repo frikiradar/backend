@@ -1,4 +1,4 @@
-image: otezvikentiy/php7.2-fpm:0.0.12
+image: php:7.2-fpm
 
 stages:
   - build
@@ -14,7 +14,7 @@ build:
   retry: 1
   script:
     - mv .env.prod .env
-    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
+    - docker-compose exec php composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - bin/
@@ -39,8 +39,8 @@ deploy-prod:
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
     - docker-compose up -d --force-recreate
-    - php bin/console doctrine:schema:update --dump-sql --force
-    - php bin/console doctrine:cache:clear-metadata
+    - docker-compose exec php php bin/console doctrine:schema:update --dump-sql --force
+    - docker-compose exec php php bin/console doctrine:cache:clear-metadata
   only:
     - master
   environment:
