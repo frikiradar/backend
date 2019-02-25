@@ -1,4 +1,4 @@
-image: php:7.2-fpm
+image: otezvikentiy/php7.2-fpm:0.0.12
 
 stages:
   - build
@@ -38,9 +38,9 @@ deploy-prod:
   script:
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
-    - docker-compose up -d --force-recreate
-    - docker-compose exec php php bin/console doctrine:schema:update --dump-sql --force
-    - docker-compose exec php php bin/console doctrine:cache:clear-metadata
+    #- docker-compose up -d --force-recreate
+    - php bin/console doctrine:schema:update --dump-sql --force
+    - php bin/console doctrine:cache:clear-metadata
   only:
     - master
   environment:
