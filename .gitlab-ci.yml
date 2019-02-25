@@ -1,10 +1,4 @@
-image: composer/composer:php7
-
-services:
-  - docker:dind
-
-before_script:
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+image: otezvikentiy/php7.2-fpm:lastest
 
 stages:
   - build
@@ -19,7 +13,6 @@ build:
   stage: build
   retry: 1
   script:
-    - sed -i -e s/post-install-cmd/post-install/ -e s/post-update-cmd/post-update/ composer.json
     - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
