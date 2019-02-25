@@ -1,4 +1,4 @@
-image: fabianmartin/php-symfony
+image: docker-latest
 
 stages:
   - build
@@ -39,7 +39,7 @@ deploy-prod:
   script:
     - cp -af ./ /root/frikiradar/symfony/
     - cd /root/frikiradar
-    - docker-compose up -d
+    - docker run -it --entrypoint '' docker/compose:1.17.1 -d
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
   only:
