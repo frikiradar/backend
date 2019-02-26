@@ -27,10 +27,8 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
-    - whoami
-    - pwd
-    - cp -af ./ /root/frikiradar/
-    - cd /root/frikiradar
+    - cp -af ./ /root/frikiradar/symfony/
+    - cd /root/frikiradar/symfony
     # - docker-compose up -d --force-recreate
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
