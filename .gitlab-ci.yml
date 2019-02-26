@@ -15,6 +15,9 @@ build:
   script:
     - mv .env.prod .env
     - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
+artifacts:
+  paths:
+    - .env
 
 deploy-prod:
   stage: deploy
