@@ -1,5 +1,3 @@
-image: composer:latest
-
 stages:
   - build
   - deploy
@@ -10,6 +8,7 @@ cache:
     - vendor/
 
 build:
+  image: composer:latest
   stage: build
   retry: 1
   script:
