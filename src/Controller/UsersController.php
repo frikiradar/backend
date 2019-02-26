@@ -28,6 +28,8 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
+use App\Service\FileUploader;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * Class UsersController
@@ -364,14 +366,17 @@ class UsersController extends FOSRestController
      * )
      *
      */
-     public function putAvatarAction(Request $request)
-     {
+    public function putAvatarAction(Request $request)
+    {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        var_dump($request->files->get('avatar'));
+        $avatar = $request->files->get('avatar');
+
+        $uploader = new FileUploader("../assets/images/avatar");
+        $uploader->upload($avatar);
 
         // return new Response($serializer->serialize($response, "json"));
-     }
+    }
 
     /**
      * @Rest\Get("/v1/radar", name="radar")
