@@ -36,6 +36,7 @@ deploy-prod:
   tags:
     - deploy-backend
   script:
+    - whoami
     - cp -af ./ /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
     - cd /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
     #- docker-compose up -d --force-recreate
