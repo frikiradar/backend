@@ -37,8 +37,8 @@ deploy-prod:
     - deploy-backend
   script:
     - whoami
-    - cp -af ./ /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
-    - cd /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
+    #- cp -af ./ /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
+    #- cd /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
     #- docker-compose up -d --force-recreate
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
