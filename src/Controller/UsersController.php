@@ -372,7 +372,10 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
         $avatar = $request->files->get('avatar');
 
-        $uploader = new FileUploader("../assets/images/avatar");
+        $username = $this->getUser()->getUsername();
+        $filename = strftime("%Y%m%d%H%M%S", localtime);
+
+        $uploader = new FileUploader("../assets/images/avatar/" . $username . "/", $filename);
         $uploader->upload($avatar);
 
         // return new Response($serializer->serialize($response, "json"));

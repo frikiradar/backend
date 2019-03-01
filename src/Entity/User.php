@@ -4,13 +4,11 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\Type;
-use JMS\Serializer\Annotation as Serializer;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -149,6 +147,11 @@ class User implements UserInterface
      * @ORM\Column(type="date", nullable=true)
      */
     private $birthday;
+
+    /**
+     * @Assert\File(maxSize="6000000")
+     */
+    private $avatar;
 
     public function __construct()
     {
@@ -503,5 +506,25 @@ class User implements UserInterface
         $this->birthday = $birthday;
 
         return $this;
+    }
+
+    /**
+     * Sets avatar.
+     *
+     * @param UploadedFile $avatar
+     */
+    public function setAvatar(UploadedFile $avatar = null)
+    {
+        $this->avatar = $avatar;
+    }
+
+    /**
+     * Get avatar.
+     *
+     * @return UploadedFile
+     */
+    public function getAvatar()
+    {
+        return $this->avatar;
     }
 }
