@@ -67,12 +67,6 @@ class User implements UserInterface
     private $description;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
-     * @Type("DateTime<'Y-m-d'>")
-     */
-    private $birthday;
-
-    /**
      * @ORM\Column(type="string", length=70, nullable=true)
      */
     private $gender;
@@ -151,12 +145,17 @@ class User implements UserInterface
      */
     private $tags;
 
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $birthday;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
     }
 
-    public function getId() : ? int
+    public function getId(): ? int
     {
         return $this->id;
     }
@@ -166,12 +165,12 @@ class User implements UserInterface
      *
      * @see UserInterface
      */
-    public function getUsername() : string
+    public function getUsername(): string
     {
         return (string)$this->username;
     }
 
-    public function setUsername(string $username) : self
+    public function setUsername(string $username): self
     {
         $this->username = $username;
 
@@ -181,7 +180,7 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getRoles() : array
+    public function getRoles(): array
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
@@ -190,7 +189,7 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles) : self
+    public function setRoles(array $roles): self
     {
         $this->roles = $roles;
 
@@ -200,12 +199,12 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword() : string
+    public function getPassword(): string
     {
         return (string)$this->password;
     }
 
-    public function setPassword(string $password) : self
+    public function setPassword(string $password): self
     {
         $this->password = $password;
 
@@ -229,60 +228,48 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function getEmail() : ? string
+    public function getEmail(): ? string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email) : self
+    public function setEmail(string $email): self
     {
         $this->email = $email;
 
         return $this;
     }
 
-    public function getRegisterDate() : ? \DateTimeInterface
+    public function getRegisterDate(): ? \DateTimeInterface
     {
         return $this->register_date;
     }
 
-    public function setRegisterDate() : self
+    public function setRegisterDate(): self
     {
         $this->register_date = new \DateTime;
 
         return $this;
     }
 
-    public function getBirthday() : ? \DateTimeInterface
-    {
-        return $this->birthday;
-    }
-
-    public function setBirthday(\DateTimeInterface $birthday) : self
-    {
-        $this->birthday = $birthday;
-
-        return $this;
-    }
-
-    public function getGender() : ? string
+    public function getGender(): ? string
     {
         return $this->gender;
     }
 
-    public function setGender(string $gender) : self
+    public function setGender(? string $gender): self
     {
         $this->gender = $gender;
 
         return $this;
     }
 
-    public function getRegisterIp() : ? string
+    public function getRegisterIp(): ? string
     {
         return $this->register_ip;
     }
 
-    public function setRegisterIp() : self
+    public function setRegisterIp(): self
     {
         if (isset($_SERVER["HTTP_CLIENT_IP"])) {
             $this->register_ip = $_SERVER["HTTP_CLIENT_IP"];
@@ -301,132 +288,132 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLastIp() : ? string
+    public function getLastIp(): ? string
     {
         return $this->last_ip;
     }
 
-    public function setLastIp(string $last_ip) : self
+    public function setLastIp(string $last_ip): self
     {
         $this->last_ip = $last_ip;
 
         return $this;
     }
 
-    public function getLastLogin() : ? \DateTimeInterface
+    public function getLastLogin(): ? \DateTimeInterface
     {
         return $this->last_login;
     }
 
-    public function setLastLogin(\DateTimeInterface $last_login) : self
+    public function setLastLogin(\DateTimeInterface $last_login): self
     {
         $this->last_login = $last_login;
 
         return $this;
     }
 
-    public function getLocation() : ? string
+    public function getLocation(): ? string
     {
         return $this->location;
     }
 
-    public function setLocation(string $location) : self
+    public function setLocation(string $location): self
     {
         $this->location = $location;
 
         return $this;
     }
 
-    public function getDescription() : ? string
+    public function getDescription(): ? string
     {
         return $this->description;
     }
 
-    public function setDescription(? string $description) : self
+    public function setDescription(? string $description): self
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getRelationship() : ? string
+    public function getRelationship(): ? string
     {
         return $this->relationship;
     }
 
-    public function setRelationship(? string $relationship) : self
+    public function setRelationship(? string $relationship): self
     {
         $this->relationship = $relationship;
 
         return $this;
     }
 
-    public function getOrientation() : ? string
+    public function getOrientation(): ? string
     {
         return $this->orientation;
     }
 
-    public function setOrientation(? string $orientation) : self
+    public function setOrientation(? string $orientation): self
     {
         $this->orientation = $orientation;
 
         return $this;
     }
 
-    public function getPronoun() : ? string
+    public function getPronoun(): ? string
     {
         return $this->pronoun;
     }
 
-    public function setPronoun(? string $pronoun) : self
+    public function setPronoun(? string $pronoun): self
     {
         $this->pronoun = $pronoun;
 
         return $this;
     }
 
-    public function getStatus() : ? string
+    public function getStatus(): ? string
     {
         return $this->status;
     }
 
-    public function setStatus(? string $status) : self
+    public function setStatus(? string $status): self
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getLovegender() : ? array
+    public function getLovegender(): ? array
     {
         return $this->lovegender;
     }
 
-    public function setLovegender(? array $lovegender) : self
+    public function setLovegender(? array $lovegender): self
     {
         $this->lovegender = $lovegender;
 
         return $this;
     }
 
-    public function getMinage() : ? int
+    public function getMinage(): ? int
     {
         return $this->minage;
     }
 
-    public function setMinage(? int $minage) : self
+    public function setMinage(? int $minage): self
     {
         $this->minage = $minage;
 
         return $this;
     }
 
-    public function getMaxage() : ? int
+    public function getMaxage(): ? int
     {
         return $this->maxage;
     }
 
-    public function setMaxage(? int $maxage) : self
+    public function setMaxage(? int $maxage): self
     {
         $this->maxage = $maxage;
 
@@ -438,7 +425,7 @@ class User implements UserInterface
         return $this->connection;
     }
 
-    public function setConnection($connection) : self
+    public function setConnection($connection): self
     {
         $this->connection = $connection;
 
@@ -456,7 +443,7 @@ class User implements UserInterface
     /**
      * @param Point $coordinates
      */
-    public function setCoordinates(Point $coordinates) : self
+    public function setCoordinates(Point $coordinates): self
     {
         $this->coordinates = $coordinates;
 
@@ -478,12 +465,12 @@ class User implements UserInterface
     /**
      * @return Collection|Tag[]
      */
-    public function getTags() : Collection
+    public function getTags(): Collection
     {
         return $this->tags;
     }
 
-    public function addTag(Tag $tag) : self
+    public function addTag(Tag $tag): self
     {
         if (!$this->tags->contains($tag)) {
             $this->tags[] = $tag;
@@ -493,7 +480,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function removeTag(Tag $tag) : self
+    public function removeTag(Tag $tag): self
     {
         if ($this->tags->contains($tag)) {
             $this->tags->removeElement($tag);
@@ -502,6 +489,18 @@ class User implements UserInterface
                 $tag->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getBirthday(): ? \DateTimeInterface
+    {
+        return $this->birthday;
+    }
+
+    public function setBirthday(? \DateTimeInterface $birthday): self
+    {
+        $this->birthday = $birthday;
 
         return $this;
     }
