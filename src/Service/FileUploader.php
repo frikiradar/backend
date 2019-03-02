@@ -22,15 +22,12 @@ class FileUploader
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
 
-            if ($this->getTargetDirectory()) {
+            if (!file_exist($this->getTargetDirectory())) {
                 mkdir($this->getTargetDirectory(), 0777, true);
             }
 
             $imagine = new Imagine();
-
-            $image = $imagine
-                ->open($file->getRealPath())
-                ->save($targetSrc);
+            $image = $imagine->open($file->getRealPath())->save($targetSrc);
             if ($image) {
                 return $targetSrc;
             }
