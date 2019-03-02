@@ -14,7 +14,6 @@ build:
   retry: 1
   script:
     - mv .env.prod .env
-    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - .env
@@ -29,6 +28,7 @@ deploy-prod:
   script:
     - cp -af ./ /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/
     - cd /var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony
+    - composer install --no-interaction --ignore-platform-reqs --no-suggest --no-progress --prefer-dist --optimize-autoloader
     # - docker-compose up -d --force-recreate
     - php bin/console doctrine:schema:update --dump-sql --force
     - php bin/console doctrine:cache:clear-metadata
