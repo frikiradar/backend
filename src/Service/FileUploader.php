@@ -22,8 +22,9 @@ class FileUploader
         try {
             $imagine = new Imagine();
             $targetSrc = $this->getTargetDirectory() . '/' . $this->getTargetFilename() . '.jpg';
-            $imagine->open($file->getRealPath())
-                ->save($targetSrc);
+
+            $response = $imagine->open($file->getRealPath())->save($targetSrc);
+            echo $response;
             return $targetSrc;
         } catch (FileException $e) {
             // ... handle exception if something happens during file upload
