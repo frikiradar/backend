@@ -9,6 +9,7 @@
         "doctrine/doctrine-bundle": "^1.9",
         "doctrine/orm": "^2.6",
         "friendsofsymfony/rest-bundle": "^2.5",
+        "imagine/imagine": "^1.2",
         "jms/serializer-bundle": "^3.0",
         "lcobucci/jwt": "^3.2",
         "lexik/jwt-authentication-bundle": "^2.6",

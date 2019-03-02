@@ -30,6 +30,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Class UsersController
@@ -366,19 +367,27 @@ class UsersController extends FOSRestController
      * )
      *
      */
-    public function putAvatarAction(Request $request)
+    public function uploadAvatarAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
         $avatar = $request->files->get('avatar');
 
         $username = $this->getUser()->getUsername();
-        $filename = strftime("%Y%m%d%H%M%S", localtime);
+        $filename = date('YmdHis');
 
         $uploader = new FileUploader("../assets/images/avatar/" . $username . "/", $filename);
-        $uploader->upload($avatar);
+        $image = $uploader->upload($avatar);
 
-        // return new Response($serializer->serialize($response, "json"));
+        if (isset($image)) {
+            $response = new BinaryFileResponse($image);
+            $response->headers->addCacheControlDirective('no-cache', true);
+        } else {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al subir la imagen"
+            ];
+        }
+        return $response;
     }
 
     /**

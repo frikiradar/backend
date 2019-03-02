@@ -146,6 +146,9 @@
     "hoa/zformat": {
         "version": "1.17.01.10"
     },
+    "imagine/imagine": {
+        "version": "1.2.0"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },

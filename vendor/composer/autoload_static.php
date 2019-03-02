@@ -123,6 +123,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             'JMS\\Serializer\\' => 15,
             'JMS\\SerializerBundle\\' => 21,
         ),
+        'I' => 
+        array (
+            'Imagine\\' => 8,
+        ),
         'H' => 
         array (
             'Hoa\\Zformat\\' => 12,
@@ -470,6 +474,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         'JMS\\SerializerBundle\\' => 
         array (
             0 => __DIR__ . '/..' . '/jms/serializer-bundle',
+        ),
+        'Imagine\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/imagine/imagine/src',
         ),
         'Hoa\\Zformat\\' => 
         array (
