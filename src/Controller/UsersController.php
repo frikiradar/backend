@@ -369,6 +369,7 @@ class UsersController extends FOSRestController
      */
     public function uploadAvatarAction(Request $request)
     {
+        $serializer = $this->get('jms_serializer');
         $avatar = $request->files->get('avatar');
 
         $username = $this->getUser()->getUsername();
@@ -380,14 +381,15 @@ class UsersController extends FOSRestController
         if (isset($image)) {
             $response = new BinaryFileResponse($image);
             $response->headers->addCacheControlDirective('no-cache', true);
+            return $response;
         } else {
             $response = [
                 'code' => 500,
                 'error' => true,
                 'data' => "Error al subir la imagen"
             ];
+            return new Response($serializer->serialize($response, "json"));
         }
-        return $response;
     }
 
     /**
