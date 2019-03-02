@@ -4,7 +4,7 @@ namespace App\Service;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Imagine\Imagick\Imagine;
+use Imagine\Gd\Imagine;
 
 class FileUploader
 {
@@ -23,8 +23,7 @@ class FileUploader
             $imagine = new Imagine();
             $targetSrc = $this->getTargetDirectory() . '/' . $this->getTargetFilename() . '.jpg';
 
-            $response = $imagine->open($file->getRealPath())->save($targetSrc);
-            echo $response;
+            $imagine->open($file->getRealPath())->save($targetSrc);
             return $targetSrc;
         } catch (FileException $e) {
             // ... handle exception if something happens during file upload
