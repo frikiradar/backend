@@ -2795,17 +2795,17 @@
     },
     {
         "name": "jms/serializer",
-        "version": "2.1.0",
-        "version_normalized": "2.1.0.0",
+        "version": "2.2.0",
+        "version_normalized": "2.2.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/schmittjoh/serializer.git",
-            "reference": "4964dcbc7316333cabbd078fa5274414a86738ce"
+            "reference": "3c3d4f1b97738722c7da36ce42ae62911ccf6794"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/4964dcbc7316333cabbd078fa5274414a86738ce",
-            "reference": "4964dcbc7316333cabbd078fa5274414a86738ce",
+            "url": "https://api.github.com/repos/schmittjoh/serializer/zipball/3c3d4f1b97738722c7da36ce42ae62911ccf6794",
+            "reference": "3c3d4f1b97738722c7da36ce42ae62911ccf6794",
             "shasum": ""
         },
         "require": {
@@ -2842,11 +2842,11 @@
             "doctrine/collections": "Required if you like to use doctrine collection types as ArrayCollection.",
             "symfony/yaml": "Required if you'd like to use the YAML metadata format."
         },
-        "time": "2019-01-11T08:46:16+00:00",
+        "time": "2019-02-27T20:38:28+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "2.1-dev"
+                "dev-master": "2.2-dev"
             }
         },
         "installation-source": "dist",
@@ -3260,17 +3260,17 @@
     },
     {
         "name": "nelmio/api-doc-bundle",
-        "version": "v3.3.1",
-        "version_normalized": "3.3.1.0",
+        "version": "v3.4.0",
+        "version_normalized": "3.4.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/nelmio/NelmioApiDocBundle.git",
-            "reference": "1b104bbf748f2af0496897c98d5ded3ac545ed43"
+            "reference": "279d20be784b9879ad0a12859efa3a301404f06c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/nelmio/NelmioApiDocBundle/zipball/1b104bbf748f2af0496897c98d5ded3ac545ed43",
-            "reference": "1b104bbf748f2af0496897c98d5ded3ac545ed43",
+            "url": "https://api.github.com/repos/nelmio/NelmioApiDocBundle/zipball/279d20be784b9879ad0a12859efa3a301404f06c",
+            "reference": "279d20be784b9879ad0a12859efa3a301404f06c",
             "shasum": ""
         },
         "require": {
@@ -3287,7 +3287,7 @@
             "doctrine/annotations": "^1.2",
             "doctrine/common": "^2.4",
             "friendsofsymfony/rest-bundle": "^2.0",
-            "jms/serializer-bundle": "^2.0",
+            "jms/serializer-bundle": "^2.0|^3.0",
             "sensio/framework-extra-bundle": "^3.0",
             "symfony/asset": "^3.4|^4.0",
             "symfony/browser-kit": "^3.4|^4.0",
@@ -3302,13 +3302,13 @@
             "symfony/templating": "^3.4|^4.0",
             "symfony/twig-bundle": "^3.4|^4.0",
             "symfony/validator": "^3.4|^4.0",
-            "willdurand/hateoas-bundle": "^1.0"
+            "willdurand/hateoas-bundle": "^1.0|^2.0"
         },
         "suggest": {
             "api-platform/core": "For using an API oriented framework.",
             "friendsofsymfony/rest-bundle": "For using the parameters annotations."
         },
-        "time": "2019-01-25T17:25:46+00:00",
+        "time": "2019-02-18T16:27:10+00:00",
         "type": "symfony-bundle",
         "extra": {
             "branch-alias": {
@@ -3345,17 +3345,17 @@
     },
     {
         "name": "nelmio/cors-bundle",
-        "version": "1.5.4",
-        "version_normalized": "1.5.4.0",
+        "version": "1.5.5",
+        "version_normalized": "1.5.5.0",
         "source": {
             "type": "git",
             "url": "https://github.com/nelmio/NelmioCorsBundle.git",
-            "reference": "548dc8ebd3984acd2f6d8787ab1dac2e9aa14254"
+            "reference": "adabee944e6fe52ee566caf1770a29355b1e8d83"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/nelmio/NelmioCorsBundle/zipball/548dc8ebd3984acd2f6d8787ab1dac2e9aa14254",
-            "reference": "548dc8ebd3984acd2f6d8787ab1dac2e9aa14254",
+            "url": "https://api.github.com/repos/nelmio/NelmioCorsBundle/zipball/adabee944e6fe52ee566caf1770a29355b1e8d83",
+            "reference": "adabee944e6fe52ee566caf1770a29355b1e8d83",
             "shasum": ""
         },
         "require": {
@@ -3366,7 +3366,7 @@
             "mockery/mockery": "^0.9 || ^1.0",
             "symfony/phpunit-bridge": "^2.7 || ^3.0 || ^4.0"
         },
-        "time": "2017-12-11T18:41:54+00:00",
+        "time": "2019-02-27T13:13:15+00:00",
         "type": "symfony-bundle",
         "extra": {
             "branch-alias": {
@@ -5977,17 +5977,17 @@
     },
     {
         "name": "symfony/panther",
-        "version": "v0.2.0",
-        "version_normalized": "0.2.0.0",
+        "version": "v0.3.0",
+        "version_normalized": "0.3.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/panther.git",
-            "reference": "d67f9dbcac173150fe00673e6564b3482762c615"
+            "reference": "5e41bc856eded5f546c71173a1e8e260c5e3a07a"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/panther/zipball/d67f9dbcac173150fe00673e6564b3482762c615",
-            "reference": "d67f9dbcac173150fe00673e6564b3482762c615",
+            "url": "https://api.github.com/repos/symfony/panther/zipball/5e41bc856eded5f546c71173a1e8e260c5e3a07a",
+            "reference": "5e41bc856eded5f546c71173a1e8e260c5e3a07a",
             "shasum": ""
         },
         "require": {
@@ -6003,11 +6003,11 @@
         "require-dev": {
             "fabpot/goutte": "^3.2.3",
             "guzzlehttp/guzzle": "^6.3",
-            "phpunit/phpunit": "^7.0",
+            "phpunit/phpunit": "^7.3",
             "symfony/css-selector": "^3.4 || ^4.0",
             "symfony/framework-bundle": "^3.4 || ^4.0"
         },
-        "time": "2018-09-26T10:35:52+00:00",
+        "time": "2019-02-27T12:48:28+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {

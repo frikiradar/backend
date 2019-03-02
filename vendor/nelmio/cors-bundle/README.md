@@ -15,7 +15,16 @@ this [image](http://www.html5rocks.com/static/images/cors_server_flowchart.png).
 
 ## Installation
 
-Require the `nelmio/cors-bundle` package in your composer.json and update your dependencies.
+An official [Symfony Flex](https://symfony.com/doc/current/setup/flex.html) recipe
+is available for this bundle.
+To automatically install and configure it run:
+
+    $ composer req cors
+
+You're done!
+
+Alternatively, if you don't use Symfony Flex, require the `nelmio/cors-bundle`
+package in your `composer.json` and update your dependencies.
 
     $ composer require nelmio/cors-bundle
 
@@ -34,6 +43,8 @@ Add the NelmioCorsBundle to your application's kernel:
 ```
 
 ## Configuration
+
+Symfony Flex generates a default configuration in `config/packages/nelmio_cors.yaml`.
 
 The `defaults` are the default values applied to all the `paths` that match,
 unless overriden in a specific URL configuration. If you want them to apply
@@ -90,6 +101,36 @@ only this specific domain will be allowed to access your resources.
 > [HTTP method overriding](http://symfony.com/doc/current/reference/configuration/framework.html#http-method-override)
 > enabled in the framework, it will enable the API users to perform PUT and DELETE 
 > requests as well.
+
+## Cookbook
+
+### How to ignore preflight requests on New Relic?
+
+On specific architectures with a moslty authenticated API, preflight request can represent a huge part of the traffic.
+
+In such cases, you may not need to monitor on New Relic this traffic which is by the way categorized automatically as
+`unknown` by New Relic.
+
+A request listener can be written to ignore preflight requests:
+```php
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+
+class PreflightIgnoreOnNewRelicListener
+{
+    public function onKernelResponse(FilterResponseEvent $event)
+    {
+        if (!extension_loaded('newrelic')) {
+            return;
+        }
+
+        if ('OPTIONS' === $event->getRequest()->getMethod()) {
+            newrelic_ignore_transaction();
+        }
+    }
+}
+```
+
+Register this listener, and voilà!
 
 ## License
 
