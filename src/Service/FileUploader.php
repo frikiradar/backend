@@ -22,7 +22,7 @@ class FileUploader
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
 
-            if (!file_exist($this->getTargetDirectory())) {
+            if (!file_exists($this->getTargetDirectory())) {
                 mkdir($this->getTargetDirectory(), 0777, true);
             }
 
