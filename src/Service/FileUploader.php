@@ -4,7 +4,7 @@ namespace App\Service;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Imagine\Imagick\Imagine;
+use Imagine\Gd\Imagine;
 
 class FileUploader
 {
