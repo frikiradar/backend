@@ -429,7 +429,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/radar", name="radar")
+     * @Rest\Get("/v1/radar/{ratio}")
      *
      * @SWG\Response(
      *     response=201,
@@ -441,15 +441,8 @@ class UsersController extends FOSRestController
      *     description="Error al actualizar las coordenadas"
      * )
      * 
-     * @SWG\Parameter(
-     *     name="ratio",
-     *     in="body",
-     *     type="integer",
-     *     description="Ratio",
-     *     schema={}
-     * )
      */
-    public function getRadarUsers(Request $request)
+    public function getRadarUsers(int $ratio)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -459,7 +452,7 @@ class UsersController extends FOSRestController
             $error = false;
 
             $user = $this->getUser();
-            $users = $em->getRepository('App:User')->getUsersByDistance($user, 10000);
+            $users = $em->getRepository('App:User')->getUsersByDistance($user, $ratio);
         } catch (Exception $ex) {
             $code = 500;
             $error = true;
