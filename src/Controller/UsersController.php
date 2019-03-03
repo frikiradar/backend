@@ -416,7 +416,7 @@ class UsersController extends FOSRestController
         $username = $user->getUsername();
 
         $files = glob("../assets/images/avatar/" . $username . "/*.jpg");
-        usort($files, create_function('$a,$b', 'return filemtime($a) - filemtime($b);'));
+        usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
 
         if (isset($files[0])) {
             $response = new BinaryFileResponse($files[0]);
