@@ -393,6 +393,46 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Get("/v1/avatar/{id}", name="avatar")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Avatar obtenido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener el avatar"
+     * )
+     * 
+     */
+    public function getAvatar(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $em->getRepository('App:User')->findOneById($id);
+
+        $username = $user->getUsername();
+
+        $files = glob("../assets/images/avatar/" . $username . "/*.jpg");
+        usort($files, create_function('$a,$b', 'return filemtime($a) - filemtime($b);'));
+
+        if (isset($files[0])) {
+            $response = new BinaryFileResponse($files[0]);
+            $response->headers->addCacheControlDirective('no-cache', true);
+            return $response;
+        } else {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al obtener la imagen"
+            ];
+            return new Response($serializer->serialize($response, "json"));
+        }
+    }
+
+    /**
      * @Rest\Get("/v1/radar", name="radar")
      *
      * @SWG\Response(
