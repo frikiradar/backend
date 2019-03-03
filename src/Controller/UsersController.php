@@ -31,6 +31,7 @@ use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Class UsersController
@@ -423,12 +424,7 @@ class UsersController extends FOSRestController
             $response->headers->addCacheControlDirective('no-cache', true);
             return $response;
         } else {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener la imagen"
-            ];
-            return new Response($serializer->serialize($response, "json"));
+            throw new HttpException(500, "Error al obtener el avatar");
         }
     }
 
