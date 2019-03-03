@@ -346,7 +346,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Post("/v1/avatar", name="avatar")
+     * @Rest\Post("/v1/avatar")
      *
      * @SWG\Response(
      *     response=201,
@@ -393,7 +393,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/avatar/{id}", name="avatar")
+     * @Rest\Get("/v1/avatar/{id}")
      *
      * @SWG\Response(
      *     response=201,
