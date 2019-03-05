@@ -448,22 +448,18 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $code = 200;
-            $error = false;
-
             $user = $this->getUser();
             $users = $em->getRepository('App:User')->getUsersByDistance($user, $ratio);
+            $response = $users;
         } catch (Exception $ex) {
-            $code = 500;
-            $error = true;
-            $message = "Error al registrar coordenadas - Error: {$ex->getMessage()}";
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al obtener los usuarios - Error: {$ex->getMessage()}",
+            ];
         }
 
-        $response = [
-            'code' => $code,
-            'error' => $error,
-            'data' => $code == 200 ? $users : $message,
-        ];
+
 
         return new Response($serializer->serialize($response, "json"));
     }
