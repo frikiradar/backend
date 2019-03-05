@@ -87,14 +87,14 @@ class UserRepository extends ServiceEntityRepository
                 'u.minage',
                 'u.maxage',
                 'u.connection',
-                "GLength(
+                "(GLength(
                         LineStringFromWKB(
                             LineString(
                                 u.coordinates,
                                 GeomFromText('Point(" . $longitude . " " . $latitude . ")')
                             )
                         )
-                    ) distance"
+                    ) * 100) distance"
             ))
             ->andHaving('age BETWEEN :minage AND :maxage')
             ->orderBy('distance', 'ASC')
