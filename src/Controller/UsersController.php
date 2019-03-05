@@ -179,6 +179,28 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Get("/v1/user/{id}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario obtenido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener el usuario"
+     * )
+     * 
+     */
+    public function getUserAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('App:User')->findeOneUser($id);
+        return new Response($serializer->serialize($user, "json"));
+    }
+
+    /**
      * @Rest\Put("/v1/user")
      * 
      * @SWG\Response(
