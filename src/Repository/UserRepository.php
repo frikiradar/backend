@@ -100,8 +100,8 @@ class UserRepository extends ServiceEntityRepository
             ->andWhere('u.id <> :id')
             ->orderBy('distance', 'ASC')
             ->setParameters(array(
-                'minage' => $user->getMinage(),
-                'maxage' => $user->getMaxage(),
+                'minage' => $user->getMinage() ?: 18,
+                'maxage' => $user->getMaxage() ?: 99,
                 'id' => $user->getId()
             ))
             ->getQuery()
