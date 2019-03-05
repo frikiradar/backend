@@ -149,6 +149,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Type("DateTime<'Y-m-d'>")
      */
     private $birthday;
 
