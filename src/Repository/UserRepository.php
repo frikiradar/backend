@@ -97,10 +97,12 @@ class UserRepository extends ServiceEntityRepository
                     ) * 100) distance"
             ))
             ->andHaving('age BETWEEN :minage AND :maxage')
+            ->andWhere('u.id <> :id')
             ->orderBy('distance', 'ASC')
             ->setParameters(array(
                 'minage' => $user->getMinage(),
-                'maxage' => $user->getMaxage()
+                'maxage' => $user->getMaxage(),
+                'id' => $user->getId()
             ))
             ->getQuery()
             ->getResult();
