@@ -77,7 +77,7 @@ class UserRepository extends ServiceEntityRepository
                 'u.id',
                 'u.username',
                 'u.description',
-                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                'TRUNCATE((DATE_DIFF(CURRENT_DATE(), u.birthday) / 365), 0) age',
                 'u.gender',
                 'u.orientation',
                 'u.pronoun',
@@ -87,14 +87,14 @@ class UserRepository extends ServiceEntityRepository
                 'u.minage',
                 'u.maxage',
                 'u.connection',
-                "GLength(
+                "ROUND(GLength(
                         LineStringFromWKB(
                             LineString(
                                 u.coordinates,
                                 GeomFromText('Point(" . $longitude . " " . $latitude . ")')
                             )
                         )
-                    ) distance"
+                    ), 1) distance"
             ))
             ->andHaving('age BETWEEN :minage AND :maxage')
             ->orderBy('distance', 'ASC')
