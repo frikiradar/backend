@@ -422,12 +422,10 @@ class UsersController extends FOSRestController
         if (isset($files[0])) {
             $response = new BinaryFileResponse($files[0]);
             $response->headers->addCacheControlDirective('no-cache', true);
+            return $response;
         } else {
-            $response = new BinaryFileResponse("../assets/images/layout/default.jpg");
-            $response->headers->addCacheControlDirective('no-cache', true);
+            throw new HttpException(500, "Error al obtener el avatar");
         }
-
-        return $response;
     }
 
     /**
