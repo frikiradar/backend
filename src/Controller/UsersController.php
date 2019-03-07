@@ -108,6 +108,13 @@ class UsersController extends FOSRestController
      * )
      *
      * @SWG\Parameter(
+     *     name="birthday",
+     *     in="query",
+     *     type="date",
+     *     description="The birthday"
+     * )
+     * 
+     * @SWG\Parameter(
      *     name="password",
      *     in="query",
      *     type="string",
@@ -131,11 +138,13 @@ class UsersController extends FOSRestController
             $email = $request->request->get('email');
             $username = $request->request->get('username');
             $password = $request->request->get('password');
+            $birthday = $request->request->get('birthday');
 
             $user = new User();
             $user->setEmail($email);
             $user->setUsername($username);
             $user->setPassword($encoder->encodePassword($user, $password));
+            $user->setBirthday($birthday);
             $user->setRegisterDate();
             $user->setRegisterIp();
 
