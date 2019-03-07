@@ -32,6 +32,7 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Geocoder\Query\ReverseQuery;
 
 /**
  * Class UsersController
@@ -352,6 +353,13 @@ class UsersController extends FOSRestController
                 ->setLongitude($request->request->get('longitude'));
 
             $user->setCoordinates($coords);
+
+            $httpClient = new \Http\Adapter\Guzzle6\Client();
+            $provider = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
+            $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
+            $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($request->request->get('latitude'), $request->request->get('longitude')));
+
+            $user->setLocation($result->first()->getLocality());
 
             $em->persist($user);
             $em->flush();

@@ -9,12 +9,15 @@
         "doctrine/doctrine-bundle": "^1.9",
         "doctrine/orm": "^2.6",
         "friendsofsymfony/rest-bundle": "^2.5",
+        "geocoder-php/google-maps-provider": "^4.3",
         "imagine/imagine": "^1.2",
         "jms/serializer-bundle": "^3.0",
         "lcobucci/jwt": "^3.2",
         "lexik/jwt-authentication-bundle": "^2.6",
         "nelmio/api-doc-bundle": "^3.3",
         "nelmio/cors-bundle": "^1.5",
+        "php-http/guzzle6-adapter": "^2.0",
+        "php-http/message": "^1.7",
         "sensio/framework-extra-bundle": "^5.2",
         "symfony/asset": "4.1.*",
         "symfony/console": "*",
@@ -31,7 +34,8 @@
         "symfony/twig-bundle": "4.1.*",
         "symfony/validator": "*",
         "symfony/web-link": "*",
-        "symfony/yaml": "*"
+        "symfony/yaml": "*",
+        "willdurand/geocoder-bundle": "^5.0"
     },
     "require-dev": {
         "symfony/debug-pack": "*",

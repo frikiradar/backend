@@ -87,6 +87,7 @@ class UserRepository extends ServiceEntityRepository
                 'u.minage',
                 'u.maxage',
                 'u.connection',
+                'u.location',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(

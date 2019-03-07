@@ -158,6 +158,11 @@ class User implements UserInterface
      */
     private $avatar;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $location;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
