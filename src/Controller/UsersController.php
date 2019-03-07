@@ -138,7 +138,7 @@ class UsersController extends FOSRestController
             $email = $request->request->get('email');
             $username = $request->request->get('username');
             $password = $request->request->get('password');
-            $birthday = $request->request->get('birthday');
+            $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('birthday'));
 
             $user = new User();
             $user->setEmail($email);

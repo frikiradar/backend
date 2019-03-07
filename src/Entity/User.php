@@ -159,7 +159,7 @@ class User implements UserInterface
     private $avatar;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $location;
 
@@ -330,7 +330,7 @@ class User implements UserInterface
         return $this->location;
     }
 
-    public function setLocation(string $location): self
+    public function setLocation(? string $location): self
     {
         $this->location = $location;
 
