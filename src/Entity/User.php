@@ -154,7 +154,7 @@ class User implements UserInterface
     private $birthday;
 
     /**
-     * @Assert\File(maxSize="6000000")
+     * @Type("string")
      */
     private $avatar;
 
@@ -518,22 +518,7 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * Sets avatar.
-     *
-     * @param UploadedFile $avatar
-     */
-    public function setAvatar(UploadedFile $avatar = null)
-    {
-        $this->avatar = $avatar;
-    }
-
-    /**
-     * Get avatar.
-     *
-     * @return UploadedFile
-     */
-    public function getAvatar()
+    public function getAvatar(): ? string
     {
         return $this->avatar;
     }
