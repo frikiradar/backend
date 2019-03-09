@@ -206,7 +206,7 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findeOneUser($id);
+        $user = $em->getRepository('App:User')->getUserInfo($id);
         return new Response($serializer->serialize($user, "json"));
     }
 
@@ -414,22 +414,20 @@ class UsersController extends FOSRestController
 
         $username = $this->getUser()->getUsername();
         $filename = date('YmdHis');
-
         $uploader = new FileUploader("../public/images/avatar/" . $username . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
             $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
-            return new Response($serializer->serialize($response, "json"));
         } else {
             $response = [
                 'code' => 500,
                 'error' => true,
                 'data' => "Error al subir la imagen"
             ];
-            return new Response($serializer->serialize($response, "json"));
         }
+        return new Response($serializer->serialize($response, "json"));
     }
 
     /**

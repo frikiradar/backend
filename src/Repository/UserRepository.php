@@ -65,10 +65,46 @@ class UserRepository extends ServiceEntityRepository
         return $user;
     }
 
+    public function getUserInfo(int $id, User $user)
+    {
+        $latitude = $user->getCoordinates()->getLatitude();
+        $longitude = $user->getCoordinates()->getLongitude();
+
+        return $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.description',
+                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                'u.gender',
+                'u.orientation',
+                'u.pronoun',
+                'u.relationship',
+                'u.status',
+                'u.lovegender',
+                'u.minage',
+                'u.maxage',
+                'u.connection',
+                'u.location',
+                "(GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
+                        )
+                    ) * 100) distance"
+            ))
+            ->andWhere('u.id = :id')
+            ->setParameters(array(
+                'id' => $id
+            ))
+            ->getQuery()
+            ->getResult();
+    }
+
     public function getUsersByDistance(User $user, int $ratio)
     {
-        $em = $this->getEntityManager();
-
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
