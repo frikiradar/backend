@@ -458,8 +458,8 @@ class UsersController extends FOSRestController
             $users = $em->getRepository('App:User')->getUsersByDistance($user, $ratio);
             foreach ($users as $key => $u) {
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-                $users[$key]['age'] = number_format($u['age'], 0);
-                $users[$key]['distance'] = number_format($u['distance'], 0);
+                $users[$key]['age'] = (int)$u['age'];
+                $users[$key]['distance'] = (int)$u['distance'];
                 $users[$key]['tags'] = $user->getTags();
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
