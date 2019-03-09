@@ -185,6 +185,7 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
+        $user->setAvatar($user->getAvatar());
         return new Response($serializer->serialize($user, "json"));
     }
 
@@ -208,6 +209,7 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
         $user = new User();
         $user = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $user->setAvatar($user->getAvatar());
 
         return new Response($serializer->serialize($user, "json"));
     }
