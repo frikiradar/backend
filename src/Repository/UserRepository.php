@@ -54,18 +54,7 @@ class UserRepository extends ServiceEntityRepository
     }
      */
 
-    public function findeOneUser(int $id)
-    {
-        $em = $this->getEntityManager();
-        $dql = 'SELECT u FROM App:User u  WHERE u.id=:id';
-        $query = $em->createQuery($dql)->setParameters(['id' => $id]);
-
-        /* @var \AppBundle\Entity\User $user */
-        $user = $query->getOneOrNullResult();
-        return $user;
-    }
-
-    public function getUserInfo(int $id, User $user)
+    public function findeOneUser(int $id, User $user)
     {
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();

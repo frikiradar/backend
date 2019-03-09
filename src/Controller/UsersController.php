@@ -184,7 +184,7 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findeOneUser($this->getUser()->getId());
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
         return new Response($serializer->serialize($user, "json"));
     }
 
@@ -206,7 +206,9 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->getUserInfo($id);
+        $user = new User();
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+
         return new Response($serializer->serialize($user, "json"));
     }
 
@@ -431,41 +433,6 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/avatar/{id}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Avatar obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el avatar"
-     * )
-     * 
-     */
-    public function getAvatar(int $id)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $user = $em->getRepository('App:User')->findOneById($id);
-
-        $username = $user->getUsername();
-
-        $files = glob("../public/images/avatar/" . $username . "/*.jpg");
-        usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
-
-        if (isset($files[0])) {
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-            $response = str_replace("../public", $server, $files[0]);
-            return new Response($serializer->serialize($response, "json"));
-        } else {
-            throw new HttpException(500, "Error al obtener el avatar");
-        }
-    }
-
-    /**
      * @Rest\Get("/v1/radar/{ratio}")
      *
      * @SWG\Response(
@@ -487,6 +454,14 @@ class UsersController extends FOSRestController
         try {
             $user = $this->getUser();
             $users = $em->getRepository('App:User')->getUsersByDistance($user, $ratio);
+            foreach ($users as $key => $u) {
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $users[$key]['age'] = number_format($u['age'], 0);
+                $users[$key]['distance'] = number_format($u['distance'], 0);
+                $users[$key]['tags'] = $user->getTags();
+                $users[$key]['avatar'] = $user->getAvatar() ?: null;
+            }
+
             $response = $users;
         } catch (Exception $ex) {
             $response = [
