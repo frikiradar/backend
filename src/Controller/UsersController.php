@@ -415,13 +415,13 @@ class UsersController extends FOSRestController
         $username = $this->getUser()->getUsername();
         $filename = date('YmdHis');
 
-        $uploader = new FileUploader("../assets/images/avatar/" . $username . "/", $filename);
+        $uploader = new FileUploader("../public/images/avatar/" . $username . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
-            $response = new BinaryFileResponse($image);
-            $response->headers->addCacheControlDirective('no-cache', true);
-            return $response;
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $response = str_replace("../public", $server, $image);
+            return new Response($serializer->serialize($response, "json"));
         } else {
             $response = [
                 'code' => 500,
@@ -455,13 +455,13 @@ class UsersController extends FOSRestController
 
         $username = $user->getUsername();
 
-        $files = glob("../assets/images/avatar/" . $username . "/*.jpg");
+        $files = glob("../public/images/avatar/" . $username . "/*.jpg");
         usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
 
         if (isset($files[0])) {
-            $response = new BinaryFileResponse($files[0]);
-            $response->headers->addCacheControlDirective('no-cache', true);
-            return $response;
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $response = str_replace("../public", $server, $files[0]);
+            return new Response($serializer->serialize($response, "json"));
         } else {
             throw new HttpException(500, "Error al obtener el avatar");
         }
