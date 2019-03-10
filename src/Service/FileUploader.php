@@ -5,6 +5,7 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Imagine\Imagick\Imagine;
+use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
 
 class FileUploader
@@ -28,10 +29,18 @@ class FileUploader
             }
 
             $imagine = new Imagine();
+
+            $options = array(
+                'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+                'resolution-x' => 150,
+                'resolution-y' => 150,
+                'jpeg_quality' => 90
+            );
+
             $image = $imagine
                 ->open($file->getRealPath())
                 ->resize(new Box(512, 512))
-                ->save($targetSrc);
+                ->save($targetSrc, $options);
             if ($image) {
                 return $targetSrc;
             }
