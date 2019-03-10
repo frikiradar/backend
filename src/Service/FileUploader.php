@@ -5,6 +5,7 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Imagine\Imagick\Imagine;
+use Imagine\Image\Box;
 
 class FileUploader
 {
@@ -27,7 +28,10 @@ class FileUploader
             }
 
             $imagine = new Imagine();
-            $image = $imagine->open($file->getRealPath())->save($targetSrc);
+            $image = $imagine
+                ->open($file->getRealPath())
+                ->resize(new Box(512, 512))
+                ->save($targetSrc);
             if ($image) {
                 return $targetSrc;
             }
