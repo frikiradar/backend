@@ -246,6 +246,7 @@ class UsersController extends FOSRestController
                 $user->setDescription($newUser->getDescription());
                 $user->setBirthday($newUser->getBirthday());
                 $user->setGender($newUser->getGender());
+                $user->setOrientation($newUser->getOrientation());
                 $user->setPronoun($newUser->getPronoun());
                 $user->setRelationship($newUser->getRelationship());
                 $user->setStatus($newUser->getStatus());
@@ -288,6 +289,8 @@ class UsersController extends FOSRestController
 
                 $em->persist($user);
                 $em->flush();
+                $user->setAvatar($user->getAvatar());
+
                 $response = $user;
             } else {
                 $code = 500;
