@@ -105,6 +105,8 @@ return array(
     'GuzzleHttp\\Promise\\' => array($vendorDir . '/guzzlehttp/promises/src'),
     'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
     'Geocoder\\Provider\\GoogleMaps\\' => array($vendorDir . '/geocoder-php/google-maps-provider'),
+    'Geocoder\\Provider\\GeoPlugin\\' => array($vendorDir . '/geocoder-php/geo-plugin-provider'),
+    'Geocoder\\Provider\\FreeGeoIp\\' => array($vendorDir . '/geocoder-php/free-geoip-provider'),
     'Geocoder\\Plugin\\' => array($vendorDir . '/geocoder-php/plugin'),
     'Geocoder\\Http\\' => array($vendorDir . '/geocoder-php/common-http'),
     'Geocoder\\' => array($vendorDir . '/willdurand/geocoder'),

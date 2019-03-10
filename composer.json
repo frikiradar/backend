@@ -9,6 +9,8 @@
         "doctrine/doctrine-bundle": "^1.9",
         "doctrine/orm": "^2.6",
         "friendsofsymfony/rest-bundle": "^2.5",
+        "geocoder-php/free-geoip-provider": "^4.1",
+        "geocoder-php/geo-plugin-provider": "^4.0",
         "geocoder-php/google-maps-provider": "^4.3",
         "imagine/imagine": "^1.2",
         "jms/serializer-bundle": "^3.0",

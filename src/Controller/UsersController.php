@@ -363,17 +363,33 @@ class UsersController extends FOSRestController
 
             $user = $this->getUser();
 
-            $coords = new Point(0, 0);
-            $coords
-                ->setLatitude($request->request->get('latitude'))
-                ->setLongitude($request->request->get('longitude'));
-
-            $user->setCoordinates($coords);
 
             $httpClient = new \Http\Adapter\Guzzle6\Client();
-            $provider = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-            $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
-            $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($request->request->get('latitude'), $request->request->get('longitude')));
+            $coords = new Point(0, 0);
+
+            if ($request->request->get('latitude') && $request->request->get('longitude')) {
+                $coords
+                    ->setLatitude($request->request->get('latitude'))
+                    ->setLongitude($request->request->get('longitude'));
+
+                $user->setCoordinates($coords);
+
+                $provider = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
+                $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
+                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($request->request->get('latitude'), $request->request->get('longitude')));
+            } else {
+                // Calculamos las coordenadas y ciudad por la ip
+                $ip = $user->getIP();
+
+                $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($httpClient);
+                $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
+                $result = $geocoder->geocode($ip);
+                $coords
+                    ->setLatitude($result->first()->getCoordinates()->getLatitude())
+                    ->setLongitude($result->first()->getCoordinates()->getLongitude());
+
+                $user->setCoordinates($coords);
+            }
 
             $user->setLocation($result->first()->getLocality());
 

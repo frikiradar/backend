@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5d2ebf530f3ddb0538c74e209d3d3c31",
+    "content-hash": "59ef6a40f51d2b599a72f837fe59f89a",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -1773,6 +1773,121 @@
             "time": "2018-11-15T22:27:27+00:00"
         },
         {
+            "name": "geocoder-php/free-geoip-provider",
+            "version": "4.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/geocoder-php/free-geoip-provider.git",
+                "reference": "b0798674957d7066010a6f918fa8dea2de6d844f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/geocoder-php/free-geoip-provider/zipball/b0798674957d7066010a6f918fa8dea2de6d844f",
+                "reference": "b0798674957d7066010a6f918fa8dea2de6d844f",
+                "shasum": ""
+            },
+            "require": {
+                "geocoder-php/common-http": "^4.1",
+                "php": "^7.0",
+                "willdurand/geocoder": "^4.0"
+            },
+            "provide": {
+                "geocoder-php/provider-implementation": "1.0"
+            },
+            "require-dev": {
+                "geocoder-php/provider-integration-tests": "^1.0",
+                "nyholm/psr7": "^0.2.2",
+                "php-http/curl-client": "^1.7",
+                "php-http/message": "^1.0",
+                "phpunit/phpunit": "6.3.*"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Geocoder\\Provider\\FreeGeoIp\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Durand",
+                    "email": "william.durand1@gmail.com"
+                }
+            ],
+            "description": "Geocoder FreeGeoIp adapter",
+            "homepage": "http://geocoder-php.org/Geocoder/",
+            "time": "2018-06-28T14:34:11+00:00"
+        },
+        {
+            "name": "geocoder-php/geo-plugin-provider",
+            "version": "4.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/geocoder-php/geo-plugin-provider.git",
+                "reference": "db93987e5d88c170127f4b1f43b40b70a6b90123"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/geocoder-php/geo-plugin-provider/zipball/db93987e5d88c170127f4b1f43b40b70a6b90123",
+                "reference": "db93987e5d88c170127f4b1f43b40b70a6b90123",
+                "shasum": ""
+            },
+            "require": {
+                "geocoder-php/common-http": "^4.0",
+                "igorw/get-in": "^1.0",
+                "php": "^7.0",
+                "willdurand/geocoder": "^4.0"
+            },
+            "provide": {
+                "geocoder-php/provider-implementation": "1.0"
+            },
+            "require-dev": {
+                "geocoder-php/provider-integration-tests": "^1.0",
+                "nyholm/psr7": "^0.2.2",
+                "php-http/curl-client": "^1.7",
+                "php-http/message": "^1.0",
+                "phpunit/phpunit": "6.3.*"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Geocoder\\Provider\\GeoPlugin\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "William Durand",
+                    "email": "william.durand1@gmail.com"
+                }
+            ],
+            "description": "Geocoder GeoPlugin adapter",
+            "homepage": "http://geocoder-php.org/Geocoder/",
+            "time": "2018-03-02T15:46:47+00:00"
+        },
+        {
             "name": "geocoder-php/google-maps-provider",
             "version": "4.3.0",
             "source": {
@@ -2850,6 +2965,51 @@
                 "zformat"
             ],
             "time": "2017-01-10T10:39:54+00:00"
+        },
+        {
+            "name": "igorw/get-in",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/igorw/get-in.git",
+                "reference": "170ded831f49abc6a6061f655aba9bdbcf7b8111"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/igorw/get-in/zipball/170ded831f49abc6a6061f655aba9bdbcf7b8111",
+                "reference": "170ded831f49abc6a6061f655aba9bdbcf7b8111",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/get_in.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch"
+                }
+            ],
+            "description": "Functions for for hash map (assoc array) traversal.",
+            "keywords": [
+                "assoc-array",
+                "hash-map"
+            ],
+            "time": "2014-12-15T23:03:51+00:00"
         },
         {
             "name": "imagine/imagine",

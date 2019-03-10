@@ -113,6 +113,12 @@
     "geocoder-php/common-http": {
         "version": "4.2.0"
     },
+    "geocoder-php/free-geoip-provider": {
+        "version": "4.1.0"
+    },
+    "geocoder-php/geo-plugin-provider": {
+        "version": "4.0.1"
+    },
     "geocoder-php/google-maps-provider": {
         "version": "4.3.0"
     },
@@ -166,6 +172,9 @@
     },
     "hoa/zformat": {
         "version": "1.17.01.10"
+    },
+    "igorw/get-in": {
+        "version": "v1.0.3"
     },
     "imagine/imagine": {
         "version": "1.2.0"

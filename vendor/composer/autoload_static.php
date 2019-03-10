@@ -21,6 +21,7 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         '8cff32064859f4559445b89279f3199c' => __DIR__ . '/..' . '/php-http/message/src/filters.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        'a16312f9300fed4a097923eacb0ba814' => __DIR__ . '/..' . '/igorw/get-in/src/get_in.php',
         '0ccdf99b8f62f02c52cba55802e0c2e7' => __DIR__ . '/..' . '/zircote/swagger-php/src/functions.php',
     );
 
@@ -162,6 +163,8 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
             'Geocoder\\Provider\\GoogleMaps\\' => 29,
+            'Geocoder\\Provider\\GeoPlugin\\' => 28,
+            'Geocoder\\Provider\\FreeGeoIp\\' => 28,
             'Geocoder\\Plugin\\' => 16,
             'Geocoder\\Http\\' => 14,
             'Geocoder\\' => 9,
@@ -606,6 +609,14 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         'Geocoder\\Provider\\GoogleMaps\\' => 
         array (
             0 => __DIR__ . '/..' . '/geocoder-php/google-maps-provider',
+        ),
+        'Geocoder\\Provider\\GeoPlugin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/geocoder-php/geo-plugin-provider',
+        ),
+        'Geocoder\\Provider\\FreeGeoIp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/geocoder-php/free-geoip-provider',
         ),
         'Geocoder\\Plugin\\' => 
         array (

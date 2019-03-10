@@ -284,19 +284,7 @@ class User implements UserInterface
 
     public function setRegisterIp(): self
     {
-        if (isset($_SERVER["HTTP_CLIENT_IP"])) {
-            $this->register_ip = $_SERVER["HTTP_CLIENT_IP"];
-        } elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-            $this->register_ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        } elseif (isset($_SERVER["HTTP_X_FORWARDED"])) {
-            $this->register_ip = $_SERVER["HTTP_X_FORWARDED"];
-        } elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])) {
-            $this->register_ip = $_SERVER["HTTP_FORWARDED_FOR"];
-        } elseif (isset($_SERVER["HTTP_FORWARDED"])) {
-            $this->register_ip = $_SERVER["HTTP_FORWARDED"];
-        } else {
-            $this->register_ip = $_SERVER["REMOTE_ADDR"];
-        }
+        $this->register_ip = $this->getIP();
 
         return $this;
     }
@@ -308,7 +296,7 @@ class User implements UserInterface
 
     public function setLastIp(string $last_ip): self
     {
-        $this->last_ip = $last_ip;
+        $this->last_ip = $this->getIP();
 
         return $this;
     }
@@ -538,5 +526,22 @@ class User implements UserInterface
         $this->avatar = $avatar;
 
         return $this;
+    }
+
+    public function getIP()
+    {
+        if (isset($_SERVER["HTTP_CLIENT_IP"])) {
+            return $_SERVER["HTTP_CLIENT_IP"];
+        } elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+            return $_SERVER["HTTP_X_FORWARDED_FOR"];
+        } elseif (isset($_SERVER["HTTP_X_FORWARDED"])) {
+            return $_SERVER["HTTP_X_FORWARDED"];
+        } elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])) {
+            return $_SERVER["HTTP_FORWARDED_FOR"];
+        } elseif (isset($_SERVER["HTTP_FORWARDED"])) {
+            return $_SERVER["HTTP_FORWARDED"];
+        } else {
+            return $_SERVER["REMOTE_ADDR"];
+        }
     }
 }

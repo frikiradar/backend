@@ -20,5 +20,6 @@ return array(
     '8cff32064859f4559445b89279f3199c' => $vendorDir . '/php-http/message/src/filters.php',
     'c964ee0ededf28c96ebd9db5099ef910' => $vendorDir . '/guzzlehttp/promises/src/functions_include.php',
     '37a3dc5111fe8f707ab4c132ef1dbc62' => $vendorDir . '/guzzlehttp/guzzle/src/functions_include.php',
+    'a16312f9300fed4a097923eacb0ba814' => $vendorDir . '/igorw/get-in/src/get_in.php',
     '0ccdf99b8f62f02c52cba55802e0c2e7' => $vendorDir . '/zircote/swagger-php/src/functions.php',
 );
