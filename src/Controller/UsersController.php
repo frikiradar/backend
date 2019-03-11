@@ -441,6 +441,14 @@ class UsersController extends FOSRestController
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
+            $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
+            usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
+            foreach ($files as $key => $file) {
+                if ($key > 3) {
+                    unlink($file);
+                }
+            }
+
             $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
         } else {
