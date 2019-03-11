@@ -441,7 +441,7 @@ class UsersController extends FOSRestController
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
-            $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
+            $files = glob("../public/images/avatar/" . $id . "/*.jpg");
             usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
             foreach ($files as $key => $file) {
                 if ($key > 3) {
