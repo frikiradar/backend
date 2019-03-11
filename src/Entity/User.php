@@ -508,7 +508,7 @@ class User implements UserInterface
 
     public function getAvatar(): ? string
     {
-        $files = glob("../public/images/avatar/" . $this->getUsername() . "/*.jpg");
+        $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
         usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
 
         if (isset($files[0])) {

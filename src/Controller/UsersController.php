@@ -435,9 +435,9 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $avatar = $request->files->get('avatar');
 
-        $username = $this->getUser()->getUsername();
+        $id = $this->getUser()->getId();
         $filename = date('YmdHis');
-        $uploader = new FileUploader("../public/images/avatar/" . $username . "/", $filename);
+        $uploader = new FileUploader("../public/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
