@@ -147,6 +147,7 @@ class UsersController extends FOSRestController
             $user->setBirthday($birthday);
             $user->setRegisterDate();
             $user->setRegisterIp();
+            $user->setRoles(['ROLE_USER']);
 
             $em->persist($user);
             $em->flush();
