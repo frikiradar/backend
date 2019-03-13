@@ -1,4 +1,7 @@
 {
+    "cboden/ratchet": {
+        "version": "v0.4.1"
+    },
     "clue/stream-filter": {
         "version": "v1.4.0"
     },
@@ -91,6 +94,9 @@
     },
     "egulias/email-validator": {
         "version": "2.1.6"
+    },
+    "evenement/evenement": {
+        "version": "v3.0.1"
     },
     "exsyst/swagger": {
         "version": "v0.4.1"
@@ -289,6 +295,30 @@
     },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
+    },
+    "ratchet/rfc6455": {
+        "version": "0.2.4"
+    },
+    "react/cache": {
+        "version": "v0.5.0"
+    },
+    "react/dns": {
+        "version": "v0.4.16"
+    },
+    "react/event-loop": {
+        "version": "v1.1.0"
+    },
+    "react/promise": {
+        "version": "v2.7.1"
+    },
+    "react/promise-timer": {
+        "version": "v1.5.0"
+    },
+    "react/socket": {
+        "version": "v1.2.0"
+    },
+    "react/stream": {
+        "version": "v1.1.0"
     },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
