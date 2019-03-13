@@ -466,9 +466,15 @@ class User implements UserInterface
     /**
      * @return Collection|Tag[]
      */
-    public function getTags(): Collection
+    public function getTags(): array
     {
-        return $this->tags;
+        $tags = [];
+        foreach ($this->tags as $tag) {
+            $tag->setUser(null);
+            $tags[] = $tag;
+        }
+
+        return $tags;
     }
 
     public function addTag(Tag $tag): self

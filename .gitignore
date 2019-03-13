@@ -1,3 +1,6 @@
 var/cache
 var/log
 public/images/avatar
+###> symfony/web-server-bundle ###
+/.web-server-pid
+###< symfony/web-server-bundle ###

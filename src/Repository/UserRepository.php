@@ -80,10 +80,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.pronoun',
                 'u.relationship',
                 'u.status',
-                'u.lovegender',
-                'u.minage',
-                'u.maxage',
-                'u.connection',
+                // 'u.lovegender',
+                // 'u.minage',
+                // 'u.maxage',
+                // 'u.connection',
                 'u.location',
                 "(GLength(
                         LineStringFromWKB(
@@ -99,7 +99,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'id' => $id
             ))
             ->getQuery()
-            ->getResult();
+            ->getSingleResult();
     }
 
     public function getUsersByDistance(User $user, int $ratio)
@@ -113,15 +113,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.username',
                 'u.description',
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
-                'u.gender',
-                'u.orientation',
-                'u.pronoun',
-                'u.relationship',
-                'u.status',
-                'u.lovegender',
-                'u.minage',
-                'u.maxage',
-                'u.connection',
+                // 'u.gender',
+                // 'u.orientation',
+                // 'u.pronoun',
+                // 'u.relationship',
+                // 'u.status',
+                // 'u.lovegender',
+                // 'u.minage',
+                // 'u.maxage',
+                // 'u.connection',
                 'u.location',
                 "(GLength(
                         LineStringFromWKB(
@@ -134,6 +134,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andHaving('distance <= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
+            ->andWhere('u.gender IN (:lovegender)')
+            // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
             ->orderBy('distance', 'ASC')
@@ -141,7 +143,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'ratio' => $ratio,
                 'minage' => $user->getMinage() ?: 18,
                 'maxage' => $user->getMaxage() ?: 99,
-                'id' => $user->getId()
+                'id' => $user->getId(),
+                'lovegender' => $user->getLovegender(),
+                // 'connection' => $user->getConnection()
             ))
             ->getQuery()
             ->getResult();

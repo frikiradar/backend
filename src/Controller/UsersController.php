@@ -208,9 +208,14 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = new User();
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $user->setAvatar($user->getAvatar());
+        $user = $em->getRepository('App:User')->findeOneUser($id, $this->getUser());
+        $user['age'] = (int)$user['age'];
+        $user['distance'] = (int)$user['distance'];
+
+        $obUser = new User();
+        $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $user['tags'] = $obUser->getTags();
+        $user['avatar'] = $obUser->getAvatar() ?: null;
 
         return new Response($serializer->serialize($user, "json"));
     }
@@ -482,13 +487,12 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $user = $this->getUser();
-            $users = $em->getRepository('App:User')->getUsersByDistance($user, $ratio);
+            $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio);
             foreach ($users as $key => $u) {
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = (int)$u['distance'];
-                $users[$key]['tags'] = $user->getTags();
+                // $users[$key]['tags'] = $user->getTags();
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
