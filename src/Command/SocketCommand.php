@@ -40,7 +40,7 @@ class SocketCommand extends Command
                     new Chat()
                 )
             ),
-            8080
+            443
         );
 
         $server->run();
