@@ -1,7 +1,7 @@
 <?php
  // myapplication/src/sandboxBundle/Command/SocketCommand.php
 // Change the namespace according to your bundle
-namespace sandboxBundle\Command;
+namespace App\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -51,4 +51,3 @@ class SocketCommand extends Command
         $app->run();
     }
 }
-
