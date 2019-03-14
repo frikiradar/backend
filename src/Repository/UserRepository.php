@@ -12,6 +12,7 @@ use CrEOF\Spatial\PHP\Types\Geometry\LineString;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use CrEOF\Spatial\Tests\OrmTestCase;
 use Doctrine\ORM\Query;
+use function GuzzleHttp\json_encode;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -113,15 +114,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.username',
                 'u.description',
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
-                // 'u.gender',
-                // 'u.orientation',
-                // 'u.pronoun',
-                // 'u.relationship',
-                // 'u.status',
-                // 'u.lovegender',
-                // 'u.minage',
-                // 'u.maxage',
-                // 'u.connection',
                 'u.location',
                 "(GLength(
                         LineStringFromWKB(
@@ -134,7 +126,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andHaving('distance <= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
-            ->andWhere('u.gender IN (:lovegender) OR u.gender IS NULL')
+            ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : '')
             // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
@@ -149,5 +141,41 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->getQuery()
             ->getResult();
+    }
+
+    public function getMatchPercentage(User $userA, User $userB)
+    {
+        $a = $b = [];
+        $tagsA = $userA->getTags();
+        $tagsB = $userB->getTags();
+
+        foreach ($tagsA as $tag) {
+            $a[$tag->getCategory()->getName()][] = $tag->getName();
+        }
+        foreach ($tagsB as $tag) {
+            $b[$tag->getCategory()->getName()][] = $tag->getName();
+        }
+
+        $matchesA = 0;
+        foreach ($a as $category => $tags) {
+            foreach ($tags as $name) {
+                if (isset($b[$category]) && in_array($name, $b[$category])) {
+                    $matchesA++;
+                }
+            }
+        }
+
+        /*$matchesB = 0;
+        foreach ($b as $category => $tags) {
+            foreach ($tags as $name) {
+                if (isset($a[$category]) && in_array($name, $a[$category])) {
+                    $matchesB++;
+                }
+            }
+        }
+
+        // return round((($matchesA + $matchesB) / (count($tagsA) + count($tagsB))) * 100, 1);*/
+
+        return round($matchesA  / count($tagsA) * 100, 1);
     }
 }

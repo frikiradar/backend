@@ -371,6 +371,7 @@ class UsersController extends FOSRestController
 
 
             $httpClient = new \Http\Adapter\Guzzle6\Client();
+            $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
             $coords = new Point(0, 0);
 
             if ($request->request->get('latitude') && $request->request->get('longitude')) {
@@ -380,8 +381,7 @@ class UsersController extends FOSRestController
 
                 $user->setCoordinates($coords);
 
-                $provider = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-                $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
+                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
                 $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($request->request->get('latitude'), $request->request->get('longitude')));
             } else {
                 // Calculamos las coordenadas y ciudad por la ip
@@ -389,12 +389,15 @@ class UsersController extends FOSRestController
 
                 $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($httpClient);
                 $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
-                $result = $geocoder->geocode($ip);
+                $ipResult = $geocoder->geocode($ip);
                 $coords
-                    ->setLatitude($result->first()->getCoordinates()->getLatitude())
-                    ->setLongitude($result->first()->getCoordinates()->getLongitude());
+                    ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
+                    ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
 
                 $user->setCoordinates($coords);
+
+                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
+                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($ipResult->first()->getCoordinates()->getLatitude(), $ipResult->first()->getCoordinates()->getLongitude()));
             }
 
             $user->setLocation($result->first()->getLocality());
@@ -492,9 +495,14 @@ class UsersController extends FOSRestController
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = (int)$u['distance'];
-                // $users[$key]['tags'] = $user->getTags();
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
+                // $users[$key]['tags'] = $user->getTags();
+                $users[$key]['match'] = $em->getRepository('App:User')->getMatchPercentage($this->getUser(), $user);
             }
+
+            usort($users, function ($a, $b) {
+                return $b['match'] <=> $a['match'];
+            });
 
             $response = $users;
         } catch (Exception $ex) {
