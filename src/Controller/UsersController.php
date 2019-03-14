@@ -216,7 +216,7 @@ class UsersController extends FOSRestController
         $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
         $user['tags'] = $obUser->getTags();
         $user['avatar'] = $obUser->getAvatar() ?: null;
-        $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
+        $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $obUser);
 
         return new Response($serializer->serialize($user, "json"));
     }
