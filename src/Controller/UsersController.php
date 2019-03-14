@@ -496,8 +496,8 @@ class UsersController extends FOSRestController
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = (int)$u['distance'];
-                $users[$key]['avatar'] = $user->getAvatar() ?: null;
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
+                $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
             usort($users, function ($a, $b) {
