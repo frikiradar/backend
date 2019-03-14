@@ -134,7 +134,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andHaving('distance <= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
-            ->andWhere('u.gender IN (:lovegender)')
+            ->andWhere('u.gender IN (:lovegender) OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
