@@ -143,7 +143,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getResult();
     }
 
-    public function getMatchPercentage(User $userA, User $userB)
+    public function getMatchIndex(User $userA, User $userB)
     {
         $a = $b = [];
         $tagsA = $userA->getTags();
@@ -165,7 +165,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        /*$matchesB = 0;
+        $matchesB = 0;
         foreach ($b as $category => $tags) {
             foreach ($tags as $name) {
                 if (isset($a[$category]) && in_array($name, $a[$category])) {
@@ -174,8 +174,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        // return round((($matchesA + $matchesB) / (count($tagsA) + count($tagsB))) * 100, 1);*/
-
-        return round($matchesA  / count($tagsA) * 100, 1);
+        return round((($matchesA + $matchesB) / (count($tagsA) + count($tagsB))) * 100, 1);
     }
 }

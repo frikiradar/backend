@@ -216,6 +216,7 @@ class UsersController extends FOSRestController
         $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
         $user['tags'] = $obUser->getTags();
         $user['avatar'] = $obUser->getAvatar() ?: null;
+        $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
 
         return new Response($serializer->serialize($user, "json"));
     }
@@ -496,13 +497,18 @@ class UsersController extends FOSRestController
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = (int)$u['distance'];
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
-                // $users[$key]['tags'] = $user->getTags();
-                $users[$key]['match'] = $em->getRepository('App:User')->getMatchPercentage($this->getUser(), $user);
+                $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
             }
 
             usort($users, function ($a, $b) {
                 return $b['match'] <=> $a['match'];
             });
+
+            /* PONDERACIÓN SOBRE 100
+            $index = 1 / (max(array_column($users, 'match')) / 100);
+            foreach ($users as $key => $rUsers) {
+                $users[$key]["match"] = $rUsers["match"] * $index;
+            }*/
 
             $response = $users;
         } catch (Exception $ex) {
