@@ -156,24 +156,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $b[$tag->getCategory()->getName()][] = $tag->getName();
         }
 
-        $matchesA = 0;
+        $matches = 0;
         foreach ($a as $category => $tags) {
             foreach ($tags as $name) {
                 if (isset($b[$category]) && in_array($name, $b[$category])) {
-                    $matchesA++;
+                    $matches++;
                 }
             }
         }
 
-        $matchesB = 0;
-        foreach ($b as $category => $tags) {
-            foreach ($tags as $name) {
-                if (isset($a[$category]) && in_array($name, $a[$category])) {
-                    $matchesB++;
-                }
-            }
-        }
+        $matchIndexA = count($tagsA) ? $matches / count($tagsA) : 0;
+        $matchIndexB = count($tagsB) ? $matches / count($tagsB) : 0;
+        $matchIndex = max($matchIndexA, $matchIndexB);
 
-        return round((($matchesA + $matchesB) / (count($tagsA) + count($tagsB))) * 100, 1);
+        return round($matchIndex * 100, 1);
     }
 }
