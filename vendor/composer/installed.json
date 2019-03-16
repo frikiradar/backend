@@ -1493,6 +1493,58 @@
         ]
     },
     {
+        "name": "easycorp/easy-log-handler",
+        "version": "v1.0.7",
+        "version_normalized": "1.0.7.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/EasyCorp/easy-log-handler.git",
+            "reference": "5f95717248d20684f88cfb878d8bf3d78aadcbba"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/EasyCorp/easy-log-handler/zipball/5f95717248d20684f88cfb878d8bf3d78aadcbba",
+            "reference": "5f95717248d20684f88cfb878d8bf3d78aadcbba",
+            "shasum": ""
+        },
+        "require": {
+            "monolog/monolog": "~1.6",
+            "php": ">=5.3.0",
+            "symfony/yaml": "~2.3|~3.0|~4.0"
+        },
+        "time": "2018-07-27T15:41:37+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "EasyCorp\\EasyLog\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Javier Eguiluz",
+                "email": "javiereguiluz@gmail.com"
+            },
+            {
+                "name": "Project Contributors",
+                "homepage": "https://github.com/EasyCorp/easy-log-handler"
+            }
+        ],
+        "description": "A handler for Monolog that optimizes log messages to be processed by humans instead of software. Improve your productivity with logs that are easy to understand.",
+        "homepage": "https://github.com/EasyCorp/easy-log-handler",
+        "keywords": [
+            "easy",
+            "log",
+            "logging",
+            "monolog",
+            "productivity"
+        ]
+    },
+    {
         "name": "egulias/email-validator",
         "version": "2.1.7",
         "version_normalized": "2.1.7.0",
@@ -5694,6 +5746,106 @@
         "homepage": "https://symfony.com"
     },
     {
+        "name": "symfony/debug-bundle",
+        "version": "v4.2.4",
+        "version_normalized": "4.2.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/debug-bundle.git",
+            "reference": "f50fe0cff269d6fb6cb4bcd3bc98e499319b093f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/debug-bundle/zipball/f50fe0cff269d6fb6cb4bcd3bc98e499319b093f",
+            "reference": "f50fe0cff269d6fb6cb4bcd3bc98e499319b093f",
+            "shasum": ""
+        },
+        "require": {
+            "ext-xml": "*",
+            "php": "^7.1.3",
+            "symfony/http-kernel": "~3.4|~4.0",
+            "symfony/twig-bridge": "~3.4|~4.0",
+            "symfony/var-dumper": "^4.1.1"
+        },
+        "conflict": {
+            "symfony/config": "<4.2",
+            "symfony/dependency-injection": "<3.4"
+        },
+        "require-dev": {
+            "symfony/config": "~4.2",
+            "symfony/dependency-injection": "~3.4|~4.0",
+            "symfony/web-profiler-bundle": "~3.4|~4.0"
+        },
+        "suggest": {
+            "symfony/config": "For service container configuration",
+            "symfony/dependency-injection": "For using as a service from the container"
+        },
+        "time": "2019-01-16T20:31:39+00:00",
+        "type": "symfony-bundle",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "4.2-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Bundle\\DebugBundle\\": ""
+            },
+            "exclude-from-classmap": [
+                "/Tests/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony DebugBundle",
+        "homepage": "https://symfony.com"
+    },
+    {
+        "name": "symfony/debug-pack",
+        "version": "v1.0.7",
+        "version_normalized": "1.0.7.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/debug-pack.git",
+            "reference": "09a4a1e9bf2465987d4f79db0ad6c11cc632bc79"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/debug-pack/zipball/09a4a1e9bf2465987d4f79db0ad6c11cc632bc79",
+            "reference": "09a4a1e9bf2465987d4f79db0ad6c11cc632bc79",
+            "shasum": ""
+        },
+        "require": {
+            "easycorp/easy-log-handler": "^1.0.7",
+            "php": "^7.0",
+            "symfony/debug-bundle": "*",
+            "symfony/monolog-bundle": "^3.0",
+            "symfony/profiler-pack": "*",
+            "symfony/var-dumper": "*"
+        },
+        "time": "2018-12-10T12:11:11+00:00",
+        "type": "symfony-pack",
+        "installation-source": "dist",
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "description": "A debug pack for Symfony projects"
+    },
+    {
         "name": "symfony/dependency-injection",
         "version": "v4.2.4",
         "version_normalized": "4.2.4.0",
@@ -6250,6 +6402,90 @@
         "description": "Composer plugin for Symfony"
     },
     {
+        "name": "symfony/form",
+        "version": "v4.2.4",
+        "version_normalized": "4.2.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/form.git",
+            "reference": "d44ad1ac671fb79fe5b3093b61779476da8b63f9"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/form/zipball/d44ad1ac671fb79fe5b3093b61779476da8b63f9",
+            "reference": "d44ad1ac671fb79fe5b3093b61779476da8b63f9",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^7.1.3",
+            "symfony/event-dispatcher": "~3.4|~4.0",
+            "symfony/intl": "~3.4|~4.0",
+            "symfony/options-resolver": "~4.2",
+            "symfony/polyfill-ctype": "~1.8",
+            "symfony/polyfill-mbstring": "~1.0",
+            "symfony/property-access": "~3.4|~4.0"
+        },
+        "conflict": {
+            "phpunit/phpunit": "<4.8.35|<5.4.3,>=5.0",
+            "symfony/dependency-injection": "<3.4",
+            "symfony/doctrine-bridge": "<3.4",
+            "symfony/framework-bundle": "<3.4",
+            "symfony/http-kernel": "<3.4",
+            "symfony/translation": "<4.2",
+            "symfony/twig-bridge": "<3.4.5|<4.0.5,>=4.0"
+        },
+        "require-dev": {
+            "doctrine/collections": "~1.0",
+            "symfony/config": "~3.4|~4.0",
+            "symfony/console": "~3.4|~4.0",
+            "symfony/dependency-injection": "~3.4|~4.0",
+            "symfony/http-foundation": "~3.4|~4.0",
+            "symfony/http-kernel": "~3.4|~4.0",
+            "symfony/security-csrf": "~3.4|~4.0",
+            "symfony/translation": "~4.2",
+            "symfony/validator": "~3.4|~4.0",
+            "symfony/var-dumper": "~3.4|~4.0"
+        },
+        "suggest": {
+            "symfony/framework-bundle": "For templating with PHP.",
+            "symfony/security-csrf": "For protecting forms against CSRF attacks.",
+            "symfony/twig-bridge": "For templating with Twig.",
+            "symfony/validator": "For form validation."
+        },
+        "time": "2019-02-23T15:42:05+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "4.2-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Form\\": ""
+            },
+            "exclude-from-classmap": [
+                "/Tests/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Form Component",
+        "homepage": "https://symfony.com"
+    },
+    {
         "name": "symfony/framework-bundle",
         "version": "v4.2.4",
         "version_normalized": "4.2.4.0",
@@ -6575,6 +6811,83 @@
             "string",
             "symfony",
             "words"
+        ]
+    },
+    {
+        "name": "symfony/intl",
+        "version": "v4.2.4",
+        "version_normalized": "4.2.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/intl.git",
+            "reference": "b2af5ce379781fd4811f79746512fc1934333fbb"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/intl/zipball/b2af5ce379781fd4811f79746512fc1934333fbb",
+            "reference": "b2af5ce379781fd4811f79746512fc1934333fbb",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^7.1.3",
+            "symfony/polyfill-intl-icu": "~1.0"
+        },
+        "require-dev": {
+            "symfony/filesystem": "~3.4|~4.0"
+        },
+        "suggest": {
+            "ext-intl": "to use the component with locales other than \"en\""
+        },
+        "time": "2019-02-23T15:17:42+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "4.2-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Intl\\": ""
+            },
+            "classmap": [
+                "Resources/stubs"
+            ],
+            "exclude-from-classmap": [
+                "/Tests/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Bernhard Schussek",
+                "email": "bschussek@gmail.com"
+            },
+            {
+                "name": "Eriksen Costa",
+                "email": "eriksen.costa@infranology.com.br"
+            },
+            {
+                "name": "Igor Wiedler",
+                "email": "igor@wiedler.ch"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "A PHP replacement layer for the C intl extension that includes additional data from the ICU library.",
+        "homepage": "https://symfony.com",
+        "keywords": [
+            "i18n",
+            "icu",
+            "internationalization",
+            "intl",
+            "l10n",
+            "localization"
         ]
     },
     {
@@ -7190,6 +7503,66 @@
         ],
         "description": "Symfony PHPUnit Bridge",
         "homepage": "https://symfony.com"
+    },
+    {
+        "name": "symfony/polyfill-intl-icu",
+        "version": "v1.10.0",
+        "version_normalized": "1.10.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/polyfill-intl-icu.git",
+            "reference": "f22a90256d577c7ef7efad8df1f0201663d57644"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/polyfill-intl-icu/zipball/f22a90256d577c7ef7efad8df1f0201663d57644",
+            "reference": "f22a90256d577c7ef7efad8df1f0201663d57644",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.3",
+            "symfony/intl": "~2.3|~3.0|~4.0"
+        },
+        "suggest": {
+            "ext-intl": "For best performance"
+        },
+        "time": "2018-08-06T14:22:27+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.9-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "bootstrap.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Nicolas Grekas",
+                "email": "p@tchwork.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony polyfill for intl's ICU-related data and classes",
+        "homepage": "https://symfony.com",
+        "keywords": [
+            "compatibility",
+            "icu",
+            "intl",
+            "polyfill",
+            "portable",
+            "shim"
+        ]
     },
     {
         "name": "symfony/polyfill-intl-idn",
