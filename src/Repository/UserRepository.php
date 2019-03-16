@@ -100,7 +100,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'id' => $id
             ))
             ->getQuery()
-            ->getSingleResult();
+            ->getOneOrNullResult();
     }
 
     public function getUsersByDistance(User $user, int $ratio)
@@ -141,6 +141,25 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->getQuery()
             ->getResult();
+    }
+
+    public function searchUsers(string $search, User $user): ? array
+    {
+        $latitude = $user->getCoordinates()->getLatitude();
+        $longitude = $user->getCoordinates()->getLongitude();
+
+        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location,
+                (GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
+                        )
+                    ) * 100) distance FROM App:User u WHERE u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')";
+        $query = $this->getEntityManager()->createQuery($dql);
+
+        return $query->getResult();
     }
 
     public function getMatchIndex(User $userA, User $userB)

@@ -523,4 +523,72 @@ class UsersController extends FOSRestController
 
         return new Response($serializer->serialize($response, "json"));
     }
+
+    /**
+     * @Rest\Post("/v1/search")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Resultados obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al encontrar coincidencias"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="query",
+     *     in="body",
+     *     type="string",
+     *     description="Query",
+     *     schema={}
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="order",
+     *     in="body",
+     *     type="string",
+     *     description="Order",
+     *     schema={}
+     * )
+     */
+    public function searchAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser());
+            foreach ($users as $key => $u) {
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $users[$key]['age'] = (int)$u['age'];
+                $users[$key]['distance'] = (int)$u['distance'];
+                $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
+                $users[$key]['avatar'] = $user->getAvatar() ?: null;
+            }
+
+            switch ($request->request->get("order")) {
+                case 'match':
+                    usort($users, function ($a, $b) {
+                        return $b['match'] <=> $a['match'];
+                    });
+                    break;
+                default:
+                    usort($users, function ($a, $b) {
+                        return $a['distance'] <=> $b['distance'];
+                    });
+            }
+
+            $response = $users;
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
 }
