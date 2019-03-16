@@ -75,7 +75,10 @@ class ChatController extends FOSRestController
             "time_creation" => $newChat->getTimeCreation()
         ];
 
-        $topic = $newChat->getFromuser()->getId() . "_" . $newChat->getTouser()->getId();
+        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+
+        $topic = $min . "_" . $max;
 
         $update = new Update($topic, $serializer->serialize($chat, "json"));
         $publisher($update);
