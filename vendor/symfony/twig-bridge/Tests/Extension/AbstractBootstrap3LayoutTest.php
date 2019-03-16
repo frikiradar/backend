@@ -16,6 +16,8 @@ use Symfony\Component\Form\Tests\AbstractLayoutTest;
 
 abstract class AbstractBootstrap3LayoutTest extends AbstractLayoutTest
 {
+    protected static $supportedFeatureSetVersion = 304;
+
     public function testLabelOnForm()
     {
         $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\DateType');
@@ -115,6 +117,26 @@ abstract class AbstractBootstrap3LayoutTest extends AbstractLayoutTest
 '/span
     [@id="name_help"]
     [@class="help-block"]
+    [.="[trans]Help text test![/trans]"]
+'
+        );
+    }
+
+    public function testHelpAttr()
+    {
+        $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\TextType', null, [
+            'help' => 'Help text test!',
+            'help_attr' => [
+                'class' => 'class-test',
+            ],
+        ]);
+        $view = $form->createView();
+        $html = $this->renderHelp($view);
+
+        $this->assertMatchesXpath($html,
+            '/span
+    [@id="name_help"]
+    [@class="class-test help-block"]
     [.="[trans]Help text test![/trans]"]
 '
         );
@@ -1873,6 +1895,22 @@ abstract class AbstractBootstrap3LayoutTest extends AbstractLayoutTest
         $this->assertWidgetMatchesXpath($form->createView(), ['attr' => ['class' => 'my&class']],
 '/input
     [@type="number"]
+    [@name="name"]
+    [@class="my&class form-control"]
+    [@value="123"]
+'
+        );
+    }
+
+    public function testIntegerTypeWithGroupingRendersAsTextInput()
+    {
+        $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\IntegerType', 123, [
+            'grouping' => true,
+        ]);
+
+        $this->assertWidgetMatchesXpath($form->createView(), ['attr' => ['class' => 'my&class']],
+'/input
+    [@type="text"]
     [@name="name"]
     [@class="my&class form-control"]
     [@value="123"]

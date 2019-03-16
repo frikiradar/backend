@@ -269,7 +269,7 @@ class Definition
             throw new OutOfBoundsException(sprintf('The index "%d" is not in the range [0, %d].', $index, \count($this->arguments) - 1));
         }
 
-        if (!array_key_exists($index, $this->arguments)) {
+        if (!\array_key_exists($index, $this->arguments)) {
             throw new OutOfBoundsException(sprintf('The argument "%s" doesn\'t exist.', $index));
         }
 
@@ -314,7 +314,7 @@ class Definition
      */
     public function getArgument($index)
     {
-        if (!array_key_exists($index, $this->arguments)) {
+        if (!\array_key_exists($index, $this->arguments)) {
             throw new OutOfBoundsException(sprintf('The argument "%s" doesn\'t exist.', $index));
         }
 
@@ -859,6 +859,10 @@ class Definition
     public function setBindings(array $bindings)
     {
         foreach ($bindings as $key => $binding) {
+            if (0 < strpos($key, '$') && $key !== $k = preg_replace('/[ \t]*\$/', ' $', $key)) {
+                unset($bindings[$key]);
+                $bindings[$key = $k] = $binding;
+            }
             if (!$binding instanceof BoundArgument) {
                 $bindings[$key] = new BoundArgument($binding);
             }

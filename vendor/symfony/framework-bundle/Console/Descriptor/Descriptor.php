@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Console\Descriptor;
 
+use Symfony\Component\Config\Resource\ClassExistenceResource;
 use Symfony\Component\Console\Descriptor\DescriptorInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Alias;
@@ -226,7 +227,7 @@ abstract class Descriptor implements DescriptorInterface
             return $builder->getDefinition($serviceId);
         }
 
-        // Some service IDs don't have a Definition, they're simply an Alias
+        // Some service IDs don't have a Definition, they're aliases
         if ($builder->hasAlias($serviceId)) {
             return $builder->getAlias($serviceId);
         }
@@ -283,5 +284,31 @@ abstract class Descriptor implements DescriptorInterface
         asort($serviceIds);
 
         return $serviceIds;
+    }
+
+    /**
+     * Gets class description from a docblock.
+     */
+    public static function getClassDescription(string $class, string &$resolvedClass = null): string
+    {
+        $resolvedClass = $class;
+        try {
+            $resource = new ClassExistenceResource($class, false);
+
+            // isFresh() will explode ONLY if a parent class/trait does not exist
+            $resource->isFresh(0);
+
+            $r = new \ReflectionClass($class);
+            $resolvedClass = $r->name;
+
+            if ($docComment = $r->getDocComment()) {
+                $docComment = preg_split('#\n\s*\*\s*[\n@]#', substr($docComment, 3, -2), 2)[0];
+
+                return trim(preg_replace('#\s*\n\s*\*\s*#', ' ', $docComment));
+            }
+        } catch (\ReflectionException $e) {
+        }
+
+        return '';
     }
 }

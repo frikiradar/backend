@@ -29,8 +29,12 @@ use Symfony\Component\Security\Http\HttpUtils;
 use Symfony\Component\Security\Http\ParameterBagUtils;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 
+@trigger_error(sprintf('The "%s" class is deprecated since Symfony 4.2, use Guard instead.', SimpleFormAuthenticationListener::class), E_USER_DEPRECATED);
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @deprecated since Symfony 4.2, use Guard instead.
  */
 class SimpleFormAuthenticationListener extends AbstractAuthenticationListener
 {
@@ -93,7 +97,7 @@ class SimpleFormAuthenticationListener extends AbstractAuthenticationListener
             $password = ParameterBagUtils::getRequestParameterValue($request, $this->options['password_parameter']);
         }
 
-        if (!\is_string($username) || (\is_object($username) && !\method_exists($username, '__toString'))) {
+        if (!\is_string($username) && (!\is_object($username) || !\method_exists($username, '__toString'))) {
             throw new BadRequestHttpException(sprintf('The key "%s" must be a string, "%s" given.', $this->options['username_parameter'], \gettype($username)));
         }
 

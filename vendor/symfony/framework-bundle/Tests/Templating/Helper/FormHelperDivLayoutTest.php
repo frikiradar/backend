@@ -27,6 +27,8 @@ class FormHelperDivLayoutTest extends AbstractDivLayoutTest
      */
     protected $engine;
 
+    protected static $supportedFeatureSetVersion = 304;
+
     protected function getExtensions()
     {
         // should be moved to the Form component once absolute file paths are supported
@@ -91,6 +93,26 @@ class FormHelperDivLayoutTest extends AbstractDivLayoutTest
         ;
 
         $this->assertSame('&euro; <input type="text" id="name" name="name" required="required" />', $this->renderWidget($view));
+    }
+
+    public function testHelpAttr()
+    {
+        $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\TextType', null, [
+            'help' => 'Help text test!',
+            'help_attr' => [
+                'class' => 'class-test',
+            ],
+        ]);
+        $view = $form->createView();
+        $html = $this->renderHelp($view);
+
+        $this->assertMatchesXpath($html,
+            '/p
+    [@id="name_help"]
+    [@class="class-test help-text"]
+    [.="[trans]Help text test![/trans]"]
+'
+        );
     }
 
     protected function renderForm(FormView $view, array $vars = [])

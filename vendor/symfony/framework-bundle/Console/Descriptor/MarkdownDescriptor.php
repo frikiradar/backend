@@ -181,7 +181,13 @@ class MarkdownDescriptor extends Descriptor
      */
     protected function describeContainerDefinition(Definition $definition, array $options = [])
     {
-        $output = '- Class: `'.$definition->getClass().'`'
+        $output = '';
+
+        if ('' !== $classDescription = $this->getClassDescription($definition->getClass())) {
+            $output .= '- Description: `'.$classDescription.'`'."\n";
+        }
+
+        $output .= '- Class: `'.$definition->getClass().'`'
             ."\n".'- Public: '.($definition->isPublic() && !$definition->isPrivate() ? 'yes' : 'no')
             ."\n".'- Synthetic: '.($definition->isSynthetic() ? 'yes' : 'no')
             ."\n".'- Lazy: '.($definition->isLazy() ? 'yes' : 'no')
@@ -268,7 +274,7 @@ class MarkdownDescriptor extends Descriptor
      */
     protected function describeEventDispatcherListeners(EventDispatcherInterface $eventDispatcher, array $options = [])
     {
-        $event = array_key_exists('event', $options) ? $options['event'] : null;
+        $event = \array_key_exists('event', $options) ? $options['event'] : null;
 
         $title = 'Registered listeners';
         if (null !== $event) {

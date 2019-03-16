@@ -30,6 +30,8 @@ class FormExtensionTableLayoutTest extends AbstractTableLayoutTest
      */
     private $renderer;
 
+    protected static $supportedFeatureSetVersion = 304;
+
     protected function setUp()
     {
         parent::setUp();
@@ -74,6 +76,26 @@ class FormExtensionTableLayoutTest extends AbstractTableLayoutTest
         $html = $this->renderStart($form->createView());
 
         $this->assertSame('<form name="form" method="get" action="0">', $html);
+    }
+
+    public function testHelpAttr()
+    {
+        $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\TextType', null, [
+            'help' => 'Help text test!',
+            'help_attr' => [
+                'class' => 'class-test',
+            ],
+        ]);
+        $view = $form->createView();
+        $html = $this->renderHelp($view);
+
+        $this->assertMatchesXpath($html,
+            '/p
+    [@id="name_help"]
+    [@class="class-test help-text"]
+    [.="[trans]Help text test![/trans]"]
+'
+        );
     }
 
     protected function renderForm(FormView $view, array $vars = [])

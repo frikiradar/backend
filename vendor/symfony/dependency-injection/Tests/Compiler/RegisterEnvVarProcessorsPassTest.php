@@ -38,6 +38,7 @@ class RegisterEnvVarProcessorsPassTest extends TestCase
             'float' => ['float'],
             'int' => ['int'],
             'json' => ['array'],
+            'key' => ['bool', 'int', 'float', 'string', 'array'],
             'resolve' => ['string'],
             'string' => ['string'],
         ];

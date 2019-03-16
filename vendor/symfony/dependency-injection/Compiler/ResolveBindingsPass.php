@@ -83,7 +83,7 @@ class ResolveBindingsPass extends AbstractRecursivePass
                 $this->unusedBindings[$bindingId] = [$key, $this->currentId];
             }
 
-            if (isset($key[0]) && '$' === $key[0]) {
+            if (preg_match('/^(?:(?:array|bool|float|int|string) )?\$/', $key)) {
                 continue;
             }
 
@@ -119,19 +119,25 @@ class ResolveBindingsPass extends AbstractRecursivePass
             }
 
             foreach ($reflectionMethod->getParameters() as $key => $parameter) {
-                if (array_key_exists($key, $arguments) && '' !== $arguments[$key]) {
+                if (\array_key_exists($key, $arguments) && '' !== $arguments[$key]) {
                     continue;
                 }
 
-                if (array_key_exists('$'.$parameter->name, $bindings)) {
+                $typeHint = ProxyHelper::getTypeHint($reflectionMethod, $parameter);
+
+                if (\array_key_exists($k = ltrim($typeHint, '\\').' $'.$parameter->name, $bindings)) {
+                    $arguments[$key] = $this->getBindingValue($bindings[$k]);
+
+                    continue;
+                }
+
+                if (\array_key_exists('$'.$parameter->name, $bindings)) {
                     $arguments[$key] = $this->getBindingValue($bindings['$'.$parameter->name]);
 
                     continue;
                 }
 
-                $typeHint = ProxyHelper::getTypeHint($reflectionMethod, $parameter, true);
-
-                if (!isset($bindings[$typeHint])) {
+                if (!$typeHint || '\\' !== $typeHint[0] || !isset($bindings[$typeHint = substr($typeHint, 1)])) {
                     continue;
                 }
 

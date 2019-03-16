@@ -26,7 +26,7 @@ class MaxIdLengthAdapterTest extends TestCase
         $cache->expects($this->exactly(2))
             ->method('doHave')
             ->withConsecutive(
-                [$this->equalTo('----------:0GTYWa9n4ed8vqNlOT2iEr:')],
+                [$this->equalTo('----------:nWfzGiCgLczv3SSUzXL3kg:')],
                 [$this->equalTo('----------:---------------------------------------')]
             );
 
@@ -56,7 +56,7 @@ class MaxIdLengthAdapterTest extends TestCase
         $reflectionProperty->setValue($cache, true);
 
         // Versioning enabled
-        $this->assertEquals('--------------------------:1:------------', $reflectionMethod->invokeArgs($cache, [str_repeat('-', 12)]));
+        $this->assertEquals('--------------------------:1/------------', $reflectionMethod->invokeArgs($cache, [str_repeat('-', 12)]));
         $this->assertLessThanOrEqual(50, \strlen($reflectionMethod->invokeArgs($cache, [str_repeat('-', 12)])));
         $this->assertLessThanOrEqual(50, \strlen($reflectionMethod->invokeArgs($cache, [str_repeat('-', 23)])));
         $this->assertLessThanOrEqual(50, \strlen($reflectionMethod->invokeArgs($cache, [str_repeat('-', 40)])));

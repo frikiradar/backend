@@ -199,6 +199,13 @@ class Application
             return 0;
         }
 
+        try {
+            // Makes ArgvInput::getFirstArgument() able to distinguish an option from an argument.
+            $input->bind($this->getDefinition());
+        } catch (ExceptionInterface $e) {
+            // Errors must be ignored, full binding/validation happens later when the command is known.
+        }
+
         $name = $this->getCommandName($input);
         if (true === $input->hasParameterOption(['--help', '-h'], true)) {
             if (!$name) {
@@ -753,10 +760,18 @@ class Application
         do {
             $message = trim($e->getMessage());
             if ('' === $message || OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-                $title = sprintf('  [%s%s]  ', \get_class($e), 0 !== ($code = $e->getCode()) ? ' ('.$code.')' : '');
+                $class = \get_class($e);
+                $class = 'c' === $class[0] && 0 === strpos($class, "class@anonymous\0") ? get_parent_class($class).'@anonymous' : $class;
+                $title = sprintf('  [%s%s]  ', $class, 0 !== ($code = $e->getCode()) ? ' ('.$code.')' : '');
                 $len = Helper::strlen($title);
             } else {
                 $len = 0;
+            }
+
+            if (false !== strpos($message, "class@anonymous\0")) {
+                $message = preg_replace_callback('/class@anonymous\x00.*?\.php0x?[0-9a-fA-F]++/', function ($m) {
+                    return \class_exists($m[0], false) ? get_parent_class($m[0]).'@anonymous' : $m[0];
+                }, $message);
             }
 
             $width = $this->terminal->getWidth() ? $this->terminal->getWidth() - 1 : PHP_INT_MAX;

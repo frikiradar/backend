@@ -11,8 +11,9 @@
 
 namespace Symfony\Component\Config\Resource;
 
-use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
+use Symfony\Component\DependencyInjection\ServiceSubscriberInterface as LegacyServiceSubscriberInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
@@ -57,6 +58,9 @@ class ReflectionClassResource implements SelfCheckingResourceInterface, \Seriali
         return 'reflection.'.$this->className;
     }
 
+    /**
+     * @internal
+     */
     public function serialize()
     {
         if (null === $this->hash) {
@@ -67,6 +71,9 @@ class ReflectionClassResource implements SelfCheckingResourceInterface, \Seriali
         return serialize([$this->files, $this->className, $this->hash]);
     }
 
+    /**
+     * @internal
+     */
     public function unserialize($serialized)
     {
         list($this->files, $this->className, $this->hash) = unserialize($serialized);
@@ -157,7 +164,10 @@ class ReflectionClassResource implements SelfCheckingResourceInterface, \Seriali
             yield print_r($class->name::getSubscribedEvents(), true);
         }
 
-        if (interface_exists(ServiceSubscriberInterface::class, false) && $class->isSubclassOf(ServiceSubscriberInterface::class)) {
+        if (interface_exists(LegacyServiceSubscriberInterface::class, false) && $class->isSubclassOf(LegacyServiceSubscriberInterface::class)) {
+            yield LegacyServiceSubscriberInterface::class;
+            yield print_r([$class->name, 'getSubscribedServices'](), true);
+        } elseif (interface_exists(ServiceSubscriberInterface::class, false) && $class->isSubclassOf(ServiceSubscriberInterface::class)) {
             yield ServiceSubscriberInterface::class;
             yield print_r($class->name::getSubscribedServices(), true);
         }

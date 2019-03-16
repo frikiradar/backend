@@ -17,6 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
+use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -254,6 +255,10 @@ class TextDescriptor extends Descriptor
             $options['output']->title(sprintf('Information for Service "<info>%s</info>"', $options['id']));
         }
 
+        if ('' !== $classDescription = $this->getClassDescription($definition->getClass())) {
+            $options['output']->text($classDescription."\n");
+        }
+
         $tableHeaders = ['Option', 'Value'];
 
         $tableRows[] = ['Service ID', isset($options['id']) ? $options['id'] : '-'];
@@ -329,6 +334,8 @@ class TextDescriptor extends Descriptor
                     $argumentsInformation[] = sprintf('Service(%s)', (string) $argument);
                 } elseif ($argument instanceof IteratorArgument) {
                     $argumentsInformation[] = sprintf('Iterator (%d element(s))', \count($argument->getValues()));
+                } elseif ($argument instanceof ServiceLocatorArgument) {
+                    $argumentsInformation[] = sprintf('Service locator (%d element(s))', \count($argument->getValues()));
                 } elseif ($argument instanceof Definition) {
                     $argumentsInformation[] = 'Inlined Service';
                 } else {
@@ -347,7 +354,11 @@ class TextDescriptor extends Descriptor
      */
     protected function describeContainerAlias(Alias $alias, array $options = [], ContainerBuilder $builder = null)
     {
-        $options['output']->comment(sprintf('This service is an alias for the service <info>%s</info>', (string) $alias));
+        if ($alias->isPublic()) {
+            $options['output']->comment(sprintf('This service is a <info>public</info> alias for the service <info>%s</info>', (string) $alias));
+        } else {
+            $options['output']->comment(sprintf('This service is a <comment>private</comment> alias for the service <info>%s</info>', (string) $alias));
+        }
 
         if (!$builder) {
             return;
@@ -374,7 +385,7 @@ class TextDescriptor extends Descriptor
      */
     protected function describeEventDispatcherListeners(EventDispatcherInterface $eventDispatcher, array $options = [])
     {
-        $event = array_key_exists('event', $options) ? $options['event'] : null;
+        $event = \array_key_exists('event', $options) ? $options['event'] : null;
 
         if (null !== $event) {
             $title = sprintf('Registered Listeners for "%s" Event', $event);

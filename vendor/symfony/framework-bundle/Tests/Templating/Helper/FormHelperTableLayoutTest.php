@@ -27,6 +27,8 @@ class FormHelperTableLayoutTest extends AbstractTableLayoutTest
      */
     protected $engine;
 
+    protected static $supportedFeatureSetVersion = 304;
+
     public function testStartTagHasNoActionAttributeWhenActionIsEmpty()
     {
         $form = $this->factory->create('Symfony\Component\Form\Extension\Core\Type\FormType', null, [
@@ -49,6 +51,26 @@ class FormHelperTableLayoutTest extends AbstractTableLayoutTest
         $html = $this->renderStart($form->createView());
 
         $this->assertSame('<form name="form" method="get" action="0">', $html);
+    }
+
+    public function testHelpAttr()
+    {
+        $form = $this->factory->createNamed('name', 'Symfony\Component\Form\Extension\Core\Type\TextType', null, [
+            'help' => 'Help text test!',
+            'help_attr' => [
+                'class' => 'class-test',
+            ],
+        ]);
+        $view = $form->createView();
+        $html = $this->renderHelp($view);
+
+        $this->assertMatchesXpath($html,
+            '/p
+    [@id="name_help"]
+    [@class="class-test help-text"]
+    [.="[trans]Help text test![/trans]"]
+'
+        );
     }
 
     protected function getExtensions()

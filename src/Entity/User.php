@@ -163,9 +163,15 @@ class User implements UserInterface
      */
     private $location;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Chat", mappedBy="fromuser")
+     */
+    private $chats;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
+        $this->chats = new ArrayCollection();
     }
 
     public function getId(): ? int
@@ -549,5 +555,36 @@ class User implements UserInterface
         } else {
             return $_SERVER["REMOTE_ADDR"];
         }
+    }
+
+    /**
+     * @return Collection|Chat[]
+     */
+    public function getChats(): Collection
+    {
+        return $this->chats;
+    }
+
+    public function addChat(Chat $chat): self
+    {
+        if (!$this->chats->contains($chat)) {
+            $this->chats[] = $chat;
+            $chat->setFromuser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChat(Chat $chat): self
+    {
+        if ($this->chats->contains($chat)) {
+            $this->chats->removeElement($chat);
+            // set the owning side to null (unless already changed)
+            if ($chat->getFromuser() === $this) {
+                $chat->setFromuser(null);
+            }
+        }
+
+        return $this;
     }
 }

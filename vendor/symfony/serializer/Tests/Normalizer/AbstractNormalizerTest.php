@@ -92,6 +92,9 @@ class AbstractNormalizerTest extends TestCase
         $result = $this->normalizer->getAllowedAttributes('c', [AbstractNormalizer::GROUPS => ['test']], false);
         $this->assertEquals([$a2, $a4], $result);
 
+        $result = $this->normalizer->getAllowedAttributes('c', [AbstractNormalizer::GROUPS => 'test'], false);
+        $this->assertEquals([$a2, $a4], $result);
+
         $result = $this->normalizer->getAllowedAttributes('c', [AbstractNormalizer::GROUPS => ['other']], false);
         $this->assertEquals([$a3, $a4], $result);
     }
