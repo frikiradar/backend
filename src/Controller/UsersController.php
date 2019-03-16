@@ -447,7 +447,9 @@ class UsersController extends FOSRestController
 
         if (isset($image)) {
             $files = glob("../public/images/avatar/" . $id . "/*.jpg");
-            usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
+            usort($files, function ($a, $b) {
+                return basename($b) <=> basename($a);
+            });
             foreach ($files as $key => $file) {
                 if ($key > 3) {
                     unlink($file);

@@ -521,7 +521,9 @@ class User implements UserInterface
     public function getAvatar(): ? string
     {
         $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
-        usort($files, create_function('$a,$b', 'return filemtime($b) - filemtime($a);'));
+        usort($files, function ($a, $b) {
+            return basename($b) <=> basename($a);
+        });
 
         if (isset($files[0])) {
             $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
