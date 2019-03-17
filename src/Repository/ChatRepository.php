@@ -61,4 +61,15 @@ class ChatRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function getChatUsers(User $fromUser)
+    {
+        $dql = "SELECT c FROM App:Chat c WHERE c.fromuser = :id OR c.touser = :id
+        GROUP BY c.fromuser, c.touser
+        ORDER BY MAX(c.timeCreation) DESC";
+
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
+
+        return $query->getResult();
+    }
 }

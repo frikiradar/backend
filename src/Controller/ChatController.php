@@ -118,4 +118,54 @@ class ChatController extends FOSRestController
 
         return new Response($serializer->serialize($chats, "json"));
     }
+
+    /**
+     * @Rest\Get("/v1/chats")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuarios del chat obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener los usuarios"
+     * )
+     * 
+     */
+    public function getChats()
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
+            $obChats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
+
+            $users = [];
+            foreach ($obChats as $key => $chat) {
+                $chats[$key]['fromuser'] = $chat->getFromuser()->getId();
+                $chats[$key]['touser'] = $chat->getTouser()->getId();
+                $chats[$key]['text'] = $chat->getText();
+                $chats[$key]['time_creation'] = $chat->getTimeCreation();
+
+                $userId = $chat->getFromuser()->getId() == $this->getUser()->getId() ? $chat->getTouser()->getId() : $chat->getFromuser()->getId();
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $chats[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => $user->getUsername(),
+                    'avatar' =>  $user->getAvatar() ?: null
+                ];
+            }
+            $response = $chats;
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al obtener los usuarios - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
 }
