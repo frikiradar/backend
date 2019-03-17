@@ -71,7 +71,7 @@ class ChatController extends FOSRestController
 
         $newChat->setText($request->request->get("text"));
         $newChat->setTimeCreation(new \DateTime);
-        // $newChat->setConversationId($conversationId);
+        $newChat->setConversationId($conversationId);
         $em->merge($newChat);
         $em->flush();
 
