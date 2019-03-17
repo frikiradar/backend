@@ -64,7 +64,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
-        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text, c.timeCreation
+        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.timeCreation time_creation
             FROM App:Chat c LEFT JOIN App:Chat d WITH (c.conversationId = d.conversationId AND c.id < d.id)
             WHERE d.id IS NULL AND (c.fromuser = :id OR c.touser = :id) ORDER BY c.id DESC";
 
