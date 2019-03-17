@@ -86,6 +86,36 @@ class ChatController extends FOSRestController
         return new Response($serializer->serialize($chat, "json"));
     }
 
-    public function getAction()
-    { }
+    /**
+     * @Rest\Get("/v1/chat/{id}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Chat obtenido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Chat al obtener el usuario"
+     * )
+     * 
+     */
+    public function getChatAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $obChats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser);
+
+        $chats = [];
+        foreach ($obChats as $key => $chat) {
+            $chats[$key]['fromuser'] = $chat->getFromuser()->getId();
+            $chats[$key]['touser'] = $chat->getTouser()->getId();
+            $chats[$key]['text'] = $chat->getText();
+            $chats[$key]['time_creation'] = $chat->getTimeCreation();
+        }
+
+        return new Response($serializer->serialize($chats, "json"));
+    }
 }

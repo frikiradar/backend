@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Chat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -47,4 +48,17 @@ class ChatRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function getChat(User $fromUser, User $toUser)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
+            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+            ->setParameter('fromUser', $fromUser->getId())
+            ->setParameter('toUser', $toUser->getId())
+            ->orderBy('c.id', 'ASC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+    }
 }
