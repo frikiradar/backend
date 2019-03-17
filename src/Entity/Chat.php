@@ -41,7 +41,12 @@ class Chat
      */
     private $timeRead;
 
-    public function getId(): ? int
+    /**
+     * @ORM\Column(type="string")
+     */
+    private $conversationId;
+
+    public function getId(): ? string
     {
         return $this->id;
     }
@@ -102,6 +107,18 @@ class Chat
     public function setTimeRead(\DateTimeInterface $timeRead): self
     {
         $this->timeRead = $timeRead;
+
+        return $this;
+    }
+
+    public function getConversationId(): ? string
+    {
+        return $this->conversationId;
+    }
+
+    public function setConversationId(string $conversationId): self
+    {
+        $this->conversationId = $conversationId;
 
         return $this;
     }

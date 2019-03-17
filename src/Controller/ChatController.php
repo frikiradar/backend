@@ -63,8 +63,15 @@ class ChatController extends FOSRestController
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get("touser")));
         $newChat->setTouser($toUser);
         $newChat->setFromuser($this->getUser());
+
+        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+
+        $conversationId = $min . "_" . $max;
+
         $newChat->setText($request->request->get("text"));
         $newChat->setTimeCreation(new \DateTime);
+        // $newChat->setConversationId($conversationId);
         $em->merge($newChat);
         $em->flush();
 
@@ -75,12 +82,7 @@ class ChatController extends FOSRestController
             "time_creation" => $newChat->getTimeCreation()
         ];
 
-        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
-        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
-
-        $topic = $min . "_" . $max;
-
-        $update = new Update($topic, $serializer->serialize($chat, "json"));
+        $update = new Update($conversationId, $serializer->serialize($chat, "json"));
         $publisher($update);
 
         return new Response($serializer->serialize($chat, "json"));
