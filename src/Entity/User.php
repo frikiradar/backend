@@ -163,11 +163,6 @@ class User implements UserInterface
      */
     private $location;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Chat", mappedBy="fromuser")
-     */
-    private $chats;
-
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -557,14 +552,6 @@ class User implements UserInterface
         } else {
             return $_SERVER["REMOTE_ADDR"];
         }
-    }
-
-    /**
-     * @return Collection|Chat[]
-     */
-    public function getChats(): Collection
-    {
-        return $this->chats;
     }
 
     public function addChat(Chat $chat): self

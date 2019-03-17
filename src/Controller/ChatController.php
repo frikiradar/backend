@@ -140,16 +140,10 @@ class ChatController extends FOSRestController
 
         try {
             $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
-            $obChats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
+            $chats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
 
-            $users = [];
-            foreach ($obChats as $key => $chat) {
-                $chats[$key]['fromuser'] = $chat->getFromuser()->getId();
-                $chats[$key]['touser'] = $chat->getTouser()->getId();
-                $chats[$key]['text'] = $chat->getText();
-                $chats[$key]['time_creation'] = $chat->getTimeCreation();
-
-                $userId = $chat->getFromuser()->getId() == $this->getUser()->getId() ? $chat->getTouser()->getId() : $chat->getFromuser()->getId();
+            foreach ($chats as $key => $chat) {
+                $userId = $chat["fromuser"] == $this->getUser()->getId() ? $chat["touser"] : $chat["fromuser"];
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
                 $chats[$key]['user'] = [
                     'id' => $userId,
