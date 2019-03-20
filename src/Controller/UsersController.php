@@ -365,20 +365,13 @@ class UsersController extends FOSRestController
 
             $user = $this->getUser();
 
-
             $httpClient = new \Http\Adapter\Guzzle6\Client();
-            $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
             $coords = new Point(0, 0);
 
             if ($request->request->get('latitude') && $request->request->get('longitude')) {
                 $coords
                     ->setLatitude($request->request->get('latitude'))
                     ->setLongitude($request->request->get('longitude'));
-
-                $user->setCoordinates($coords);
-
-                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
-                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($request->request->get('latitude'), $request->request->get('longitude')));
             } else {
                 // Calculamos las coordenadas y ciudad por la ip
                 $ip = $user->getIP();
@@ -389,14 +382,18 @@ class UsersController extends FOSRestController
                 $coords
                     ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
                     ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
-
-                $user->setCoordinates($coords);
-
-                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
-                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($ipResult->first()->getCoordinates()->getLatitude(), $ipResult->first()->getCoordinates()->getLongitude()));
             }
 
-            $user->setLocation($result->first()->getLocality());
+            $user->setCoordinates($coords);
+
+            try {
+                $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
+                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
+                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
+                $user->setLocation($result->first()->getLocality());
+            } catch (Exception $ex) {
+                //echo "No se ha podido obtener la localidad". $ex;
+            }
 
             $em->persist($user);
             $em->flush();
