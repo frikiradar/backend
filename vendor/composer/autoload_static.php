@@ -13,16 +13,18 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         'e88992873b7765f9b5710cab95ba5dd7' => __DIR__ . '/..' . '/hoa/consistency/Prelude.php',
         '6a47392539ca2329373e0d33e1dba053' => __DIR__ . '/..' . '/symfony/polyfill-intl-icu/bootstrap.php',
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
+        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '3e76f7f02b41af8cea96018933f6b7e3' => __DIR__ . '/..' . '/hoa/protocol/Wrapper.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
-        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
-        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'ddc0a4d7e61c0286f0f8593b1903e894' => __DIR__ . '/..' . '/clue/stream-filter/src/functions.php',
         '8cff32064859f4559445b89279f3199c' => __DIR__ . '/..' . '/php-http/message/src/filters.php',
-        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
-        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'a16312f9300fed4a097923eacb0ba814' => __DIR__ . '/..' . '/igorw/get-in/src/get_in.php',
+        'b067bc7112e384b61c701452d53a14a8' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/JmesPath.php',
+        'f7c6080b46f9fe41a46a657439674576' => __DIR__ . '/..' . '/kreait/firebase-php/src/Firebase.php',
         '0ccdf99b8f62f02c52cba55802e0c2e7' => __DIR__ . '/..' . '/zircote/swagger-php/src/functions.php',
     );
 
@@ -30,6 +32,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         'p' => 
         array (
             'phpDocumentor\\Reflection\\' => 25,
+        ),
+        'l' => 
+        array (
+            'libphonenumber\\' => 15,
         ),
         'Z' => 
         array (
@@ -102,6 +108,7 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             'Symfony\\Bridge\\Monolog\\' => 23,
             'Symfony\\Bridge\\Doctrine\\' => 24,
             'Swagger\\' => 8,
+            'Superbalist\\Flysystem\\GoogleStorage\\' => 36,
             'Sensio\\Bundle\\FrameworkExtraBundle\\' => 35,
         ),
         'P' => 
@@ -131,10 +138,18 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         'L' => 
         array (
             'Lexik\\Bundle\\JWTAuthenticationBundle\\' => 37,
+            'League\\Flysystem\\' => 17,
             'Lcobucci\\JWT\\' => 13,
+        ),
+        'K' => 
+        array (
+            'Kreait\\Firebase\\Symfony\\Bundle\\' => 31,
+            'Kreait\\Firebase\\' => 16,
+            'Kreait\\' => 7,
         ),
         'J' => 
         array (
+            'JmesPath\\' => 9,
             'JMS\\Serializer\\' => 15,
             'JMS\\SerializerBundle\\' => 21,
         ),
@@ -168,6 +183,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
+            'Google\\Cloud\\Storage\\' => 21,
+            'Google\\Cloud\\Core\\' => 18,
+            'Google\\Auth\\' => 12,
+            'Giggsey\\Locale\\' => 15,
             'Geocoder\\Provider\\GoogleMaps\\' => 29,
             'Geocoder\\Provider\\GeoPlugin\\' => 28,
             'Geocoder\\Provider\\FreeGeoIp\\' => 28,
@@ -177,7 +196,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         ),
         'F' => 
         array (
+            'Firebase\\JWT\\' => 13,
+            'Firebase\\Auth\\Token\\' => 20,
             'Fig\\Link\\' => 9,
+            'Fig\\Http\\Message\\' => 17,
             'Facebook\\WebDriver\\' => 19,
             'FOS\\RestBundle\\' => 15,
         ),
@@ -222,6 +244,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
             2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+        ),
+        'libphonenumber\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/giggsey/libphonenumber-for-php/src',
         ),
         'Zend\\EventManager\\' => 
         array (
@@ -463,6 +489,10 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         array (
             0 => __DIR__ . '/..' . '/zircote/swagger-php/src',
         ),
+        'Superbalist\\Flysystem\\GoogleStorage\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/superbalist/flysystem-google-storage/src',
+        ),
         'Sensio\\Bundle\\FrameworkExtraBundle\\' => 
         array (
             0 => __DIR__ . '/..' . '/sensio/framework-extra-bundle',
@@ -531,9 +561,29 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         array (
             0 => __DIR__ . '/..' . '/lexik/jwt-authentication-bundle',
         ),
+        'League\\Flysystem\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/flysystem/src',
+        ),
         'Lcobucci\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/lcobucci/jwt/src',
+        ),
+        'Kreait\\Firebase\\Symfony\\Bundle\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kreait/firebase-bundle',
+        ),
+        'Kreait\\Firebase\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kreait/firebase-php/src/Firebase',
+        ),
+        'Kreait\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kreait/gcp-metadata/src',
+        ),
+        'JmesPath\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
         'JMS\\Serializer\\' => 
         array (
@@ -632,6 +682,22 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
+        'Google\\Cloud\\Storage\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/cloud-storage/src',
+        ),
+        'Google\\Cloud\\Core\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/cloud-core/src',
+        ),
+        'Google\\Auth\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/auth/src',
+        ),
+        'Giggsey\\Locale\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/giggsey/locale/src',
+        ),
         'Geocoder\\Provider\\GoogleMaps\\' => 
         array (
             0 => __DIR__ . '/..' . '/geocoder-php/google-maps-provider',
@@ -656,9 +722,21 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
         array (
             0 => __DIR__ . '/..' . '/willdurand/geocoder',
         ),
+        'Firebase\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'Firebase\\Auth\\Token\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kreait/firebase-tokens/src',
+        ),
         'Fig\\Link\\' => 
         array (
             0 => __DIR__ . '/..' . '/fig/link-util/src',
+        ),
+        'Fig\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/fig/http-message-util/src',
         ),
         'Facebook\\WebDriver\\' => 
         array (
@@ -751,6 +829,13 @@ class ComposerStaticInit58afc4edbc20f2a6f76fdd6da1e471c9
             'Twig_' => 
             array (
                 0 => __DIR__ . '/..' . '/twig/twig/lib',
+            ),
+        ),
+        'R' => 
+        array (
+            'Rize\\UriTemplate' => 
+            array (
+                0 => __DIR__ . '/..' . '/rize/uri-template/src',
             ),
         ),
         'P' => 
