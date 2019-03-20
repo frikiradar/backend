@@ -386,9 +386,9 @@ class UsersController extends FOSRestController
 
             $user->setCoordinates($coords);
 
+            $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
+            $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
             try {
-                $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
                 $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
                 $user->setLocation($result->first()->getLocality());
             } catch (Exception $ex) {
