@@ -385,20 +385,22 @@ class UsersController extends FOSRestController
             }
 
             $user->setCoordinates($coords);
-
-            $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-            $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
-            try {
-                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
-                $user->setLocation($result->first()->getLocality());
-            } catch (Exception $ex) {
-                //echo "No se ha podido obtener la localidad". $ex;
-            }
-
             $em->persist($user);
             $em->flush();
 
-            $response = $user;
+            try {
+                $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
+                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
+                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
+                $user->setLocation($result->first()->getLocality());
+                $em->persist($user);
+                $em->flush();
+
+                $response = $user;
+            } catch (Exception $ex) {
+                //echo "No se ha podido obtener la localidad". $ex;
+                $response = $user;
+            }
         } catch (Exception $ex) {
             $response = [
                 'code' => 500,
