@@ -74,8 +74,8 @@ class NotificationRepository extends ServiceEntityRepository
         foreach ($devices as $device) {
             $notification = PushNotification::create($title, $text);
             $data = [
-                'fromUser' => $fromUser->getId(),
-                'toUser' => $toUser->getId()
+                'fromUser' => (string)$fromUser->getId(),
+                'toUser' => (string)$toUser->getId()
             ];
 
             $message = CloudMessage::withTarget('token', $device->getToken())
