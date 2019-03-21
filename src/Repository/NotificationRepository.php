@@ -56,6 +56,17 @@ class NotificationRepository extends ServiceEntityRepository
     public function push(User $fromUser, User $toUser, string $title, string $text)
     {
         $devices = $toUser->getDevices();
+        $em = $this->getEntityManager();
+
+        $newNotification = new Notification();
+        $newNotification->setFromUser($fromUser);
+        $newNotification->setToUser($toUser);
+        $newNotification->setTitle($title);
+        $newNotification->set($text);
+        $newNotification->setTimeCreation(new \DateTime);
+
+        $em->persist($newNotification);
+        $em->flush();
 
         foreach ($devices as $device) {
             $notification = PushNotification::create($title, $text);

@@ -55,12 +55,38 @@ class ChatController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $chat = $em->getRepository('App:Chat')->sendMessage(
-            $this->getUser()->getId(),
-            $request->request->get("touser"),
-            $request->request->get("text"),
-            $publisher
-        );
+        $newChat = new Chat();
+        $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
+        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get("touser")));
+        $newChat->setTouser($toUser);
+        $newChat->setFromuser($fromUser);
+
+        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+
+        $conversationId = $min . "_" . $max;
+
+        $text = $request->request->get("text");
+
+        $newChat->setText($text);
+        $newChat->setTimeCreation(new \DateTime);
+        $newChat->setConversationId($conversationId);
+        $em->merge($newChat);
+        $em->flush();
+
+        $chat = [
+            "fromuser" => $newChat->getFromuser()->getId(),
+            "touser" => $newChat->getTouser()->getId(),
+            "text" => $newChat->getText(),
+            "time_creation" => $newChat->getTimeCreation()
+        ];
+
+        $update = new Update($conversationId, $serializer->serialize($chat, "json"));
+        $publisher($update);
+
+        $title = $fromUser->getUsername();
+
+        $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text);
 
         return new Response($serializer->serialize($chat, "json"));
     }

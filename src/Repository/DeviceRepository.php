@@ -58,10 +58,10 @@ class DeviceRepository extends ServiceEntityRepository
         $device->setDeviceId($id);
         $device->setActive(true);
         $device->setLastUpdate(new \DateTime);
+        $device->setUser($user);
 
         try {
-            $user->addDevice($device);
-            $em->persist($user);
+            $em->persist($device);
             $em->flush();
 
             return $device;

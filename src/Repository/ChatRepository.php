@@ -73,43 +73,4 @@ class ChatRepository extends ServiceEntityRepository
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         return $query->getResult();
     }
-
-    public function sendMessage($fromUserId, $toUserId, $text, Publisher $publisher)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getEntityManager();
-
-        $newChat = new Chat();
-        $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $fromUserId));
-        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $toUserId));
-        $newChat->setTouser($toUser);
-        $newChat->setFromuser($fromUser);
-
-        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
-        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
-
-        $conversationId = $min . "_" . $max;
-
-        $newChat->setText($text);
-        $newChat->setTimeCreation(new \DateTime);
-        $newChat->setConversationId($conversationId);
-        $em->merge($newChat);
-        $em->flush();
-
-        $chat = [
-            "fromuser" => $newChat->getFromuser()->getId(),
-            "touser" => $newChat->getTouser()->getId(),
-            "text" => $newChat->getText(),
-            "time_creation" => $newChat->getTimeCreation()
-        ];
-
-        $update = new Update($conversationId, $serializer->serialize($chat, "json"));
-        $publisher($update);
-
-        $title = $fromUser->getUsername();
-
-        $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text);
-
-        return $chat;
-    }
 }
