@@ -53,7 +53,7 @@ class NotificationRepository extends ServiceEntityRepository
     }
     */
 
-    public function push(User $fromUser, User $toUser, string $title, string $text)
+    public function push(User $fromUser, User $toUser, string $title, string $text, string $url)
     {
         $devices = $toUser->getDevices();
         $em = $this->getEntityManager();
@@ -64,6 +64,8 @@ class NotificationRepository extends ServiceEntityRepository
         $newNotification->setTitle($title);
         $newNotification->setText($text);
         $newNotification->setTimeCreation(new \DateTime);
+        $newNotification->setUrl($url);
+        $newNotification->setType("chat");
 
         $em->persist($newNotification);
         $em->flush();
