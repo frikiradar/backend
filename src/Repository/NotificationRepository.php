@@ -2,9 +2,14 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
+use App\Entity\Device;
 use App\Entity\Notification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Kreait\Firebase;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as PushNotification;
 
 /**
  * @method Notification|null find($id, $lockMode = null, $lockVersion = null)
@@ -47,4 +52,25 @@ class NotificationRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function push(User $fromUser, User $toUser, string $title, string $text)
+    {
+        $devices = $toUser->getDevices();
+
+        foreach ($devices as $device) {
+            $notification = PushNotification::create($title, $text);
+            $data = [
+                'fromUser' => $fromUser->getId(),
+                'toUser' => $toUser->getId()
+            ];
+
+            $message = CloudMessage::withTarget('token', $device->getToken())
+                ->withNotification($notification) // optional
+                ->withData($data);
+
+            $firebase = (new Firebase\Factory())->create();
+            $messaging = $firebase->getMessaging();
+            $messaging->send($message);
+        }
+    }
 }

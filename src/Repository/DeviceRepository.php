@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Device;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -47,4 +48,21 @@ class DeviceRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function set(User $user, string $token, string $id, string $name)
+    {
+        $device = new Device();
+        $device->setToken($token);
+        $device->setDeviceName($name);
+        $device->setDeviceId($id);
+        $device->setActive(true);
+        $device->setLastUpdate(new \DateTime);
+
+        try {
+            $user->addDevice($device);
+            return $device;
+        } catch (Exception $e) {
+            return $e;
+        }
+    }
 }
