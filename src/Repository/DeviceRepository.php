@@ -61,7 +61,7 @@ class DeviceRepository extends ServiceEntityRepository
 
         try {
             $user->addDevice($device);
-            $em->merge($user);
+            $em->persist($user);
             $em->flush();
 
             return $device;
