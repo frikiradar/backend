@@ -168,11 +168,17 @@ class User implements UserInterface
      */
     private $notifications;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Device", mappedBy="user", orphanRemoval=true)
+     */
+    private $devices;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->devices = new ArrayCollection();
     }
 
     public function getId(): ? int
@@ -608,6 +614,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($notification->getToUser() === $this) {
                 $notification->setToUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Device[]
+     */
+    public function getDevices(): Collection
+    {
+        return $this->devices;
+    }
+
+    public function addDevice(Device $device): self
+    {
+        if (!$this->devices->contains($device)) {
+            $this->devices[] = $device;
+            $device->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDevice(Device $device): self
+    {
+        if ($this->devices->contains($device)) {
+            $this->devices->removeElement($device);
+            // set the owning side to null (unless already changed)
+            if ($device->getUser() === $this) {
+                $device->setUser(null);
             }
         }
 
