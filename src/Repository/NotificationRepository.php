@@ -66,6 +66,7 @@ class NotificationRepository extends ServiceEntityRepository
         $newNotification->setTimeCreation(new \DateTime);
         $newNotification->setUrl($url);
         $newNotification->setType("chat");
+        $newNotification->setViewed(false);
 
         $em->persist($newNotification);
         $em->flush();
