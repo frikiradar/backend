@@ -48,9 +48,10 @@ class DeviceRepository extends ServiceEntityRepository
         ;
     }
     */
-
     public function set(User $user, string $token, string $id, string $name)
     {
+        $em = $this->getEntityManager();
+
         $device = new Device();
         $device->setToken($token);
         $device->setDeviceName($name);
@@ -60,6 +61,9 @@ class DeviceRepository extends ServiceEntityRepository
 
         try {
             $user->addDevice($device);
+            $em->merge($user);
+            $em->flush();
+
             return $device;
         } catch (Exception $e) {
             return $e;

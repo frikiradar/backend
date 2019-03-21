@@ -77,7 +77,7 @@ class ChatRepository extends ServiceEntityRepository
     public function sendMessage($fromUserId, $toUserId, $text, Publisher $publisher)
     {
         $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->getEntityManager();
 
         $newChat = new Chat();
         $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $fromUserId));
