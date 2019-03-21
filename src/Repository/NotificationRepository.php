@@ -62,7 +62,7 @@ class NotificationRepository extends ServiceEntityRepository
         $newNotification->setFromUser($fromUser);
         $newNotification->setToUser($toUser);
         $newNotification->setTitle($title);
-        $newNotification->set($text);
+        $newNotification->setText($text);
         $newNotification->setTimeCreation(new \DateTime);
 
         $em->persist($newNotification);
