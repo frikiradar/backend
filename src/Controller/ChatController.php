@@ -58,7 +58,8 @@ class ChatController extends FOSRestController
         $chat = $em->getRepository('App:Chat')->sendMessage(
             $this->getUser()->getId(),
             $request->request->get("touser"),
-            $request->request->get("text")
+            $request->request->get("text"),
+            $publisher
         );
 
         return new Response($serializer->serialize($chat, "json"));
