@@ -81,10 +81,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.pronoun',
                 'u.relationship',
                 'u.status',
-                // 'u.lovegender',
-                // 'u.minage',
-                // 'u.maxage',
-                // 'u.connection',
+                'u.lovegender',
+                'u.connection',
                 'u.location',
                 "(GLength(
                         LineStringFromWKB(
