@@ -80,21 +80,21 @@ class NotificationRepository extends ServiceEntityRepository
                 'url' => $url
             ];
 
-            /*$config = AndroidConfig::fromArray([
+            $config = AndroidConfig::fromArray([
                 'ttl' => '3600s',
                 'priority' => 'normal',
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    'click_action' => "FCM_PLUGIN_ACTIVITY"
+                    'sound' => "default"
+                    // 'click_action' => "FCM_PLUGIN_ACTIVITY"
                 ],
-            ]);*/
+            ]);
 
             $message = CloudMessage::withTarget('token', $device->getToken())
                 ->withNotification($notification) // optional
                 ->withData($data)
-                // ->withAndroidConfig($config)
-            ;
+                ->withAndroidConfig($config);
 
             $firebase = (new Firebase\Factory())->create();
             $messaging = $firebase->getMessaging();
