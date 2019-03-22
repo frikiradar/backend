@@ -114,8 +114,9 @@ class NotificationRepository extends ServiceEntityRepository
 
     public function getNotifications(User $toUser)
     {
-        $dql = "SELECT IDENTITY(n.fromUser) fromuser, n.text text, n.title, n.timeCreation time_creation
-            FROM App:Notification n WHERE n.toUser = :id ORDER BY n.id DESC";
+        $dql = "SELECT IDENTITY(n.fromUser) fromuser, n.text, n.title, n.timeCreation time_creation,
+            n.url, n.viewed FROM App:Notification n
+            WHERE n.toUser = :id ORDER BY n.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $toUser->getId());
         return $query->getResult();
