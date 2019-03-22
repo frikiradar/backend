@@ -85,7 +85,7 @@ class NotificationRepository extends ServiceEntityRepository
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    'click_action' => $url
+                    'click_action' => "FCM_PLUGIN_ACTIVITY"
                 ],
             ]);
 
