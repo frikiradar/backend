@@ -681,4 +681,35 @@ class UsersController extends FOSRestController
 
         return new Response($serializer->serialize($response, "json"));
     }
+
+    /**
+     * @Rest\Get("/v1/notifications")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Notificaciones obtenidas correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener las notificaciones"
+     * )
+     * 
+     */
+    public function getNotifications()
+    {
+        $serializer = $this->get('jms_serializer');
+
+        try {
+            $response = $this->getUser()->getNotifications();
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al obtener las notificaciones - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
 }
