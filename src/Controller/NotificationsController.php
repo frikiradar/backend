@@ -42,7 +42,7 @@ class NotificationsController extends FOSRestController
             $notifications = $em->getRepository('App:Notification')->getNotifications($toUser);
 
             foreach ($notifications as $key => $notification) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $notification->getFromUser()->getId()));
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $notification["fromuser"]));
                 $notifications[$key]['user'] = [
                     'id' => $user->getId(),
                     'username' => $user->getUsername(),
