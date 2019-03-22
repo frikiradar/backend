@@ -52,7 +52,7 @@ class DeviceRepository extends ServiceEntityRepository
     {
         $em = $this->getEntityManager();
 
-        $device = $this->findOneBy(array('deviceId' => $id, 'user', $user));
+        $device = $this->findOneBy(array('deviceId' => $id, 'user' => $user));
 
         if (empty($device)) {
             $device = new Device();

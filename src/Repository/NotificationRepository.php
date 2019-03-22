@@ -54,19 +54,29 @@ class NotificationRepository extends ServiceEntityRepository
     }
     */
 
-    public function push(User $fromUser, User $toUser, string $title, string $text, string $url)
+    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
         $devices = $toUser->getDevices();
         $em = $this->getEntityManager();
 
-        $newNotification = new Notification();
-        $newNotification->setFromUser($fromUser);
-        $newNotification->setToUser($toUser);
-        $newNotification->setTitle($title);
+        $newNotification = $this->findOneBy([
+            'fromUser' => $fromUser,
+            'toUser' => $toUser,
+            'title' => $title,
+            'type' => $type
+        ]);
+
+        if (empty($newNotification)) {
+            $newNotification = new Notification();
+            $newNotification->setFromUser($fromUser);
+            $newNotification->setToUser($toUser);
+            $newNotification->setTitle($title);
+        }
+
         $newNotification->setText($text);
         $newNotification->setTimeCreation(new \DateTime);
         $newNotification->setUrl($url);
-        $newNotification->setType("chat");
+        $newNotification->setType($type);
         $newNotification->setViewed(false);
 
         $em->persist($newNotification);

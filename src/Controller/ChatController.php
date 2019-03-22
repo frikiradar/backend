@@ -87,7 +87,7 @@ class ChatController extends FOSRestController
         $title = $fromUser->getUsername();
         $url = "/chat/" . $newChat->getFromuser()->getId();
 
-        $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text, $url);
+        $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text, $url, "chat");
 
         return new Response($serializer->serialize($chat, "json"));
     }
