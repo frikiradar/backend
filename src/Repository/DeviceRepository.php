@@ -52,13 +52,18 @@ class DeviceRepository extends ServiceEntityRepository
     {
         $em = $this->getEntityManager();
 
-        $device = new Device();
+        $device = $this->findOneBy(array('deviceId' => $id, 'user', $user));
+
+        if (empty($device)) {
+            $device = new Device();
+            $device->setDeviceId($id);
+            $device->setUser($user);
+        }
+
         $device->setToken($token);
         $device->setDeviceName($name);
-        $device->setDeviceId($id);
         $device->setActive(true);
         $device->setLastUpdate(new \DateTime);
-        $device->setUser($user);
 
         try {
             $em->persist($device);

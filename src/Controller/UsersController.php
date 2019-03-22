@@ -621,7 +621,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Post("/v1/device", name="device")
+     * @Rest\Put("/v1/device", name="device")
      *
      * @SWG\Response(
      *     response=201,
