@@ -10,6 +10,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 use Kreait\Firebase;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as PushNotification;
+use Kreait\Firebase\Messaging\AndroidConfig;
 
 /**
  * @method Notification|null find($id, $lockMode = null, $lockVersion = null)
@@ -78,9 +79,20 @@ class NotificationRepository extends ServiceEntityRepository
                 'toUser' => (string)$toUser->getId()
             ];
 
+            $config = AndroidConfig::fromArray([
+                'ttl' => '3600s',
+                'priority' => 'normal',
+                'notification' => [
+                    'title' => $title,
+                    'body' => $text,
+                    'click_action' => $url
+                ],
+            ]);
+
             $message = CloudMessage::withTarget('token', $device->getToken())
                 ->withNotification($notification) // optional
-                ->withData($data);
+                ->withData($data)
+                ->withAndroidConfig($config);
 
             $firebase = (new Firebase\Factory())->create();
             $messaging = $firebase->getMessaging();
