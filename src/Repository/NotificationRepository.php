@@ -76,7 +76,8 @@ class NotificationRepository extends ServiceEntityRepository
             $notification = PushNotification::create($title, $text);
             $data = [
                 'fromUser' => (string)$fromUser->getId(),
-                'toUser' => (string)$toUser->getId()
+                'toUser' => (string)$toUser->getId(),
+                'url' => $url
             ];
 
             /*$config = AndroidConfig::fromArray([
