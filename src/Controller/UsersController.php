@@ -492,7 +492,7 @@ class UsersController extends FOSRestController
             foreach ($users as $key => $u) {
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
-                $users[$key]['distance'] = (int)$u['distance'];
+                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
