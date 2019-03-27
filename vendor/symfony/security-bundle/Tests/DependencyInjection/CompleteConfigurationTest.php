@@ -84,7 +84,7 @@ abstract class CompleteConfigurationTest extends TestCase
             [
                 'simple',
                 'security.user_checker',
-                '.security.request_matcher.6tndozi',
+                '.security.request_matcher.xmi9dcw',
                 false,
             ],
             [
@@ -116,7 +116,7 @@ abstract class CompleteConfigurationTest extends TestCase
             [
                 'host',
                 'security.user_checker',
-                '.security.request_matcher.and0kk1',
+                '.security.request_matcher.iw4hyjb',
                 true,
                 false,
                 'security.user.provider.concrete.default',
@@ -143,23 +143,6 @@ abstract class CompleteConfigurationTest extends TestCase
                 null,
                 [
                     'http_basic',
-                    'anonymous',
-                ],
-                null,
-            ],
-            [
-                'simple_auth',
-                'security.user_checker',
-                null,
-                true,
-                false,
-                'security.user.provider.concrete.default',
-                'simple_auth',
-                'security.authentication.form_entry_point.simple_auth',
-                null,
-                null,
-                [
-                    'simple_form',
                     'anonymous',
                 ],
                 null,
@@ -191,13 +174,6 @@ abstract class CompleteConfigurationTest extends TestCase
                 'security.context_listener.1',
                 'security.authentication.listener.basic.with_user_checker',
                 'security.authentication.listener.anonymous.with_user_checker',
-                'security.access_listener',
-            ],
-            [
-                'security.channel_listener',
-                'security.context_listener.2',
-                'security.authentication.listener.simple_form.simple_auth',
-                'security.authentication.listener.anonymous.simple_auth',
                 'security.access_listener',
             ],
         ], $listeners);
@@ -262,7 +238,7 @@ abstract class CompleteConfigurationTest extends TestCase
                 $this->assertEquals(['ROLE_USER'], $attributes);
                 $this->assertEquals('https', $channel);
                 $this->assertEquals(
-                    ['/blog/524', null, ['GET', 'POST']],
+                    ['/blog/524', null, ['GET', 'POST'], [], [], null, 8000],
                     $requestMatcher->getArguments()
                 );
             } elseif (2 === $i) {
@@ -486,11 +462,57 @@ abstract class CompleteConfigurationTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @group legacy
+     * @expectedDeprecation The "simple_form" security listener is deprecated Symfony 4.2, use Guard instead.
+     */
+    public function testSimpleAuth()
+    {
+        $container = $this->getContainer('simple_auth');
+        $arguments = $container->getDefinition('security.firewall.map')->getArguments();
+        $listeners = [];
+        $configs = [];
+        foreach (array_keys($arguments[1]->getValues()) as $contextId) {
+            $contextDef = $container->getDefinition($contextId);
+            $arguments = $contextDef->getArguments();
+            $listeners[] = array_map('strval', $arguments['index_0']->getValues());
+
+            $configDef = $container->getDefinition((string) $arguments['index_3']);
+            $configs[] = array_values($configDef->getArguments());
+        }
+
+        $this->assertSame([[
+            'simple_auth',
+            'security.user_checker',
+            null,
+            true,
+            false,
+            'security.user.provider.concrete.default',
+            'simple_auth',
+            'security.authentication.form_entry_point.simple_auth',
+            null,
+            null,
+            ['simple_form', 'anonymous',
+            ],
+            null,
+        ]], $configs);
+
+        $this->assertSame([[
+            'security.channel_listener',
+            'security.context_listener.0',
+            'security.authentication.listener.simple_form.simple_auth',
+            'security.authentication.listener.anonymous.simple_auth',
+            'security.access_listener',
+        ]], $listeners);
+    }
+
     protected function getContainer($file)
     {
         $file .= '.'.$this->getFileExtension();
 
         $container = new ContainerBuilder();
+        $container->setParameter('kernel.debug', false);
+
         $security = new SecurityExtension();
         $container->registerExtension($security);
 

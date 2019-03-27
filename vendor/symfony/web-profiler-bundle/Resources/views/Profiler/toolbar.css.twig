@@ -97,11 +97,13 @@
     height: 36px;
     margin-right: 0;
     white-space: nowrap;
+    max-width: 15%;
 }
 .sf-toolbar-block > a,
 .sf-toolbar-block > a:hover {
     display: block;
     text-decoration: none;
+    color: inherit;
 }
 
 .sf-toolbar-block span {
@@ -282,6 +284,8 @@ div.sf-toolbar .sf-toolbar-block a:hover {
     display: block;
     height: 36px;
     padding: 0 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .sf-toolbar-block-request .sf-toolbar-icon {
     padding-left: 0;
@@ -511,7 +515,7 @@ div.sf-toolbar .sf-toolbar-block a:hover {
 @media (min-width: 1024px) {
     .sf-toolbar-block .sf-toolbar-info-piece-additional,
     .sf-toolbar-block .sf-toolbar-info-piece-additional-detail {
-        display: inline-block;
+        display: inline;
     }
 
     .sf-toolbar-block .sf-toolbar-info-piece-additional:empty,

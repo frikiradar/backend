@@ -173,6 +173,11 @@ class User implements UserInterface
      */
     private $devices;
 
+    /**
+     * @ORM\Column(type="string", length=6, nullable=true)
+     */
+    private $verificationCode;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -647,6 +652,23 @@ class User implements UserInterface
                 $device->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getVerificationCode(): ?string
+    {
+        return $this->verificationCode;
+    }
+
+    public function setVerificationCode(): self
+    {
+        $key = '';
+        $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $max = strlen($pattern)-1;
+        for($i=0;$i < 6;$i++) $key .= $pattern{mt_rand(0,$max)};
+
+        $this->verificationCode = $key;
 
         return $this;
     }
