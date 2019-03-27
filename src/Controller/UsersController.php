@@ -149,7 +149,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $body = $twig->load(
+            $body = $twig->render(
                 "emails/registration.html.twig",
                 [
                     'username' => $user->getUsername(),
