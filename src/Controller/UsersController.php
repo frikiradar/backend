@@ -150,22 +150,22 @@ class UsersController extends FOSRestController
             $em->flush();
 
 
-            $body = $this->twig->render(
-                "templates/email/welcome.html.twig",
+            $body = $this->renderView(
+                "emails/registration.html.twig",
                 [
                     'username' => $user->getUsername(),
                     'code' => $user->getVerificationCode()
                 ]
             );
 
-            $message = new \Swift_Message(
-                'Te has registrado correctamente en FrikiRadar',
-                $this->twig->render("templates/email/page.html.twig", [body => $body])
-            );
+            $message = (new \Swift_Message('Te has registrado correctamente en FrikiRadar'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($user->getEmail())
+                ->setBody(
+                    $this->renderView("emails/page.html.twig", [body => $body]),
+                    'text/html'
+                );
 
-            $message->setFrom(['hola@frikiradar.com' => 'FrikiRadar']);
-            $message->setTo($user->getEmail());
-            $message->setContentType('text/html');
             if (0 === $this->mailer->send($message)) {
                 throw new \RuntimeException('Unable to send email');
             }
