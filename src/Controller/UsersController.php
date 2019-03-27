@@ -119,7 +119,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer, \Twig_Environment $twig)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -149,8 +149,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-
-            $body = $this->render(
+            $body = $twig->load(
                 "emails/registration.html.twig",
                 [
                     'username' => $user->getUsername(),
