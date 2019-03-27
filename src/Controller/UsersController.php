@@ -162,7 +162,7 @@ class UsersController extends FOSRestController
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
-                    $this->renderView("emails/page.html.twig", [body => $body]),
+                    $this->renderView("emails/page.html.twig", ['body' => $body]),
                     'text/html'
                 );
 
