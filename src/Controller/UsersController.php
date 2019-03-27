@@ -166,7 +166,7 @@ class UsersController extends FOSRestController
                     'text/html'
                 );
 
-            if (0 === $this->mailer->send($message)) {
+            if (0 === $mailer->send($message)) {
                 throw new \RuntimeException('Unable to send email');
             }
         } catch (Exception $ex) {
