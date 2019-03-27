@@ -6090,17 +6090,17 @@
     },
     {
         "name": "symfony/asset",
-        "version": "v4.1.11",
-        "version_normalized": "4.1.11.0",
+        "version": "v4.2.4",
+        "version_normalized": "4.2.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/asset.git",
-            "reference": "99f63179af547dc3c9081cc6b28b6b202178fbcc"
+            "reference": "7eee96a8630f9448304ae4f0e3b474ea4e033664"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/asset/zipball/99f63179af547dc3c9081cc6b28b6b202178fbcc",
-            "reference": "99f63179af547dc3c9081cc6b28b6b202178fbcc",
+            "url": "https://api.github.com/repos/symfony/asset/zipball/7eee96a8630f9448304ae4f0e3b474ea4e033664",
+            "reference": "7eee96a8630f9448304ae4f0e3b474ea4e033664",
             "shasum": ""
         },
         "require": {
@@ -6113,11 +6113,11 @@
         "suggest": {
             "symfony/http-foundation": ""
         },
-        "time": "2019-01-16T18:21:11+00:00",
+        "time": "2019-01-16T20:35:37+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "4.1-dev"
+                "dev-master": "4.2-dev"
             }
         },
         "installation-source": "dist",

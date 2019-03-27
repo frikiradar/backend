@@ -150,7 +150,7 @@ class UsersController extends FOSRestController
             $em->flush();
 
 
-            $body = $this->renderView(
+            $body = $this->render(
                 "emails/registration.html.twig",
                 [
                     'username' => $user->getUsername(),
