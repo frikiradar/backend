@@ -627,9 +627,13 @@ class UsersController extends FOSRestController
     public function activationEmailAction(\Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
 
         try {
-            $this->getUser()->setVerificationCode();
+            $user = $this->getUser();
+            $user->setVerificationCode();
+            $em->persist($user);
+            $em->flush();
 
             $message = (new \Swift_Message('Aquí tienes tu código de activación de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -693,13 +697,11 @@ class UsersController extends FOSRestController
 
         $verificationCode = $request->request->get("verification_code");
         $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
-
-        if (!empty($user)) {
+        if (!is_null($user)) {
             $user->setActive(true);
+            $user->setVerificationCode(null);
             $em->persist($user);
             $em->flush();
-
-            $user->setVerificationCode(null);
 
             return new Response($serializer->serialize($user, "json"));
         } else {
