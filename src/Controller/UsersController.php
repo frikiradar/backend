@@ -703,7 +703,7 @@ class UsersController extends FOSRestController
 
             return new Response($serializer->serialize($user, "json"));
         } else {
-            return new HttpException(400, "Error al activar la cuenta");
+            throw new HttpException(400, "Error al activar la cuenta");
         }
     }
 }

@@ -661,7 +661,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getVerificationCode(): ?string
+    public function getVerificationCode(): ? string
     {
         return $this->verificationCode;
     }
@@ -670,15 +670,16 @@ class User implements UserInterface
     {
         $key = '';
         $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $max = strlen($pattern)-1;
-        for($i=0;$i < 6;$i++) $key .= $pattern{mt_rand(0,$max)};
+        $max = strlen($pattern) - 1;
+        for ($i = 0; $i < 4; $i++) $key .= $pattern {
+        mt_rand(0, $max)};
 
         $this->verificationCode = $key;
 
         return $this;
     }
 
-    public function getActive(): ?bool
+    public function getActive(): ? bool
     {
         return $this->active;
     }
