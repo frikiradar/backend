@@ -178,6 +178,11 @@ class User implements UserInterface
      */
     private $verificationCode;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $active;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -669,6 +674,18 @@ class User implements UserInterface
         for($i=0;$i < 6;$i++) $key .= $pattern{mt_rand(0,$max)};
 
         $this->verificationCode = $key;
+
+        return $this;
+    }
+
+    public function getActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): self
+    {
+        $this->active = $active;
 
         return $this;
     }
