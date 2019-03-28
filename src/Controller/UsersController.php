@@ -28,6 +28,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
 use Geocoder\Query\ReverseQuery;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Class UsersController
@@ -149,7 +150,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $message = (new \Swift_Message('Te has registrado correctamente en FrikiRadar'))
+            $message = (new \Swift_Message('Aquí tienes tu código de activación de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
@@ -202,6 +203,7 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
         $user->setAvatar($user->getAvatar());
+        $user->setVerificationCode(null);
         return new Response($serializer->serialize($user, "json"));
     }
 
@@ -606,5 +608,102 @@ class UsersController extends FOSRestController
         }
 
         return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Get("/v1/activation", name="activation-email")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     */
+    public function activationEmailAction(\Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+
+        try {
+            $this->getUser()->setVerificationCode();
+
+            $message = (new \Swift_Message('Aquí tienes tu código de activación de FrikiRadar'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($this->getUser()->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        "emails/registration.html.twig",
+                        [
+                            'username' => $this->getUser()->getUsername(),
+                            'code' => $this->getUser()->getVerificationCode()
+                        ]
+                    ),
+                    'text/html'
+                );
+
+            if (0 === $mailer->send($message)) {
+                throw new \RuntimeException('Unable to send email');
+            }
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Email enviado correctamente",
+            ];
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al enviar el email de activación - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Put("/v1/activation", name="activation")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="code",
+     *     in="body",
+     *     type="string",
+     *     description="Código de activación"
+     * )
+     * 
+     */
+    public function activationAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $verificationCode = $request->request->get("verification_code");
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+
+        if (!empty($user)) {
+            $user->setActive(true);
+            $em->persist($user);
+            $em->flush();
+
+            $user->setVerificationCode(null);
+
+            return new Response($serializer->serialize($user, "json"));
+        } else {
+            return new HttpException(400, "Error al activar la cuenta");
+        }
     }
 }
