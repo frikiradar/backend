@@ -666,15 +666,19 @@ class User implements UserInterface
         return $this->verificationCode;
     }
 
-    public function setVerificationCode(): self
+    public function setVerificationCode($code = true)
     {
-        $key = '';
-        $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $max = strlen($pattern) - 1;
-        for ($i = 0; $i < 4; $i++) $key .= $pattern {
-        mt_rand(0, $max)};
+        if ($code === true) {
+            $key = '';
+            $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $max = strlen($pattern) - 1;
+            for ($i = 0; $i < 4; $i++) $key .= $pattern {
+                mt_rand(0, $max)};
 
-        $this->verificationCode = $key;
+            $this->verificationCode = $key;
+        } else {
+            $this->verificationCode = $code;
+        }
 
         return $this;
     }
