@@ -737,13 +737,13 @@ class UsersController extends FOSRestController
 
             $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($this->getUser()->getEmail())
+                ->setTo($user->getEmail())
                 ->setBody(
                     $this->renderView(
                         "emails/recover.html.twig",
                         [
-                            'username' => $this->getUser()->getUsername(),
-                            'code' => $this->getUser()->getVerificationCode()
+                            'username' => $user->getUsername(),
+                            'code' => $user->getVerificationCode()
                         ]
                     ),
                     'text/html'
