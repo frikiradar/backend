@@ -726,9 +726,9 @@ class UsersController extends FOSRestController
 
         try {
             if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
-                $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
-            } else {
                 $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username')));
+            } else {
+                $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
             }
 
             $user->setVerificationCode();
@@ -805,9 +805,9 @@ class UsersController extends FOSRestController
         $verificationCode = $request->request->get("verification_code");
 
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
-            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username'), 'verificationCode' => $verificationCode));
-        } else {
             $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username'), 'verificationCode' => $verificationCode));
+        } else {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username'), 'verificationCode' => $verificationCode));
         }
 
         if (!is_null($user)) {
