@@ -23,7 +23,7 @@ class Device
     private $user;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $token;
 
@@ -47,36 +47,36 @@ class Device
      */
     private $deviceName;
 
-    public function getId(): ?int
+    public function getId(): ? int
     {
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getUser(): ? User
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser(? User $user): self
     {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getToken(): ?string
+    public function getToken(): ? string
     {
         return $this->token;
     }
 
-    public function setToken(string $token): self
+    public function setToken(? string $token): self
     {
         $this->token = $token;
 
         return $this;
     }
 
-    public function getLastUpdate(): ?\DateTimeInterface
+    public function getLastUpdate(): ? \DateTimeInterface
     {
         return $this->lastUpdate;
     }
@@ -88,7 +88,7 @@ class Device
         return $this;
     }
 
-    public function getActive(): ?bool
+    public function getActive(): ? bool
     {
         return $this->active;
     }
@@ -100,7 +100,7 @@ class Device
         return $this;
     }
 
-    public function getDeviceId(): ?string
+    public function getDeviceId(): ? string
     {
         return $this->deviceId;
     }
@@ -112,7 +112,7 @@ class Device
         return $this;
     }
 
-    public function getDeviceName(): ?string
+    public function getDeviceName(): ? string
     {
         return $this->deviceName;
     }

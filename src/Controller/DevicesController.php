@@ -106,9 +106,9 @@ class DevicesController extends FOSRestController
         try {
             $response = $em->getRepository('App:Device')->set(
                 $this->getUser(),
-                $request->request->get("token"),
                 $request->request->get("id"),
-                $request->request->get("name")
+                $request->request->get("name"),
+                $request->request->get("token") ?: ""
             );
         } catch (Exception $ex) {
             $response = [
@@ -119,5 +119,104 @@ class DevicesController extends FOSRestController
         }
 
         return new Response($serializer->serialize($response, "json"));
+    }
+
+
+    /**
+     * @Rest\Get("/v1/unknown-device", name="unknown-device")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     */
+    public function unknownDeviceAction(\Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $user->setVerificationCode();
+            $em->persist($user);
+            $em->flush();
+
+            $message = (new \Swift_Message('Nuevo dispositivo detectado. Verificación de identidad.'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($this->getUser()->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        "emails/unknown-device.html.twig",
+                        [
+                            'username' => $this->getUser()->getUsername(),
+                            'code' => $this->getUser()->getVerificationCode()
+                        ]
+                    ),
+                    'text/html'
+                );
+
+            if (0 === $mailer->send($message)) {
+                throw new \RuntimeException('Unable to send email');
+            }
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Email enviado correctamente",
+            ];
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al enviar el email de verificación - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Put("/v1/unknown-device", name="activation")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Dispositivo verificado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al verificar el dispositivo"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="code",
+     *     in="body",
+     *     type="string",
+     *     description="Código de activación"
+     * )
+     * 
+     */
+    public function verifyDeviceAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $verificationCode = $request->request->get("verification_code");
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        if (!is_null($user)) {
+            $user->setVerificationCode(null);
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json"));
+        } else {
+            throw new HttpException(400, "Error al verificar tu dispositivo");
+        }
     }
 }

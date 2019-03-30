@@ -48,7 +48,7 @@ class DeviceRepository extends ServiceEntityRepository
         ;
     }
     */
-    public function set(User $user, string $token, string $id, string $name)
+    public function set(User $user, string $id, string $name, string $token)
     {
         $em = $this->getEntityManager();
 
@@ -60,7 +60,9 @@ class DeviceRepository extends ServiceEntityRepository
             $device->setUser($user);
         }
 
-        $device->setToken($token);
+        if (!empty($token)) {
+            $device->setToken($token);
+        }
         $device->setDeviceName($name);
         $device->setActive(true);
         $device->setLastUpdate(new \DateTime);

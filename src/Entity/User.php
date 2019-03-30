@@ -661,7 +661,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getVerificationCode(): ? string
+    public function getVerificationCode()
     {
         return $this->verificationCode;
     }
