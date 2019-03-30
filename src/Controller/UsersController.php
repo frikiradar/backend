@@ -690,4 +690,135 @@ class UsersController extends FOSRestController
             throw new HttpException(400, "Error al activar la cuenta");
         }
     }
+
+    /**
+     * @Rest\Post("/recover", name="recover-email")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="code",
+     *     in="body",
+     *     type="string",
+     *     description="Código de activación"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="username",
+     *     in="body",
+     *     type="string",
+     *     description="Nombre de usuario o contraseña"
+     * )
+     * 
+     */
+    public function recoverEmailAction(Request $request, \Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
+                $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
+            } else {
+                $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username')));
+            }
+
+            $user->setVerificationCode();
+            $em->persist($user);
+            $em->flush();
+
+            $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($this->getUser()->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        "emails/recover.html.twig",
+                        [
+                            'username' => $this->getUser()->getUsername(),
+                            'code' => $this->getUser()->getVerificationCode()
+                        ]
+                    ),
+                    'text/html'
+                );
+
+            if (0 === $mailer->send($message)) {
+                throw new \RuntimeException('Unable to send email');
+            }
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Email enviado correctamente",
+            ];
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al enviar el email de recuperación - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Put("/recover", name="recover-password")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="code",
+     *     in="body",
+     *     type="string",
+     *     description="Código de activación"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     type="string",
+     *     description="The password"
+     * )
+     * 
+     */
+    public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $verificationCode = $request->request->get("verification_code");
+
+        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username'), 'verificationCode' => $verificationCode));
+        } else {
+            $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username'), 'verificationCode' => $verificationCode));
+        }
+
+        if (!is_null($user)) {
+            $user->setPassword($encoder->encodePassword($user, $request->request->get('password')));
+            $user->setVerificationCode(null);
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json"));
+        } else {
+            throw new HttpException(400, "Error al recuperar la cuenta");
+        }
+    }
 }
