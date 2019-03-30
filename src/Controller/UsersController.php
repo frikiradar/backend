@@ -796,6 +796,13 @@ class UsersController extends FOSRestController
      *     description="The password"
      * )
      * 
+     * @SWG\Parameter(
+     *     name="username",
+     *     in="query",
+     *     type="string",
+     *     description="The username"
+     * )
+     * 
      */
     public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
