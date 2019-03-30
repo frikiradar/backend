@@ -119,7 +119,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -149,24 +149,6 @@ class UsersController extends FOSRestController
 
             $em->persist($user);
             $em->flush();
-
-            $message = (new \Swift_Message('Aquí tienes tu código de activación de FrikiRadar'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($user->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/registration.html.twig",
-                        [
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ),
-                    'text/html'
-                );
-
-            if (0 === $mailer->send($message)) {
-                throw new \RuntimeException('Unable to send email');
-            }
         } catch (Exception $ex) {
             $code = 500;
             $error = true;
