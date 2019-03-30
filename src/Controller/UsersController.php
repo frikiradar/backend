@@ -719,7 +719,7 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function recoverEmailAction(Request $request, \Swift_Mailer $mailer)
+    public function requestEmailAction(Request $request, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
