@@ -123,7 +123,7 @@ class DevicesController extends FOSRestController
 
 
     /**
-     * @Rest\Get("/v1/unknown-device", name="unknown-device")
+     * @Rest\Get("/v1/unknown-device", name="unknown device")
      *
      * @SWG\Response(
      *     response=201,
@@ -182,7 +182,7 @@ class DevicesController extends FOSRestController
     }
 
     /**
-     * @Rest\Put("/v1/unknown-device", name="activation")
+     * @Rest\Put("/v1/unknown-device", name="verify device")
      *
      * @SWG\Response(
      *     response=201,
