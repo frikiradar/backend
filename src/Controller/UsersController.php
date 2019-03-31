@@ -665,7 +665,7 @@ class UsersController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
-     *     name="code",
+     *     name="verification_code",
      *     in="body",
      *     type="string",
      *     description="Código de activación"
@@ -702,13 +702,6 @@ class UsersController extends FOSRestController
      * @SWG\Response(
      *     response=500,
      *     description="Error al enviar el email"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="code",
-     *     in="body",
-     *     type="string",
-     *     description="Código de activación"
      * )
      * 
      * @SWG\Parameter(
@@ -783,7 +776,7 @@ class UsersController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
-     *     name="code",
+     *     name="verification_code",
      *     in="body",
      *     type="string",
      *     description="Código de activación"

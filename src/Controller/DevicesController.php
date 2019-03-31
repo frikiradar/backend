@@ -195,7 +195,7 @@ class DevicesController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
-     *     name="code",
+     *     name="verification_code",
      *     in="body",
      *     type="string",
      *     description="Código de activación"
