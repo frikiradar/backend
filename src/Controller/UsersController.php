@@ -828,7 +828,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Put("/password", name="change-password")
+     * @Rest\Put("/v1/password", name="change-password")
      *
      * @SWG\Response(
      *     response=201,
