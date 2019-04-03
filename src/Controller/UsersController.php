@@ -826,4 +826,66 @@ class UsersController extends FOSRestController
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
     }
+
+    /**
+     * @Rest\Put("/password", name="change-password")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Contraseña cambiada correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al cambiar la contraseña"
+     * )
+     * 
+     * 
+     * @SWG\Parameter(
+     *     name="old_password",
+     *     in="query",
+     *     type="string",
+     *     description="The old password",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="new_password",
+     *     in="query",
+     *     type="string",
+     *     description="The new password",
+     *     schema={}
+     * )
+     * 
+     */
+    public function changePasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->getUser();
+
+        if ($user->getPassword() == $encoder->encodePassword($user, $request->request->get("old_password"))) {
+            $user->setPassword($encoder->encodePassword($user, $request->request->get('new_password')));
+
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json"));
+        } else {
+            throw new HttpException(400, "La contraseña actual no es válida");
+        }
+
+
+        if (!is_null($user)) {
+            $user->setPassword($encoder->encodePassword($user, $request->request->get('password')));
+            $user->setVerificationCode(null);
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json"));
+        } else {
+            throw new HttpException(400, "Error al recuperar la cuenta");
+        }
+    }
 }
