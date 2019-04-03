@@ -5,8 +5,13 @@ Interact with [Google Firebase](https://firebase.google.com) from your PHP appli
 [![Current version](https://img.shields.io/packagist/v/kreait/firebase-php.svg)](https://packagist.org/packages/kreait/firebase-php)
 [![Supported PHP version](https://img.shields.io/packagist/php-v/kreait/firebase-php.svg)]()
 [![Total Downloads](https://img.shields.io/packagist/dt/kreait/firebase-php.svg)](https://packagist.org/packages/kreait/firebase-php/stats)
-[![Build Status](https://travis-ci.org/kreait/firebase-php.svg?branch=master)](https://travis-ci.org/kreait/firebase-php)
 [![Gitter](https://badges.gitter.im/kreait/firebase-php.svg)](https://gitter.im/kreait/firebase-php)
+
+[![Build Status](https://travis-ci.org/kreait/firebase-php.svg?branch=master)](https://travis-ci.org/kreait/firebase-php)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kreait_firebase-php&metric=alert_status)](https://sonarcloud.io/dashboard?id=kreait_firebase-php)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kreait_firebase-php&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=kreait_firebase-php)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kreait_firebase-php&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=kreait_firebase-php)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kreait_firebase-php&metric=coverage)](https://sonarcloud.io/dashboard?id=kreait_firebase-php)
 
 ## Resources
 
@@ -39,6 +44,16 @@ Interact with [Google Firebase](https://firebase.google.com) from your PHP appli
 > - [ahsankhatri/firestore-php](https://github.com/ahsankhatri/firestore-php)
 > - [morrislaptop/firestore-php](https://github.com/morrislaptop/firestore-php)
 
+## Versions
+
+| Version | Status      | PHP Version | Support |
+|---------|-------------|-------------|---------|
+| 1.x     | EOL         | >= 5.5      | EOL     |
+| 2.x     | EOL         | >= 7.0      | EOL     |
+| 3.x     | EOL         | >= 7.0      | EOL     |
+| 4.x     | Latest      | >= 7.0      | active  |
+| 5.x     | Development | >= 7.2      | active  |
+
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

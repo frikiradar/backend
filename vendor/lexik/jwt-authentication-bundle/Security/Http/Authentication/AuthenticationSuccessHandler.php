@@ -5,8 +5,9 @@ namespace Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationSuccessResponse;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as ContractsEventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -19,21 +20,10 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
  */
 class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
-    /**
-     * @var JWTManager
-     */
     protected $jwtManager;
-
-    /**
-     * @var EventDispatcherInterface
-     */
     protected $dispatcher;
 
-    /**
-     * @param JWTManager               $jwtManager
-     * @param EventDispatcherInterface $dispatcher
-     */
-    public function __construct(JWTManager $jwtManager, EventDispatcherInterface $dispatcher)
+    public function __construct(JWTTokenManagerInterface $jwtManager, EventDispatcherInterface $dispatcher)
     {
         $this->jwtManager = $jwtManager;
         $this->dispatcher = $dispatcher;
@@ -56,7 +46,12 @@ class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterf
         $response = new JWTAuthenticationSuccessResponse($jwt);
         $event    = new AuthenticationSuccessEvent(['token' => $jwt], $user, $response);
 
-        $this->dispatcher->dispatch(Events::AUTHENTICATION_SUCCESS, $event);
+        if (interface_exists(ContractsEventDispatcherInterface::class)) {
+            $this->dispatcher->dispatch($event, Events::AUTHENTICATION_SUCCESS);
+        } else {
+            $this->dispatcher->dispatch(Events::AUTHENTICATION_SUCCESS, $event);
+        }
+
         $response->setData($event->getData());
 
         return $response;

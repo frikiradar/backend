@@ -198,7 +198,8 @@ class DevicesController extends FOSRestController
      *     name="verification_code",
      *     in="body",
      *     type="string",
-     *     description="Código de activación"
+     *     description="Código de activación",
+     *     schema={}
      * )
      * 
      */

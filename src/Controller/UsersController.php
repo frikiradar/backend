@@ -158,7 +158,7 @@ class UsersController extends FOSRestController
         $response = [
             'code' => $code,
             'error' => $error,
-            'data' => $code == 200 ? $user : $message,
+            'data' => $code == 200 ?$user : $message,
         ];
 
         return new Response($serializer->serialize($response, "json"));
@@ -270,7 +270,7 @@ class UsersController extends FOSRestController
 
                 foreach ($newUser->getTags() as $tag) {
                     $category = $em->getRepository('App:Category')->findOneBy(array('name' => $tag->getCategory()->getName()));
-                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ?$category->getId() : null));
 
                     if (empty($oldTag)) {
                         $newTag = new Tag();
@@ -459,7 +459,7 @@ class UsersController extends FOSRestController
                 }
             }
 
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?"https" : "http") . "://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
         } else {
             $response = [
@@ -668,7 +668,8 @@ class UsersController extends FOSRestController
      *     name="verification_code",
      *     in="body",
      *     type="string",
-     *     description="Código de activación"
+     *     description="Código de activación",
+     *     schema={}
      * )
      * 
      */
@@ -708,7 +709,8 @@ class UsersController extends FOSRestController
      *     name="username",
      *     in="body",
      *     type="string",
-     *     description="Nombre de usuario o contraseña"
+     *     description="Nombre de usuario o contraseña",
+     *     schema={}
      * )
      * 
      */
@@ -779,21 +781,24 @@ class UsersController extends FOSRestController
      *     name="verification_code",
      *     in="body",
      *     type="string",
-     *     description="Código de activación"
+     *     description="Código de activación",
+     *     schema={}
      * )
      * 
      * @SWG\Parameter(
      *     name="password",
      *     in="query",
      *     type="string",
-     *     description="The password"
+     *     description="The password",
+     *     schema={}
      * )
      * 
      * @SWG\Parameter(
      *     name="username",
      *     in="query",
      *     type="string",
-     *     description="The username"
+     *     description="The username",
+     *     schema={}
      * )
      * 
      */
