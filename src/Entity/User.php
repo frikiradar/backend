@@ -633,9 +633,15 @@ class User implements UserInterface
     /**
      * @return Collection|Device[]
      */
-    public function getDevices(): Collection
+    public function getDevices(): array
     {
-        return $this->devices;
+        $devices = [];
+        foreach ($this->devices as $device) {
+            $device->setUser(null);
+            $devices[] = $device;
+        }
+
+        return $devices;
     }
 
     public function addDevice(Device $device): self
