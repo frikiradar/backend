@@ -191,7 +191,7 @@ class User implements UserInterface
         $this->devices = new ArrayCollection();
     }
 
-    public function getId(): ? int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -264,7 +264,7 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function getEmail(): ? string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -276,7 +276,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getRegisterDate(): ? \DateTimeInterface
+    public function getRegisterDate(): ?\DateTimeInterface
     {
         return $this->register_date;
     }
@@ -288,19 +288,19 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getGender(): ? string
+    public function getGender(): ?string
     {
         return $this->gender;
     }
 
-    public function setGender(? string $gender): self
+    public function setGender(?string $gender): self
     {
         $this->gender = $gender;
 
         return $this;
     }
 
-    public function getRegisterIp(): ? string
+    public function getRegisterIp(): ?string
     {
         return $this->register_ip;
     }
@@ -312,7 +312,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLastIp(): ? string
+    public function getLastIp(): ?string
     {
         return $this->last_ip;
     }
@@ -324,7 +324,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLastLogin(): ? \DateTimeInterface
+    public function getLastLogin(): ?\DateTimeInterface
     {
         return $this->last_login;
     }
@@ -336,108 +336,108 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLocation(): ? string
+    public function getLocation(): ?string
     {
         return $this->location;
     }
 
-    public function setLocation(? string $location): self
+    public function setLocation(?string $location): self
     {
         $this->location = $location;
 
         return $this;
     }
 
-    public function getDescription(): ? string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(? string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getRelationship(): ? string
+    public function getRelationship(): ?string
     {
         return $this->relationship;
     }
 
-    public function setRelationship(? string $relationship): self
+    public function setRelationship(?string $relationship): self
     {
         $this->relationship = $relationship;
 
         return $this;
     }
 
-    public function getOrientation(): ? string
+    public function getOrientation(): ?string
     {
         return $this->orientation;
     }
 
-    public function setOrientation(? string $orientation): self
+    public function setOrientation(?string $orientation): self
     {
         $this->orientation = $orientation;
 
         return $this;
     }
 
-    public function getPronoun(): ? string
+    public function getPronoun(): ?string
     {
         return $this->pronoun;
     }
 
-    public function setPronoun(? string $pronoun): self
+    public function setPronoun(?string $pronoun): self
     {
         $this->pronoun = $pronoun;
 
         return $this;
     }
 
-    public function getStatus(): ? string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
 
-    public function setStatus(? string $status): self
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getLovegender(): ? array
+    public function getLovegender(): ?array
     {
         return $this->lovegender;
     }
 
-    public function setLovegender(? array $lovegender): self
+    public function setLovegender(?array $lovegender): self
     {
         $this->lovegender = $lovegender;
 
         return $this;
     }
 
-    public function getMinage(): ? int
+    public function getMinage(): ?int
     {
         return $this->minage;
     }
 
-    public function setMinage(? int $minage): self
+    public function setMinage(?int $minage): self
     {
         $this->minage = $minage;
 
         return $this;
     }
 
-    public function getMaxage(): ? int
+    public function getMaxage(): ?int
     {
         return $this->maxage;
     }
 
-    public function setMaxage(? int $maxage): self
+    public function setMaxage(?int $maxage): self
     {
         $this->maxage = $maxage;
 
@@ -523,19 +523,19 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getBirthday(): ? \DateTimeInterface
+    public function getBirthday(): ?\DateTimeInterface
     {
         return $this->birthday;
     }
 
-    public function setBirthday(? \DateTimeInterface $birthday): self
+    public function setBirthday(?\DateTimeInterface $birthday): self
     {
         $this->birthday = $birthday;
 
         return $this;
     }
 
-    public function getAvatar(): ? string
+    public function getAvatar(): ?string
     {
         $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
         usort($files, function ($a, $b) {
@@ -543,7 +543,7 @@ class User implements UserInterface
         });
 
         if (isset($files[0])) {
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?"https" : "http") . "://$_SERVER[HTTP_HOST]";
             $this->avatar = str_replace("../public", $server, $files[0]);
         } else {
             $this->avatar = false;
@@ -552,7 +552,7 @@ class User implements UserInterface
         return $this->avatar;
     }
 
-    public function setAvatar(? string $avatar): self
+    public function setAvatar(?string $avatar): self
     {
         $this->avatar = $avatar;
 
@@ -672,7 +672,7 @@ class User implements UserInterface
             $key = '';
             $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             $max = strlen($pattern) - 1;
-            for ($i = 0; $i < 4; $i++) $key .= $pattern {
+            for ($i = 0; $i < 4; $i++) $key .= $pattern{
                 mt_rand(0, $max)};
 
             $this->verificationCode = $key;
@@ -683,7 +683,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getActive(): ? bool
+    public function getActive(): ?bool
     {
         return $this->active;
     }

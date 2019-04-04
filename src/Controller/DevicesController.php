@@ -220,4 +220,42 @@ class DevicesController extends FOSRestController
             throw new HttpException(400, "Error al verificar tu dispositivo");
         }
     }
+
+    /**
+     * @Rest\Delete("/v1/device/{id}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Dispositivo eliminado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al eliminar el dispositivo"
+     * )
+     * 
+     */
+    public function deleteAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $user, 'id' => $id));
+            $user->removeDevice($device);
+            $em->persist($user);
+            $em->flush();
+
+            $response = $user;
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al eliminar el dispositivo - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
 }
