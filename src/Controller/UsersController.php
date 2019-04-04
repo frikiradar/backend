@@ -248,6 +248,9 @@ class UsersController extends FOSRestController
             if ($newUser->getId() == $this->getUser()->getId()) {
                 $em = $this->getDoctrine()->getManager();
 
+                /**
+                 * @var User
+                 */
                 $user = $this->getUser();
                 $user->setDescription($newUser->getDescription());
                 $user->setBirthday($newUser->getBirthday());
@@ -260,7 +263,8 @@ class UsersController extends FOSRestController
                 $user->setMaxage($newUser->getMaxage());
                 $user->setLovegender($newUser->getLovegender());
                 $user->setConnection($newUser->getConnection());
-
+                $user->setHideLocation($newUser->getHideLocation());
+                $user->setBlockMessages($newUser->getBlockMessages());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
