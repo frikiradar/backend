@@ -143,7 +143,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
-        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location, u.hide_location, u.block_messages
+        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location, u.hide_location, u.block_messages,
                 (GLength(
                         LineStringFromWKB(
                             LineString(
