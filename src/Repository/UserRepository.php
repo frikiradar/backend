@@ -77,6 +77,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.lovegender',
                 'u.connection',
                 'u.location',
+                'u.hide_location',
+                'u.block_messages',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -106,6 +108,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.description',
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.location',
+                'u.hide_location',
+                'u.block_messages',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -117,7 +121,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andHaving('distance <= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
-            ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+            ->andWhere($user->getLovegender() ?'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
@@ -134,12 +138,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getResult();
     }
 
-    public function searchUsers(string $search, User $user): ? array
+    public function searchUsers(string $search, User $user): ?array
     {
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
-        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location,
+        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location, u.hide_location, u.block_messages
                 (GLength(
                         LineStringFromWKB(
                             LineString(
@@ -178,8 +182,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        $matchIndexA = count($tagsA) ? $matches / count($tagsA) : 0;
-        $matchIndexB = count($tagsB) ? $matches / count($tagsB) : 0;
+        $matchIndexA = count($tagsA) ?$matches / count($tagsA) : 0;
+        $matchIndexB = count($tagsB) ?$matches / count($tagsB) : 0;
         $matchIndex = max($matchIndexA, $matchIndexB);
 
         return round($matchIndex * 100, 1);
