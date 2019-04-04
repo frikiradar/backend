@@ -209,10 +209,11 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('App:User')->findeOneUser($id, $this->getUser());
         $user['age'] = (int)$user['age'];
-        $user['distance'] = (int)$user['distance'];
+        $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
 
         $obUser = new User();
         $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $user['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ?$user->getLocation() : null;
         $user['tags'] = $obUser->getTags();
         $user['avatar'] = $obUser->getAvatar() ?: null;
         $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $obUser);
@@ -500,6 +501,7 @@ class UsersController extends FOSRestController
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ?$user->getLocation() : null;
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
@@ -567,7 +569,8 @@ class UsersController extends FOSRestController
             foreach ($users as $key => $u) {
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
-                $users[$key]['distance'] = (int)$u['distance'];
+                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ?$user->getLocation() : null;
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
