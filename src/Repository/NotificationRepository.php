@@ -83,32 +83,34 @@ class NotificationRepository extends ServiceEntityRepository
         $em->flush();
 
         foreach ($devices as $device) {
-            $notification = PushNotification::create($title, $text);
-            $data = [
-                'fromUser' => (string)$fromUser->getId(),
-                'toUser' => (string)$toUser->getId(),
-                'url' => $url
-            ];
+            if ($device->getActive() && !empty($device->getToken())) {
+                $notification = PushNotification::create($title, $text);
+                $data = [
+                    'fromUser' => (string)$fromUser->getId(),
+                    'toUser' => (string)$toUser->getId(),
+                    'url' => $url
+                ];
 
-            $config = AndroidConfig::fromArray([
-                'ttl' => '3600s',
-                'priority' => 'normal',
-                'notification' => [
-                    'title' => $title,
-                    'body' => $text,
-                    'sound' => "default"
-                    // 'click_action' => "FCM_PLUGIN_ACTIVITY"
-                ],
-            ]);
+                $config = AndroidConfig::fromArray([
+                    'ttl' => '3600s',
+                    'priority' => 'normal',
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $text,
+                        'sound' => "default"
+                        // 'click_action' => "FCM_PLUGIN_ACTIVITY"
+                    ],
+                ]);
 
-            $message = CloudMessage::withTarget('token', $device->getToken())
-                ->withNotification($notification) // optional
-                ->withData($data)
-                ->withAndroidConfig($config);
+                $message = CloudMessage::withTarget('token', $device->getToken())
+                    ->withNotification($notification) // optional
+                    ->withData($data)
+                    ->withAndroidConfig($config);
 
-            $firebase = (new Firebase\Factory())->create();
-            $messaging = $firebase->getMessaging();
-            $messaging->send($message);
+                $firebase = (new Firebase\Factory())->create();
+                $messaging = $firebase->getMessaging();
+                $messaging->send($message);
+            }
         }
     }
 

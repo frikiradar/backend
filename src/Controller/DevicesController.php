@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
+use App\Entity\Device;
 
 
 /**
@@ -248,6 +249,46 @@ class DevicesController extends FOSRestController
             $em->flush();
 
             $response = $user;
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al eliminar el dispositivo - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Get("/v1/switch-device/{id}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Dispositivo activado/desactivado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al activar/desactivar el dispositivo"
+     * )
+     * 
+     */
+    public function switchAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            /**
+             * @var Device
+             */
+            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'id' => $id));
+            $device->setActive(!$device->getActive());
+            $em->persist($device);
+            $em->flush();
+
+            $response = $this->getUser();
         } catch (Exception $ex) {
             $response = [
                 'code' => 500,
