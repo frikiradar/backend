@@ -183,6 +183,16 @@ class User implements UserInterface
      */
     private $active;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $hide_location;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $block_messages;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -697,6 +707,30 @@ class User implements UserInterface
     public function setActive(bool $active): self
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    public function getHideLocation(): ?bool
+    {
+        return $this->hide_location;
+    }
+
+    public function setHideLocation(?bool $hide_location): self
+    {
+        $this->hide_location = $hide_location;
+
+        return $this;
+    }
+
+    public function getBlockMessages(): ?bool
+    {
+        return $this->block_messages;
+    }
+
+    public function setBlockMessages(?bool $block_messages): self
+    {
+        $this->block_messages = $block_messages;
 
         return $this;
     }
