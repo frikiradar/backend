@@ -746,12 +746,4 @@ class User implements UserInterface
 
         return $this;
     }
-
-    /**
-     * @return Collection|Like[]
-     */
-    public function getLikes(): Collection
-    {
-        return $this->likes;
-    }
 }
