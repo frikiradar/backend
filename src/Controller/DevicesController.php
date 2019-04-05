@@ -217,8 +217,8 @@ class DevicesController extends FOSRestController
             try {
                 $em->getRepository('App:Device')->set(
                     $user,
-                    $device->id,
-                    $device->name
+                    $device['device_id'],
+                    $device['device_name']
                 );
 
                 $user->setVerificationCode(null);
