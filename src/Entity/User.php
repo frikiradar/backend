@@ -754,35 +754,4 @@ class User implements UserInterface
     {
         return $this->likes;
     }
-
-    /**
-     * @return Collection|BlockUser[]
-     */
-    public function getBlockUsers(): Collection
-    {
-        return $this->blockUsers;
-    }
-
-    public function addBlockUser(BlockUser $blockUser): self
-    {
-        if (!$this->blockUsers->contains($blockUser)) {
-            $this->blockUsers[] = $blockUser;
-            $blockUser->setFromUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBlockUser(BlockUser $blockUser): self
-    {
-        if ($this->blockUsers->contains($blockUser)) {
-            $this->blockUsers->removeElement($blockUser);
-            // set the owning side to null (unless already changed)
-            if ($blockUser->getFromUser() === $this) {
-                $blockUser->setFromUser(null);
-            }
-        }
-
-        return $this;
-    }
 }
