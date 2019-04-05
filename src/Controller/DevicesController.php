@@ -106,12 +106,14 @@ class DevicesController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $response = $em->getRepository('App:Device')->set(
+            $em->getRepository('App:Device')->set(
                 $this->getUser(),
                 $request->request->get("id"),
                 $request->request->get("name"),
                 $request->request->get("token") ?: ""
             );
+
+            $response = $this->getUser();
         } catch (Exception $ex) {
             $response = [
                 'code' => 500,
