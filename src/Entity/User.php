@@ -193,12 +193,24 @@ class User implements UserInterface
      */
     private $block_messages;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Like", mappedBy="from_user", orphanRemoval=true)
+     */
+    private $likes;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\BlockUser", mappedBy="from_user", orphanRemoval=true)
+     */
+    private $blockUsers;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->devices = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+        $this->blockUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -731,6 +743,45 @@ class User implements UserInterface
     public function setBlockMessages(?bool $block_messages): self
     {
         $this->block_messages = $block_messages;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Like[]
+     */
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    /**
+     * @return Collection|BlockUser[]
+     */
+    public function getBlockUsers(): Collection
+    {
+        return $this->blockUsers;
+    }
+
+    public function addBlockUser(BlockUser $blockUser): self
+    {
+        if (!$this->blockUsers->contains($blockUser)) {
+            $this->blockUsers[] = $blockUser;
+            $blockUser->setFromUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBlockUser(BlockUser $blockUser): self
+    {
+        if ($this->blockUsers->contains($blockUser)) {
+            $this->blockUsers->removeElement($blockUser);
+            // set the owning side to null (unless already changed)
+            if ($blockUser->getFromUser() === $this) {
+                $blockUser->setFromUser(null);
+            }
+        }
 
         return $this;
     }
