@@ -48,7 +48,7 @@ class DeviceRepository extends ServiceEntityRepository
         ;
     }
     */
-    public function set(User $user, string $id, string $name, string $token)
+    public function set(User $user, string $id, string $name, string $token = "")
     {
         $em = $this->getEntityManager();
 

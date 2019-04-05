@@ -106,14 +106,12 @@ class DevicesController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $em->getRepository('App:Device')->set(
+            $response = $em->getRepository('App:Device')->set(
                 $this->getUser(),
                 $request->request->get("id"),
                 $request->request->get("name"),
                 $request->request->get("token") ?: ""
             );
-
-            $response = $this->getUser();
         } catch (Exception $ex) {
             $response = [
                 'code' => 500,
@@ -213,13 +211,24 @@ class DevicesController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         $verificationCode = $request->request->get("verification_code");
+        $device = $request->request->get("device");
         $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
         if (!is_null($user)) {
-            $user->setVerificationCode(null);
-            $em->persist($user);
-            $em->flush();
+            try {
+                $em->getRepository('App:Device')->set(
+                    $user,
+                    $device->id,
+                    $device->name
+                );
 
-            return new Response($serializer->serialize($user, "json"));
+                $user->setVerificationCode(null);
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($this->getUser(), "json"));
+            } catch (Exception $e) {
+                throw new HttpException(400, "Error al verificar tu dispositivo: " . $e);
+            }
         } else {
             throw new HttpException(400, "Error al verificar tu dispositivo");
         }

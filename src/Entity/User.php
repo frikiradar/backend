@@ -553,7 +553,7 @@ class User implements UserInterface
         });
 
         if (isset($files[0])) {
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?"https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             $this->avatar = str_replace("../public", $server, $files[0]);
         } else {
             $this->avatar = false;
@@ -688,7 +688,7 @@ class User implements UserInterface
             $key = '';
             $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             $max = strlen($pattern) - 1;
-            for ($i = 0; $i < 4; $i++) $key .= $pattern{
+            for ($i = 0; $i < 6; $i++) $key .= $pattern{
                 mt_rand(0, $max)};
 
             $this->verificationCode = $key;
