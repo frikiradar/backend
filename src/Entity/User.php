@@ -193,23 +193,12 @@ class User implements UserInterface
      */
     private $block_messages;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Like", mappedBy="from_user", orphanRemoval=true)
-     */
-    private $likes;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\BlockUser", mappedBy="from_user", orphanRemoval=true)
-     */
-    private $blockUsers;
-
     public function __construct()
     {
         $this->tags = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->devices = new ArrayCollection();
-        $this->likes = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
     }
 
