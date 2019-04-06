@@ -1061,7 +1061,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Delete("/v1/block/{id}", name="unlike")
+     * @Rest\Delete("/v1/block/{id}", name="unblock")
      *
      * @SWG\Response(
      *     response=201,
