@@ -56,6 +56,7 @@ class NotificationRepository extends ServiceEntityRepository
     public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
         $em = $this->getEntityManager();
+        $isNewNotification = false;
 
         // TODO: quitar las notificaciones de chat
 
@@ -67,6 +68,7 @@ class NotificationRepository extends ServiceEntityRepository
         ]);
 
         if (empty($newNotification)) {
+            $isNewNotification = true;
             $newNotification = new Notification();
             $newNotification->setFromUser($fromUser);
             $newNotification->setToUser($toUser);
@@ -79,38 +81,40 @@ class NotificationRepository extends ServiceEntityRepository
         $newNotification->setType($type);
         $newNotification->setViewed(false);
 
-        $em->persist($newNotification);
+        $em->merge($newNotification);
         $em->flush();
 
-        $devices = $toUser->getDevices();
-        foreach ($devices as $device) {
-            if ($device->getActive() && !is_null($device->getToken())) {
-                $notification = PushNotification::create($title, $text);
-                $data = [
-                    'fromUser' => (string)$fromUser->getId(),
-                    'toUser' => (string)$toUser->getId(),
-                    'url' => $url
-                ];
+        if ($isNewNotification) {
+            $devices = $toUser->getDevices();
+            foreach ($devices as $device) {
+                if ($device->getActive() && !is_null($device->getToken())) {
+                    $notification = PushNotification::create($title, $text);
+                    $data = [
+                        'fromUser' => (string)$fromUser->getId(),
+                        'toUser' => (string)$toUser->getId(),
+                        'url' => $url
+                    ];
 
-                $config = AndroidConfig::fromArray([
-                    'ttl' => '3600s',
-                    'priority' => 'normal',
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $text,
-                        'sound' => "default"
-                        // 'click_action' => "FCM_PLUGIN_ACTIVITY"
-                    ],
-                ]);
+                    $config = AndroidConfig::fromArray([
+                        'ttl' => '3600s',
+                        'priority' => 'normal',
+                        'notification' => [
+                            'title' => $title,
+                            'body' => $text,
+                            'sound' => "default"
+                            // 'click_action' => "FCM_PLUGIN_ACTIVITY"
+                        ],
+                    ]);
 
-                $message = CloudMessage::withTarget('token', $device->getToken())
-                    ->withNotification($notification) // optional
-                    ->withData($data)
-                    ->withAndroidConfig($config);
+                    $message = CloudMessage::withTarget('token', $device->getToken())
+                        ->withNotification($notification) // optional
+                        ->withData($data)
+                        ->withAndroidConfig($config);
 
-                $firebase = (new Firebase\Factory())->create();
-                $messaging = $firebase->getMessaging();
-                $messaging->send($message);
+                    $firebase = (new Firebase\Factory())->create();
+                    $messaging = $firebase->getMessaging();
+                    $messaging->send($message);
+                }
             }
         }
     }
