@@ -13,7 +13,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  * @method LikeUser[]    findAll()
  * @method LikeUser[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class LikeRepository extends ServiceEntityRepository
+class LikeUserRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {

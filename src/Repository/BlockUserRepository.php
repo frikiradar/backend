@@ -58,4 +58,17 @@ class BlockUserRepository extends ServiceEntityRepository
 
         return $query->getResult();
     }
+
+    public function isBlocked(User $fromUser, User $blockUser)
+    {
+        return $this->createQueryBuilder('b')
+            ->where('b.from_user = :fromUser AND b.block_user = :blockUser')
+            ->orWhere('b.from_user = :blockUser AND b.block_user = :fromUser')
+            ->setParameters([
+                'fromUser' => $fromUser,
+                'blockUser' => $blockUser
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

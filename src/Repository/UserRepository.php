@@ -58,12 +58,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getOneOrNullResult();
     }
 
-    public function findeOneUser(int $id, User $user)
+    public function findeOneUser(User $fromUser, User $toUser)
     {
-        $latitude = $user->getCoordinates()->getLatitude();
-        $longitude = $user->getCoordinates()->getLongitude();
+        $em = $this->getEntityManager();
 
-        return $this->createQueryBuilder('u')
+        $latitude = $fromUser->getCoordinates()->getLatitude();
+        $longitude = $fromUser->getCoordinates()->getLongitude();
+
+        $user = $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
                 'u.username',
@@ -90,10 +92,25 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andWhere('u.id = :id')
             ->setParameters(array(
-                'id' => $id
+                'id' => $toUser->getId()
             ))
             ->getQuery()
             ->getOneOrNullResult();
+
+        $user['age'] = (int)$user['age'];
+        $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+
+        $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
+        $user['tags'] = $toUser->getTags();
+        $user['avatar'] = $toUser->getAvatar() ?: null;
+        $user['match'] = $em->getRepository('App:User')->getMatchIndex($fromUser, $toUser);
+        $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+            'from_user' => $fromUser,
+            'to_user' => $toUser
+        ])) ? true : false;
+        $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+
+        return $user;
     }
 
     public function getUsersByDistance(User $user, int $ratio)

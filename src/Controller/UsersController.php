@@ -209,16 +209,8 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findeOneUser($id, $this->getUser());
-        $user['age'] = (int)$user['age'];
-        $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
-
-        $obUser = new User();
-        $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $user['location'] = (!$obUser->getHideLocation() && !empty($obUser->getLocation())) ? $obUser->getLocation() : null;
-        $user['tags'] = $obUser->getTags();
-        $user['avatar'] = $obUser->getAvatar() ?: null;
-        $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $obUser);
+        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
         return new Response($serializer->serialize($user, "json"));
     }
@@ -939,14 +931,9 @@ class UsersController extends FOSRestController
             $text = "Ha mostrado interés en ti dando 'Me gusta' a tu perfil";
             $url = "/profile/" . $newLike->getFromUser()->getId();
             $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Like dado correctamente",
-            ];
-
-            return new Response($serializer->serialize($response, "json"));
+            return new Response($serializer->serialize($user, "json"));
         } catch (Exception $e) {
             throw new HttpException(400, "Error al dar like " . $e);
         }
@@ -973,18 +960,13 @@ class UsersController extends FOSRestController
 
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-
             $like = $em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
             $em->remove($like);
             $em->flush();
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Like eliminado correctamente",
-            ];
+            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            return new Response($serializer->serialize($response, "json"));
+            return new Response($serializer->serialize($user, "json"));
         } catch (Exception $e) {
             throw new HttpException(400, "Error al quitar el like " . $e);
         }
