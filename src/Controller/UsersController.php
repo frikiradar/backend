@@ -29,6 +29,7 @@ use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
 use Geocoder\Query\ReverseQuery;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Entity\LikeUser;
 
 /**
  * Class UsersController
@@ -158,7 +159,7 @@ class UsersController extends FOSRestController
         $response = [
             'code' => $code,
             'error' => $error,
-            'data' => $code == 200 ?$user : $message,
+            'data' => $code == 200 ? $user : $message,
         ];
 
         return new Response($serializer->serialize($response, "json"));
@@ -182,8 +183,8 @@ class UsersController extends FOSRestController
     public function getAction()
     {
         $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
+
+        $user = $this->getUser();
         $user->setAvatar($user->getAvatar());
         $user->setVerificationCode(null);
         return new Response($serializer->serialize($user, "json"));
@@ -213,7 +214,7 @@ class UsersController extends FOSRestController
 
         $obUser = new User();
         $obUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $user['location'] = (!$obUser->getHideLocation() && !empty($obUser->getLocation())) ?$obUser->getLocation() : null;
+        $user['location'] = (!$obUser->getHideLocation() && !empty($obUser->getLocation())) ? $obUser->getLocation() : null;
         $user['tags'] = $obUser->getTags();
         $user['avatar'] = $obUser->getAvatar() ?: null;
         $user['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $obUser);
@@ -275,7 +276,7 @@ class UsersController extends FOSRestController
 
                 foreach ($newUser->getTags() as $tag) {
                     $category = $em->getRepository('App:Category')->findOneBy(array('name' => $tag->getCategory()->getName()));
-                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ?$category->getId() : null));
+                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
 
                     if (empty($oldTag)) {
                         $newTag = new Tag();
@@ -464,7 +465,7 @@ class UsersController extends FOSRestController
                 }
             }
 
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ?"https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
         } else {
             $response = [
@@ -501,7 +502,7 @@ class UsersController extends FOSRestController
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ?$user->getLocation() : null;
+                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
@@ -570,7 +571,7 @@ class UsersController extends FOSRestController
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['age'] = (int)$u['age'];
                 $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ?$user->getLocation() : null;
+                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
                 $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
@@ -894,5 +895,127 @@ class UsersController extends FOSRestController
         } else {
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
+    }
+
+    /**
+     * @Rest\Put("/v1/like", name="like")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="LikeUser guardado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al guardar el like"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="user",
+     *     in="body",
+     *     type="string",
+     *     description="To user like",
+     *     schema={}
+     * )
+     *
+     */
+    public function putLikeAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+
+            $like = new LikeUser();
+            $like->setDate(new \DateTime);
+            $like->setFromUser($this->getUser());
+            $like->getToUser($toUser);
+            $em->persist($like);
+            $em->flush();
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Like dado correctamente",
+            ];
+
+            return new Response($serializer->serialize($response, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al dar like");
+        }
+    }
+
+    /**
+     * @Rest\Delete("/v1/like/{id}", name="unlike")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="LikeUser guardado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al borrar el like"
+     * )
+     *
+     */
+    public function removeLikeAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+
+            $like = $em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
+            $em->remove($like);
+            $em->flush();
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Like eliminado correctamente",
+            ];
+
+            return new Response($serializer->serialize($response, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al quitar el like");
+        }
+    }
+
+    /**
+     * @Rest\Get("/v1/likes")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Likes obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener los likes"
+     * )
+     * 
+     * @SWG\Tag(name="Get Likes")
+     */
+    public function getLikesAction()
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $users = $em->getRepository('App:LikeUser')->getToLikes($this->getUser());
+
+        foreach ($users as $key => $u) {
+            $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+            $users[$key]['age'] = (int)$u['age'];
+            $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+            $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
+            $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
+            $users[$key]['avatar'] = $user->getAvatar() ?: null;
+        }
+
+        // $user->setAvatar($user->getAvatar());
+        return new Response($serializer->serialize($users, "json"));
     }
 }

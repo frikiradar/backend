@@ -121,7 +121,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andHaving('distance <= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
-            ->andWhere($user->getLovegender() ?'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+            ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
@@ -143,18 +143,24 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
-        $dql = "SELECT u.id, u.username, u.description, (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age, u.location, u.hide_location, u.block_messages,
-                (GLength(
-                        LineStringFromWKB(
-                            LineString(
-                                u.coordinates,
-                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                            )
+        $dql = "SELECT u.id,
+            u.username,
+            u.description,
+            (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age,
+            u.location,
+            u.hide_location,
+            u.block_messages,
+            (GLength(
+                    LineStringFromWKB(
+                        LineString(
+                            u.coordinates,
+                            GeomFromText('Point(" . $longitude . " " . $latitude . ")')
                         )
-                    ) * 100) distance
-                FROM App:User u WHERE u.id IN
-                (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
-                AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'";
+                    )
+                ) * 100) distance
+            FROM App:User u WHERE u.id IN
+            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
+            AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'";
         $query = $this->getEntityManager()->createQuery($dql);
 
         return $query->getResult();
@@ -182,8 +188,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        $matchIndexA = count($tagsA) ?$matches / count($tagsA) : 0;
-        $matchIndexB = count($tagsB) ?$matches / count($tagsB) : 0;
+        $matchIndexA = count($tagsA) ? $matches / count($tagsA) : 0;
+        $matchIndexB = count($tagsB) ? $matches / count($tagsB) : 0;
         $matchIndex = max($matchIndexA, $matchIndexB);
 
         return round($matchIndex * 100, 1);
