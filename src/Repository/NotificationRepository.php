@@ -59,6 +59,8 @@ class NotificationRepository extends ServiceEntityRepository
         $devices = $toUser->getDevices();
         $em = $this->getEntityManager();
 
+        // TODO: quitar las notificaciones de chat
+
         $newNotification = $this->findOneBy([
             'fromUser' => $fromUser,
             'toUser' => $toUser,

@@ -1,5 +1,5 @@
 <?php
- // src/Controller/ChatController.php
+// src/Controller/ChatController.php
 namespace App\Controller;
 
 use App\Entity\Chat;
@@ -86,7 +86,6 @@ class ChatController extends FOSRestController
 
         $title = $fromUser->getUsername();
         $url = "/chat/" . $newChat->getFromuser()->getId();
-
         $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text, $url, "chat");
 
         return new Response($serializer->serialize($chat, "json"));

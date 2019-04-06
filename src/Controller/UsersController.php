@@ -928,12 +928,17 @@ class UsersController extends FOSRestController
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $like = new LikeUser();
-            $like->setDate(new \DateTime);
-            $like->setFromUser($this->getUser());
-            $like->setToUser($toUser);
-            $em->persist($like);
+            $newLike = new LikeUser();
+            $newLike->setDate(new \DateTime);
+            $newLike->setFromUser($this->getUser());
+            $newLike->setToUser($toUser);
+            $em->persist($newLike);
             $em->flush();
+
+            $title = $newLike->getFromUser()->getUsername();
+            $text = "Ha mostrado interés en ti dando 'Me gusta' a tu perfil";
+            $url = "/profile/" . $newLike->getFromUser()->getId();
+            $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
 
             $response = [
                 'code' => 200,
@@ -1057,20 +1062,20 @@ class UsersController extends FOSRestController
         try {
             $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $block = new BlockUser();
-            $block->setDate(new \DateTime);
-            $block->setFromUser($this->getUser());
-            $block->setBlockUser($blockUser);
-            $block->setNote($request->request->get('note'));
-            $em->persist($block);
+            $newBlock = new BlockUser();
+            $newBlock->setDate(new \DateTime);
+            $newBlock->setFromUser($this->getUser());
+            $newBlock->setBlockUser($blockUser);
+            $newBlock->setNote($request->request->get('note'));
+            $em->persist($newBlock);
             $em->flush();
 
-            if (!empty($block->getNote())) {
+            if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
                 $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario < href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $block->getNote());
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario < href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
 
                 if (0 === $mailer->send($message)) {
                     // throw new \RuntimeException('Unable to send email');
