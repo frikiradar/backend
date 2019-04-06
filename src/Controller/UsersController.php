@@ -491,14 +491,6 @@ class UsersController extends FOSRestController
 
         try {
             $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio);
-            foreach ($users as $key => $u) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-                $users[$key]['age'] = (int)$u['age'];
-                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
-                $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
-                $users[$key]['avatar'] = $user->getAvatar() ?: null;
-            }
 
             usort($users, function ($a, $b) {
                 return $b['match'] <=> $a['match'];
@@ -560,14 +552,6 @@ class UsersController extends FOSRestController
 
         try {
             $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser());
-            foreach ($users as $key => $u) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-                $users[$key]['age'] = (int)$u['age'];
-                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-                $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
-                $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
-                $users[$key]['avatar'] = $user->getAvatar() ?: null;
-            }
 
             switch ($request->request->get("order")) {
                 case 'match':

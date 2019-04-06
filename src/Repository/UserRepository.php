@@ -110,7 +110,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         ])) ? true : false;
         $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
-        return $user;
+        if (!$user['block']) {
+            return $user;
+        } else {
+            throw new Exception('Usuario bloqueado');
+        }
     }
 
     public function getUsersByDistance(User $user, int $ratio)
@@ -118,7 +122,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
-        return $this->createQueryBuilder('u')
+        $users = $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
                 'u.username',
@@ -153,6 +157,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->getQuery()
             ->getResult();
+
+        return $this->enhanceUsers($users, $user);
     }
 
     public function searchUsers(string $search, User $user): ?array
@@ -180,7 +186,34 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'";
         $query = $this->getEntityManager()->createQuery($dql);
 
-        return $query->getResult();
+        $users = $query->getResult();
+
+        return $this->enhanceUsers($users, $user);
+    }
+
+    private function enhanceUsers($users, $fromUser)
+    {
+        $em = $this->getEntityManager();
+
+        foreach ($users as $key => $u) {
+            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+            $users[$key]['age'] = (int)$u['age'];
+            $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+            $users[$key]['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
+            $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $toUser);
+            $users[$key]['avatar'] = $toUser->getAvatar() ?: null;
+            $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $fromUser,
+                'to_user' => $toUser
+            ])) ? true : false;
+            $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+
+            if ($user['block']) {
+                unset($users[$key]);
+            }
+        }
+
+        return $users;
     }
 
     public function getMatchIndex(User $userA, User $userB)
