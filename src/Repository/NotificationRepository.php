@@ -61,19 +61,19 @@ class NotificationRepository extends ServiceEntityRepository
 
         // TODO: quitar las notificaciones de chat
 
-        $newNotification = $this->findOneBy([
+        /*$newNotification = $this->findOneBy([
             'fromUser' => $fromUser,
             'toUser' => $toUser,
             'title' => $title,
             'type' => $type
-        ]);
+        ]);*/
 
-        if (empty($newNotification)) {
-            $newNotification = new Notification();
-            $newNotification->setFromUser($fromUser);
-            $newNotification->setToUser($toUser);
-            $newNotification->setTitle($title);
-        }
+        // if (empty($newNotification)) {
+        $newNotification = new Notification();
+        $newNotification->setFromUser($fromUser);
+        $newNotification->setToUser($toUser);
+        $newNotification->setTitle($title);
+        // }
 
         $newNotification->setText($text);
         $newNotification->setTimeCreation(new \DateTime);
