@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\BlockUser;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -47,4 +48,14 @@ class BlockUserRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function getBlockUsers(User $user)
+    {
+        $dql = "SELECT u.id, u.username            
+            FROM App:User u WHERE u.id IN
+            (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :fromUser)";
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter("fromUser", $user);
+
+        return $query->getResult();
+    }
 }

@@ -30,6 +30,7 @@ use App\Service\FileUploader;
 use Geocoder\Query\ReverseQuery;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\LikeUser;
+use App\Entity\BlockUser;
 
 /**
  * Class UsersController
@@ -902,7 +903,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Response(
      *     response=201,
-     *     description="LikeUser guardado correctamente"
+     *     description="Like guardado correctamente"
      * )
      *
      * @SWG\Response(
@@ -930,7 +931,7 @@ class UsersController extends FOSRestController
             $like = new LikeUser();
             $like->setDate(new \DateTime);
             $like->setFromUser($this->getUser());
-            $like->getToUser($toUser);
+            $like->setToUser($toUser);
             $em->persist($like);
             $em->flush();
 
@@ -942,7 +943,7 @@ class UsersController extends FOSRestController
 
             return new Response($serializer->serialize($response, "json"));
         } catch (Exception $e) {
-            throw new HttpException(400, "Error al dar like");
+            throw new HttpException(400, "Error al dar like " . $e);
         }
     }
 
@@ -951,7 +952,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Response(
      *     response=201,
-     *     description="LikeUser guardado correctamente"
+     *     description="Like borrado correctamente"
      * )
      *
      * @SWG\Response(
@@ -980,7 +981,7 @@ class UsersController extends FOSRestController
 
             return new Response($serializer->serialize($response, "json"));
         } catch (Exception $e) {
-            throw new HttpException(400, "Error al quitar el like");
+            throw new HttpException(400, "Error al quitar el like " . $e);
         }
     }
 
@@ -1015,7 +1016,144 @@ class UsersController extends FOSRestController
             $users[$key]['avatar'] = $user->getAvatar() ?: null;
         }
 
-        // $user->setAvatar($user->getAvatar());
+        return new Response($serializer->serialize($users, "json"));
+    }
+
+    /**
+     * @Rest\Put("/v1/block", name="block")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario bloqueado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al bloquear el usuario"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="user",
+     *     in="body",
+     *     type="string",
+     *     description="To user block",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="note",
+     *     in="body",
+     *     type="string",
+     *     description="Motive of block",
+     *     schema={}
+     * )
+     *
+     */
+    public function putBlockAction(Request $request, \Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+
+            $block = new BlockUser();
+            $block->setDate(new \DateTime);
+            $block->setFromUser($this->getUser());
+            $block->setBlockUser($blockUser);
+            $block->setNote($request->request->get('note'));
+            $em->persist($block);
+            $em->flush();
+
+            if (!empty($block->getNote())) {
+                // Enviar email al administrador informando del motivo
+                $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
+                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario < href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $block->getNote());
+
+                if (0 === $mailer->send($message)) {
+                    // throw new \RuntimeException('Unable to send email');
+                }
+            }
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Usuario bloqueado correctamente",
+            ];
+
+            return new Response($serializer->serialize($response, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al bloquear usuario " . $e);
+        }
+    }
+
+    /**
+     * @Rest\Delete("/v1/block/{id}", name="unlike")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Bloqueo eliminado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al eliminar el bloqueo"
+     * )
+     *
+     */
+    public function removeBlockAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+
+            $block = $em->getRepository('App:LikeUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
+            $em->remove($block);
+            $em->flush();
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Usuario desbloqueado correctamente",
+            ];
+
+            return new Response($serializer->serialize($response, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al desbloquear el usuario " . $e);
+        }
+    }
+
+    /**
+     * @Rest\Get("/v1/blocks")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuarios bloqueados obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener los usuarios bloqueados"
+     * )
+     * 
+     * @SWG\Tag(name="Get Blocks")
+     */
+    public function getBlocksAction()
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
+
+        foreach ($users as $key => $u) {
+            $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+            $users[$key]['avatar'] = $user->getAvatar() ?: null;
+        }
+
         return new Response($serializer->serialize($users, "json"));
     }
 }
