@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use App\Entity\Device;
 use App\Entity\Notification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -56,24 +55,23 @@ class NotificationRepository extends ServiceEntityRepository
 
     public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
-        $devices = $toUser->getDevices();
         $em = $this->getEntityManager();
 
         // TODO: quitar las notificaciones de chat
 
-        /*$newNotification = $this->findOneBy([
+        $newNotification = $this->findOneBy([
             'fromUser' => $fromUser,
             'toUser' => $toUser,
             'title' => $title,
             'type' => $type
-        ]);*/
+        ]);
 
-        // if (empty($newNotification)) {
-        $newNotification = new Notification();
-        $newNotification->setFromUser($fromUser);
-        $newNotification->setToUser($toUser);
-        $newNotification->setTitle($title);
-        // }
+        if (empty($newNotification)) {
+            $newNotification = new Notification();
+            $newNotification->setFromUser($fromUser);
+            $newNotification->setToUser($toUser);
+            $newNotification->setTitle($title);
+        }
 
         $newNotification->setText($text);
         $newNotification->setTimeCreation(new \DateTime);
@@ -84,6 +82,7 @@ class NotificationRepository extends ServiceEntityRepository
         $em->persist($newNotification);
         $em->flush();
 
+        $devices = $toUser->getDevices();
         foreach ($devices as $device) {
             if ($device->getActive() && !empty($device->getToken())) {
                 $notification = PushNotification::create($title, $text);
