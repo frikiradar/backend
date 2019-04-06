@@ -200,7 +200,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['age'] = (int)$u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
             $users[$key]['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
-            $users[$key]['match'] = $this->getMatchIndex($this->getUser(), $toUser);
+            $users[$key]['match'] = $this->getMatchIndex($fromUser, $toUser);
             $users[$key]['avatar'] = $toUser->getAvatar() ?: null;
             $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
@@ -216,7 +216,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $users;
     }
 
-    public function getMatchIndex(User $userA, User $userB)
+    private function getMatchIndex(User $userA, User $userB)
     {
         $a = $b = [];
         $tagsA = $userA->getTags();
