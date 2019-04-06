@@ -69,7 +69,7 @@ class DeviceRepository extends ServiceEntityRepository
         $device->setLastUpdate(new \DateTime);
 
         try {
-            $em->persist($device);
+            $em->merge($device);
             $em->flush();
 
             return $device;
