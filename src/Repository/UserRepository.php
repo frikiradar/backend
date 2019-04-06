@@ -103,7 +103,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
         $user['tags'] = $toUser->getTags();
         $user['avatar'] = $toUser->getAvatar() ?: null;
-        $user['match'] = $em->getRepository('App:User')->getMatchIndex($fromUser, $toUser);
+        $user['match'] = $this->getMatchIndex($fromUser, $toUser);
         $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
             'from_user' => $fromUser,
             'to_user' => $toUser
@@ -196,11 +196,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $em = $this->getEntityManager();
 
         foreach ($users as $key => $u) {
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+            $toUser = $this->findOneBy(array('id' => $u['id']));
             $users[$key]['age'] = (int)$u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
             $users[$key]['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
-            $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $toUser);
+            $users[$key]['match'] = $this->getMatchIndex($this->getUser(), $toUser);
             $users[$key]['avatar'] = $toUser->getAvatar() ?: null;
             $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
