@@ -978,15 +978,6 @@ class UsersController extends FOSRestController
 
         $users = $em->getRepository('App:LikeUser')->getToLikes($this->getUser());
 
-        foreach ($users as $key => $u) {
-            $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-            $users[$key]['age'] = (int)$u['age'];
-            $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-            $users[$key]['location'] = (!$user->getHideLocation() && !empty($user->getLocation())) ? $user->getLocation() : null;
-            $users[$key]['match'] = $em->getRepository('App:User')->getMatchIndex($this->getUser(), $user);
-            $users[$key]['avatar'] = $user->getAvatar() ?: null;
-        }
-
         return new Response($serializer->serialize($users, "json"));
     }
 
@@ -1082,17 +1073,18 @@ class UsersController extends FOSRestController
         try {
             $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
 
-            $block = $em->getRepository('App:LikeUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
+            $block = $em->getRepository('App:BlockUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
             $em->remove($block);
             $em->flush();
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Usuario desbloqueado correctamente",
-            ];
+            $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
-            return new Response($serializer->serialize($response, "json"));
+            foreach ($users as $key => $u) {
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $users[$key]['avatar'] = $user->getAvatar() ?: null;
+            }
+
+            return new Response($serializer->serialize($users, "json"));
         } catch (Exception $e) {
             throw new HttpException(400, "Error al desbloquear el usuario " . $e);
         }

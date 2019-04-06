@@ -51,6 +51,8 @@ class LikeUserRepository extends ServiceEntityRepository
 
     public function getToLikes(User $user)
     {
+        $em = $this->getEntityManager();
+
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
@@ -72,7 +74,8 @@ class LikeUserRepository extends ServiceEntityRepository
             FROM App:User u WHERE u.id IN
             (SELECT IDENTITY(l.from_user) FROM App:LikeUser l WHERE l.to_user = :toUser)";
         $query = $this->getEntityManager()->createQuery($dql)->setParameter("toUser", $user);
+        $users = $query->getResult();
 
-        return $query->getResult();
+        return $em->getRepository('App:User')->enhanceUsers($users, $user);
     }
 }

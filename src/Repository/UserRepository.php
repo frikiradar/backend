@@ -191,7 +191,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $this->enhanceUsers($users, $user);
     }
 
-    private function enhanceUsers($users, $fromUser)
+    public function enhanceUsers($users, $fromUser)
     {
         $em = $this->getEntityManager();
 
