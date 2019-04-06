@@ -84,7 +84,7 @@ class NotificationRepository extends ServiceEntityRepository
 
         $devices = $toUser->getDevices();
         foreach ($devices as $device) {
-            if ($device->getActive() && !empty($device->getToken())) {
+            if ($device->getActive() && !is_null($device->getToken())) {
                 $notification = PushNotification::create($title, $text);
                 $data = [
                     'fromUser' => (string)$fromUser->getId(),
