@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
-    <body style="background-color:#1a1a1a; margin-top: 0;color: white; padding: 20px;">
-        <header style="height: 50px;">
-            <img src="{{absolute_url(asset('images/layout/logo-header.png'))}}" alt="FrikiRadar" style="height: 40px;padding: 5px 20px;margin-left: auto;margin-right: auto;display: block;"></header>
-            <main style="padding: 20px;margin-left: auto;margin-right: auto;width:60%;">
-                <p>Hola, {{username}}.</p>
-                <p>Nos ha contado un pajarito que has olvidado tu contraseña, pero no hay problema, puedes generar una nueva introduciendo el siguiente código:</p>
-                <h2 style="text-align: center;">{{code}}</h2>
-                <p>Si tienes algún problema con la recuperación de la contraseña ponte en contacto con nosotros a través de esta dirección:</p>
-                <a href='mailto:hola@frikiradar.com'>hola@frikiradar.com</a>
-                <p>Si has recibido este mensaje por error puedes ignorarlo o borrarlo.</p>
-                <p>¡Un saludo!</p>
-            </main>
-            <footer style="padding:5px;">
-                <p style="text-align:center">FrikiRadar</p>
-            </footer>
-        </body>
-    </html>
+    <body bgcolor="#1a1a1a" text="white" style="background-color:#1a1a1a; margin-top: 0;color: white; padding: 20px;">
+        <header style="height: 50px;" align="middle">
+            <img
+                src="{{absolute_url(asset('images/layout/logo-header.png'))}}"
+                alt="FrikiRadar"
+                height="40"
+                width="174"
+                style="height: 40px;padding: 5px 20px;margin-left: auto;margin-right: auto;display: block;"
+            >
+        </header>
+        <main style="padding: 20px;margin-left: auto;margin-right: auto;width:60%;">
+            <p>Hola, {{username}}.</p>
+            <p>Nos ha contado un pajarito que has olvidado tu contraseña, pero no hay problema, puedes generar una nueva introduciendo el siguiente código:</p>
+            <h2 style="text-align: center;">{{code}}</h2>
+            <p>Si tienes algún problema con la recuperación de la contraseña ponte en contacto con nosotros a través de esta dirección:</p>
+            <a href='mailto:hola@frikiradar.com'>hola@frikiradar.com</a>
+            <p>Si has recibido este mensaje por error puedes ignorarlo o borrarlo.</p>
+            <p>¡Un saludo!</p>
+        </main>
+        <footer style="padding:5px;">
+            <p style="text-align:center">FrikiRadar</p>
+        </footer>
+    </body>
+</html>
