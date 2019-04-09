@@ -91,29 +91,34 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ))
             ->andWhere('u.id = :id')
+            ->andWhere('u.active = 1')
             ->setParameters(array(
                 'id' => $toUser->getId()
             ))
             ->getQuery()
             ->getOneOrNullResult();
 
-        $user['age'] = (int)$user['age'];
-        $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+        if (!is_null($user)) {
+            $user['age'] = (int)$user['age'];
+            $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
 
-        $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
-        $user['tags'] = $toUser->getTags();
-        $user['avatar'] = $toUser->getAvatar() ?: null;
-        $user['match'] = $this->getMatchIndex($fromUser, $toUser);
-        $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
-            'from_user' => $fromUser,
-            'to_user' => $toUser
-        ])) ? true : false;
-        $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+            $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
+            $user['tags'] = $toUser->getTags();
+            $user['avatar'] = $toUser->getAvatar() ?: null;
+            $user['match'] = $this->getMatchIndex($fromUser, $toUser);
+            $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $fromUser,
+                'to_user' => $toUser
+            ])) ? true : false;
+            $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
-        if (!$user['block']) {
-            return $user;
+            if (!$user['block']) {
+                return $user;
+            } else {
+                throw new Exception('Usuario bloqueado');
+            }
         } else {
-            throw new Exception('Usuario bloqueado');
+            throw new Exception('Usuario no encontrado');
         }
     }
 
@@ -146,6 +151,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             // ->andWhere('u.connection IN (:connection)')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
+            ->andWhere('u.active = 1')
             ->orderBy('distance', 'ASC')
             ->setParameters(array(
                 'ratio' => $ratio,
@@ -183,7 +189,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ) * 100) distance
             FROM App:User u WHERE u.id IN
             (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
-            AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'";
+            AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'
+            AND u.active = 1";
         $query = $this->getEntityManager()->createQuery($dql);
 
         $users = $query->getResult();
