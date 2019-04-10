@@ -53,7 +53,7 @@ class LikeUserRepository extends ServiceEntityRepository
     {
         $dql = "SELECT IDENTITY(l.from_user) fromuser, l.date date
             FROM App:LikeUser l
-            WHERE l.touser = :id ORDER BY l.id DESC";
+            WHERE l.to_user = :id ORDER BY l.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $user->getId());
         return $query->getResult();
