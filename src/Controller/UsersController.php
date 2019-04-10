@@ -977,7 +977,7 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $likes = $em->getRepository('App:Chat')->getLikeUsers($this->getUser());
+            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser());
 
             foreach ($likes as $key => $like) {
                 $userId = $like["fromuser"];
