@@ -6,8 +6,6 @@ use App\Entity\User;
 use App\Entity\Chat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Symfony\Component\Mercure\Publisher;
-use Symfony\Component\Mercure\Update;
 
 /**
  * @method Chat|null find($id, $lockMode = null, $lockVersion = null)

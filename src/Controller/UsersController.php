@@ -976,9 +976,23 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $users = $em->getRepository('App:LikeUser')->getToLikes($this->getUser());
+        try {
+            $likes = $em->getRepository('App:Chat')->getLikeUsers($this->getUser());
 
-        return new Response($serializer->serialize($users, "json"));
+            foreach ($likes as $key => $like) {
+                $userId = $like["fromuser"];
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $likes[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => $user->getUsername(),
+                    'description' => $user->getDescription(),
+                    'avatar' =>  $user->getAvatar() ?: null
+                ];
+            }
+            return new Response($serializer->serialize($likes, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al obtener los likes " . $e);
+        }
     }
 
     /**

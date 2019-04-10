@@ -49,33 +49,13 @@ class LikeUserRepository extends ServiceEntityRepository
     }
     */
 
-    public function getToLikes(User $user)
+    public function getLikeUsers(User $user)
     {
-        $em = $this->getEntityManager();
+        $dql = "SELECT IDENTITY(l.from_user) fromuser, l.date date
+            FROM App:LikeUser l
+            WHERE l.touser = :id ORDER BY l.id DESC";
 
-        $latitude = $user->getCoordinates()->getLatitude();
-        $longitude = $user->getCoordinates()->getLongitude();
-
-        $dql = "SELECT u.id,
-            u.username,
-            u.description,
-            (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age,
-            u.location,
-            u.hide_location,
-            u.block_messages,
-            (GLength(
-                    LineStringFromWKB(
-                        LineString(
-                            u.coordinates,
-                            GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                        )
-                    )
-                ) * 100) distance
-            FROM App:User u WHERE u.id IN
-            (SELECT IDENTITY(l.from_user) FROM App:LikeUser l WHERE l.to_user = :toUser)";
-        $query = $this->getEntityManager()->createQuery($dql)->setParameter("toUser", $user);
-        $users = $query->getResult();
-
-        return $em->getRepository('App:User')->enhanceUsers($users, $user);
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $user->getId());
+        return $query->getResult();
     }
 }

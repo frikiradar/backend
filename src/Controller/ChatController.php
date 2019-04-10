@@ -144,8 +144,7 @@ class ChatController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
-            $chats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
+            $chats = $em->getRepository('App:Chat')->getChatUsers($this->getUser());
 
             foreach ($chats as $key => $chat) {
                 $userId = $chat["fromuser"] == $this->getUser()->getId() ? $chat["touser"] : $chat["fromuser"];
