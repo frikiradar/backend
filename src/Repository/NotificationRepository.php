@@ -101,7 +101,7 @@ class NotificationRepository extends ServiceEntityRepository
                         'notification' => [
                             'title' => $title,
                             'body' => $text,
-                            'sound' => 'bipbip.mp3'
+                            'sound' => 'default'
                             // 'click_action' => "FCM_PLUGIN_ACTIVITY"
                         ],
                     ]);
