@@ -912,7 +912,7 @@ class UsersController extends FOSRestController
             $em->flush();
 
             $title = $newLike->getFromUser()->getUsername();
-            $text = "Ha mostrado interés en ti dando 'Me gusta' a tu perfil";
+            $text = "Te ha entregado su kokoro. Puedes entregarle el tuyo y comenzar a chatear.";
             $url = "/profile/" . $newLike->getFromUser()->getId();
             $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
