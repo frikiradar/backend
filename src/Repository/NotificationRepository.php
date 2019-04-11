@@ -67,7 +67,7 @@ class NotificationRepository extends ServiceEntityRepository
             'type' => $type
         ]);
 
-        if (empty($newNotification)) {
+        if (is_null($newNotification) || $type == "chat") {
             $isNewNotification = true;
             $newNotification = new Notification();
             $newNotification->setFromUser($fromUser);
