@@ -185,7 +185,8 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
 
-        $user = $this->getUser();
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
         $user->setAvatar($user->getAvatar());
         $user->setVerificationCode(null);
         return new Response($serializer->serialize($user, "json"));
