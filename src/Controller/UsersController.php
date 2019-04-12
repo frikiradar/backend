@@ -981,7 +981,7 @@ class UsersController extends FOSRestController
                 }
             }
 
-            return new Response("Usuario bloqueado correctamente");
+            return new Response($serializer->serialize("Usuario bloqueado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al bloquear usuario - Error: {$ex->getMessage()}");
         }
