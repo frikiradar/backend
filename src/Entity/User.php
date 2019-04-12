@@ -23,6 +23,7 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"default"})
      */
     private $id;
 
@@ -34,6 +35,7 @@ class User implements UserInterface
      *     message="Solo se permiten caracteres alfanuméricos, puntos y/o guiones; ni letras con tildes, ni caracteres especiales",
      *     payload = {"severity" = "error"}
      * )
+     * @Groups({"default"})
      */
     private $username;
 
@@ -41,6 +43,7 @@ class User implements UserInterface
      * @var array
      * @ORM\Column(type="json")
      * @Serializer\ReadOnly()
+     * @Groups({"default"})
      */
     private $roles = [];
 
@@ -54,42 +57,50 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups({"default"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Serializer\ReadOnly()
+     * @Groups({"default"})
      */
     private $register_date;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"default"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $gender;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $orientation;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $relationship;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $pronoun;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $status;
 
@@ -115,16 +126,19 @@ class User implements UserInterface
      * @var array
      * @ORM\Column(type="json", nullable=true)
      * @Type("array")
+     * @Groups({"default"})
      */
     private $lovegender = [];
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"default"})
      */
     private $minage;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"default"})
      */
     private $maxage;
 
@@ -132,34 +146,39 @@ class User implements UserInterface
      * @var array
      * @ORM\Column(type="json", nullable=true)
      * @Type("array")
+     * @Groups({"default"})
      */
     private $connection;
 
     /**
      * @ORM\Column(type="point", nullable=true)
      * @Serializer\ReadOnly()
-     * @Groups({"coordinates"})
+     * @Groups({"default"})
      */
     private $coordinates;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Tag", mappedBy="user", orphanRemoval=true, cascade={"persist","merge"})
+     * @Groups({"default"})
      */
     private $tags;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Type("DateTime<'Y-m-d'>")
+     * @Groups({"default"})
      */
     private $birthday;
 
     /**
      * @Type("string")
+     * @Groups({"default"})
      */
     private $avatar;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $location;
 

@@ -188,7 +188,8 @@ class UsersController extends FOSRestController
         $user = $this->getUser();
         $user->setAvatar($user->getAvatar());
         $user->setVerificationCode(null);
-        return new Response($serializer->serialize($user, "json"));
+
+        return new Response($serializer->serialize($user, "json", ["groups" => ["default"]]));
     }
 
     /**
