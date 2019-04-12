@@ -18,6 +18,7 @@ use App\Entity\Tag;
 use App\Entity\Category;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -189,7 +190,7 @@ class UsersController extends FOSRestController
         $user->setAvatar($user->getAvatar());
         $user->setVerificationCode(null);
 
-        return new Response($serializer->serialize($user, "json", ["groups" => ["default"]]));
+        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
     }
 
     /**
