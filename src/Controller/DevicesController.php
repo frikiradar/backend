@@ -51,15 +51,10 @@ class DevicesController extends FOSRestController
 
         try {
             $response = $this->getUser()->getDevices();
+            return new Response($serializer->serialize($response, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener los dispositivos - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al obtener los dispositivos - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**

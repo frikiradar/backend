@@ -401,20 +401,13 @@ class UsersController extends FOSRestController
                 $em->persist($user);
                 $em->flush();
 
-                $response = $user;
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
-                //echo "No se ha podido obtener la localidad". $ex;
-                $response = $user;
+                throw new HttpException(400, "No se ha podido obtener la localidad - Error: {$ex->getMessage()}");
             }
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al registrar coordenadas - Error: {$ex->getMessage()}"
-            ];
+            throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
