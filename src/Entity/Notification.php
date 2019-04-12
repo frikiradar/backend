@@ -21,43 +21,51 @@ class Notification
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notifications")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"default"})
      * @MaxDepth(1)
      */
     private $toUser;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @Groups({"default"})
      * @MaxDepth(1)
      */
     private $fromUser;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"default"})
      */
     private $timeCreation;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $text;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $url;
 
     /**
      * @ORM\Column(type="string", length=70)
+     * @Groups({"default"})
      */
     private $type;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"default"})
      */
     private $viewed;
 
