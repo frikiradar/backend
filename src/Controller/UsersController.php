@@ -185,8 +185,7 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
 
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
+        $user = $this->getUser();
         $user->setAvatar($user->getAvatar());
         $user->setVerificationCode(null);
         return new Response($serializer->serialize($user, "json"));
@@ -913,7 +912,7 @@ class UsersController extends FOSRestController
             $em->flush();
 
             $title = $newLike->getFromUser()->getUsername();
-            $text = "Te ha entregado su kokoro. Puedes entregarle el tuyo y comenzar a chatear.";
+            $text = "Ha mostrado interés en ti dando 'Me gusta' a tu perfil";
             $url = "/profile/" . $newLike->getFromUser()->getId();
             $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
@@ -977,23 +976,9 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser());
+        $users = $em->getRepository('App:LikeUser')->getToLikes($this->getUser());
 
-            foreach ($likes as $key => $like) {
-                $userId = $like["fromuser"];
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $likes[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => $user->getUsername(),
-                    'description' => $user->getDescription(),
-                    'avatar' =>  $user->getAvatar() ?: null
-                ];
-            }
-            return new Response($serializer->serialize($likes, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al obtener los likes " . $e);
-        }
+        return new Response($serializer->serialize($users, "json"));
     }
 
     /**
