@@ -629,14 +629,6 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Notification[]
-     */
-    public function getNotifications(): Collection
-    {
-        return $this->notifications;
-    }
-
     public function addNotification(Notification $notification): self
     {
         if (!$this->notifications->contains($notification)) {
