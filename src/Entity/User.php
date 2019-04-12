@@ -152,7 +152,6 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="point", nullable=true)
      * @Serializer\ReadOnly()
-     * @Groups({"default"})
      */
     private $coordinates;
 
@@ -183,6 +182,7 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Notification", mappedBy="toUser", orphanRemoval=true)
+     * @Groups({"default"})
      */
     private $notifications;
 
