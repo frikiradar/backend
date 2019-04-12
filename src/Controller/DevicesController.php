@@ -14,6 +14,7 @@ namespace App\Controller;
 
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
@@ -227,7 +228,7 @@ class DevicesController extends FOSRestController
                 $em->persist($user);
                 $em->flush();
 
-                return new Response($serializer->serialize($this->getUser(), "json"));
+                return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu dispositivo: " . $e);
             }
