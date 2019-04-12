@@ -200,16 +200,19 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"default"})
      */
     private $active;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"default"})
      */
     private $hide_location;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"default"})
      */
     private $block_messages;
 
