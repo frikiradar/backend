@@ -182,7 +182,6 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Notification", mappedBy="toUser", orphanRemoval=true)
-     * @Groups({"default"})
      */
     private $notifications;
 
