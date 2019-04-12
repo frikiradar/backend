@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TagRepository")
@@ -21,6 +22,7 @@ class Tag
      * @ORM\Id()
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="tags")
      * @ORM\JoinColumn(nullable=false)
+     * @MaxDepth(1)
      */
     private $user;
 

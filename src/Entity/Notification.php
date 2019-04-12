@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\NotificationRepository")
@@ -19,11 +21,13 @@ class Notification
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notifications")
      * @ORM\JoinColumn(nullable=false)
+     * @MaxDepth(1)
      */
     private $toUser;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @MaxDepth(1)
      */
     private $fromUser;
 

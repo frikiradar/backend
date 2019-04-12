@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ChatRepository")
@@ -18,11 +20,13 @@ class Chat
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
+     * @MaxDepth(1)
      */
     private $fromuser;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
+     * @MaxDepth(1)
      */
     private $touser;
 
@@ -46,36 +50,36 @@ class Chat
      */
     private $conversationId;
 
-    public function getId(): ? string
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getFromuser(): ? User
+    public function getFromuser(): ?User
     {
         return $this->fromuser;
     }
 
-    public function setFromuser(? User $fromuser): self
+    public function setFromuser(?User $fromuser): self
     {
         $this->fromuser = $fromuser;
 
         return $this;
     }
 
-    public function getTouser(): ? User
+    public function getTouser(): ?User
     {
         return $this->touser;
     }
 
-    public function setTouser(? User $touser): self
+    public function setTouser(?User $touser): self
     {
         $this->touser = $touser;
 
         return $this;
     }
 
-    public function getText(): ? string
+    public function getText(): ?string
     {
         return $this->text;
     }
@@ -87,7 +91,7 @@ class Chat
         return $this;
     }
 
-    public function getTimeCreation(): ? \DateTimeInterface
+    public function getTimeCreation(): ?\DateTimeInterface
     {
         return $this->timeCreation;
     }
@@ -99,7 +103,7 @@ class Chat
         return $this;
     }
 
-    public function getTimeRead(): ? \DateTimeInterface
+    public function getTimeRead(): ?\DateTimeInterface
     {
         return $this->timeRead;
     }
@@ -111,7 +115,7 @@ class Chat
         return $this;
     }
 
-    public function getConversationId(): ? string
+    public function getConversationId(): ?string
     {
         return $this->conversationId;
     }
