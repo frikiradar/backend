@@ -13,6 +13,7 @@ class Device
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"default"})
      */
     private $id;
 
@@ -24,6 +25,7 @@ class Device
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $token;
 
@@ -34,16 +36,19 @@ class Device
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"default"})
      */
     private $active;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $deviceId;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $deviceName;
 
