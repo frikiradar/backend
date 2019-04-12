@@ -211,10 +211,14 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+        try {
+            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-        return new Response($serializer->serialize($user, "json"));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
     }
 
     /**
