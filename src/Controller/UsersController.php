@@ -558,6 +558,7 @@ class UsersController extends FOSRestController
      */
     public function activationEmailAction(\Swift_Mailer $mailer)
     {
+        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -584,7 +585,7 @@ class UsersController extends FOSRestController
                 throw new HttpException(400, "Error al enviar el email de activación");
             }
 
-            return new Response("Email enviado correctamente");
+            return new Response($serializer->serialize("Email enviado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el email de activación - Error: {$ex->getMessage()}");
         }
@@ -687,7 +688,7 @@ class UsersController extends FOSRestController
                 throw new HttpException(400, "Error al enviar el email de recuperación");
             }
 
-            return new Response("Email enviado correctamente");
+            return new Response($serializer->serialize("Email enviado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
         }
