@@ -907,14 +907,14 @@ class UsersController extends FOSRestController
             $em->flush();
 
             $title = $newLike->getFromUser()->getUsername();
-            $text = "Ha mostrado interés en ti dando 'Me gusta' a tu perfil";
+            $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
             $url = "/profile/" . $newLike->getFromUser()->getId();
             $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
             return new Response($serializer->serialize($user, "json"));
         } catch (Exception $e) {
-            throw new HttpException(400, "Error al dar like " . $e);
+            throw new HttpException(400, "Error al entregar tu kokoro " . $e);
         }
     }
 
@@ -971,9 +971,23 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $users = $em->getRepository('App:LikeUser')->getToLikes($this->getUser());
+        try {
+            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser());
 
-        return new Response($serializer->serialize($users, "json"));
+            foreach ($likes as $key => $like) {
+                $userId = $like["fromuser"];
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $likes[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => $user->getUsername(),
+                    'description' => $user->getDescription(),
+                    'avatar' =>  $user->getAvatar() ?: null
+                ];
+            }
+            return new Response($serializer->serialize($likes, "json"));
+        } catch (Exception $e) {
+            throw new HttpException(400, "Error al obtener los likes " . $e);
+        }
     }
 
     /**
