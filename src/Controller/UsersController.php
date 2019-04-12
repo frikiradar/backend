@@ -298,30 +298,13 @@ class UsersController extends FOSRestController
                 $em->flush();
                 $user->setAvatar($user->getAvatar());
 
-                $response = $user;
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } else {
-                $code = 500;
-                $error = true;
-                $message = "An error has occurred trying to edit the current task - Error: The task id does not exist";
-                /*$response = [
-                    'code' => $code,
-                    'error' => $error,
-                    'data' => $message,
-                ];*/
+                throw new HttpException(400, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
         } catch (Exception $ex) {
-            $code = 500;
-            $error = true;
-            $message = "Error al actualizar la información del usuario - Error: {$ex->getMessage()}";
-
-            $response = [
-                'code' => $code,
-                'error' => $error,
-                'data' => $message,
-            ];
+            throw new HttpException(400, "Error al actualizar la información del usuario - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -455,14 +438,11 @@ class UsersController extends FOSRestController
 
             $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
+
+            return new Response($serializer->serialize($response, "json"));
         } else {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al subir la imagen"
-            ];
+            throw new HttpException(400, "Error al subir la imagen");
         }
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -497,18 +477,10 @@ class UsersController extends FOSRestController
                 $users[$key]["match"] = $rUsers["match"] * $index;
             }*/
 
-            $response = $users;
+            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener los usuarios - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
-
-
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -560,16 +532,10 @@ class UsersController extends FOSRestController
                     });
             }
 
-            $response = $users;
+            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -588,7 +554,6 @@ class UsersController extends FOSRestController
      */
     public function activationEmailAction(\Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -612,23 +577,13 @@ class UsersController extends FOSRestController
                 );
 
             if (0 === $mailer->send($message)) {
-                throw new \RuntimeException('Unable to send email');
+                throw new HttpException(400, "Error al enviar el email de activación");
             }
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Email enviado correctamente",
-            ];
+            return new Response("Email enviado correctamente");
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al enviar el email de activación - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al enviar el email de activación - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -666,7 +621,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json"));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al activar la cuenta");
         }
@@ -725,23 +680,13 @@ class UsersController extends FOSRestController
                 );
 
             if (0 === $mailer->send($message)) {
-                throw new \RuntimeException('Unable to send email');
+                throw new HttpException(400, "Error al enviar el email de recuperación");
             }
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Email enviado correctamente",
-            ];
+            return new Response("Email enviado correctamente");
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al enviar el email de recuperación - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -801,7 +746,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json"));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
@@ -851,21 +796,9 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json"));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "La contraseña actual no es válida");
-        }
-
-
-        if (!is_null($user)) {
-            $user->setPassword($encoder->encodePassword($user, $request->request->get('password')));
-            $user->setVerificationCode(null);
-            $em->persist($user);
-            $em->flush();
-
-            return new Response($serializer->serialize($user, "json"));
-        } else {
-            throw new HttpException(400, "Error al recuperar la cuenta");
         }
     }
 
@@ -912,9 +845,9 @@ class UsersController extends FOSRestController
             $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            return new Response($serializer->serialize($user, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al entregar tu kokoro " . $e);
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
         }
     }
 
@@ -945,9 +878,9 @@ class UsersController extends FOSRestController
 
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            return new Response($serializer->serialize($user, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al quitar el like " . $e);
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al retirarle tu kokoro - Error: {$ex->getMessage()}");
         }
     }
 
@@ -985,8 +918,8 @@ class UsersController extends FOSRestController
                 ];
             }
             return new Response($serializer->serialize($likes, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al obtener los likes " . $e);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los likes - Error: {$ex->getMessage()}");
         }
     }
 
@@ -1044,19 +977,13 @@ class UsersController extends FOSRestController
                     ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario < href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
 
                 if (0 === $mailer->send($message)) {
-                    // throw new \RuntimeException('Unable to send email');
+                    // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
                 }
             }
 
-            $response = [
-                'code' => 200,
-                'error' => false,
-                'data' => "Usuario bloqueado correctamente",
-            ];
-
-            return new Response($serializer->serialize($response, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al bloquear usuario " . $e);
+            return new Response("Usuario bloqueado correctamente");
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al bloquear usuario - Error: {$ex->getMessage()}");
         }
     }
 
@@ -1093,9 +1020,9 @@ class UsersController extends FOSRestController
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
-            return new Response($serializer->serialize($users, "json"));
-        } catch (Exception $e) {
-            throw new HttpException(400, "Error al desbloquear el usuario " . $e);
+            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al desbloquear el usuario - Error: {$ex->getMessage()}");
         }
     }
 
@@ -1126,6 +1053,6 @@ class UsersController extends FOSRestController
             $users[$key]['avatar'] = $user->getAvatar() ?: null;
         }
 
-        return new Response($serializer->serialize($users, "json"));
+        return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
     }
 }
