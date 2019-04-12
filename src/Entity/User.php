@@ -189,6 +189,7 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Device", mappedBy="user", orphanRemoval=true)
+     * @Groups({"default"})
      */
     private $devices;
 
