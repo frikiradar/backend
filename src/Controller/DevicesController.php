@@ -109,16 +109,10 @@ class DevicesController extends FOSRestController
                 $request->request->get("token") ?: ""
             );
 
-            $response = $this->getUser();
+            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al registrar el dispositivo - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al registrar el dispositivo - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
 
@@ -258,16 +252,10 @@ class DevicesController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $response = $user;
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al eliminar el dispositivo - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al eliminar el dispositivo - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -298,15 +286,9 @@ class DevicesController extends FOSRestController
             $em->persist($device);
             $em->flush();
 
-            $response = $this->getUser();
+            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al eliminar el dispositivo - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 }
