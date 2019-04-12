@@ -522,15 +522,9 @@ class User implements UserInterface
     /**
      * @return Collection|Tag[]
      */
-    public function getTags(): array
+    public function getTags(): Collection
     {
-        $tags = [];
-        foreach ($this->tags as $tag) {
-            $tag->setUser(null);
-            $tags[] = $tag;
-        }
-
-        return $tags;
+        return $this->tags;
     }
 
     public function addTag(Tag $tag): self
@@ -666,15 +660,9 @@ class User implements UserInterface
     /**
      * @return Collection|Device[]
      */
-    public function getDevices(): array
+    public function getDevices(): Collection
     {
-        $devices = [];
-        foreach ($this->devices as $device) {
-            $device->setUser(null);
-            $devices[] = $device;
-        }
-
-        return $devices;
+        return $this->devices;
     }
 
     public function addDevice(Device $device): self
