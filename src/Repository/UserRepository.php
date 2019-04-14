@@ -110,6 +110,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'from_user' => $fromUser,
                 'to_user' => $toUser
             ])) ? true : false;
+            $user['from_like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $toUser,
+                'to_user' => $fromUser
+            ])) ? true : false;
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
             if (!$user['block']) {
