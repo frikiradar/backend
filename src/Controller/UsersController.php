@@ -567,7 +567,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $message = (new \Swift_Message('Aquí tienes tu código de activación de FrikiRadar'))
+            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
@@ -670,7 +670,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
+            $message = (new \Swift_Message($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(

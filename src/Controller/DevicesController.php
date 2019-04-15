@@ -141,7 +141,7 @@ class DevicesController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $message = (new \Swift_Message('Nuevo dispositivo detectado. Verificación de identidad.'))
+            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu nuevo dispositivo'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
