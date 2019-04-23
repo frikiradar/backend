@@ -147,6 +147,7 @@ class UsersController extends FOSRestController
             $user->setRegisterDate();
             $user->setRegisterIp();
             $user->setActive(false);
+            $user->setTwoStep(false);
             $user->setVerificationCode();
             $user->setRoles(['ROLE_USER']);
 
