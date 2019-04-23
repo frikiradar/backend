@@ -8,12 +8,14 @@
     </header>
     <main>
         <p>Hola,
-            {{username}}. Hemos detectado que te has conectado desde un dispositivo desconocido.</p>
-        <h2 style="text-align:center">{{device}}</h2>
-        <p>Por seguridad y para evitar problemas de suplantación de identidad te avisamos de este tipo de actividades.
+            {{username}}. Hemos detectado un nuevo inicio de sesión.</p>
+        <p>Como has activado la verificación en dos pasos, por seguridad y para evitar problemas de suplantación de
+            identidad necesitamos que verifiques tu identidad.
         </p>
-        <p>Si has sido tu puedes ignorarlo o borrarlo. En caso contrario revisa los dispositivos conectados desde los
-            ajustes de la aplicación y cambia tu contraseña.</p>
+        <p>Introduce el siguiente código en la aplicación para verificar tu identidad:</p>
+        <h2 style="text-align: center;">{{code}}</h2>
+        <p>Si no has sido tu, revisa los dispositivos conectados desde los ajustes de la aplicación y cambia tu
+            contraseña.</p>
         <p>Si tienes algún problema ponte en contacto con nosotros a través de esta dirección:
             <a href='mailto:hola@frikiradar.com'>hola@frikiradar.com</a>
         </p>

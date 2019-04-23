@@ -114,6 +114,13 @@ class UsersController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
+     *     name="gender",
+     *     in="query",
+     *     type="string",
+     *     description="The gender"
+     * )
+     * 
+     * @SWG\Parameter(
      *     name="password",
      *     in="query",
      *     type="string",
@@ -122,50 +129,65 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $user = [];
-        $message = "";
-
         try {
-            $code = 200;
-            $error = false;
-
             $email = $request->request->get('email');
             $username = $request->request->get('username');
             $password = $request->request->get('password');
             $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('birthday'));
 
-            $user = new User();
-            $user->setEmail($email);
-            $user->setUsername($username);
-            $user->setPassword($encoder->encodePassword($user, $password));
-            $user->setBirthday($birthday);
-            $user->setRegisterDate();
-            $user->setRegisterIp();
-            $user->setActive(false);
-            $user->setTwoStep(false);
-            $user->setVerificationCode();
-            $user->setRoles(['ROLE_USER']);
+            if (is_null($em->getRepository('App:User')->findOneByUsernameOrEmail($username, $email))) {
+                $user = new User();
+                $user->setEmail($email);
+                $user->setUsername($username);
+                $user->setPassword($encoder->encodePassword($user, $password));
+                $user->setBirthday($birthday);
+                $user->setGender($request->request->get('gender') ?: null);
+                $user->setRegisterDate();
+                $user->setRegisterIp();
+                $user->setActive(false);
+                $user->setTwoStep(false);
+                $user->setVerificationCode();
+                $user->setRoles(['ROLE_USER']);
+                $em->persist($user);
 
-            $em->persist($user);
-            $em->flush();
+                $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setTo($user->getEmail())
+                    ->setBody(
+                        $this->renderView(
+                            "emails/registration.html.twig",
+                            [
+                                'username' => $user->getUsername(),
+                                'code' => $user->getVerificationCode()
+                            ]
+                        ),
+                        'text/html'
+                    );
+
+                if (0 === $mailer->send($message)) {
+                    throw new HttpException(400, "La dirección de email introducida no es válida");
+                }
+
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } else {
+                throw new HttpException(400, "Error: Ya hay un usuario registrado con estos datos.");
+            }
         } catch (Exception $ex) {
-            $code = 500;
-            $error = true;
-            $message = "An error has occurred trying to register the user - Error: {$ex->getMessage()}";
+            $message = (new \Swift_Message('Error de registro de usuario'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setBody("Datos del usuario:<br>" . $serializer->serialize($user, "json") . "<br>" . $ex->getMessage());
+
+            $mailer->send($message);
+            throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
         }
-
-        $response = [
-            'code' => $code,
-            'error' => $error,
-            'data' => $code == 200 ? $user : $message,
-        ];
-
-        return new Response($serializer->serialize($response, "json"));
     }
 
     /**
@@ -974,10 +996,10 @@ class UsersController extends FOSRestController
 
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
-                $message = (new \Swift_Message('He olvidado mi contraseña de FrikiRadar'))
+                $message = (new \Swift_Message('Nuevo usuario bloqueado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario < href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
 
                 if (0 === $mailer->send($message)) {
                     // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
@@ -1057,5 +1079,108 @@ class UsersController extends FOSRestController
         }
 
         return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+    }
+
+    /**
+     * @Rest\Get("/v1/two-step", name="two step")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el email"
+     * )
+     * 
+     */
+    public function twoStepAction(\Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $user->setVerificationCode();
+            $em->persist($user);
+            $em->flush();
+
+            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu inicio de sesión'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($this->getUser()->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        "emails/two-step.html.twig",
+                        [
+                            'username' => $this->getUser()->getUsername(),
+                            'code' => $this->getUser()->getVerificationCode()
+                        ]
+                    ),
+                    'text/html'
+                );
+
+            if (0 === $mailer->send($message)) {
+                throw new \RuntimeException('Unable to send email');
+            }
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Email enviado correctamente",
+            ];
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al enviar el email de verificación - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Put("/v1/two-step", name="verify session")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Sesión verificada correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al verificar la sesión"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="verification_code",
+     *     in="body",
+     *     type="string",
+     *     description="Código de verificación",
+     *     schema={}
+     * )
+     * 
+     */
+    public function verifyLoginAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $verificationCode = $request->request->get("verification_code");
+        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        if (!is_null($user)) {
+            try {
+                $user->setVerificationCode(null);
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $e) {
+                throw new HttpException(400, "Error al verificar tu sesión: " . $e);
+            }
+        } else {
+            throw new HttpException(400, "El código de verificación no es válido.");
+        }
     }
 }

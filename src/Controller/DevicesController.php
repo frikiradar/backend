@@ -117,7 +117,7 @@ class DevicesController extends FOSRestController
 
 
     /**
-     * @Rest\Get("/v1/unknown-device", name="unknown device")
+     * @Rest\Put("/v1/unknown-device", name="unknown device")
      *
      * @SWG\Response(
      *     response=201,
@@ -130,18 +130,15 @@ class DevicesController extends FOSRestController
      * )
      * 
      */
-    public function unknownDeviceAction(\Swift_Mailer $mailer)
+    public function unknownDeviceAction(Request $request, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $user = $this->getUser();
-            $user->setVerificationCode();
-            $em->persist($user);
-            $em->flush();
+            $device = $request->request->get("device");
 
-            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu nuevo dispositivo'))
+            $message = (new \Swift_Message('Aviso de inicio de sesión desde un dispositivo desconocido'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
@@ -149,7 +146,7 @@ class DevicesController extends FOSRestController
                         "emails/unknown-device.html.twig",
                         [
                             'username' => $this->getUser()->getUsername(),
-                            'code' => $this->getUser()->getVerificationCode()
+                            'device' => $device['device_name']
                         ]
                     ),
                     'text/html'
@@ -173,57 +170,6 @@ class DevicesController extends FOSRestController
         }
 
         return new Response($serializer->serialize($response, "json"));
-    }
-
-    /**
-     * @Rest\Put("/v1/unknown-device", name="verify device")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivo verificado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al verificar el dispositivo"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="verification_code",
-     *     in="body",
-     *     type="string",
-     *     description="Código de activación",
-     *     schema={}
-     * )
-     * 
-     */
-    public function verifyDeviceAction(Request $request)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $verificationCode = $request->request->get("verification_code");
-        $device = $request->request->get("device");
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
-        if (!is_null($user)) {
-            try {
-                $em->getRepository('App:Device')->set(
-                    $user,
-                    $device['device_id'],
-                    $device['device_name']
-                );
-
-                $user->setVerificationCode(null);
-                $em->persist($user);
-                $em->flush();
-
-                return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
-            } catch (Exception $e) {
-                throw new HttpException(400, "Error al verificar tu dispositivo: " . $e);
-            }
-        } else {
-            throw new HttpException(400, "Error al verificar tu dispositivo");
-        }
     }
 
     /**
