@@ -214,6 +214,11 @@ class User implements UserInterface
      */
     private $block_messages;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $two_step;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -741,6 +746,18 @@ class User implements UserInterface
     public function setBlockMessages(?bool $block_messages): self
     {
         $this->block_messages = $block_messages;
+
+        return $this;
+    }
+
+    public function getTwoStep(): ?bool
+    {
+        return $this->two_step;
+    }
+
+    public function setTwoStep(bool $two_step): self
+    {
+        $this->two_step = $two_step;
 
         return $this;
     }
