@@ -241,12 +241,8 @@ class UsersController extends FOSRestController
     public function putAction(User $newUser)
     {
         $serializer = $this->get('jms_serializer');
-        $message = "";
 
         try {
-            $code = 200;
-            $error = false;
-
             if ($newUser->getId() == $this->getUser()->getId()) {
                 $em = $this->getDoctrine()->getManager();
 
@@ -267,6 +263,7 @@ class UsersController extends FOSRestController
                 $user->setConnection($newUser->getConnection());
                 $user->setHideLocation($newUser->getHideLocation());
                 $user->setBlockMessages($newUser->getBlockMessages());
+                $user->setTwoStep($newUser->getTwoStep());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
@@ -305,7 +302,7 @@ class UsersController extends FOSRestController
 
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } else {
-                throw new HttpException(400, "El usuario no eres tu, ¿intentando hacer trampa?");
+                throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al actualizar la información del usuario - Error: {$ex->getMessage()}");
