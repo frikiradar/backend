@@ -368,13 +368,7 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $user = [];
-        $message = "";
-
         try {
-            $code = 200;
-            $error = false;
-
             $user = $this->getUser();
 
             $httpClient = new \Http\Adapter\Guzzle6\Client();

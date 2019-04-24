@@ -71,4 +71,15 @@ class ChatRepository extends ServiceEntityRepository
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         return $query->getResult();
     }
+
+    public function markAllAsRead(User $fromUser, User $toUser)
+    {
+        $em = $this->getEntityManager();
+        $chats = $this->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
+        foreach ($chats as $chat) {
+            $chat->setTimeRead(new \DateTime);
+            $em->merge($chat);
+        }
+        $em->flush();
+    }
 }

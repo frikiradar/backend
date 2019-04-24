@@ -75,6 +75,7 @@ class ChatController extends FOSRestController
         $em->flush();
 
         $chat = [
+            "id" => $newChat->getId(),
             "fromuser" => $newChat->getFromuser()->getId(),
             "touser" => $newChat->getTouser()->getId(),
             "text" => $newChat->getText(),
@@ -111,14 +112,18 @@ class ChatController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $em->getRepository('App:Chat')->markAllAsRead($toUser, $this->getUser());
+
         $obChats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser);
 
         $chats = [];
         foreach ($obChats as $key => $chat) {
+            $chats[$key]['id'] = $chat->getId();
             $chats[$key]['fromuser'] = $chat->getFromuser()->getId();
             $chats[$key]['touser'] = $chat->getTouser()->getId();
             $chats[$key]['text'] = $chat->getText();
             $chats[$key]['time_creation'] = $chat->getTimeCreation();
+            $chats[$key]['time_read'] = $chat->getTimeRead();
         }
 
         return new Response($serializer->serialize($chats, "json"));
@@ -165,5 +170,40 @@ class ChatController extends FOSRestController
         }
 
         return new Response($serializer->serialize($response, "json"));
+    }
+
+    /**
+     * @Rest\Get("/v1/read-chat/{id}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Mensaje leido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al marcar como leido el mensaje"
+     * )
+     *
+     */
+    public function markAsReadAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $chat = $em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            if ($chat->getTouser()->getId() == $this->getUser()->getId()) {
+                $chat->setTimeRead(new \DateTime);
+                $em->merge($chat);
+                $em->flush();
+
+                return new Response($serializer->serialize($chat, "json"));
+            } else {
+                throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
+        }
     }
 }
