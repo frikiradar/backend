@@ -498,6 +498,12 @@ class UsersController extends FOSRestController
                 return $b['match'] <=> $a['match'];
             });
 
+            $limit = 15;
+            $offset = ($page - 1) * $limit;
+
+            $users = array_slice($users, $offset, $limit);
+
+
             /* PONDERACIÓN SOBRE 100
             $index = 1 / (max(array_column($users, 'match')) / 100);
             foreach ($users as $key => $rUsers) {

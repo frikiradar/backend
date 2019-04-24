@@ -137,11 +137,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getUsersByDistance(User $user, int $ratio, int $page = 1)
+    public function getUsersByDistance(User $user, int $ratio)
     {
-        $limit = 15;
-        $offset = ($page - 1) * $limit;
-
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
 
@@ -181,8 +178,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'lovegender' => $user->getLovegender() ?: 1,
                 // 'connection' => $user->getConnection()
             ))
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
+            // ->setFirstResult($offset)
+            // ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
@@ -228,13 +225,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $toUser = $this->findOneBy(array('id' => $u['id']));
             $users[$key]['age'] = (int)$u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
-            $users[$key]['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
-            $users[$key]['match'] = $this->getMatchIndex($fromUser, $toUser);
-            $users[$key]['avatar'] = $toUser->getAvatar() ?: null;
-            $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
-                'from_user' => $fromUser,
-                'to_user' => $toUser
-            ])) ? true : false;
+            $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
+            $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
             if ($user['block']) {
@@ -245,11 +237,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $users;
     }
 
-    private function getMatchIndex(User $userA, User $userB)
+    private function getMatchIndex($tagsA, $tagsB)
     {
         $a = $b = [];
-        $tagsA = $userA->getTags();
-        $tagsB = $userB->getTags();
 
         foreach ($tagsA as $tag) {
             $a[$tag->getCategory()->getName()][] = $tag->getName();
