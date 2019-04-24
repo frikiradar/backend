@@ -9,3 +9,4 @@ public/images/avatar
 .phpunit
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+vendor
