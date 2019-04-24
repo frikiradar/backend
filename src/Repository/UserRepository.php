@@ -116,7 +116,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
             $user['tags'] = $toUser->getTags();
             $user['avatar'] = $toUser->getAvatar() ?: null;
-            $user['match'] = $this->getMatchIndex($fromUser, $toUser);
+            $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
                 'to_user' => $toUser
