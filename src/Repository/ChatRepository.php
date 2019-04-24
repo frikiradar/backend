@@ -49,15 +49,20 @@ class ChatRepository extends ServiceEntityRepository
     }
     */
 
-    public function getChat(User $fromUser, User $toUser)
+    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1)
     {
+        $limit = 50;
+        $offset = ($page - 1) * $limit;
+
         return $this->createQueryBuilder('c')
             ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+            ->andWhere($read == true ? '1=1' : 'c.timeRead IS NULL')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
             ->orderBy('c.id', 'DESC')
-            ->setMaxResults(100)
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }

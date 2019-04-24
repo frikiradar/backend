@@ -15,33 +15,39 @@ class Chat
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"message"})
      */
     private $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
      * @MaxDepth(1)
+     * @Groups({"message"})
      */
     private $fromuser;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
      * @MaxDepth(1)
+     * @Groups({"message"})
      */
     private $touser;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"message"})
      */
     private $text;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"message"})
      */
     private $timeCreation;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"message"})
      */
     private $timeRead;
 

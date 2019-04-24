@@ -22,7 +22,7 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $id;
 

@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Chat;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Request\ParamFetcherInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -55,41 +57,33 @@ class ChatController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $newChat = new Chat();
+        $chat = new Chat();
         $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get("touser")));
-        $newChat->setTouser($toUser);
-        $newChat->setFromuser($fromUser);
+        $chat->setTouser($toUser);
+        $chat->setFromuser($fromUser);
 
-        $min = min($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
-        $max = max($newChat->getFromuser()->getId(), $newChat->getTouser()->getId());
+        $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+        $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
 
         $conversationId = $min . "_" . $max;
 
         $text = $request->request->get("text");
 
-        $newChat->setText($text);
-        $newChat->setTimeCreation(new \DateTime);
-        $newChat->setConversationId($conversationId);
-        $em->persist($newChat);
+        $chat->setText($text);
+        $chat->setTimeCreation(new \DateTime);
+        $chat->setConversationId($conversationId);
+        $em->persist($chat);
         $em->flush();
 
-        $chat = [
-            "id" => $newChat->getId(),
-            "fromuser" => $newChat->getFromuser()->getId(),
-            "touser" => $newChat->getTouser()->getId(),
-            "text" => $newChat->getText(),
-            "time_creation" => $newChat->getTimeCreation()
-        ];
-
-        $update = new Update($conversationId, $serializer->serialize($chat, "json"));
+        $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
         $publisher($update);
 
         $title = $fromUser->getUsername();
-        $url = "/chat/" . $newChat->getFromuser()->getId();
+        $url = "/chat/" . $chat->getFromuser()->getId();
         $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text, $url, "chat");
 
-        return new Response($serializer->serialize($chat, "json"));
+        return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
 
     /**
@@ -105,28 +99,33 @@ class ChatController extends FOSRestController
      *     description="Chat al obtener el usuario"
      * )
      * 
+     * @Rest\QueryParam(
+     *     name="read",
+     *     default="false",
+     *     description="Get read chats or not"
+     * )
+     * 
+     * @Rest\QueryParam(
+     *     name="page",
+     *     default="1",
+     *     description="Chat page"
+     * )
+     * 
      */
-    public function getChatAction(int $id)
+    public function getChatAction(int $id, ParamFetcherInterface $params)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
+        $read = $params->get("read");
+        $page = $params->get("page");
+
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
         $em->getRepository('App:Chat')->markAllAsRead($toUser, $this->getUser());
 
-        $obChats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser);
+        $chats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser, $read, $page);
 
-        $chats = [];
-        foreach ($obChats as $key => $chat) {
-            $chats[$key]['id'] = $chat->getId();
-            $chats[$key]['fromuser'] = $chat->getFromuser()->getId();
-            $chats[$key]['touser'] = $chat->getTouser()->getId();
-            $chats[$key]['text'] = $chat->getText();
-            $chats[$key]['time_creation'] = $chat->getTimeCreation();
-            $chats[$key]['time_read'] = $chat->getTimeRead();
-        }
-
-        return new Response($serializer->serialize($chats, "json"));
+        return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
 
     /**
@@ -198,12 +197,12 @@ class ChatController extends FOSRestController
                 $em->merge($chat);
                 $em->flush();
 
-                return new Response($serializer->serialize($chat, "json"));
+                return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             } else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
             }
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }
     }
 }

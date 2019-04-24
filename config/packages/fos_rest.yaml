@@ -1,3 +1,4 @@
 fos_rest:
+  param_fetcher_listener: true
   body_converter:
     enabled: true
