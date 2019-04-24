@@ -137,10 +137,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getUsersByDistance(User $user, int $ratio)
+    public function getUsersByDistance(User $user, int $ratio, int $page = 1)
     {
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
         $latitude = $user->getCoordinates()->getLatitude();
         $longitude = $user->getCoordinates()->getLongitude();
+
+        $ratio = $latitude && $longitude ? $ratio : 0;
 
         $users = $this->createQueryBuilder('u')
             ->select(array(
@@ -160,7 +165,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         )
                     ) * 100) distance"
             ))
-            ->andHaving('distance <= :ratio')
+            ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
             ->andHaving('age BETWEEN :minage AND :maxage')
             ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
@@ -176,6 +181,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'lovegender' => $user->getLovegender() ?: 1,
                 // 'connection' => $user->getConnection()
             ))
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 

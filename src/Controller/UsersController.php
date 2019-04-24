@@ -18,6 +18,7 @@ use App\Entity\Tag;
 use App\Entity\Category;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Request\ParamFetcherInterface;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -476,14 +477,22 @@ class UsersController extends FOSRestController
      *     description="Error al actualizar las coordenadas"
      * )
      * 
+     * @Rest\QueryParam(
+     *     name="page",
+     *     default="1",
+     *     description="Radar page"
+     * )
+     * 
      */
-    public function getRadarUsers(int $ratio)
+    public function getRadarUsers(int $ratio, ParamFetcherInterface $params)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
+        $page = $params->get("page");
+
         try {
-            $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio);
+            $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
 
             usort($users, function ($a, $b) {
                 return $b['match'] <=> $a['match'];
