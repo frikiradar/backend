@@ -161,17 +161,12 @@ class UserLikesController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $like = new LikeUser();
-            $like = $em->getRepository('App:LikeUser')->findOneBy(array('id' => $id));
-            if ($like->getToUser()->getId() == $this->getUser()->getId()) {
-                $like->setTimeRead(new \DateTime);
-                $em->merge($like);
-                $em->flush();
+            $like = $em->getRepository('App:LikeUser')->findOneBy(array('from_user' => $id, 'to_user' => $this->getUser()->getId()));
+            $like->setTimeRead(new \DateTime);
+            $em->merge($like);
+            $em->flush();
 
-                return new Response($serializer->serialize($like, "json", SerializationContext::create()->setGroups(array('like'))->enableMaxDepthChecks()));
-            } else {
-                throw new HttpException(401, "No se puede marcar como leído el like de otro usuario");
-            }
+            return new Response($serializer->serialize($like, "json", SerializationContext::create()->setGroups(array('like'))->enableMaxDepthChecks()));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }
