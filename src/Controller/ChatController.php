@@ -156,7 +156,8 @@ class ChatController extends FOSRestController
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
-                    'avatar' =>  $user->getAvatar() ?: null
+                    'avatar' =>  $user->getAvatar() ?: null,
+                    'count' => $em->getRepository('App:Chat')->countUnreadUser($this->getUser(), $user)
                 ];
             }
             $response = $chats;
