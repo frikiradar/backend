@@ -64,7 +64,7 @@ class LikeUserRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('l')
             ->select('count(l.id)')
             ->where('l.to_user = :toUser')
-            ->andWhere('c.time_read IS NULL')
+            ->andWhere('l.time_read IS NULL')
             ->setParameter('toUser', $toUser->getId())
             ->getQuery()
             ->getSingleScalarResult();
