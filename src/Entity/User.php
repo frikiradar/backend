@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -524,9 +525,9 @@ class User implements UserInterface
 
 
     /**
-     * @return ArrayCollection|Tag[]
+     * @return Collection|Tag[]
      */
-    public function getTags(): ArrayCollection
+    public function getTags()
     {
         return $this->tags;
     }
@@ -631,9 +632,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return ArrayCollection|Notification[]
+     * @return Collection|Notification[]
      */
-    public function getNotifications(): ArrayCollection
+    public function getNotifications()
     {
         return $this->notifications;
     }
@@ -662,9 +663,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return ArrayCollection|Device[]
+     * @return Collection|Device[]
      */
-    public function getDevices(): ArrayCollection
+    public function getDevices()
     {
         return $this->devices;
     }
