@@ -31,7 +31,6 @@ use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
 use Geocoder\Query\ReverseQuery;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Entity\LikeUser;
 use App\Entity\BlockUser;
 
 /**
@@ -833,127 +832,6 @@ class UsersController extends FOSRestController
             return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "La contraseña actual no es válida");
-        }
-    }
-
-    /**
-     * @Rest\Put("/v1/like", name="like")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Like guardado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al guardar el like"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="user",
-     *     in="body",
-     *     type="string",
-     *     description="To user like",
-     *     schema={}
-     * )
-     *
-     */
-    public function putLikeAction(Request $request)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        try {
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
-
-            $newLike = new LikeUser();
-            $newLike->setDate(new \DateTime);
-            $newLike->setFromUser($this->getUser());
-            $newLike->setToUser($toUser);
-            $em->persist($newLike);
-            $em->flush();
-
-            $title = $newLike->getFromUser()->getUsername();
-            $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
-            $url = "/profile/" . $newLike->getFromUser()->getId();
-            $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
-            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Rest\Delete("/v1/like/{id}", name="unlike")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Like borrado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al borrar el like"
-     * )
-     *
-     */
-    public function removeLikeAction(int $id)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        try {
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-            $like = $em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
-            $em->remove($like);
-            $em->flush();
-
-            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al retirarle tu kokoro - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Rest\Get("/v1/likes")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Likes obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener los likes"
-     * )
-     * 
-     * @SWG\Tag(name="Get Likes")
-     */
-    public function getLikesAction()
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        try {
-            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser());
-
-            foreach ($likes as $key => $like) {
-                $userId = $like["fromuser"];
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $likes[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => $user->getUsername(),
-                    'description' => $user->getDescription(),
-                    'avatar' =>  $user->getAvatar() ?: null
-                ];
-            }
-            return new Response($serializer->serialize($likes, "json"));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener los likes - Error: {$ex->getMessage()}");
         }
     }
 

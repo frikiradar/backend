@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LikeUserRepository")
@@ -19,22 +21,28 @@ class LikeUser
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="likes")
      * @ORM\JoinColumn(nullable=false)
+     * @MaxDepth(1)
+     * @Groups({"like"})
      */
     private $from_user;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="likes")
      * @ORM\JoinColumn(nullable=false)
+     * @MaxDepth(1)
+     * @Groups({"like"})
      */
     private $to_user;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"like"})
      */
     private $date;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"like"})
      */
     private $time_read;
 
