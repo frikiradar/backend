@@ -166,7 +166,7 @@ class UserLikesController extends FOSRestController
         try {
             $like = new LikeUser();
             $like = $em->getRepository('App:LikeUser')->findOneBy(array('id' => $id));
-            if ($like->setToUser()->getId() == $this->getUser()->getId()) {
+            if ($like->getToUser()->getId() == $this->getUser()->getId()) {
                 $like->setTimeRead(new \DateTime);
                 $em->merge($like);
                 $em->flush();
