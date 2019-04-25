@@ -1,5 +1,5 @@
 <?php
- // src/Controller/ChatController.php
+// src/Controller/ChatController.php
 namespace App\Controller;
 
 use App\Entity\Notification;
@@ -38,26 +38,13 @@ class NotificationsController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
-            $notifications = $em->getRepository('App:Notification')->getNotifications($toUser);
+            $countChats = $em->getRepository('App:Chat')->countUnread($this->getUser());
+            $countLikes = $em->getRepository('App:LikeUser')->countUnread($this->getUser());
 
-            foreach ($notifications as $key => $notification) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $notification["fromuser"]));
-                $notifications[$key]['user'] = [
-                    'id' => $user->getId(),
-                    'username' => $user->getUsername(),
-                    'avatar' =>  $user->getAvatar() ?: null
-                ];
-            }
-            $response = $notifications;
+            $notifications = ["chats" => $countChats, "likes" => $countLikes];
+            return new Response($serializer->serialize($notifications, "json"));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener las notificaciones - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
         }
-
-        return new Response($serializer->serialize($response, "json"));
     }
 }

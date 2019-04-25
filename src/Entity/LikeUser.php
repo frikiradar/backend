@@ -33,6 +33,11 @@ class LikeUser
      */
     private $date;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $time_read;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -70,6 +75,18 @@ class LikeUser
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    public function getTimeRead(): ?\DateTimeInterface
+    {
+        return $this->time_read;
+    }
+
+    public function setTimeRead(?\DateTimeInterface $time_read): self
+    {
+        $this->time_read = $time_read;
 
         return $this;
     }

@@ -58,4 +58,15 @@ class LikeUserRepository extends ServiceEntityRepository
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $user->getId());
         return $query->getResult();
     }
+
+    public function countUnread(User $toUser)
+    {
+        return $this->createQueryBuilder('l')
+            ->select('count(l.id)')
+            ->where('l.to_user = :toUser')
+            ->andWhere('c.time_read IS NULL')
+            ->setParameter('toUser', $toUser->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

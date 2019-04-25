@@ -87,4 +87,15 @@ class ChatRepository extends ServiceEntityRepository
         }
         $em->flush();
     }
+
+    public function countUnread(User $toUser)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('count(c.id)')
+            ->where('c.touser = :toUser')
+            ->andWhere('c.timeRead IS NULL')
+            ->setParameter('toUser', $toUser->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
