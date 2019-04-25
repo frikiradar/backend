@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -525,9 +524,9 @@ class User implements UserInterface
 
 
     /**
-     * @return Collection|Tag[]
+     * @return ArrayCollection|Tag[]
      */
-    public function getTags(): Collection
+    public function getTags(): ArrayCollection
     {
         return $this->tags;
     }
@@ -575,7 +574,7 @@ class User implements UserInterface
         });
 
         if (isset($files[0])) {
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = "https://$_SERVER[HTTP_HOST]";
             $this->avatar = str_replace("../public", $server, $files[0]);
         } else {
             $this->avatar = false;
@@ -632,9 +631,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return Collection|Notification[]
+     * @return ArrayCollection|Notification[]
      */
-    public function getNotifications(): Collection
+    public function getNotifications(): ArrayCollection
     {
         return $this->notifications;
     }
@@ -663,9 +662,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return Collection|Device[]
+     * @return ArrayCollection|Device[]
      */
-    public function getDevices(): Collection
+    public function getDevices(): ArrayCollection
     {
         return $this->devices;
     }
