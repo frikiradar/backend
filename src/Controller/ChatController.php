@@ -153,11 +153,11 @@ class ChatController extends FOSRestController
             foreach ($chats as $key => $chat) {
                 $userId = $chat["fromuser"] == $this->getUser()->getId() ? $chat["touser"] : $chat["fromuser"];
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $chats[$key]['count'] = $em->getRepository('App:Chat')->countUnreadUser($this->getUser(), $user);
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
-                    'avatar' =>  $user->getAvatar() ?: null,
-                    'count' => $em->getRepository('App:Chat')->countUnreadUser($this->getUser(), $user)
+                    'avatar' =>  $user->getAvatar() ?: null
                 ];
             }
             $response = $chats;
