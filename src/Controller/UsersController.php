@@ -661,7 +661,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Post("/recover", name="recover-email")
+     * @Rest\Post("/v1/recover", name="recover-email")
      *
      * @SWG\Response(
      *     response=201,
