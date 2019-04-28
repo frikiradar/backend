@@ -114,7 +114,7 @@ class NotificationRepository extends ServiceEntityRepository
 
                     $firebase = (new Firebase\Factory())->create();
                     $messaging = $firebase->getMessaging();
-                    $messaging->send($message);
+                    @$messaging->send($message);
                 }
             }
         }
