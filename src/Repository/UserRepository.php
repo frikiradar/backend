@@ -260,8 +260,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $matchIndexA = count($tagsA) ? $matches / count($tagsA) : 0;
         $matchIndexB = count($tagsB) ? $matches / count($tagsB) : 0;
-        $matchIndex = max($matchIndexA, $matchIndexB);
 
-        return round($matchIndex * 100, 1);
+        if ($matchIndexA && $matchIndexB) {
+            $maxIndex = max($matchIndexA, $matchIndexB);
+            $minIndex = min($matchIndexA, $matchIndexB);
+
+            return round(($minIndex / $maxIndex) * 100, 1);
+        } else {
+            return 0;
+        }
     }
 }
