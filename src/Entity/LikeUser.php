@@ -19,7 +19,7 @@ class LikeUser
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="likes")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(nullable=false)
      * @MaxDepth(1)
      * @Groups({"like"})
@@ -27,7 +27,7 @@ class LikeUser
     private $from_user;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="likes")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(nullable=false)
      * @MaxDepth(1)
      * @Groups({"like"})

@@ -20,14 +20,14 @@ class Chat
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @MaxDepth(1)
      * @Groups({"message"})
      */
     private $fromuser;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="chats")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @MaxDepth(1)
      * @Groups({"message"})
      */

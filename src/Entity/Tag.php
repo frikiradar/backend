@@ -28,7 +28,7 @@ class Tag
 
     /**
      * @ORM\Id()
-     * @ORM\ManyToOne(targetEntity="App\Entity\Category", inversedBy="tags", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"default"})
      */
