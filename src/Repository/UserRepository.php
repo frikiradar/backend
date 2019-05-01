@@ -139,8 +139,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function getUsersByDistance(User $user, int $ratio)
     {
-        $latitude = $user->getCoordinates()->getLatitude();
-        $longitude = $user->getCoordinates()->getLongitude();
+        $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
+        $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
 
         $ratio = $latitude && $longitude ? $ratio : 0;
 
