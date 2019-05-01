@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Mercure\Publisher;
 use Symfony\Component\Mercure\Update;
+use App\Service\NotificationService;
 
 /**
  * Class ChatController
@@ -82,7 +83,9 @@ class ChatController extends FOSRestController
 
         $title = $fromUser->getUsername();
         $url = "/chat/" . $chat->getFromuser()->getId();
-        $em->getRepository('App:Notification')->push($fromUser, $toUser, $title, $text, $url, "chat");
+
+        $notification = new NotificationService();
+        $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
         return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
@@ -194,15 +197,15 @@ class ChatController extends FOSRestController
 
         try {
             $chat = $em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($chat->getTouser()->getId() == $this->getUser()->getId()) {
-                $chat->setTimeRead(new \DateTime);
-                $em->merge($chat);
-                $em->flush();
+            // if ($chat->getTouser()->getId() == $this->getUser()->getId()) {
+            $chat->setTimeRead(new \DateTime);
+            $em->merge($chat);
+            $em->flush();
 
-                return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-            } else {
+            return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            /*} else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
-            }
+            }*/
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }

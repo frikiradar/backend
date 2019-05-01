@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
+use App\Service\NotificationService;
 
 /**
  * Class UserLikesController
@@ -60,7 +61,10 @@ class UserLikesController extends FOSRestController
             $title = $newLike->getFromUser()->getUsername();
             $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
             $url = "/profile/" . $newLike->getFromUser()->getId();
-            $em->getRepository('App:Notification')->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+
+            $notification = new NotificationService();
+            $notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
             return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
