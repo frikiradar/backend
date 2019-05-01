@@ -355,7 +355,7 @@ class User implements UserInterface
         return $this->last_ip;
     }
 
-    public function setLastIp(string $last_ip): self
+    public function setLastIp(): self
     {
         $this->last_ip = $this->getIP();
 
@@ -367,9 +367,9 @@ class User implements UserInterface
         return $this->last_login;
     }
 
-    public function setLastLogin(\DateTimeInterface $last_login): self
+    public function setLastLogin(): self
     {
-        $this->last_login = $last_login;
+        $this->last_login = new \DateTime();
 
         return $this;
     }

@@ -25,7 +25,8 @@ class JWTAuthentication
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
     {
         $user = $event->getUser();
-        $user->setLastLogin(new \DateTime());
+        $user->setLastLogin();
+        $user->setLastIP();
         $em = $this->container->get('doctrine')->getManager();
         $em->merge($user);
         $em->flush();
