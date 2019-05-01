@@ -687,38 +687,43 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
-                $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username')));
-            } else {
-                $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
-            }
+        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
+            $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username')));
+        } else {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
+        }
 
+        if (!is_null($user)) {
             $user->setVerificationCode();
             $em->persist($user);
             $em->flush();
 
-            $message = (new \Swift_Message($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($user->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/recover.html.twig",
-                        [
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ),
-                    'text/html'
-                );
+            try {
 
-            if (0 === $mailer->send($message)) {
-                throw new HttpException(400, "Error al enviar el email de recuperación");
+                $message = (new \Swift_Message($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar'))
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setTo($user->getEmail())
+                    ->setBody(
+                        $this->renderView(
+                            "emails/recover.html.twig",
+                            [
+                                'username' => $user->getUsername(),
+                                'code' => $user->getVerificationCode()
+                            ]
+                        ),
+                        'text/html'
+                    );
+
+                if (0 === $mailer->send($message)) {
+                    throw new HttpException(400, "Error al enviar el email de recuperación");
+                }
+
+                return new Response($serializer->serialize("Email enviado correctamente", "json"));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
             }
-
-            return new Response($serializer->serialize("Email enviado correctamente", "json"));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "No hay ningú usuario registrado con estos datos - Error: {$ex->getMessage()}");
         }
     }
 
