@@ -265,7 +265,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $maxIndex = max($matchIndexA, $matchIndexB);
             $minIndex = min($matchIndexA, $matchIndexB);
 
-            return round(($minIndex / $maxIndex) * 100, 1);
+            //  return round(($minIndex / $maxIndex) * 100, 1);  /*Algoritmo A*/
+            return round($maxIndex * 100, 1); /*Algoritmo B*/
         } else {
             return 0;
         }
