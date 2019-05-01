@@ -169,6 +169,7 @@ class User implements UserInterface
     private $birthday;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Type("string")
      * @Groups({"default"})
      */
