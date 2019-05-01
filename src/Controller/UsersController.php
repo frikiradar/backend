@@ -454,7 +454,7 @@ class UsersController extends FOSRestController
                 }
             }
 
-            $server = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+            $server = "https://$_SERVER[HTTP_HOST]";
             $response = str_replace("../public", $server, $image);
 
             return new Response($serializer->serialize($response, "json"));
