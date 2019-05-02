@@ -34,8 +34,8 @@ class NotificationService
                         'sound' => "default",
                         'tag' => $tag,
                         'click_action' => "FCM_PLUGIN_ACTIVITY",
-                        "collapse_key" => $tag
                     ],
+                    "collapse_key" => $tag
                 ]);
 
                 $message = CloudMessage::withTarget('token', $device->getToken())
