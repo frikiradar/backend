@@ -73,8 +73,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $em = $this->getEntityManager();
 
-        $latitude = $fromUser->getCoordinates()->getLatitude();
-        $longitude = $fromUser->getCoordinates()->getLongitude();
+        $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
+        $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
 
         $user = $this->createQueryBuilder('u')
             ->select(array(

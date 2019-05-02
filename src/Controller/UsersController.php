@@ -730,7 +730,7 @@ class UsersController extends FOSRestController
                 throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
             }
         } else {
-            throw new HttpException(400, "No hay ningú usuario registrado con estos datos - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "No hay ningú usuario registrado con estos datos");
         }
     }
 
