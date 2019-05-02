@@ -320,7 +320,7 @@ class UsersController extends FOSRestController
 
                 $em->persist($user);
                 $em->flush();
-                $user->setAvatar($user->getAvatar());
+                $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } else {
@@ -435,10 +435,13 @@ class UsersController extends FOSRestController
      */
     public function uploadAvatarAction(Request $request)
     {
+        $em = $this->getDoctrine()->getManager();
         $serializer = $this->get('jms_serializer');
         $avatar = $request->files->get('avatar');
 
-        $id = $this->getUser()->getId();
+        $user = $this->getUser();
+
+        $id = $user->getId();
         $filename = date('YmdHis');
         $uploader = new FileUploader("../public/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
@@ -455,9 +458,13 @@ class UsersController extends FOSRestController
             }
 
             $server = "https://$_SERVER[HTTP_HOST]";
-            $response = str_replace("../public", $server, $image);
+            $src = str_replace("../public", $server, $image);
 
-            return new Response($serializer->serialize($response, "json"));
+            $user->setAvatar($src); //TODO: quitar cuando esten todos en db
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($src, "json"));
         } else {
             throw new HttpException(400, "Error al subir la imagen");
         }
