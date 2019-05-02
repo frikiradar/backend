@@ -23,6 +23,8 @@ class NotificationService
                     'url' => $url
                 ];
 
+                $tag = $type . '_' . $title;
+
                 $config = AndroidConfig::fromArray([
                     'ttl' => '3600s',
                     'priority' => 'high',
@@ -30,8 +32,9 @@ class NotificationService
                         'title' => $title,
                         'body' => $text,
                         'sound' => "default",
-                        // 'tag' => $type . '_' . $title,
-                        // 'click_action' => "FCM_PLUGIN_ACTIVITY"
+                        'tag' => $tag,
+                        'click_action' => "FCM_PLUGIN_ACTIVITY",
+                        "collapse_key" => $tag
                     ],
                 ]);
 
