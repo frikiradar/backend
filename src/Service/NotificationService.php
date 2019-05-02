@@ -25,12 +25,12 @@ class NotificationService
 
                 $config = AndroidConfig::fromArray([
                     'ttl' => '3600s',
-                    'priority' => 'normal',
+                    'priority' => 'high',
                     'notification' => [
                         'title' => $title,
                         'body' => $text,
-                        'sound' => "bipbip",
-                        'tag' => $type . '_' . $title,
+                        'sound' => "default",
+                        // 'tag' => $type . '_' . $title,
                         'click_action' => "FCM_PLUGIN_ACTIVITY"
                     ],
                 ]);
