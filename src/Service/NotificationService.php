@@ -31,7 +31,7 @@ class NotificationService
                         'body' => $text,
                         'sound' => "default",
                         // 'tag' => $type . '_' . $title,
-                        'click_action' => "FCM_PLUGIN_ACTIVITY"
+                        // 'click_action' => "FCM_PLUGIN_ACTIVITY"
                     ],
                 ]);
 
