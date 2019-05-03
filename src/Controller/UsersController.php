@@ -27,11 +27,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Swagger\Annotations as SWG;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use App\Service\FileUploader;
-use Geocoder\Query\ReverseQuery;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
+use App\Service\GeolocationService;
 
 /**
  * Class UsersController
@@ -153,6 +152,10 @@ class UsersController extends FOSRestController
                 $user->setTwoStep(false);
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
+
+                $geolocation = new GeolocationService();
+                $coords = $geolocation->geolocate($user->getIP());
+                $user->setCoordinates($coords);
                 $em->persist($user);
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
@@ -318,6 +321,12 @@ class UsersController extends FOSRestController
                     $em->flush();
                 }
 
+                if (!$user->getCoordinates()) {
+                    $geolocation = new GeolocationService();
+                    $coords = $geolocation->geolocate($user->getIP());
+                    $user->setCoordinates($coords);
+                }
+
                 $em->persist($user);
                 $em->flush();
                 $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
@@ -371,42 +380,17 @@ class UsersController extends FOSRestController
         try {
             $user = $this->getUser();
 
-            $httpClient = new \Http\Adapter\Guzzle6\Client();
-            $coords = new Point(0, 0);
-
-            if ($request->request->get('latitude') && $request->request->get('longitude')) {
-                $coords
-                    ->setLatitude($request->request->get('latitude'))
-                    ->setLongitude($request->request->get('longitude'));
-            } else {
-                // Calculamos las coordenadas y ciudad por la ip
-                $ip = $user->getIP();
-
-                $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($httpClient);
-                $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
-                $ipResult = $geocoder->geocode($ip);
-                if (!is_null($ipResult->first()->getCoordinates())) {
-                    $coords
-                        ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
-                        ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
-                }
-            }
-
+            $geolocation = new GeolocationService();
+            $coords = $geolocation->geolocate($user->getIP(), $request->request->get('latitude'), $request->request->get('longitude'));
             $user->setCoordinates($coords);
             $em->persist($user);
             $em->flush();
 
-            try {
-                $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-                $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
-                $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
-                if (!$result->isEmpty()) {
-                    $user->setLocation($result->first()->getLocality());
-                    $em->persist($user);
-                    $em->flush();
-                }
-            } catch (Exception $ex) {
-                // throw new HttpException(400, "No se ha podido obtener la localidad - Error: {$ex->getMessage()}");
+            $location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
+            if ($location) {
+                $user->setLocation($location);
+                $em->persist($user);
+                $em->flush();
             }
 
             return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
