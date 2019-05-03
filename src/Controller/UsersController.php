@@ -848,6 +848,56 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Put("/v1/email", name="change-email")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email cambiado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al cambiar el email"
+     * )
+     * 
+     * 
+     * @SWG\Parameter(
+     *     name="old_email",
+     *     in="query",
+     *     type="string",
+     *     description="The old email",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="new_email",
+     *     in="query",
+     *     type="string",
+     *     description="The new email",
+     *     schema={}
+     * )
+     * 
+     */
+    public function changeEmailAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $user = $this->getUser();
+
+        if ($user->getEmail() == $request->request->get("old_email")) {
+            $user->setEmail($request->request->get('new_email'));
+
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } else {
+            throw new HttpException(400, "El email actual no es válido");
+        }
+    }
+
+    /**
      * @Rest\Put("/v1/block", name="block")
      *
      * @SWG\Response(
