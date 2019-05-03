@@ -216,6 +216,12 @@ class User implements UserInterface
      */
     private $two_step;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"default"})
+     */
+    private $num_logins;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -723,6 +729,18 @@ class User implements UserInterface
     public function setTwoStep(bool $two_step): self
     {
         $this->two_step = $two_step;
+
+        return $this;
+    }
+
+    public function getNumLogins(): ?int
+    {
+        return $this->num_logins;
+    }
+
+    public function setNumLogins(int $num_logins): self
+    {
+        $this->num_logins = $num_logins;
 
         return $this;
     }

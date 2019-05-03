@@ -27,6 +27,7 @@ class JWTAuthentication
         $user = $event->getUser();
         $user->setLastLogin();
         $user->setLastIP();
+        $user->setNumLogins(($user->getNumLogins() ?: 0) + 1);
         $em = $this->container->get('doctrine')->getManager();
         $em->merge($user);
         $em->flush();
