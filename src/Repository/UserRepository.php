@@ -188,8 +188,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function searchUsers(string $search, User $user): ?array
     {
-        $latitude = $user->getCoordinates()->getLatitude();
-        $longitude = $user->getCoordinates()->getLongitude();
+        $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
+        $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
 
         $dql = "SELECT u.id,
             u.username,
