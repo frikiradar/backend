@@ -385,9 +385,11 @@ class UsersController extends FOSRestController
                 $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($httpClient);
                 $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
                 $ipResult = $geocoder->geocode($ip);
-                $coords
-                    ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
-                    ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
+                if (!is_null($ipResult->first()->getCoordinates())) {
+                    $coords
+                        ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
+                        ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
+                }
             }
 
             $user->setCoordinates($coords);
@@ -398,9 +400,11 @@ class UsersController extends FOSRestController
                 $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
                 $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
                 $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($user->getCoordinates()->getLatitude(), $user->getCoordinates()->getLongitude()));
-                $user->setLocation($result->first()->getLocality());
-                $em->persist($user);
-                $em->flush();
+                if (!$result->isEmpty()) {
+                    $user->setLocation($result->first()->getLocality());
+                    $em->persist($user);
+                    $em->flush();
+                }
             } catch (Exception $ex) {
                 // throw new HttpException(400, "No se ha podido obtener la localidad - Error: {$ex->getMessage()}");
             }
