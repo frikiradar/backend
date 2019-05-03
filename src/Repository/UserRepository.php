@@ -166,6 +166,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andHaving('age BETWEEN :minage AND :maxage')
             ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
+            ->andWhere($user->getOrientation() ? 'u.orientation IN (:orientation)' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
             ->andWhere('u.active = 1')
@@ -177,6 +178,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'id' => $user->getId(),
                 'lovegender' => $user->getLovegender() ?: 1,
                 // 'connection' => $user->getConnection()
+                'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1
             ))
             // ->setFirstResult($offset)
             // ->setMaxResults($limit)
@@ -271,6 +273,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return $afinity < 100 ? $afinity : 100;
         } else {
             return 0;
+        }
+    }
+
+    private function orientation2Genre($orientation)
+    {
+        switch ($orientation) {
+            case "Heterosexual":
+                return ["Heterosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+                break;
+
+            case "Homosexual":
+                return ["Homosexual", "Bisexual", "Pansexual"];
+                break;
+
+            default:
+                return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
         }
     }
 }
