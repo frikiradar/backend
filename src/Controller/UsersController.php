@@ -936,7 +936,7 @@ class UsersController extends FOSRestController
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
