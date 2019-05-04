@@ -33,7 +33,7 @@ class NotificationService
                         'body' => $text,
                         'sound' => "default",
                         'tag' => $tag,
-                        // 'click_action' => "FCM_PLUGIN_ACTIVITY",
+                        'click_action' => "FCM_PLUGIN_ACTIVITY",
                     ],
                     "collapse_key" => $tag
                 ]);
