@@ -32,7 +32,7 @@ class NotificationService
                     'notification' => [
                         'title' => $title,
                         'body' => $text,
-                        'sound' => "bipbip",
+                        'sound' => "default",
                         'tag' => $tag,
                         'click_action' => "FCM_PLUGIN_ACTIVITY",
                     ],
