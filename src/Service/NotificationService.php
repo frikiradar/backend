@@ -18,9 +18,10 @@ class NotificationService
             if ($device->getActive() && !is_null($device->getToken())) {
                 $notification = PushNotification::create($title, $text);
                 $data = [
-                    'fromUser' => (string)$fromUser->getId(),
-                    'toUser' => (string)$toUser->getId(),
-                    'url' => $url
+                    'fromUser' => $fromUser->getId(),
+                    'toUser' => $toUser->getId(),
+                    'url' => $url,
+                    'icon' => $fromUser->getAvatar()
                 ];
 
                 $tag = $type . '_' . $title;
@@ -31,7 +32,7 @@ class NotificationService
                     'notification' => [
                         'title' => $title,
                         'body' => $text,
-                        'sound' => "default",
+                        'sound' => "bipbip",
                         'tag' => $tag,
                         'click_action' => "FCM_PLUGIN_ACTIVITY",
                     ],
