@@ -18,8 +18,8 @@ class NotificationService
             if ($device->getActive() && !is_null($device->getToken())) {
                 $notification = PushNotification::create($title, $text);
                 $data = [
-                    'fromUser' => $fromUser->getId(),
-                    'toUser' => $toUser->getId(),
+                    'fromUser' => (string)$fromUser->getId(),
+                    'toUser' => (string)$toUser->getId(),
                     'url' => $url,
                     'icon' => $fromUser->getAvatar()
                 ];
