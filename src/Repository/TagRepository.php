@@ -19,9 +19,9 @@ class TagRepository extends ServiceEntityRepository
         parent::__construct($registry, Tag::class);
     }
 
-//    /**
-//     * @return Tag[] Returns an array of Tag objects
-//     */
+    //    /**
+    //     * @return Tag[] Returns an array of Tag objects
+    //     */
     /*
     public function findByExampleField($value)
     {
@@ -61,6 +61,7 @@ class TagRepository extends ServiceEntityRepository
             ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)')
             ->groupBy('t.name')
             ->orderBy('total', 'DESC')
+            ->setMaxResults(8)
             ->setParameters(array(
                 'name' => '%' . $query . '%',
                 'category' => $category

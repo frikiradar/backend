@@ -153,6 +153,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.location',
                 'u.hide_location',
                 'u.block_messages',
+                'u.gender',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
