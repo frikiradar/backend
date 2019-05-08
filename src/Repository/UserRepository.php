@@ -167,7 +167,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andHaving('age BETWEEN :minage AND :maxage')
             ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
             // ->andWhere('u.connection IN (:connection)')
-            ->andWhere($user->getOrientation() ? 'u.orientation IN (:orientation)' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+            ->andWhere(
+                $user->getOrientation() == "Homosexual" ?
+                    'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                        'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+            )
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
             ->andWhere('u.active = 1')
