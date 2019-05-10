@@ -237,4 +237,38 @@ class DevicesController extends FOSRestController
             throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
     }
+
+    /**
+     * @Rest\Get("/v1/turnoff-device/{uuid}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Dispositivo activado/desactivado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al activar/desactivar el dispositivo"
+     * )
+     * 
+     */
+    public function turnOffAction(string $uuid)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            /**
+             * @var Device
+             */
+            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
+            $device->setActive(false);
+            $em->persist($device);
+            $em->flush();
+
+            return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
+        }
+    }
 }
