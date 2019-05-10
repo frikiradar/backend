@@ -51,19 +51,23 @@ class UserLikesController extends FOSRestController
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $newLike = new LikeUser();
-            $newLike->setDate(new \DateTime);
-            $newLike->setFromUser($this->getUser());
-            $newLike->setToUser($toUser);
-            $em->persist($newLike);
-            $em->flush();
+            $like = $em->getRepository('App:User')->findOneBy(array('toUser' => $toUser, 'fromUser' => $this->getUser()));
 
-            $title = $newLike->getFromUser()->getUsername();
-            $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
-            $url = "/profile/" . $newLike->getFromUser()->getId();
+            if (empty($like)) {
+                $newLike = new LikeUser();
+                $newLike->setDate(new \DateTime);
+                $newLike->setFromUser($this->getUser());
+                $newLike->setToUser($toUser);
+                $em->persist($newLike);
+                $em->flush();
 
-            $notification = new NotificationService();
-            $notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+                $title = $newLike->getFromUser()->getUsername();
+                $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
+                $url = "/profile/" . $newLike->getFromUser()->getId();
+
+                $notification = new NotificationService();
+                $notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+            }
 
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
