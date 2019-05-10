@@ -267,9 +267,10 @@ class DevicesController extends FOSRestController
                 $device->setActive(false);
                 $em->persist($device);
                 $em->flush();
+                return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
+            } else {
+                return new Response($serializer->serialize("Dispositivo no encontrado", "json"));
             }
-
-            return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
