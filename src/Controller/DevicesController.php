@@ -264,7 +264,7 @@ class DevicesController extends FOSRestController
             $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'deviceId' => $uuid));
 
             if (!empty($device)) {
-                $device->setActive(false);
+                $device->setToken(null);
                 $em->persist($device);
                 $em->flush();
                 return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
