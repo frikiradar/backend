@@ -51,7 +51,7 @@ class UserLikesController extends FOSRestController
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $like = $em->getRepository('App:User')->findOneBy(array('toUser' => $toUser, 'fromUser' => $this->getUser()));
+            $like = $em->getRepository('App:LikeUser')->findOneBy(array('toUser' => $toUser, 'fromUser' => $this->getUser()));
 
             if (empty($like)) {
                 $newLike = new LikeUser();
