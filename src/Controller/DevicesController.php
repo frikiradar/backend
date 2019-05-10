@@ -261,14 +261,17 @@ class DevicesController extends FOSRestController
             /**
              * @var Device
              */
-            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
-            $device->setActive(false);
-            $em->persist($device);
-            $em->flush();
+            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'deviceId' => $uuid));
+
+            if (!empty($device)) {
+                $device->setActive(false);
+                $em->persist($device);
+                $em->flush();
+            }
 
             return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
     }
 }
