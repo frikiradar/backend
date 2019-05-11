@@ -36,18 +36,21 @@ class MyCommand extends Command
             });
 
             if (isset($files[0])) {
+                echo $files[0];
                 $server = "https://$_SERVER[HTTP_HOST]";
                 $avatar = str_replace("../public", $server, $files[0]);
             } else {
                 $avatar = false;
             }
-            echo $avatar;
-            $user->setAvatar($avatar);
-            $this->em->persist($user);
-            $this->em->flush();
+            if ($avatar) {
+                echo $avatar;
+                // $user->setAvatar($avatar);
+                // $this->em->persist($user);
+                // $this->em->flush();
 
-            $output->writeln($user->getId() . " - " . $user->getUsername() . "-" . $avatar);
-            $this->em->detach($user);
+                $output->writeln($user->getId() . " - " . $user->getUsername() . "-" . $avatar);
+                // $this->em->detach($user);
+            }
         }
     }
 }
