@@ -568,9 +568,9 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getAvatar(): ?string
+    public function getAvatar()
     {
-        $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
+        /*$files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
         usort($files, function ($a, $b) {
             return basename($b) <=> basename($a);
         });
@@ -580,7 +580,7 @@ class User implements UserInterface
             $this->avatar = str_replace("../public", $server, $files[0]);
         } else {
             $this->avatar = false;
-        }
+        }*/
 
         return $this->avatar;
     }
