@@ -63,7 +63,7 @@ class ChatController extends FOSRestController
         $fromUser = $this->getUser();
         $toUser = $em->getRepository('App:User')->find($request->request->get("touser"));
 
-        if (!empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
+        if (empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
             $chat->setTouser($toUser);
             $chat->setFromuser($fromUser);
 
