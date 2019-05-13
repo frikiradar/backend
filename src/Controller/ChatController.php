@@ -60,34 +60,37 @@ class ChatController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         $chat = new Chat();
-        $fromUser = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId()));
-        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get("touser")));
-        $chat->setTouser($toUser);
-        $chat->setFromuser($fromUser);
+        $fromUser = $this->getUser();
+        $toUser = $em->getRepository('App:User')->find($request->request->get("touser"));
 
-        $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
-        $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+        if (!empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
+            $chat->setTouser($toUser);
+            $chat->setFromuser($fromUser);
 
-        $conversationId = $min . "_" . $max;
+            $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+            $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
 
-        $text = $request->request->get("text");
+            $conversationId = $min . "_" . $max;
 
-        $chat->setText($text);
-        $chat->setTimeCreation(new \DateTime);
-        $chat->setConversationId($conversationId);
-        $em->persist($chat);
-        $em->flush();
+            $text = $request->request->get("text");
 
-        $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-        $publisher($update);
+            $chat->setText($text);
+            $chat->setTimeCreation(new \DateTime);
+            $chat->setConversationId($conversationId);
+            $em->persist($chat);
+            $em->flush();
 
-        $title = $fromUser->getUsername();
-        $url = "/chat/" . $chat->getFromuser()->getId();
+            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $publisher($update);
 
-        $notification = new NotificationService();
-        $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+            $title = $fromUser->getUsername();
+            $url = "/chat/" . $chat->getFromuser()->getId();
 
-        return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $notification = new NotificationService();
+            $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+
+            return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+        }
     }
 
     /**
