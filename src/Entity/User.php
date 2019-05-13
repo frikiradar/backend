@@ -663,6 +663,15 @@ class User implements UserInterface
         return $this;
     }
 
+    public function removeDevices(): self
+    {
+        foreach ($this->devices as $device) {
+            $this->removeDevice($device);
+        }
+
+        return $this;
+    }
+
     public function getVerificationCode()
     {
         return $this->verificationCode;

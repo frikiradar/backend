@@ -886,6 +886,46 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Put("/v1/username", name="change-username")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Username cambiado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al cambiar el username"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="new_username",
+     *     in="query",
+     *     type="string",
+     *     description="The new username",
+     *     schema={}
+     * )
+     * 
+     */
+    public function changeUsernameAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $user->setUsername($request->request->get('new_username'));
+
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Ya hay un usuario con ese nombre - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Rest\Put("/v1/block", name="block")
      *
      * @SWG\Response(
@@ -1118,6 +1158,60 @@ class UsersController extends FOSRestController
             }
         } else {
             throw new HttpException(400, "El código de verificación no es válido.");
+        }
+    }
+
+    /**
+     * @Rest\Put("/v1/disable", name="disable")
+     * @SWG\Response(
+     *     response=201,
+     *     description="Email enviado correctamente"
+     * )
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario desactivado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al desactivar el usuario"
+     * )
+     * 
+     */
+    public function disableAction(Request $request, \Swift_Mailer $mailer)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+
+            // ponemos usuario en disable
+            $user->setActive(false);
+            // borramos sus dispositivos
+            $user->removeDevices();
+
+            $em->persist($user);
+            $em->flush();
+
+            if (!empty($request->request->get('note'))) {
+                // Enviar email al administrador informando del motivo
+                $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
+                    ->setFrom([$user->getEmail() => $user->getUsername()])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $request->request->get('note'), 'text/html');
+
+                if (0 === $mailer->send($message)) {
+                    // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
+                }
+            }
+
+
+            // forzamos cierre de sesión
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
         }
     }
 }
