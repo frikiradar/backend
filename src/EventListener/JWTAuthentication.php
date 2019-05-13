@@ -13,13 +13,17 @@ class JWTAuthentication
      */
     private $requestStack;
 
+    private $mailer;
+
     /**
      * @param RequestStack $requestStack
      */
-    public function __construct(RequestStack $requestStack, ContainerInterface $container)
+    public function __construct(RequestStack $requestStack, ContainerInterface $container, \Swift_Mailer $mailer, \Twig_Environment $templating)
     {
         $this->requestStack = $requestStack;
         $this->container = $container;
+        $this->mailer = $mailer;
+        $this->templating = $templating;
     }
 
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
@@ -30,7 +34,7 @@ class JWTAuthentication
         $user->setLastIP();
         $user->setNumLogins(($user->getNumLogins() ?: 0) + 1);
 
-        /*if (!$user->getActive() && !$user->getVerificationCode()) {
+        if (!$user->getActive() && !$user->getVerificationCode()) {
             //Generamos y enviamos por email
             $user->setVerificationCode();
 
@@ -38,7 +42,7 @@ class JWTAuthentication
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
-                    $this->renderView(
+                    $this->templating->render(
                         "emails/registration.html.twig",
                         [
                             'username' => $user->getUsername(),
@@ -48,8 +52,8 @@ class JWTAuthentication
                     'text/html'
                 );
 
-            $mailer->send($message);
-        }*/
+            $this->mailer->send($message);
+        }
 
         $em->merge($user);
         $em->flush();
