@@ -1163,10 +1163,6 @@ class UsersController extends FOSRestController
 
     /**
      * @Rest\Put("/v1/disable", name="disable")
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
      * 
      * @SWG\Response(
      *     response=201,
@@ -1178,40 +1174,59 @@ class UsersController extends FOSRestController
      *     description="Error al desactivar el usuario"
      * )
      * 
+     * @SWG\Parameter(
+     *     name="password",
+     *     in="query",
+     *     type="string",
+     *     description="The password",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="note",
+     *     in="body",
+     *     type="string",
+     *     description="Motive of disable account",
+     *     schema={}
+     * )
+     * 
      */
-    public function disableAction(Request $request, \Swift_Mailer $mailer)
+    public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
+        $user = $this->getUser();
 
-            // ponemos usuario en disable
-            $user->setActive(false);
-            // borramos sus dispositivos
-            $user->removeDevices();
+        if ($user->getPassword() == $encoder->encodePassword($user, $request->request->get("password"))) {
+            try {
+                // ponemos usuario en disable
+                $user->setActive(false);
+                // borramos sus dispositivos
+                $user->removeDevices();
 
-            $em->persist($user);
-            $em->flush();
+                $em->persist($user);
+                $em->flush();
 
-            if (!empty($request->request->get('note'))) {
-                // Enviar email al administrador informando del motivo
-                $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
-                    ->setFrom([$user->getEmail() => $user->getUsername()])
-                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $request->request->get('note'), 'text/html');
+                if (!empty($request->request->get('note'))) {
+                    // Enviar email al administrador informando del motivo
+                    $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
+                        ->setFrom([$user->getEmail() => $user->getUsername()])
+                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                        ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $request->request->get('note'), 'text/html');
 
-                if (0 === $mailer->send($message)) {
-                    // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
+                    if (0 === $mailer->send($message)) {
+                        // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
+                    }
                 }
+
+                // forzamos cierre de sesión
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))), 401);
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
             }
-
-
-            // forzamos cierre de sesión
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))), 401);
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "La contraseña no es correcta");
         }
     }
 }
