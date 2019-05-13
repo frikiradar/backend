@@ -22,7 +22,7 @@ class JWTAuthentication
         $this->container = $container;
     }
 
-    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event, \Swift_Mailer $mailer)
+    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
     {
         $em = $this->container->get('doctrine')->getManager();
         $user = $event->getUser();
@@ -30,7 +30,7 @@ class JWTAuthentication
         $user->setLastIP();
         $user->setNumLogins(($user->getNumLogins() ?: 0) + 1);
 
-        if (!$user->getActive() && !$user->getVerificationCode()) {
+        /*if (!$user->getActive() && !$user->getVerificationCode()) {
             //Generamos y enviamos por email
             $user->setVerificationCode();
 
@@ -49,7 +49,7 @@ class JWTAuthentication
                 );
 
             $mailer->send($message);
-        }
+        }*/
 
         $em->merge($user);
         $em->flush();
