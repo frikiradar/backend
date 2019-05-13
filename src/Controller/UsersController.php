@@ -1220,8 +1220,7 @@ class UsersController extends FOSRestController
                     }
                 }
 
-                // forzamos cierre de sesión
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))), 401);
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
             }
