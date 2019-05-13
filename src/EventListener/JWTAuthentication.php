@@ -22,13 +22,35 @@ class JWTAuthentication
         $this->container = $container;
     }
 
-    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
+    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event, \Swift_Mailer $mailer)
     {
+        $em = $this->container->get('doctrine')->getManager();
         $user = $event->getUser();
         $user->setLastLogin();
         $user->setLastIP();
         $user->setNumLogins(($user->getNumLogins() ?: 0) + 1);
-        $em = $this->container->get('doctrine')->getManager();
+
+        if (!$user->getActive() && !$user->getVerificationCode()) {
+            //Generamos y enviamos por email
+            $user->setVerificationCode();
+
+            $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setTo($user->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        "emails/registration.html.twig",
+                        [
+                            'username' => $user->getUsername(),
+                            'code' => $user->getVerificationCode()
+                        ]
+                    ),
+                    'text/html'
+                );
+
+            $mailer->send($message);
+        }
+
         $em->merge($user);
         $em->flush();
     }
