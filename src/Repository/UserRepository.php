@@ -6,6 +6,7 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use App\Service\NotificationService;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -193,7 +194,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $this->enhanceUsers($users, $user);
     }
 
-    public function searchUsers(string $search, User $user): ?array
+    public function searchUsers(string $search, User $user)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
@@ -240,6 +241,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             if ($user['block']) {
                 unset($users[$key]);
             }
+
+            // Si distance es < x y afinidad < y entonces enviamos notificacion
+            /*if ($users[$key]['distance'] <= 25 && $users[$key]['match'] >= 85) {
+                $notification = new NotificationService();
+                $title = $fromUser->getUsername();
+                $text = "";
+                $url = "";
+                $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+            }*/
         }
 
         return $users;

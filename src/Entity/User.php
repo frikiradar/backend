@@ -222,12 +222,18 @@ class User implements UserInterface
      */
     private $num_logins;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Radar", mappedBy="toUser", orphanRemoval=true)
+     */
+    private $radars;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
         $this->chats = new ArrayCollection();
         $this->devices = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
+        $this->radars = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -750,6 +756,37 @@ class User implements UserInterface
     public function setNumLogins(int $num_logins): self
     {
         $this->num_logins = $num_logins;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Radar[]
+     */
+    public function getRadars(): Collection
+    {
+        return $this->radars;
+    }
+
+    public function addRadar(Radar $radar): self
+    {
+        if (!$this->radars->contains($radar)) {
+            $this->radars[] = $radar;
+            $radar->setFromUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRadar(Radar $radar): self
+    {
+        if ($this->radars->contains($radar)) {
+            $this->radars->removeElement($radar);
+            // set the owning side to null (unless already changed)
+            if ($radar->getFromUser() === $this) {
+                $radar->setFromUser(null);
+            }
+        }
 
         return $this;
     }
