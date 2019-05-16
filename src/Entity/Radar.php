@@ -38,6 +38,11 @@ class Radar
      */
     private $timeRead;
 
+    public function __construct()
+    {
+        $this->setDate(new \DateTime);
+    }
+
     public function getId(): ?int
     {
         return $this->id;

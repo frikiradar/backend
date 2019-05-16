@@ -55,7 +55,6 @@ class UserLikesController extends FOSRestController
 
             if (empty($like)) {
                 $newLike = new LikeUser();
-                $newLike->setDate(new \DateTime);
                 $newLike->setFromUser($this->getUser());
                 $newLike->setToUser($toUser);
                 $em->persist($newLike);

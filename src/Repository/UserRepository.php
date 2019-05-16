@@ -7,6 +7,7 @@ use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use App\Service\NotificationService;
+use App\Entity\Radar;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -242,14 +243,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 unset($users[$key]);
             }
 
-            // Si distance es < x y afinidad < y entonces enviamos notificacion
-            /*if ($users[$key]['distance'] <= 25 && $users[$key]['match'] >= 85) {
-                $notification = new NotificationService();
-                $title = $fromUser->getUsername();
-                $text = "";
-                $url = "";
-                $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
-            }*/
+            // Si distance es <= 25 y afinidad >= 85 y entonces enviamos notificacion
+            if ($users[$key]['distance'] <= 25 && $users[$key]['match'] == 96.9) {
+                if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
+                    $radar = new Radar();
+                    $radar->setFromUser($fromUser);
+                    $radar->setToUser($toUser);
+                    $em->persist($radar);
+                    $em->flush();
+
+                    $notification = new NotificationService();
+                    $title = $fromUser->getUsername();
+                    $text = "Bip bip, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                    $url = "/profile/" . $fromUser->getId();
+                    $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+                }
+            }
         }
 
         return $users;

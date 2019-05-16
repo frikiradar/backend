@@ -46,6 +46,11 @@ class LikeUser
      */
     private $time_read;
 
+    public function __construct()
+    {
+        $this->setDate(new \DateTime);
+    }
+
     public function getId(): ?int
     {
         return $this->id;
