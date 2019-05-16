@@ -241,6 +241,13 @@ class UsersController extends FOSRestController
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
+            $radar = $em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
+            if (!is_null($radar)) {
+                $radar->setTimeRead(new \DateTime);
+                $em->merge($radar);
+                $em->flush();
+            }
+
             return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");

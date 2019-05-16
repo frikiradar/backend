@@ -36,10 +36,11 @@ class NotificationsController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
+            $countRadar = $em->getRepository('App:Radar')->countUnread($this->getUser());
             $countChats = $em->getRepository('App:Chat')->countUnread($this->getUser());
             $countLikes = $em->getRepository('App:LikeUser')->countUnread($this->getUser());
 
-            $notifications = ["chats" => (int)$countChats, "likes" => (int)$countLikes];
+            $notifications = ["radar" => $countRadar, "chats" => (int)$countChats, "likes" => (int)$countLikes];
             return new Response($serializer->serialize($notifications, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");

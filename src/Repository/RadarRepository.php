@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Radar;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
@@ -47,4 +48,27 @@ class RadarRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function isRadarNotified(User $fromUser, User $toUser)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.fromUser = :fromUser')
+            ->andWhere('r.toUser = :toUser')
+            ->andWhere('r.timeRead IS NULL')
+            ->setParameter('fromUser', $fromUser)
+            ->setParameter('toUser', $toUser)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function countUnread(User $toUser)
+    {
+        return $this->createQueryBuilder('r')
+            ->select('count(r.id)')
+            ->where('r.toUser = :toUser')
+            ->andWhere('r.timeRead IS NULL')
+            ->setParameter('toUser', $toUser->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

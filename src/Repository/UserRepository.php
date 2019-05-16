@@ -156,6 +156,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_location',
                 'u.block_messages',
                 'u.gender',
+                'u.avatar',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -207,6 +208,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             u.location,
             u.hide_location,
             u.block_messages,
+            u.avatar,
             (GLength(
                     LineStringFromWKB(
                         LineString(
@@ -223,10 +225,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $users = $query->getResult();
 
-        return $this->enhanceUsers($users, $user);
+        return $this->enhanceUsers($users, $user, 'search');
     }
 
-    public function enhanceUsers($users, $fromUser)
+    public function enhanceUsers($users, $fromUser, $type = 'radar')
     {
         $em = $this->getEntityManager();
 
@@ -235,7 +237,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['age'] = (int)$u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
             $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
-            $users[$key]['avatar'] = $toUser->getAvatar() ?: null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
@@ -243,8 +244,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 unset($users[$key]);
             }
 
+            $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
+
             // Si distance es <= 25 y afinidad >= 85 y entonces enviamos notificacion
-            if ($users[$key]['distance'] <= 25 && $users[$key]['match'] == 96.9) {
+            if ($type == 'radar' && $users[$key]['distance'] <= 25 && $users[$key]['match'] >= 85) {
                 if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
                     $radar = new Radar();
                     $radar->setFromUser($fromUser);
