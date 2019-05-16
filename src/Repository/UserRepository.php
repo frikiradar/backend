@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use App\Service\NotificationService;
 use App\Entity\Radar;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,9 +18,12 @@ use App\Entity\Radar;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
-    public function __construct(RegistryInterface $registry)
+    private $security;
+
+    public function __construct(RegistryInterface $registry, Security $security)
     {
         parent::__construct($registry, User::class);
+        $this->security = $security;
     }
 
     // /**
@@ -228,7 +232,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $this->enhanceUsers($users, $user, 'search');
     }
 
-    public function enhanceUsers($users, $fromUser, $type = 'radar')
+    public function enhanceUsers($users, User $fromUser, $type = 'radar')
     {
         $em = $this->getEntityManager();
 
@@ -247,19 +251,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
 
             // Si distance es <= 25 y afinidad >= 85 y entonces enviamos notificacion
-            if ($type == 'radar' && $users[$key]['distance'] <= 25 && $users[$key]['match'] >= 85) {
-                if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
-                    $radar = new Radar();
-                    $radar->setFromUser($fromUser);
-                    $radar->setToUser($toUser);
-                    $em->persist($radar);
-                    $em->flush();
+            if (!$this->security->isGranted('ROLE_ADMIN')) {
+                echo "entra";
+                if ($type == 'radar' && $users[$key]['distance'] <= 25 && $users[$key]['match'] >= 85) {
+                    if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
+                        $radar = new Radar();
+                        $radar->setFromUser($fromUser);
+                        $radar->setToUser($toUser);
+                        $em->persist($radar);
+                        $em->flush();
 
-                    $notification = new NotificationService();
-                    $title = $fromUser->getUsername();
-                    $text = "Bip bip, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
-                    $url = "/profile/" . $fromUser->getId();
-                    $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+                        $notification = new NotificationService();
+                        $title = $fromUser->getUsername();
+                        $text = "Bip bip, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                        $url = "/profile/" . $fromUser->getId();
+                        $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+                    }
                 }
             }
         }
