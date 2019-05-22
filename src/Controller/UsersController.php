@@ -210,11 +210,14 @@ class UsersController extends FOSRestController
      */
     public function getAction()
     {
+        $em = $this->getDoctrine()->getManager();
         $serializer = $this->get('jms_serializer');
 
         $user = $this->getUser();
-        $user->setAvatar($user->getAvatar());
-        $user->setVerificationCode(null);
+
+        $user->setLastLogin();
+        $em->persist($user);
+        $em->flush();
 
         return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
     }
