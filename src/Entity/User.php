@@ -610,7 +610,7 @@ class User implements UserInterface
         foreach ($files as $file) {
             if (isset($file)) {
                 $server = "https://$_SERVER[HTTP_HOST]";
-                $this->images[] = str_replace("../public", $server, $files[0]);
+                $this->images[] = str_replace("../public", $server, $file);
             }
         }
 
