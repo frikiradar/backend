@@ -175,6 +175,9 @@ class User implements UserInterface
      */
     private $avatar;
 
+    /**
+     * @Groups({"default"})
+     */
     private $images;
 
     /**
