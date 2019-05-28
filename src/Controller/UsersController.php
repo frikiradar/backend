@@ -243,6 +243,7 @@ class UsersController extends FOSRestController
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+            $user['images'] = $toUser->getImages();
 
             $radar = $em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
             if (!is_null($radar)) {

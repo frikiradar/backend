@@ -175,6 +175,8 @@ class User implements UserInterface
      */
     private $avatar;
 
+    private $images;
+
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"default"})
@@ -596,6 +598,23 @@ class User implements UserInterface
         $this->avatar = $avatar;
 
         return $this;
+    }
+
+    public function getImages()
+    {
+        $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
+        usort($files, function ($a, $b) {
+            return basename($b) <=> basename($a);
+        });
+
+        foreach ($files as $file) {
+            if (isset($file)) {
+                $server = "https://$_SERVER[HTTP_HOST]";
+                $this->images[] = str_replace("../public", $server, $files[0]);
+            }
+        }
+
+        return $this->images;
     }
 
     public function getIP()
