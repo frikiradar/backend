@@ -609,12 +609,12 @@ class User implements UserInterface
 
         foreach ($files as $file) {
             if (isset($file)) {
-                $image = new stdObject();
                 $server = "https://$_SERVER[HTTP_HOST]";
-                $image->url = str_replace("../public", $server, $file);
-                $image->avatar = $this->avatar === $image->url ? true : false;
+                $image = str_replace("../public", $server, $file);
 
-                $this->images[] = $image;
+                if ($this->avatar !== $image) {
+                    $this->images[] = $image;
+                }
             }
         }
 
