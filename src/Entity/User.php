@@ -621,6 +621,13 @@ class User implements UserInterface
         return $this->images;
     }
 
+    public function setImages($images): self
+    {
+        $this->images = $images;
+
+        return $this;
+    }
+
     public function getIP()
     {
         if (isset($_SERVER["HTTP_CLIENT_IP"])) {
