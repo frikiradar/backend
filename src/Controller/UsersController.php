@@ -214,7 +214,7 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
 
         $user = $this->getUser();
-        $user['images'] = $user->getImages();
+        $user->images = $user->getImages();
 
         $user->setLastLogin();
         $em->persist($user);
