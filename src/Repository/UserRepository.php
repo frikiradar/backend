@@ -182,7 +182,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('u.id <> :id')
             ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
             ->andWhere('u.active = 1')
-            ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= 15')
+            ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= 30')
             ->orderBy('distance', 'ASC')
             ->setParameters(array(
                 'ratio' => $ratio,
