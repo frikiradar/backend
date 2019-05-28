@@ -460,13 +460,55 @@ class UsersController extends FOSRestController
             $server = "https://$_SERVER[HTTP_HOST]";
             $src = str_replace("../public", $server, $image);
 
-            $user->setAvatar($src); //TODO: quitar cuando esten todos en db
+            $user->setAvatar($src);
             $em->persist($user);
             $em->flush();
 
             return new Response($serializer->serialize($src, "json"));
         } else {
             throw new HttpException(400, "Error al subir la imagen");
+        }
+    }
+
+    /**
+     * @Rest\Put("/v1/avatar")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Avatar actualizado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar el avatar"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="avatar",
+     *     in="body",
+     *     type="string",
+     *     description="Src del avatar elegido",
+     *     schema={}
+     * )
+     *
+     */
+    public function updateAvatarAction(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $serializer = $this->get('jms_serializer');
+
+        try {
+            $src = $request->request->get('avatar');
+            $user = $this->getUser();
+            $user->setAvatar($src);
+            $em->persist($user);
+            $em->flush();
+
+            $user->setImages($user->getImages());
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al actualizar el avatar - Error: {$ex->getMessage()}");
         }
     }
 
