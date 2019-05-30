@@ -464,7 +464,9 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($src, "json"));
+            $user->setImages($user->getImages());
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al subir la imagen");
         }
