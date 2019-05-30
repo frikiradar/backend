@@ -513,6 +513,50 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Put("/v1/delete-avatar")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Avatar borrado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al borrar el avatar"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="avatar",
+     *     in="body",
+     *     type="string",
+     *     description="Src del avatar elegido",
+     *     schema={}
+     * )
+     *
+     */
+    public function deleteAvatarAction(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $serializer = $this->get('jms_serializer');
+
+        try {
+            $src = $request->request->get('avatar');
+            $user = $this->getUser();
+
+            $f = explode("/", $src);
+            $filename = $f[count($f) - 1];
+            $file = "../public/images/avatar/" . $user->getId() . "/" . $filename;
+            unlink($file);
+
+            $user->setImages($user->getImages());
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al borrar el avatar - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Rest\Get("/v1/radar/{ratio}")
      *
      * @SWG\Response(
