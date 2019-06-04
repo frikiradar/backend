@@ -176,6 +176,7 @@ class User implements UserInterface
     private $avatar;
 
     /**
+     * @Type("array")
      * @Groups({"default"})
      */
     private $images;
