@@ -98,9 +98,6 @@
     "exsyst/swagger": {
         "version": "v0.4.1"
     },
-    "facebook/webdriver": {
-        "version": "1.6.0"
-    },
     "fig/http-message-util": {
         "version": "1.1.3"
     },
@@ -473,6 +470,9 @@
             "ref": "1717e67afa995e4f01a25ba9ae7aca5b2327bcaa"
         }
     },
+    "symfony/http-client": {
+        "version": "v4.3.2"
+    },
     "symfony/http-foundation": {
         "version": "v4.1.6"
     },
@@ -521,6 +521,9 @@
             "config/packages/messenger.yaml"
         ]
     },
+    "symfony/mime": {
+        "version": "v4.3.2"
+    },
     "symfony/monolog-bridge": {
         "version": "v4.1.6"
     },
@@ -538,9 +541,6 @@
     },
     "symfony/orm-pack": {
         "version": "v1.0.5"
-    },
-    "symfony/panther": {
-        "version": "v0.3.0"
     },
     "symfony/phpunit-bridge": {
         "version": "4.1",
@@ -570,6 +570,9 @@
     "symfony/polyfill-php72": {
         "version": "v1.9.0"
     },
+    "symfony/polyfill-php73": {
+        "version": "v1.11.0"
+    },
     "symfony/process": {
         "version": "v4.1.6"
     },
@@ -591,9 +594,6 @@
             "ref": "5f514d9d3b8a8aac3d62ae6a86b18b90ed0c7826"
         }
     },
-    "symfony/security": {
-        "version": "v4.1.6"
-    },
     "symfony/security-bundle": {
         "version": "3.3",
         "recipe": {
@@ -602,6 +602,18 @@
             "version": "3.3",
             "ref": "f8a63faa0d9521526499c0a8f403c9964ecb0527"
         }
+    },
+    "symfony/security-core": {
+        "version": "v4.3.2"
+    },
+    "symfony/security-csrf": {
+        "version": "v4.3.2"
+    },
+    "symfony/security-guard": {
+        "version": "v4.3.2"
+    },
+    "symfony/security-http": {
+        "version": "v4.3.2"
     },
     "symfony/serializer": {
         "version": "v4.1.6"

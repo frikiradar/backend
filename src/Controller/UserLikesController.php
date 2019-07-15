@@ -61,7 +61,7 @@ class UserLikesController extends FOSRestController
                 $em->flush();
 
                 $title = $newLike->getFromUser()->getUsername();
-                $text = "Te ha entregado su kokoro, ya puedes comenzar a chatear.";
+                $text = "Te ha entregado su kokoro ❤️, ya puedes comenzar a chatear.";
                 $url = "/profile/" . $newLike->getFromUser()->getId();
 
                 $notification = new NotificationService();
