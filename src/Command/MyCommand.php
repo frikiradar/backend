@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\GeolocationService;
 
 class MyCommand extends Command
 {
@@ -27,26 +28,23 @@ class MyCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $geolocation = new GeolocationService();
         $users = $this->em->getRepository('App:User')->findAll();
 
         foreach ($users as $user) {
-            $files = glob("public/images/avatar/" . $user->getId() . "/*.jpg");
-            usort($files, function ($a, $b) {
-                return basename($b) <=> basename($a);
-            });
+            if (empty($user->getCountry()) && !empty($user->getCoordinates())) {
+                $latitude = $user->getCoordinates()->getLatitude();
+                $longitude = $user->getCoordinates()->getLongitude();
 
-            if (isset($files[0])) {
-                $server = "https://app.frikiradar.com";
-                $avatar = str_replace("public", $server, $files[0]);
-            } else {
-                $avatar = false;
+                $location = $geolocation->getLocationName($latitude, $longitude);
+                $country = $location["country"];
+                $user->setCountry($country ?: null);
+                $this->em->persist($user);
+                $this->em->flush();
+
+                $output->writeln($user->getId() . " - " . $user->getUsername() . " - " . $country);
+                $this->em->detach($user);
             }
-            $user->setAvatar($avatar ?: null);
-            $this->em->persist($user);
-            $this->em->flush();
-
-            $output->writeln($user->getId() . " - " . $user->getUsername() . " - " . $avatar);
-            $this->em->detach($user);
         }
     }
 }
