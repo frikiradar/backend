@@ -400,7 +400,8 @@ class UsersController extends FOSRestController
 
             $location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
             if ($location) {
-                $user->setLocation($location);
+                $user->setLocation($location["locality"]);
+                $user->setCountry($location["country"]);
                 $em->persist($user);
                 $em->flush();
             }

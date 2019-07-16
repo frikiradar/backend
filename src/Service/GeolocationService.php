@@ -2,7 +2,6 @@
 // src/Service/GeolocationService.php
 namespace App\Service;
 
-use App\Entity\User;
 use Geocoder\Query\ReverseQuery;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 
@@ -36,14 +35,14 @@ class GeolocationService
         return $coords;
     }
 
-    public function getLocationName($latitude, $longitude): string
+    public function getLocationName($latitude, $longitude): array
     {
         try {
             $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($this->httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
             $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
             $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($latitude, $longitude));
             if (!$result->isEmpty()) {
-                return $result->first()->getLocality();
+                return ["locality" => $result->first()->getLocality(), "country" => $result->first()->getCountry()->getCode()];
             } else {
                 return false;
             }
