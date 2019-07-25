@@ -301,6 +301,7 @@ class UsersController extends FOSRestController
                 $user->setHideLocation($newUser->getHideLocation());
                 $user->setBlockMessages($newUser->getBlockMessages());
                 $user->setTwoStep($newUser->getTwoStep());
+                $user->setHideConnection($newUser->getHideConnection());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);

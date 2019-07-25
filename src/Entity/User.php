@@ -221,6 +221,12 @@ class User implements UserInterface
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"default"})
      */
+    private $hide_connection;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"default"})
+     */
     private $block_messages;
 
     /**
@@ -239,11 +245,6 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity="App\Entity\Radar", mappedBy="toUser", orphanRemoval=true)
      */
     private $radars;
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $hide_connection;
 
     public function __construct()
     {
