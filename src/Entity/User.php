@@ -117,6 +117,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"default"})
      * @Serializer\ReadOnly()
      */
     private $last_login;
@@ -215,6 +216,12 @@ class User implements UserInterface
      * @Groups({"default"})
      */
     private $hide_location;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"default"})
+     */
+    private $hide_last_login;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -839,6 +846,18 @@ class User implements UserInterface
     public function setCountry(?string $country): self
     {
         $this->country = $country;
+
+        return $this;
+    }
+
+    public function getHideLastLogin(): ?bool
+    {
+        return $this->hide_last_login;
+    }
+
+    public function setHideLastLogin(?bool $hide_last_login): self
+    {
+        $this->hide_last_login = $hide_last_login;
 
         return $this;
     }
