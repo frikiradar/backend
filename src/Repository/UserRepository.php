@@ -160,8 +160,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.description',
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.location',
+                'u.last_login',
                 'u.hide_location',
                 'u.block_messages',
+                'u.hide_last_login',
                 'u.gender',
                 'u.avatar',
                 "(GLength(
@@ -245,6 +247,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['age'] = (int) $u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
             $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
+            $users[$key]['last_login'] = !$u['hide_last_login'] ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
