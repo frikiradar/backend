@@ -221,12 +221,6 @@ class User implements UserInterface
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"default"})
      */
-    private $hide_last_login;
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"default"})
-     */
     private $block_messages;
 
     /**
@@ -245,6 +239,11 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity="App\Entity\Radar", mappedBy="toUser", orphanRemoval=true)
      */
     private $radars;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $hide_connection;
 
     public function __construct()
     {
@@ -850,14 +849,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getHideLastLogin(): ?bool
+    public function getHideConnection(): ?bool
     {
-        return $this->hide_last_login;
+        return $this->hide_connection;
     }
 
-    public function setHideLastLogin(?bool $hide_last_login): self
+    public function setHideConnection(?bool $hide_connection): self
     {
-        $this->hide_last_login = $hide_last_login;
+        $this->hide_connection = $hide_connection;
 
         return $this;
     }
