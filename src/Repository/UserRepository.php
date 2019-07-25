@@ -122,7 +122,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
 
             $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
-            $user['last_login'] = (!$toUser->getHideLastLogin() && !empty($toUser->getLastLogin())) ? $toUser->getLastLogin() : null;
+            $user['last_login'] = (!$toUser->getHideConnection() && !empty($toUser->getLastLogin())) ? $toUser->getLastLogin() : null;
             $user['tags'] = $toUser->getTags();
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
