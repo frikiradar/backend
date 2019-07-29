@@ -217,6 +217,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age,
             u.location,
             u.hide_location,
+            u.hide_connection,
             u.block_messages,
             u.avatar,
             (GLength(
