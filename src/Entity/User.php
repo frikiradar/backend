@@ -246,6 +246,11 @@ class User implements UserInterface
      */
     private $radars;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $mailing;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -858,6 +863,18 @@ class User implements UserInterface
     public function setHideConnection(?bool $hide_connection): self
     {
         $this->hide_connection = $hide_connection;
+
+        return $this;
+    }
+
+    public function getMailing(): ?bool
+    {
+        return $this->mailing;
+    }
+
+    public function setMailing(bool $mailing): self
+    {
+        $this->mailing = $mailing;
 
         return $this;
     }

@@ -302,6 +302,7 @@ class UsersController extends FOSRestController
                 $user->setBlockMessages($newUser->getBlockMessages());
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
+                $user->setMailing($newUser->getMailing());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
