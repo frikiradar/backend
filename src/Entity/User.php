@@ -248,6 +248,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"default"})
      */
     private $mailing;
 
