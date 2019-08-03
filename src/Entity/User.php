@@ -252,6 +252,11 @@ class User implements UserInterface
      */
     private $mailing;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $premium_expiration;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -876,6 +881,18 @@ class User implements UserInterface
     public function setMailing(bool $mailing): self
     {
         $this->mailing = $mailing;
+
+        return $this;
+    }
+
+    public function getPremiumExpiration(): ?\DateTimeInterface
+    {
+        return $this->premium_expiration;
+    }
+
+    public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): self
+    {
+        $this->premium_expiration = $premium_expiration;
 
         return $this;
     }

@@ -1332,4 +1332,34 @@ class UsersController extends FOSRestController
             throw new HttpException(400, "La contraseña no es correcta");
         }
     }
+
+    /**
+     * @Rest\Get("/v1/ads", name="ads")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Ads obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener los ads"
+     * )
+     * 
+     */
+    public function getAds()
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $premium = $this->getUser()->getPremiumExpiration();
+            $countLikes = $em->getRepository('App:LikeUser')->countUnread($this->getUser());
+
+            $ads = ["premium" => $premium, "likes" => (int) $countLikes];
+            return new Response($serializer->serialize($ads, "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
+        }
+    }
 }
