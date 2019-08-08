@@ -206,8 +206,8 @@ class ChatController extends FOSRestController
             $em->merge($chat);
             $em->flush();
 
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-            $publisher($update);
+            // $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            // $publisher($update);
 
             return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             /*} else {
