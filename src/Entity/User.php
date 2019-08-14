@@ -630,15 +630,16 @@ class User implements UserInterface
 
     public function getImages()
     {
-        $files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
+        $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $this->getId() . "/*.jpg");
         usort($files, function ($a, $b) {
             return basename($b) <=> basename($a);
         });
 
         foreach ($files as $file) {
             if (isset($file)) {
-                $server = "https://$_SERVER[HTTP_HOST]";
-                $image = str_replace("../public", $server, $file);
+                // $server = "https://$_SERVER[HTTP_HOST]";
+                $server = "https://app.frikiradar.com";
+                $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public", $server, $file);
 
                 if ($this->avatar !== $image) {
                     $this->images[] = $image;
