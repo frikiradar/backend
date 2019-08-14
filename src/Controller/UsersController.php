@@ -447,7 +447,7 @@ class UsersController extends FOSRestController
 
         $id = $user->getId();
         $filename = date('YmdHis');
-        $uploader = new FileUploader("../public/images/avatar/" . $id . "/", $filename);
+        $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
