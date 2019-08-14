@@ -451,7 +451,7 @@ class UsersController extends FOSRestController
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
-            $files = glob("../public/images/avatar/" . $id . "/*.jpg");
+            $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $id . "/*.jpg");
             usort($files, function ($a, $b) {
                 return basename($b) <=> basename($a);
             });
@@ -461,8 +461,9 @@ class UsersController extends FOSRestController
                 }
             }
 
-            $server = "https://$_SERVER[HTTP_HOST]";
-            $src = str_replace("../public", $server, $image);
+            // $server = "https://$_SERVER[HTTP_HOST]";
+            $server = "https://app.frikiradar.com";
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public", $server, $image);
 
             $user->setAvatar($src);
             $em->persist($user);
