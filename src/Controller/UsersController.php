@@ -552,7 +552,7 @@ class UsersController extends FOSRestController
 
             $f = explode("/", $src);
             $filename = $f[count($f) - 1];
-            $file = "../public/images/avatar/" . $user->getId() . "/" . $filename;
+            $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $user->getId() . "/" . $filename;
             unlink($file);
 
             $user->setImages($user->getImages());
