@@ -146,6 +146,7 @@ class UsersController extends FOSRestController
                 $user->setPassword($encoder->encodePassword($user, $password));
                 $user->setBirthday($birthday);
                 $user->setGender($request->request->get('gender') ?: null);
+                $user->setLovegender($request->request->get('lovegender') ?: null);
                 $user->setRegisterDate();
                 $user->setRegisterIp();
                 $user->setActive(false);
