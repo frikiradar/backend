@@ -464,7 +464,7 @@ class UsersController extends FOSRestController
 
             // $server = "https://$_SERVER[HTTP_HOST]";
             $server = "https://app.frikiradar.com";
-            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public", $server, $image);
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
 
             $user->setAvatar($src);
             $em->persist($user);

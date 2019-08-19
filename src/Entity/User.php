@@ -639,7 +639,7 @@ class User implements UserInterface
             if (isset($file)) {
                 // $server = "https://$_SERVER[HTTP_HOST]";
                 $server = "https://app.frikiradar.com";
-                $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public", $server, $file);
+                $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
 
                 if ($this->avatar !== $image) {
                     $this->images[] = $image;
