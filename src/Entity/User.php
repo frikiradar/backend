@@ -630,7 +630,7 @@ class User implements UserInterface
 
     public function getImages()
     {
-        $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $this->getId() . "/*.jpg");
+        $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $this->getId() . "/*.jpg");
         usort($files, function ($a, $b) {
             return basename($b) <=> basename($a);
         });

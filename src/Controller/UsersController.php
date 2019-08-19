@@ -448,11 +448,11 @@ class UsersController extends FOSRestController
 
         $id = $user->getId();
         $filename = date('YmdHis');
-        $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $id . "/", $filename);
+        $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
-            $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $id . "/*.jpg");
+            $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
             usort($files, function ($a, $b) {
                 return basename($b) <=> basename($a);
             });
@@ -553,7 +553,7 @@ class UsersController extends FOSRestController
 
             $f = explode("/", $src);
             $filename = $f[count($f) - 1];
-            $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/symfony/public/images/avatar/" . $user->getId() . "/" . $filename;
+            $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $filename;
             unlink($file);
 
             $user->setImages($user->getImages());
