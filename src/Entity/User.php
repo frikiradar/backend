@@ -606,19 +606,7 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-        /*$files = glob("../public/images/avatar/" . $this->getId() . "/*.jpg");
-        usort($files, function ($a, $b) {
-            return basename($b) <=> basename($a);
-        });
-
-        if (isset($files[0])) {
-            $server = "https://$_SERVER[HTTP_HOST]";
-            $this->avatar = str_replace("../public", $server, $files[0]);
-        } else {
-            $this->avatar = false;
-        }*/
-
-        return $this->avatar;
+        return $this->avatar ?: "https://app.frikiradar.com/images/layout/default.jpg";
     }
 
     public function setAvatar(?string $avatar): self
