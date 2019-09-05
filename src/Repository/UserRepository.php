@@ -153,7 +153,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $ratio = $latitude && $longitude ? $ratio : 0;
 
-        $users = $this->createQueryBuilder('u')
+        $dql = $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
                 'u.username',
@@ -174,34 +174,38 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                             )
                         )
                     ) * 100) distance"
-            ))
-            ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
-            ->andHaving('age BETWEEN :minage AND :maxage')
-            ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-            // ->andWhere('u.connection IN (:connection)')
-            ->andWhere(
-                $user->getOrientation() == "Homosexual" ?
-                    'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                        'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-            )
-            ->andWhere('u.id <> :id')
-            ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
-            ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
-            ->andWhere('u.active = 1')
-            ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) < 15')
-            ->orderBy('distance', 'ASC')
-            ->setParameters(array(
-                'ratio' => $ratio,
-                'minage' => $user->getMinage() ?: 18,
-                'maxage' => $user->getMaxage() ?: 99,
-                'id' => $user->getId(),
-                'lovegender' => $user->getLovegender() ?: 1,
-                // 'connection' => $user->getConnection()
-                'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1
-            ))
-            // ->setFirstResult($offset)
-            // ->setMaxResults($limit)
-            ->getQuery()
+            ));
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            $dql
+                ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
+                ->andHaving('age BETWEEN :minage AND :maxage')
+                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                // ->andWhere('u.connection IN (:connection)')
+                ->andWhere(
+                    $user->getOrientation() == "Homosexual" ?
+                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                )
+                ->andWhere('u.id <> :id')
+                ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
+                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
+                ->andWhere('u.active = 1')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) < 15')
+                ->orderBy('distance', 'ASC')
+                ->setParameters(array(
+                    'ratio' => $ratio,
+                    'minage' => $user->getMinage() ?: 18,
+                    'maxage' => $user->getMaxage() ?: 99,
+                    'id' => $user->getId(),
+                    'lovegender' => $user->getLovegender() ?: 1,
+                    // 'connection' => $user->getConnection()
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1
+                ));
+        } else {
+            $dql
+                ->andWhere("u.roles LIKE '%ROLE_DEMO%'");
+        }
+        $users = $dql->getQuery()
             ->getResult();
 
         return $this->enhanceUsers($users, $user);
