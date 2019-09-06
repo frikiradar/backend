@@ -204,7 +204,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         } else {
             $dql
                 ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
-                ->andWhere("u.roles LIKE '%ROLE_DEMO%'");
+                ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
+                ->setParameters(array(
+                    'ratio' => $ratio
+                ));
         }
         $users = $dql->getQuery()
             ->getResult();
