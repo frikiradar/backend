@@ -239,9 +239,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     )
                 ) * 100) distance
             FROM App:User u WHERE u.id IN
-            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
-            AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.id <> '" . $user->getId() . "'
-            AND u.active = 1";
+            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')";
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            $dql .= " AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
+        } else {
+            $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
+        }
         $query = $this->getEntityManager()->createQuery($dql);
 
         $users = $query->getResult();
