@@ -175,7 +175,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         )
                     ) * 100) distance"
             ));
-        if (!$this->security->isGranted('ROLE_ADMIN')) {
+        if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
             $dql
                 ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
                 ->andHaving('age BETWEEN :minage AND :maxage')
@@ -240,7 +240,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ) * 100) distance
             FROM App:User u WHERE u.id IN
             (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')";
-        if (!$this->security->isGranted('ROLE_ADMIN')) {
+        if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
             $dql .= " AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
         } else {
             $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
@@ -273,7 +273,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
 
             // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
-            if (!$this->security->isGranted('ROLE_ADMIN')) {
+            if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
                 if ($type == 'radar' && $users[$key]['distance'] <= 50 && $users[$key]['match'] >= 80) {
                     if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
                         $radar = new Radar();
@@ -284,7 +284,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
                         $notification = new NotificationService();
                         $title = $fromUser->getUsername();
-                        $text = "Bip bip, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                        $text = "Doki doki, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
                         $url = "/profile/" . $fromUser->getId();
                         $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
                     }
