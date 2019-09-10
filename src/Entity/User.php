@@ -734,7 +734,7 @@ class User implements UserInterface
     {
         if ($code === true) {
             $key = '';
-            $pattern = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $pattern = '123456789ABCDEFGHJKMNPRSTUVWXYZ';
             $max = strlen($pattern) - 1;
             for ($i = 0; $i < 6; $i++) $key .= $pattern{
                 mt_rand(0, $max)};
