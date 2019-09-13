@@ -217,6 +217,7 @@ class UsersController extends FOSRestController
 
         $user = $this->getUser();
         $user->setImages($user->getImages());
+        $user->setIsPremium($user->isPremium());
 
         $user->setLastLogin();
         $em->persist($user);

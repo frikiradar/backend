@@ -254,8 +254,15 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"default"})
      */
     private $premium_expiration;
+
+    /**
+     * @Type("boolean")
+     * @Groups({"default"})
+     */
+    private $isPremium;
 
     public function __construct()
     {
@@ -882,6 +889,21 @@ class User implements UserInterface
     public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): self
     {
         $this->premium_expiration = $premium_expiration;
+
+        return $this;
+    }
+
+    public function isPremium(): ?bool
+    {
+        if ($this->getPremiumExpiration() > new \DateTime) {
+            return true;
+        }
+        return false;
+    }
+
+    public function setIsPremium(?bool $isPremium): self
+    {
+        $this->isPremium = $isPremium;
 
         return $this;
     }
