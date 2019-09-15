@@ -264,6 +264,11 @@ class User implements UserInterface
      */
     private $isPremium;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $credits;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -904,6 +909,18 @@ class User implements UserInterface
     public function setIsPremium(?bool $isPremium): self
     {
         $this->isPremium = $isPremium;
+
+        return $this;
+    }
+
+    public function getCredits(): ?int
+    {
+        return $this->credits;
+    }
+
+    public function setCredits(?int $credits): self
+    {
+        $this->credits = $credits;
 
         return $this;
     }
