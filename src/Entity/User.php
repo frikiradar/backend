@@ -266,6 +266,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"default"})
      */
     private $credits;
 
