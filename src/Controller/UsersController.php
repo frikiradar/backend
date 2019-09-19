@@ -306,6 +306,7 @@ class UsersController extends FOSRestController
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
                 $user->setMailing($newUser->getMailing());
+                // $user->setCredits(3);
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
@@ -1337,32 +1338,133 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/ads", name="ads")
+     * @Rest\Post("/v1/credits", name="add-credits")
      *
      * @SWG\Response(
      *     response=201,
-     *     description="Ads obtenidos correctamente"
+     *     description="Crédito añadido correctamente"
      * )
      *
      * @SWG\Response(
      *     response=500,
-     *     description="Error al obtener los ads"
+     *     description="Error al añadir los créditos"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="credits",
+     *     in="query",
+     *     type="string",
+     *     description="Los créditos",
+     *     schema={}
      * )
      * 
      */
-    public function getAds()
+    public function creditsAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $premium = $this->getUser()->getPremiumExpiration();
-            $countLikes = $em->getRepository('App:LikeUser')->countUnread($this->getUser());
+            $user = $this->getUser();
+            $credits = $request->request->get('credits');
+            if ($credits > 0) {
+                $user->setCredits($user->getCredits() + $credits);
+            }
 
-            $ads = ["premium" => $premium, "likes" => (int) $countLikes];
-            return new Response($serializer->serialize($ads, "json"));
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
-            throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Put("/v1/insertcoin", name="insertcoin")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Crédito pagado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al pagar el crédito"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="credits",
+     *     in="query",
+     *     type="string",
+     *     description="Los créditos",
+     *     schema={}
+     * )
+     * 
+     */
+    public function insertCoinAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $credits = $request->request->get('credits');
+            if ($user->getCredits() > 0 && $credits > 0) {
+                $user->setCredits($user->getCredits() - $credits);
+            }
+
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Post("/v1/premium", name="premium")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Suscrito correctamente a premium"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al suscribirse a premium"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="months",
+     *     in="query",
+     *     type="string",
+     *     description="meses",
+     *     schema={}
+     * )
+     * 
+     */
+    public function subscribePremimAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $months = $request->request->get('months');
+            if ($months > 0) {
+                $datetime = new \DateTime;
+                $datetime->add(add_months($months, $datetime));
+                $user->setPremiumExpiration($datetime);
+            }
+
+            $em->persist($user);
+            $em->flush();
+
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
         }
     }
 }
