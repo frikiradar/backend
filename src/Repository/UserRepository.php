@@ -158,7 +158,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.id',
                 'u.username',
                 'u.description',
-                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                '(TRUNCATE(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365), 0) age',
                 'u.location',
                 'u.last_login',
                 'u.hide_location',
@@ -178,7 +178,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
             $dql
                 ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
-                ->andHaving('age >= :minage AND age <= :maxage')
+                ->andHaving('age BETWEEN :minage AND :maxage')
                 ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
                 // ->andWhere('u.connection IN (:connection)')
                 ->andWhere(
