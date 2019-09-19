@@ -195,7 +195,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->setParameters(array(
                     'ratio' => $ratio,
                     'minage' => $user->getMinage() ?: 18,
-                    'maxage' => $user->getMaxage() ?: 99,
+                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
                     // 'connection' => $user->getConnection()
