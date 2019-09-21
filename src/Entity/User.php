@@ -270,6 +270,18 @@ class User implements UserInterface
      */
     private $credits;
 
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     * @Groups({"default"})
+     */
+    private $meet;
+
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
+     */
+    private $referral;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -922,6 +934,30 @@ class User implements UserInterface
     public function setCredits(?int $credits): self
     {
         $this->credits = $credits;
+
+        return $this;
+    }
+
+    public function getMeet(): ?string
+    {
+        return $this->meet;
+    }
+
+    public function setMeet(?string $meet): self
+    {
+        $this->meet = $meet;
+
+        return $this;
+    }
+
+    public function getReferral(): ?string
+    {
+        return $this->referral;
+    }
+
+    public function setReferral(?string $referral): self
+    {
+        $this->referral = $referral;
 
         return $this;
     }

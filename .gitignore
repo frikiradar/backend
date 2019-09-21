@@ -10,3 +10,4 @@ public/images/avatar
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 vendor
+src/Migrations
