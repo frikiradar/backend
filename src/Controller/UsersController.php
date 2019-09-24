@@ -1454,7 +1454,7 @@ class UsersController extends FOSRestController
 
         try {
             $user = $this->getUser();
-            $months = $request->request->get('months') ?: 1;
+            $months = $request->request->get('months');
             if ($months > 0) {
                 $datetime = new \DateTime;
                 $datetime->add(add_months($months, $datetime));
@@ -1468,115 +1468,5 @@ class UsersController extends FOSRestController
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
         }
-    }
-
-    /**
-     * @Rest\Post("/v1/payment", name="payment")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Pago añadido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al añadir el pago"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="title",
-     *     in="query",
-     *     type="string",
-     *     description="title",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="description",
-     *     in="query",
-     *     type="string",
-     *     description="description",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="orderId",
-     *     in="query",
-     *     type="string",
-     *     description="orderId",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="token",
-     *     in="query",
-     *     type="string",
-     *     description="token",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="signature",
-     *     in="query",
-     *     type="string",
-     *     description="signature",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="type",
-     *     in="query",
-     *     type="string",
-     *     description="type",
-     *     schema={}
-     * )
-     * 
-     */
-    public function paymentAction(Request $request)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        try {
-            $em->getRepository('App:Payment')->setPayment(
-                $request->request->get('title'),
-                $request->request->get('description'),
-                $request->request->get('orderId'),
-                $request->request->get('token'),
-                $request->request->get('signature'),
-                $request->request->get('type'),
-                $this->getUser(),
-                new \DateTime,
-                $request->request->get('amount'),
-                $request->request->get('currency'),
-            );
-
-            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Rest\Get("/v1/payments")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Historial de pagos obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el historial de pagos"
-     * )
-     * 
-     * @SWG\Tag(name="Get Payments")
-     */
-    public function getPayments()
-    {
-        $serializer = $this->get('jms_serializer');
-        $payments = $this->getUser()->getPayments();
-
-        return new Response($serializer->serialize($payments, "json", SerializationContext::create()->setGroups(array('payment'))));
     }
 }

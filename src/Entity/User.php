@@ -282,11 +282,6 @@ class User implements UserInterface
      */
     private $referral;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Payment", mappedBy="user", orphanRemoval=true)
-     */
-    private $payments;
-
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -294,7 +289,6 @@ class User implements UserInterface
         $this->devices = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
         $this->radars = new ArrayCollection();
-        $this->payments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -964,37 +958,6 @@ class User implements UserInterface
     public function setReferral(?string $referral): self
     {
         $this->referral = $referral;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Payment[]
-     */
-    public function getPayments(): Collection
-    {
-        return $this->payments;
-    }
-
-    public function addPayment(Payment $payment): self
-    {
-        if (!$this->payments->contains($payment)) {
-            $this->payments[] = $payment;
-            $payment->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removePayment(Payment $payment): self
-    {
-        if ($this->payments->contains($payment)) {
-            $this->payments->removeElement($payment);
-            // set the owning side to null (unless already changed)
-            if ($payment->getUser() === $this) {
-                $payment->setUser(null);
-            }
-        }
 
         return $this;
     }
