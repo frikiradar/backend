@@ -1541,7 +1541,7 @@ class UsersController extends FOSRestController
             $em->getRepository('App:Payment')->setPayment(
                 $request->request->get('title'),
                 $request->request->get('description'),
-                $request->request->get('orderId'),
+                $request->request->get('order_id'),
                 $request->request->get('token'),
                 $request->request->get('signature'),
                 $request->request->get('type'),
