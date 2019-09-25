@@ -1575,7 +1575,7 @@ class UsersController extends FOSRestController
     public function getPayments()
     {
         $serializer = $this->get('jms_serializer');
-        $payments = array_reverse($this->getUser()->getPayments());
+        $payments = $this->getUser()->getPayments();
 
         return new Response($serializer->serialize($payments, "json", SerializationContext::create()->setGroups(array('payment'))));
     }
