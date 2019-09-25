@@ -31,6 +31,7 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Service\GeolocationService;
+use DateInterval;
 
 /**
  * Class UsersController
@@ -1439,10 +1440,10 @@ class UsersController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
-     *     name="months",
+     *     name="days",
      *     in="query",
      *     type="string",
-     *     description="meses",
+     *     description="days",
      *     schema={}
      * )
      * 
@@ -1454,12 +1455,10 @@ class UsersController extends FOSRestController
 
         try {
             $user = $this->getUser();
-            $months = $request->request->get('months') ?: 1;
-            if ($months > 0) {
-                $datetime = new \DateTime;
-                $datetime->add(add_months($months, $datetime));
-                $user->setPremiumExpiration($datetime);
-            }
+            $days = $request->request->get('days') ?: 30;
+            $datetime = new \DateTime;
+            $datetime->add(new DateInterval('P' . $days . 'D'));
+            $user->setPremiumExpiration($datetime);
 
             $em->persist($user);
             $em->flush();
