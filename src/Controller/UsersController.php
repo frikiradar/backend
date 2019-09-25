@@ -1548,7 +1548,7 @@ class UsersController extends FOSRestController
                 $this->getUser(),
                 new \DateTime,
                 $request->request->get('amount'),
-                $request->request->get('currency'),
+                $request->request->get('currency')
             );
 
             return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
