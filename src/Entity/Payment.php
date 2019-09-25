@@ -67,11 +67,13 @@ class Payment
 
     /**
      * @ORM\Column(type="float")
+     * @Groups({"payment"})
      */
     private $amount;
 
     /**
      * @ORM\Column(type="string", length=3)
+     * @Groups({"payment"})
      */
     private $currency;
 
