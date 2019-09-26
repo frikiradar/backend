@@ -21,12 +21,7 @@ class MailingService
 
     function getSubscriber()
     {
-        try {
-            return \MailPoet\API\API::MP('v1')->getSubscriber($this->email); // $identifier can be either a subscriber ID or e-mail
-        } catch (Exception $exception) {
-            // echo $exception->getMessage();
-            return false;
-        }
+        return \MailPoet\API\API::MP('v1')->getSubscriber($this->email); // $identifier can be either a subscriber ID or e-mail
     }
 
     function getSubscriberLists()
