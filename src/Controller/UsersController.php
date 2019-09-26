@@ -185,7 +185,7 @@ class UsersController extends FOSRestController
                 if ($user->getMailing()) {
                     $mailing->name = $username;
                     $mailing->email = $email;
-                    $mailing->list = 9;
+                    $mailing->list = 3;
                     $mailing->set();
                 }
 
@@ -320,11 +320,11 @@ class UsersController extends FOSRestController
                 if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
                     $mailing->name = $this->getUser()->getUsername();
                     $mailing->email = $this->getUser()->getEmail();
-                    $mailing->list = 9;
+                    $mailing->list = 3;
                     $mailing->set();
                 } elseif ($this->getUser()->getMailing() && !$newUser->getMailing()) {
                     $mailing->email = $this->getUser()->getEmail();
-                    $mailing->list = 9;
+                    $mailing->list = 3;
                     $mailing->unsubscribeFromList();
                 }
 
