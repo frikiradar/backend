@@ -6,7 +6,7 @@ include_once __DIR__ . '/../../../httpdocs/wp-load.php';
 
 use App\Entity\User;
 
-define('MP_SUBSCRIBERS_TABLE', '');
+define('MP_SUBSCRIBERS_TABLE', 'b11ZjdM_mailpoet_subscribers');
 
 class MailingService
 {
