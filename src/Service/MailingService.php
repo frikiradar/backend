@@ -119,11 +119,10 @@ class MailingService
     //Borrado---------------------------------------------------------//
     function remove()
     {
-        $query = "DELETE FROM mailing WHERE email='$this->email'";
+        /*$query = "DELETE FROM mailing WHERE email='$this->email'";
         if ($this->_db->query($query))
             return true;
-        return false;
-    }
+        return false;*/ }
 
     function unsubscribeFromList()
     {
