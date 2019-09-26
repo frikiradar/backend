@@ -46,13 +46,13 @@ class MailingService
     //Escritura-----------------------------------------------------//
     function set()
     {
-        if ($this->getSubscriber()) {
+        // if ($this->getSubscriber()) {
+        // return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
+        // } else {
+        if ($this->addSubscriber()) {
             return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
-        } else {
-            if ($this->addSubscriber()) {
-                return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
-            }
         }
+        // }
     }
 
     function update()
