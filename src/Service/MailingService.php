@@ -39,8 +39,6 @@ class MailingService
             }
         }
 
-        print_r($lists);
-        die();
         return $lists;
     }
     //Escritura-----------------------------------------------------//
@@ -130,7 +128,9 @@ class MailingService
     function unsubscribeFromList()
     {
         try {
-            return \MailPoet\API\API::MP('v1')->unsubscribeFromList($this->email, $this->list);
+            if (in_array($this->list, $this->getSubscriberLists())) {
+                return \MailPoet\API\API::MP('v1')->unsubscribeFromList($this->email, $this->list);
+            }
         } catch (Exception $exception) {
             // echo $exception->getMessage();
             return false;
