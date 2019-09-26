@@ -21,7 +21,12 @@ class MailingService
 
     function getSubscriber()
     {
-        return \MailPoet\API\API::MP('v1')->getSubscriber($this->email); // $identifier can be either a subscriber ID or e-mail
+        try {
+            return \MailPoet\API\API::MP('v1')->getSubscriber($this->email); // $identifier can be either a subscriber ID or e-mail
+        } catch (Exception $exception) {
+            // echo $exception->getMessage();
+            return false;
+        }
     }
 
     function getSubscriberLists()
@@ -43,6 +48,8 @@ class MailingService
             return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
         } else {
             if ($this->addSubscriber()) {
+                echo "yeah";
+                die();
                 return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
             }
         }
