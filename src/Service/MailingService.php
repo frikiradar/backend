@@ -50,8 +50,6 @@ class MailingService
             return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
         } else {
             if ($this->addSubscriber()) {
-                echo "yeah";
-                die();
                 return (!empty($this->lists)) ? $this->subscribeToLists() : $this->subscribeToList();
             }
         }
