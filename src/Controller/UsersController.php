@@ -31,6 +31,7 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Service\GeolocationService;
+use App\Service\MailingService;
 use DateInterval;
 
 /**
@@ -129,7 +130,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer, MailingService $mailing)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -179,6 +180,13 @@ class UsersController extends FOSRestController
 
                 if (0 === $mailer->send($message)) {
                     throw new HttpException(400, "La dirección de email introducida no es válida");
+                }
+
+                if ($user->getMailing()) {
+                    $mailing->name = $username;
+                    $mailing->email = $email;
+                    $mailing->list = 9;
+                    $mailing->set();
                 }
 
                 $em->flush();
@@ -281,7 +289,7 @@ class UsersController extends FOSRestController
      * @ParamConverter("newUser", converter="fos_rest.request_body")
      * @param User $newUser
      */
-    public function putAction(User $newUser)
+    public function putAction(User $newUser, MailingService $mailing)
     {
         $serializer = $this->get('jms_serializer');
 
@@ -308,6 +316,18 @@ class UsersController extends FOSRestController
                 $user->setBlockMessages($newUser->getBlockMessages());
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
+
+                if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
+                    $mailing->name = $this->getUser()->getUsername();
+                    $mailing->email = $this->getUser()->getEmail();
+                    $mailing->list = 9;
+                    $mailing->set();
+                } elseif ($this->getUser()->getMailing() && !$newUser->getMailing()) {
+                    $mailing->email = $this->getUser()->getEmail();
+                    $mailing->list = 9;
+                    $mailing->unsubscribeFromList();
+                }
+
                 $user->setMailing($newUser->getMailing());
                 // $user->setCredits(3);
 
