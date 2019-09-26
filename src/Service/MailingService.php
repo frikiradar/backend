@@ -38,6 +38,9 @@ class MailingService
                 $lists[] = $list['segment_id'];
             }
         }
+
+        print_r($lists);
+        die();
         return $lists;
     }
     //Escritura-----------------------------------------------------//
