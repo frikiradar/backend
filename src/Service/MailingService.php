@@ -2,7 +2,7 @@
 // src/Service/MailingService.php
 namespace App\Service;
 
-include_once __DIR__ . '/../../httpdocs/wp-load.php';
+include_once __DIR__ . '/../../../httpdocs/wp-load.php';
 
 use App\Entity\User;
 
