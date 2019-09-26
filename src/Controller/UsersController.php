@@ -130,7 +130,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer, MailingService $mailing)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -183,6 +183,7 @@ class UsersController extends FOSRestController
                 }
 
                 if ($user->getMailing()) {
+                    $mailing = new MailingService();
                     $mailing->name = $username;
                     $mailing->email = $email;
                     $mailing->list = 3;
@@ -289,7 +290,7 @@ class UsersController extends FOSRestController
      * @ParamConverter("newUser", converter="fos_rest.request_body")
      * @param User $newUser
      */
-    public function putAction(User $newUser, MailingService $mailing)
+    public function putAction(User $newUser)
     {
         $serializer = $this->get('jms_serializer');
 
@@ -318,11 +319,13 @@ class UsersController extends FOSRestController
                 $user->setHideConnection($newUser->getHideConnection());
 
                 if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
+                    $mailing = new MailingService();
                     $mailing->name = $this->getUser()->getUsername();
                     $mailing->email = $this->getUser()->getEmail();
                     $mailing->list = 3;
                     $mailing->set();
                 } elseif ($this->getUser()->getMailing() && !$newUser->getMailing()) {
+                    $mailing = new MailingService();
                     $mailing->email = $this->getUser()->getEmail();
                     $mailing->list = 3;
                     $mailing->unsubscribeFromList();
