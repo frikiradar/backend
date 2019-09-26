@@ -2,6 +2,8 @@
 // src/Service/MailingService.php
 namespace App\Service;
 
+error_reporting(E_ERROR | E_PARSE);
+
 include_once __DIR__ . '/../../../httpdocs/wp-load.php';
 
 use App\Entity\User;
