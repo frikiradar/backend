@@ -130,7 +130,7 @@ class UsersController extends FOSRestController
      *
      * @SWG\Tag(name="User")
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer, MailingService $mailing)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -182,13 +182,12 @@ class UsersController extends FOSRestController
                     throw new HttpException(400, "La dirección de email introducida no es válida");
                 }
 
-                if ($user->getMailing()) {
-                    $mailing = new MailingService();
+                /*if ($user->getMailing()) {
                     $mailing->name = $username;
                     $mailing->email = $email;
                     $mailing->list = 3;
                     $mailing->set();
-                }
+                }*/
 
                 $em->flush();
 
@@ -290,7 +289,7 @@ class UsersController extends FOSRestController
      * @ParamConverter("newUser", converter="fos_rest.request_body")
      * @param User $newUser
      */
-    public function putAction(User $newUser)
+    public function putAction(User $newUser, MailingService $mailing)
     {
         $serializer = $this->get('jms_serializer');
 
@@ -318,18 +317,16 @@ class UsersController extends FOSRestController
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
 
-                if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
-                    $mailing = new MailingService();
+                /*if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
                     $mailing->name = $this->getUser()->getUsername();
                     $mailing->email = $this->getUser()->getEmail();
                     $mailing->list = 3;
                     $mailing->set();
                 } elseif ($this->getUser()->getMailing() && !$newUser->getMailing()) {
-                    $mailing = new MailingService();
                     $mailing->email = $this->getUser()->getEmail();
                     $mailing->list = 3;
                     $mailing->unsubscribeFromList();
-                }
+                }*/
 
                 $user->setMailing($newUser->getMailing());
                 // $user->setCredits(3);
