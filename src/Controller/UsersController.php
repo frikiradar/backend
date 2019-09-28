@@ -1498,7 +1498,7 @@ class UsersController extends FOSRestController
             try {
                 $user = $this->getUser();
                 if ($user->getPremiumExpiration()) {
-                    $datetime = $user->getPremiumExpiration();
+                    $datetime = new  \DateTime($user->getPremiumExpiration());
                 } else {
                     $datetime = new \DateTime;
                 }
