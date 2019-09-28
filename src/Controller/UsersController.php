@@ -266,6 +266,37 @@ class UsersController extends FOSRestController
     }
 
     /**
+     * @Rest\Get("/v1/username/{username}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Nombre de usuario libre"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Nombre de usuario no disponible"
+     * )
+     * 
+     */
+    public function isFreeUsernameAction(string $username)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+        try {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
+
+            if (empty($user)) {
+                return new Response($serializer->serialize($username, "json"));
+            } else {
+                throw new HttpException(400, "Nombre de usuario no disponible");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Rest\Put("/v1/user")
      * 
      * @SWG\Response(
