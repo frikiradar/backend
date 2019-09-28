@@ -283,16 +283,13 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        try {
-            $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
+        $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
 
-            if (empty($user)) {
-                return new Response($serializer->serialize($username, "json"));
-            } else {
-                throw new HttpException(400, "Nombre de usuario no disponible");
-            }
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        if (empty($user)) {
+            return new Response($serializer->serialize($username, "json"));
+        } else {
+            $suggestionUsername = $em->getRepository('App:User')->getSuggestionUsername($username);
+            throw new HttpException(400, $serializer->serialize($suggestionUsername, "json"));
         }
     }
 

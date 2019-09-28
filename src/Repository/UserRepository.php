@@ -348,4 +348,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
         }
     }
+
+    public function getSuggestionUsername($username)
+    {
+        $random = rand(1, 9999);
+        $user = $this->findOneBy(array('username' => $username . $random));
+        if (empty($user)) {
+            return $username . $random;
+        } else {
+            $this->getSuggestionUsername($username);
+        }
+    }
 }
