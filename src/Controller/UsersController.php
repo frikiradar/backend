@@ -386,7 +386,7 @@ class UsersController extends FOSRestController
                 $em->flush();
                 $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
             } else {
                 throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
