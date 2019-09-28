@@ -384,6 +384,7 @@ class UsersController extends FOSRestController
 
                 $em->persist($user);
                 $em->flush();
+                $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
             } else {
@@ -1491,20 +1492,22 @@ class UsersController extends FOSRestController
     public function setPremimAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
 
         $days = $request->request->get('days');
         if ($days > 0) {
             try {
                 $user = $this->getUser();
-                if ($user->getPremiumExpiration()) {
-                    $datetime = $user->getPremiumExpiration();
+                $premiumExpiration = $user->getPremiumExpiration();
+                if (!is_null($premiumExpiration)) {
+                    $datetime = $premiumExpiration;
                 } else {
                     $datetime = new \DateTime;
                 }
 
-                $datetime->modify('+' . $days . ' days');
+                $datetime->add(new DateInterval('P' . $days . 'D'));
                 $user->setPremiumExpiration($datetime);
+
+                $em = $this->getDoctrine()->getManager();
                 $em->persist($user);
                 $em->flush();
 
