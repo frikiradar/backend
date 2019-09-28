@@ -384,7 +384,6 @@ class UsersController extends FOSRestController
 
                 $em->persist($user);
                 $em->flush();
-                $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
             } else {
@@ -1506,9 +1505,10 @@ class UsersController extends FOSRestController
 
                 $datetime->add(new DateInterval('P' . $days . 'D'));
                 $user->setPremiumExpiration($datetime);
-                $user->setIsPremium(true);
                 $em->persist($user);
                 $em->flush();
+
+                $user->setIsPremium(true);
 
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
