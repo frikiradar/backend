@@ -1367,19 +1367,22 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $credits = $request->request->get('credits');
-            if ($credits > 0) {
+        $credits = $request->request->get('credits');
+
+        if ($credits > 0) {
+            try {
+                $user = $this->getUser();
                 $user->setCredits($user->getCredits() + $credits);
+
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
             }
-
-            $em->persist($user);
-            $em->flush();
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "No hay créditos que añadir");
         }
     }
 
@@ -1410,19 +1413,23 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $credits = $request->request->get('credits');
-            if ($user->getCredits() > 0 && $credits > 0) {
+        $user = $this->getUser();
+        $credits = $request->request->get('credits');
+        if ($user->getCredits() > 0 && $credits > 0) {
+            try {
+                $user = $this->getUser();
+                $credits = $request->request->get('credits');
                 $user->setCredits($user->getCredits() - $credits);
+
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
             }
-
-            $em->persist($user);
-            $em->flush();
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "No tienes suficientes créditos");
         }
     }
 
@@ -1431,12 +1438,12 @@ class UsersController extends FOSRestController
      *
      * @SWG\Response(
      *     response=201,
-     *     description="Suscrito correctamente a premium"
+     *     description="Premium añadido"
      * )
      *
      * @SWG\Response(
      *     response=500,
-     *     description="Error al suscribirse a premium"
+     *     description="Error al añadir premium"
      * )
      * 
      * @SWG\Parameter(
@@ -1448,24 +1455,33 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function subscribePremimAction(Request $request)
+    public function setPremimAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $days = $request->request->get('days') ?: 30;
-            $datetime = new \DateTime;
-            $datetime->add(new DateInterval('P' . $days . 'D'));
-            $user->setPremiumExpiration($datetime);
-            $user->setIsPremium(true);
-            $em->persist($user);
-            $em->flush();
+        $days = $request->request->get('days');
+        if ($days > 0) {
+            try {
+                $user = $this->getUser();
+                if ($user->getPremiumExpiration()) {
+                    $datetime = $user->getPremiumExpiration();
+                } else {
+                    $datetime = new \DateTime;
+                }
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+                $datetime->add(new DateInterval('P' . $days . 'D'));
+                $user->setPremiumExpiration($datetime);
+                $user->setIsPremium(true);
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+            }
+        } else {
+            throw new HttpException(400, "No hay días que añadir");
         }
     }
 
