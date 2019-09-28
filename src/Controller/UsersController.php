@@ -266,7 +266,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/username/{username}")
+     * @Rest\Get("/username/{username}")
      * 
      * @SWG\Response(
      *     response=201,
@@ -283,13 +283,18 @@ class UsersController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
 
-        if (empty($user)) {
-            return new Response($serializer->serialize($username, "json"));
-        } else {
-            $suggestionUsername = $em->getRepository('App:User')->getSuggestionUsername($username);
-            throw new HttpException(400, $serializer->serialize($suggestionUsername, "json"));
+        try {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
+
+            if (empty($user)) {
+                return new Response($serializer->serialize($username, "json"));
+            } else {
+                $username = $em->getRepository('App:User')->getSuggestionUsername($username);
+                return new Response($serializer->serialize($username, "json"));
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al comprobar el nombre de usuario - Error: {$ex->getMessage()}");
         }
     }
 
