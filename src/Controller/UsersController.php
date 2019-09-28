@@ -227,7 +227,7 @@ class UsersController extends FOSRestController
         $em->persist($user);
         $em->flush();
 
-        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
     }
 
     /**
@@ -260,7 +260,7 @@ class UsersController extends FOSRestController
                 $em->flush();
             }
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }

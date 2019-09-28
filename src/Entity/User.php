@@ -158,7 +158,7 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Tag", mappedBy="user", orphanRemoval=true, cascade={"persist","merge"})
-     * @Groups({"default"})
+     * @Groups({"tags"})
      */
     private $tags;
 
