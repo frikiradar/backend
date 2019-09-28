@@ -1498,12 +1498,12 @@ class UsersController extends FOSRestController
             try {
                 $user = $this->getUser();
                 if ($user->getPremiumExpiration()) {
-                    $datetime = new  \DateTime($user->getPremiumExpiration());
+                    $datetime = $user->getPremiumExpiration();
                 } else {
                     $datetime = new \DateTime;
                 }
 
-                $datetime->add(new DateInterval('P' . $days . 'D'));
+                $datetime->modify('+' . $days . ' days');
                 $user->setPremiumExpiration($datetime);
                 $em->persist($user);
                 $em->flush();
