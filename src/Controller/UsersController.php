@@ -279,7 +279,7 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function isFreeUsernameAction(string $username)
+    public function checkUsernameAction(string $username)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
