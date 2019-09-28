@@ -157,6 +157,7 @@ class UsersController extends FOSRestController
                 $user->setMailing($request->request->get('mailing') ?: false);
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
+                // $user->setCredits(3);
 
                 $geolocation = new GeolocationService();
                 $coords = $geolocation->geolocate($user->getIP());
@@ -342,7 +343,7 @@ class UsersController extends FOSRestController
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
                 $user->setMailing($newUser->getMailing());
-                // $user->setCredits(3);
+                $user->setIsPremium($user->isPremium());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
