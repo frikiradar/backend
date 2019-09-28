@@ -1492,22 +1492,20 @@ class UsersController extends FOSRestController
     public function setPremimAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
 
         $days = $request->request->get('days');
         if ($days > 0) {
             try {
                 $user = $this->getUser();
-                $premiumExpiration = $user->getPremiumExpiration();
-                if (!is_null($premiumExpiration)) {
-                    $datetime = $premiumExpiration;
+                if ($user->getPremiumExpiration()) {
+                    $datetime = $user->getPremiumExpiration();
                 } else {
                     $datetime = new \DateTime;
                 }
 
                 $datetime->add(new DateInterval('P' . $days . 'D'));
                 $user->setPremiumExpiration($datetime);
-
-                $em = $this->getDoctrine()->getManager();
                 $em->persist($user);
                 $em->flush();
 

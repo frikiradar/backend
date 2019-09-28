@@ -907,12 +907,12 @@ class User implements UserInterface
 
     public function getPremiumExpiration(): ?\DateTimeInterface
     {
-        return $this->premium_expiration;
+        return clone $this->premium_expiration;
     }
 
     public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): self
     {
-        $this->premium_expiration = $premium_expiration;
+        $this->premium_expiration = clone $premium_expiration;
 
         return $this;
     }
