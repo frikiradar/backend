@@ -100,6 +100,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.block_messages',
                 'u.last_login',
                 'u.hide_connection',
+                'u.verified',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
