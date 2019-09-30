@@ -1582,10 +1582,12 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function paymentAction(Request $request)
+    public function paymentAction(Request $request, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
+
+        $user = $this->getUser();
 
         try {
             $em->getRepository('App:Payment')->setPayment(
@@ -1595,11 +1597,26 @@ class UsersController extends FOSRestController
                 $request->request->get('token'),
                 $request->request->get('signature'),
                 $request->request->get('type'),
-                $this->getUser(),
+                $user,
                 new \DateTime,
                 $request->request->get('amount'),
                 $request->request->get('currency')
             );
+
+            // Enviar email al administrador informando del motivo
+            $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . $request->request->get('currency') . '.'))
+                ->setFrom([$user->getEmail() => $user->getUsername()])
+                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setBody("<p>Usuario: <a href='mailto:" . $user->getEmail() . "'>" . $user->getUsername() . "</a></p>
+                            <p>Order Id: " . $request->request->get('order_id') . "</p>
+                            <p>Title: " . $request->request->get('title') . "</p>
+                            <p>Description: " . $request->request->get('description') . "</p>
+                            <p>Precio: " . $request->request->get('amount') . $request->request->get('currency') . "</p>
+                            <p>Tienda: $request->request->get('type')</p>", 'text/html');
+
+            if (0 === $mailer->send($message)) {
+                // throw new HttpException(400, "Error al enviar el email del cobro");
+            }
 
             return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
