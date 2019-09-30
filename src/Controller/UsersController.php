@@ -1603,6 +1603,8 @@ class UsersController extends FOSRestController
                 $request->request->get('currency')
             );
 
+            $user->setVerified(true);
+
             // Enviar email al administrador informando del motivo
             $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . " " . $request->request->get('currency')))
                 ->setFrom([$user->getEmail() => $user->getUsername()])

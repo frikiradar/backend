@@ -287,6 +287,12 @@ class User implements UserInterface
      */
     private $payments;
 
+    /**
+     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"default"})
+     */
+    private $verified;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -995,6 +1001,18 @@ class User implements UserInterface
                 $payment->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getVerified(): ?bool
+    {
+        return $this->verified;
+    }
+
+    public function setVerified(bool $verified): self
+    {
+        $this->verified = $verified;
 
         return $this;
     }
