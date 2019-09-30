@@ -1612,7 +1612,7 @@ class UsersController extends FOSRestController
                             <p>Title: " . $request->request->get('title') . "</p>
                             <p>Description: " . $request->request->get('description') . "</p>
                             <p>Precio: " . $request->request->get('amount') . $request->request->get('currency') . "</p>
-                            <p>Tienda: $request->request->get('type')</p>", 'text/html');
+                            <p>Tienda: " . $request->request->get('type') . "</p>", 'text/html');
 
             if (0 === $mailer->send($message)) {
                 // throw new HttpException(400, "Error al enviar el email del cobro");
