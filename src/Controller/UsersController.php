@@ -1604,14 +1604,14 @@ class UsersController extends FOSRestController
             );
 
             // Enviar email al administrador informando del motivo
-            $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . $request->request->get('currency') . '.'))
+            $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . " " . $request->request->get('currency')))
                 ->setFrom([$user->getEmail() => $user->getUsername()])
                 ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setBody("<p>Usuario: <a href='mailto:" . $user->getEmail() . "'>" . $user->getUsername() . "</a></p>
                             <p>Order Id: " . $request->request->get('order_id') . "</p>
                             <p>Title: " . $request->request->get('title') . "</p>
                             <p>Description: " . $request->request->get('description') . "</p>
-                            <p>Precio: " . $request->request->get('amount') . $request->request->get('currency') . "</p>
+                            <p>Precio: " . $request->request->get('amount') . " " . $request->request->get('currency') . "</p>
                             <p>Tienda: " . $request->request->get('type') . "</p>", 'text/html');
 
             if (0 === $mailer->send($message)) {
