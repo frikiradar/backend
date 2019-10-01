@@ -178,7 +178,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ));
         if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
-            if ($ratio >= 500) {
+            if ($ratio > 1000) {
+                $lastLogin = 3;
+            } elseif ($ratio >= 500) {
                 $lastLogin = 5;
             } elseif ($ratio >= 50) {
                 $lastLogin = 10;
