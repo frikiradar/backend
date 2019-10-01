@@ -626,6 +626,8 @@ class UsersController extends FOSRestController
      */
     public function getRadarUsers(int $ratio, ParamFetcherInterface $params)
     {
+        set_time_limit(30);
+
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
