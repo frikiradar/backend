@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use App\Service\NotificationService;
 use App\Entity\Radar;
@@ -191,7 +192,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= 30')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= 15')
                 ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'ratio' => $ratio,
