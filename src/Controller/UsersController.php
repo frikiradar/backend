@@ -700,12 +700,12 @@ class UsersController extends FOSRestController
             switch ($request->request->get("order")) {
                 case 'match':
                     usort($users, function ($a, $b) {
-                        return $b['match'] <=> $a['match'];
+                        return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
                     });
                     break;
                 default:
                     usort($users, function ($a, $b) {
-                        return $a['distance'] <=> $b['distance'];
+                        return (isset($b['distance']) ? $b['distance'] : 0) <=> (isset($a['distance']) ? $a['distance'] : 0);
                     });
             }
 
