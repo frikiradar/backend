@@ -178,6 +178,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ));
         if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
+            if ($ratio > 1000) {
+                $lastLogin = 7;
+            } elseif ($ratio >= 500) {
+                $lastLogin = 15;
+            } else {
+                $lastLogin = 30;
+            }
+
             $dql
                 ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
                 ->andHaving('age BETWEEN :minage AND :maxage')
@@ -192,7 +200,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= 15')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'ratio' => $ratio,
@@ -201,7 +209,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
                     // 'connection' => $user->getConnection()
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
+                    'lastlogin' => $lastLogin
                 ));
         } else {
             $dql
