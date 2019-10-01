@@ -639,7 +639,7 @@ class UsersController extends FOSRestController
             $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
 
             usort($users, function ($a, $b) {
-                return $b['match'] <=> $a['match'];
+                return $b['match'] ?: 0 <=> $a['match'] ?: 0;
             });
 
             $limit = 15;
