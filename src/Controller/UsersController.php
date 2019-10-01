@@ -632,6 +632,7 @@ class UsersController extends FOSRestController
         $page = $params->get("page");
 
         try {
+            $ratio = $ratio > 25000 ? 25000 : $ratio;
             $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
 
             usort($users, function ($a, $b) {
