@@ -131,7 +131,7 @@ class ChatController extends FOSRestController
         $fromUser = $this->getUser();
 
         //marcamos como leidos los antiguos
-        $unreadChats = $this->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
+        $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
         foreach ($unreadChats as $chat) {
             $conversationId = $chat->getConversationId();
             $chat->setTimeRead(new \DateTime);
