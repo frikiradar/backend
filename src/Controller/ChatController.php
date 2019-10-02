@@ -93,59 +93,6 @@ class ChatController extends FOSRestController
         }
     }
 
-    /**
-     * @Rest\Get("/v1/chat/{id}")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Chat obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Chat al obtener el usuario"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="read",
-     *     default="false",
-     *     description="Get read chats or not"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="page",
-     *     default="1",
-     *     description="Chat page"
-     * )
-     * 
-     */
-    public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $read = $params->get("read");
-        $page = $params->get("page");
-
-        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $fromUser = $this->getUser();
-
-        //marcamos como leidos los antiguos
-        $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
-        foreach ($unreadChats as $chat) {
-            $conversationId = $chat->getConversationId();
-            $chat->setTimeRead(new \DateTime);
-            $em->merge($chat);
-            $em->flush();
-
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-            $publisher($update);
-        }
-
-        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
-
-        return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-    }
 
     /**
      * @Rest\Get("/v1/chats")
@@ -190,6 +137,62 @@ class ChatController extends FOSRestController
 
         return new Response($serializer->serialize($response, "json"));
     }
+
+
+    /**
+     * @Rest\Get("/v1/chat/{id}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Chat obtenido correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Chat al obtener el usuario"
+     * )
+     * 
+     * @Rest\QueryParam(
+     *     name="read",
+     *     default="false",
+     *     description="Get read chats or not"
+     * )
+     * 
+     * @Rest\QueryParam(
+     *     name="page",
+     *     default="1",
+     *     description="Chat page"
+     * )
+     * 
+     */
+    public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        $read = $params->get("read");
+        $page = $params->get("page");
+
+        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $fromUser = $this->getUser();
+
+        //marcamos como leidos los antiguos
+        $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
+        foreach ($unreadChats as $chat) {
+            $conversationId = $chat->getConversationId();
+            $chat->setTimeRead(new \DateTime);
+            $em->merge($chat);
+
+            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $publisher($update);
+        }
+        $em->flush();
+
+        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
+
+        return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+    }
+
 
     /**
      * @Rest\Get("/v1/read-chat/{id}")
