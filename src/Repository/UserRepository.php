@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use App\Service\NotificationService;
 use App\Entity\Radar;
@@ -100,6 +101,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.block_messages',
                 'u.last_login',
                 'u.hide_connection',
+                'u.verified',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -176,6 +178,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ));
         if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
+            if ($ratio > 1000) {
+                $lastLogin = 7;
+            } elseif ($ratio >= 500) {
+                $lastLogin = 15;
+            } else {
+                $lastLogin = 30;
+            }
+
             $dql
                 ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
                 ->andHaving('age BETWEEN :minage AND :maxage')
@@ -190,7 +200,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) < 15')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'ratio' => $ratio,
@@ -199,7 +209,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
                     // 'connection' => $user->getConnection()
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
+                    'lastlogin' => $lastLogin
                 ));
         } else {
             $dql
@@ -273,8 +284,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
 
             // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
-            if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
-                if ($type == 'radar' && $users[$key]['distance'] <= 50 && $users[$key]['match'] >= 80) {
+            if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
+                if ($type == 'radar' && $users[$key]['distance'] <= 10 && $users[$key]['match'] >= 70) {
                     if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);
@@ -346,6 +357,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             default:
                 return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+        }
+    }
+
+    public function getSuggestionUsername($username)
+    {
+        $random = rand(1, 9999);
+        $user = $this->findOneBy(array('username' => $username . $random));
+        if (empty($user)) {
+            return $username . $random;
+        } else {
+            $this->getSuggestionUsername($username);
         }
     }
 }

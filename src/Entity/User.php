@@ -158,7 +158,7 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Tag", mappedBy="user", orphanRemoval=true, cascade={"persist","merge"})
-     * @Groups({"default"})
+     * @Groups({"tags"})
      */
     private $tags;
 
@@ -286,6 +286,12 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity="App\Entity\Payment", mappedBy="user", orphanRemoval=true)
      */
     private $payments;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"default"})
+     */
+    private $verified;
 
     public function __construct()
     {
@@ -907,12 +913,12 @@ class User implements UserInterface
 
     public function getPremiumExpiration(): ?\DateTimeInterface
     {
-        return $this->premium_expiration;
+        return $this->premium_expiration ? clone $this->premium_expiration : $this->premium_expiration;
     }
 
     public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): self
     {
-        $this->premium_expiration = $premium_expiration;
+        $this->premium_expiration = $premium_expiration ? clone $premium_expiration : $premium_expiration;
 
         return $this;
     }
@@ -995,6 +1001,18 @@ class User implements UserInterface
                 $payment->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getVerified(): ?bool
+    {
+        return $this->verified;
+    }
+
+    public function setVerified(bool $verified): self
+    {
+        $this->verified = $verified;
 
         return $this;
     }

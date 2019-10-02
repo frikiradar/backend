@@ -55,7 +55,7 @@ class JWTAuthentication
             $this->mailer->send($message);
         }
 
-        $em->merge($user);
+        $em->persist($user);
         $em->flush();
     }
 }

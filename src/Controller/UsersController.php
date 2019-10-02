@@ -153,11 +153,13 @@ class UsersController extends FOSRestController
                 $user->setRegisterIp();
                 $user->setActive(false);
                 $user->setTwoStep(false);
+                $user->setVerified(false);
                 $user->setMeet($request->request->get('meet') ?: null);
                 $user->setReferral($request->request->get('referral') ?: null);
                 $user->setMailing($request->request->get('mailing') ?: false);
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
+                $user->setCredits(3);
 
                 $geolocation = new GeolocationService();
                 $coords = $geolocation->geolocate($user->getIP());
@@ -235,7 +237,7 @@ class UsersController extends FOSRestController
         $em->persist($user);
         $em->flush();
 
-        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
     }
 
     /**
@@ -268,9 +270,42 @@ class UsersController extends FOSRestController
                 $em->flush();
             }
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Get("/username/{username}")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Nombre de usuario libre"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Nombre de usuario no disponible"
+     * )
+     * 
+     */
+    public function checkUsernameAction(string $username)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
+
+            if (empty($user)) {
+                return new Response($serializer->serialize($username, "json"));
+            } else {
+                $username = $em->getRepository('App:User')->getSuggestionUsername($username);
+                return new Response($serializer->serialize($username, "json"));
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al comprobar el nombre de usuario - Error: {$ex->getMessage()}");
         }
     }
 
@@ -332,7 +367,7 @@ class UsersController extends FOSRestController
                 }*/
 
                 $user->setMailing($newUser->getMailing());
-                // $user->setCredits(3);
+                $user->setIsPremium($user->isPremium());
 
                 foreach ($user->getTags() as $tag) {
                     $em->remove($tag);
@@ -375,7 +410,7 @@ class UsersController extends FOSRestController
                 $em->flush();
                 $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
             } else {
                 throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
@@ -614,16 +649,20 @@ class UsersController extends FOSRestController
      */
     public function getRadarUsers(int $ratio, ParamFetcherInterface $params)
     {
+        ini_set('max_execution_time', 60);
+        ini_set('memory_limit', '512M');
+
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $page = $params->get("page");
 
         try {
+            $ratio = $ratio > 25000 ? 25000 : $ratio;
             $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
 
             usort($users, function ($a, $b) {
-                return $b['match'] <=> $a['match'];
+                return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
             });
 
             $limit = 15;
@@ -684,12 +723,12 @@ class UsersController extends FOSRestController
             switch ($request->request->get("order")) {
                 case 'match':
                     usort($users, function ($a, $b) {
-                        return $b['match'] <=> $a['match'];
+                        return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
                     });
                     break;
                 default:
                     usort($users, function ($a, $b) {
-                        return $a['distance'] <=> $b['distance'];
+                        return (isset($b['distance']) ? $b['distance'] : 0) <=> (isset($a['distance']) ? $a['distance'] : 0);
                     });
             }
 
@@ -1390,19 +1429,22 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $credits = $request->request->get('credits');
-            if ($credits > 0) {
+        $credits = $request->request->get('credits');
+
+        if ($credits > 0) {
+            try {
+                $user = $this->getUser();
                 $user->setCredits($user->getCredits() + $credits);
+
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
             }
-
-            $em->persist($user);
-            $em->flush();
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "No hay créditos que añadir");
         }
     }
 
@@ -1433,19 +1475,23 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $credits = $request->request->get('credits');
-            if ($user->getCredits() > 0 && $credits > 0) {
+        $user = $this->getUser();
+        $credits = $request->request->get('credits');
+        if ($user->getCredits() > 0 && $credits > 0) {
+            try {
+                $user = $this->getUser();
+                $credits = $request->request->get('credits');
                 $user->setCredits($user->getCredits() - $credits);
+
+                $em->persist($user);
+                $em->flush();
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
             }
-
-            $em->persist($user);
-            $em->flush();
-
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
+        } else {
+            throw new HttpException(400, "No tienes suficientes créditos");
         }
     }
 
@@ -1454,12 +1500,12 @@ class UsersController extends FOSRestController
      *
      * @SWG\Response(
      *     response=201,
-     *     description="Suscrito correctamente a premium"
+     *     description="Premium añadido"
      * )
      *
      * @SWG\Response(
      *     response=500,
-     *     description="Error al suscribirse a premium"
+     *     description="Error al añadir premium"
      * )
      * 
      * @SWG\Parameter(
@@ -1471,24 +1517,34 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function subscribePremimAction(Request $request)
+    public function setPremimAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $user = $this->getUser();
-            $days = $request->request->get('days') ?: 30;
-            $datetime = new \DateTime;
-            $datetime->add(new DateInterval('P' . $days . 'D'));
-            $user->setPremiumExpiration($datetime);
-            $user->setIsPremium(true);
-            $em->persist($user);
-            $em->flush();
+        $days = $request->request->get('days');
+        if ($days > 0) {
+            try {
+                $user = $this->getUser();
+                if ($user->getPremiumExpiration()) {
+                    $datetime = $user->getPremiumExpiration();
+                } else {
+                    $datetime = new \DateTime;
+                }
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+                $datetime->add(new DateInterval('P' . $days . 'D'));
+                $user->setPremiumExpiration($datetime);
+                $em->persist($user);
+                $em->flush();
+
+                $user->setIsPremium(true);
+
+                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+            }
+        } else {
+            throw new HttpException(400, "No hay días que añadir");
         }
     }
 
@@ -1554,10 +1610,12 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function paymentAction(Request $request)
+    public function paymentAction(Request $request, \Swift_Mailer $mailer)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
+
+        $user = $this->getUser();
 
         try {
             $em->getRepository('App:Payment')->setPayment(
@@ -1567,11 +1625,28 @@ class UsersController extends FOSRestController
                 $request->request->get('token'),
                 $request->request->get('signature'),
                 $request->request->get('type'),
-                $this->getUser(),
+                $user,
                 new \DateTime,
                 $request->request->get('amount'),
                 $request->request->get('currency')
             );
+
+            $user->setVerified(true);
+
+            // Enviar email al administrador informando del motivo
+            $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . " " . $request->request->get('currency')))
+                ->setFrom([$user->getEmail() => $user->getUsername()])
+                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setBody("<p>Usuario: <a href='mailto:" . $user->getEmail() . "'>" . $user->getUsername() . "</a></p>
+                            <p>Order Id: " . $request->request->get('order_id') . "</p>
+                            <p>Title: " . $request->request->get('title') . "</p>
+                            <p>Description: " . $request->request->get('description') . "</p>
+                            <p>Precio: " . $request->request->get('amount') . " " . $request->request->get('currency') . "</p>
+                            <p>Tienda: " . $request->request->get('type') . "</p>", 'text/html');
+
+            if (0 === $mailer->send($message)) {
+                // throw new HttpException(400, "Error al enviar el email del cobro");
+            }
 
             return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
