@@ -77,21 +77,6 @@ class ChatRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
-    public function markAllAsRead(User $fromUser, User $toUser, Publisher $publisher, Serializer $serializer)
-    {
-        $em = $this->getEntityManager();
-        $chats = $this->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
-        foreach ($chats as $chat) {
-            $conversationId = $chat->getConversationId();
-            $chat->setTimeRead(new \DateTime);
-            $em->merge($chat);
-
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-            $publisher($update);
-        }
-        $em->flush();
-    }
-
     public function countUnread(User $toUser)
     {
         return $this->createQueryBuilder('c')

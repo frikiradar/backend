@@ -31,7 +31,6 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Service\GeolocationService;
-use App\Service\MailingService;
 use DateInterval;
 
 /**

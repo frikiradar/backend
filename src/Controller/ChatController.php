@@ -119,7 +119,7 @@ class ChatController extends FOSRestController
      * )
      * 
      */
-    public function getChatAction(int $id, ParamFetcherInterface $params)
+    public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
@@ -128,7 +128,19 @@ class ChatController extends FOSRestController
         $page = $params->get("page");
 
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $em->getRepository('App:Chat')->markAllAsRead($toUser, $this->getUser());
+        $fromUser = $this->getUser();
+
+        //marcamos como leidos los antiguos
+        $unreadChats = $this->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
+        foreach ($unreadChats as $chat) {
+            $conversationId = $chat->getConversationId();
+            $chat->setTimeRead(new \DateTime);
+            $em->merge($chat);
+
+            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $publisher($update);
+        }
+        $em->flush();
 
         $chats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser, $read, $page);
 
