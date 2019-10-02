@@ -136,13 +136,13 @@ class ChatController extends FOSRestController
             $conversationId = $chat->getConversationId();
             $chat->setTimeRead(new \DateTime);
             $em->merge($chat);
+            $em->flush();
 
             $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             $publisher($update);
         }
-        $em->flush();
 
-        $chats = $em->getRepository('App:Chat')->getChat($this->getUser(), $toUser, $read, $page);
+        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
 
         return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
