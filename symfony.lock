@@ -224,6 +224,9 @@
             "ref": "384cec52df45f3bfd46a09930d6960a58872b268"
         }
     },
+    "kreait/clock": {
+        "version": "1.0.1"
+    },
     "kreait/firebase-bundle": {
         "version": "1.2.0"
     },

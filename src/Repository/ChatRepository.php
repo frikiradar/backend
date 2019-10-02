@@ -5,9 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Chat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use JMS\Serializer\Serializer;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Symfony\Component\Mercure\Publisher;
 
 /**
  * @method Chat|null find($id, $lockMode = null, $lockVersion = null)
