@@ -5,7 +5,9 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Chat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use JMS\Serializer\Serializer;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Component\Mercure\Publisher;
 
 /**
  * @method Chat|null find($id, $lockMode = null, $lockVersion = null)
@@ -75,13 +77,17 @@ class ChatRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
-    public function markAllAsRead(User $fromUser, User $toUser)
+    public function markAllAsRead(User $fromUser, User $toUser, Publisher $publisher, Serializer $serializer)
     {
         $em = $this->getEntityManager();
         $chats = $this->findBy(array('fromuser' => $fromUser->getId(), 'touser' => $toUser->getId(), 'timeRead' => null));
         foreach ($chats as $chat) {
+            $conversationId = $chat->getConversationId();
             $chat->setTimeRead(new \DateTime);
             $em->merge($chat);
+
+            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $publisher($update);
         }
         $em->flush();
     }
