@@ -295,7 +295,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
                         $notification = new NotificationService();
                         $title = $fromUser->getUsername();
-                        $text = "Doki doki, ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                        $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
                         $url = "/profile/" . $fromUser->getId();
                         $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
                     }
