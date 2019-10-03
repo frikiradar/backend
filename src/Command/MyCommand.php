@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GeolocationService;
+use App\Service\NotificationService;
 
 class MyCommand extends Command
 {
@@ -28,7 +29,7 @@ class MyCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $geolocation = new GeolocationService();
+        /*$geolocation = new GeolocationService();
         $users = $this->em->getRepository('App:User')->findAll();
 
         foreach ($users as $user) {
@@ -45,6 +46,13 @@ class MyCommand extends Command
                 $output->writeln($user->getId() . " - " . $user->getUsername() . " - " . $country);
                 $this->em->detach($user);
             }
-        }
+        }*/
+        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => 3));
+        $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => 2));
+        $notification = new NotificationService();
+        $title = "albertoi";
+        $text = "Doki doki 💓¡El FrikiRadar ha detectado a alguien interesante cerca!";
+        $url = "/profile/2";
+        $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
     }
 }
