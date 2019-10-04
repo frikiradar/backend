@@ -39,7 +39,7 @@
     "symfony/messenger": "4.3.*",
     "symfony/monolog-bundle": "^3.1",
     "symfony/orm-pack": "^1.0",
-    "symfony/process": "*",
+    "symfony/process": "4.3.*",
     "symfony/security-bundle": "*",
     "symfony/serializer-pack": "*",
     "symfony/swiftmailer-bundle": "^3.2",

@@ -42,7 +42,7 @@ class GeolocationService
             $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
             $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($latitude, $longitude));
             if (!$result->isEmpty()) {
-                return ["locality" => $result->first()->getLocality(), "country" => $result->first()->getCountry()->getCode()];
+                return ["locality" => $result->first()->getLocality() ?: $result->first()->getSubLocality(), "country" => $result->first()->getCountry()->getCode()];
             } else {
                 return false;
             }
