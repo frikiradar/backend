@@ -6,6 +6,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GeolocationService;
 use App\Service\NotificationService;
+use Twig\Environment;
 
 class LabCommandService
 {
@@ -15,12 +16,21 @@ class LabCommandService
     private $geolocation;
     private $notification;
     private $em;
+    private $mailer;
+    private $twig;
 
-    public function __construct(EntityManagerInterface $entityManager, GeolocationService $geolocation, NotificationService $notification)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        GeolocationService $geolocation,
+        NotificationService $notification,
+        \Swift_Mailer $mailer,
+        Environment $twig
+    ) {
         $this->em = $entityManager;
         $this->geolocation = $geolocation;
         $this->notification = $notification;
+        $this->mailer = $mailer;
+        $this->twig = $twig;
     }
 
     public function setIo($i, $o)
@@ -64,5 +74,27 @@ class LabCommandService
         $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
         $url = "/profile/" . $fromId;
         $this->notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+    }
+
+    public function email($toId)
+    {
+        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $toId));
+        $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
+            ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+            ->setTo($user->getEmail())
+            ->setBody(
+                $this->twig->render(
+                    "emails/registration.html.twig",
+                    [
+                        'username' => $user->getUsername(),
+                        'code' => 'ABCDEF'
+                    ]
+                ),
+                'text/html'
+            );
+
+        if (0 === $this->mailer->send($message)) {
+            throw new \RuntimeException('Unable to send email');
+        }
     }
 }

@@ -41,6 +41,9 @@ class LabCommand extends Command
             case 'notification':
                 $this->labService->notification(1, 2);
                 break;
+            case 'email':
+                $this->labService->email(2);
+                break;
             default:
                 $o->writeln("<bg=yellow;fg=black>Undefined process, use help to see list </> <fg=red;options=bold>Exiting</>");
         }

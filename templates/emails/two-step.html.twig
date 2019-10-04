@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<body bgcolor="#1a1a1a" text="white" style="background-color:#1a1a1a; margin-top: 0;color: white; padding: 20px;">
-    <header style="height: 50px;" align="middle">
-        <img src="{{absolute_url(asset('images/layout/logo-header.png'))}}" alt="FrikiRadar" height="40" width="174"
-            style="height: 40px;padding: 5px 20px;margin-left: auto;margin-right: auto;display: block;">
-    </header>
-    <main>
-        <p>Hola,
-            {{username}}. Hemos detectado un nuevo inicio de sesión.</p>
-        <p>Como has activado la verificación en dos pasos, por seguridad y para evitar problemas de suplantación de
-            identidad necesitamos que verifiques tu identidad.
-        </p>
-        <p>Introduce el siguiente código en la aplicación para verificar tu identidad:</p>
-        <h2 style="text-align: center;">{{code}}</h2>
-        <p>Si no has sido tu, revisa los dispositivos conectados desde los ajustes de la aplicación y cambia tu
-            contraseña.</p>
-        <p>Si tienes algún problema ponte en contacto con nosotros a través de esta dirección:
-            <a href='mailto:hola@frikiradar.com'>hola@frikiradar.com</a>
-        </p>
-        <p>¡Saludos de parte de todo el equipo de FrikiRadar!</p>
-    </main>
-    <footer style="padding:5px;">
-        <p style="text-align:center">FrikiRadar</p>
-    </footer>
-</body>
+    <body bgcolor="#1a1a1a" text="white" style="background-color:#1a1a1a; margin-top: 0;color: white; padding: 20px;">
+        <header style="height: 50px;" align="middle">
+            <img src="{{absolute_url(asset('images/layout/logo.png'))}}" alt="FrikiRadar" height="40" width="174" style="height: 40px;padding: 5px 20px;margin-left: auto;margin-right: auto;display: block;">
+        </header>
+        <main>
+            <p>Hola,
+                {{username}}. Hemos detectado un nuevo inicio de sesión.</p>
+            <p>Como has activado la verificación en dos pasos, por seguridad y para evitar problemas de suplantación de
+                            identidad necesitamos que verifiques tu identidad.
+            </p>
+            <p>Introduce el siguiente código en la aplicación para verificar tu identidad:</p>
+            <h2 style="text-align: center;">{{code}}</h2>
+            <p>Si no has sido tu, revisa los dispositivos conectados desde los ajustes de la aplicación y cambia tu
+                            contraseña.</p>
+            <p>Si tienes algún problema ponte en contacto con nosotros a través de esta dirección:
+                <a href='mailto:hola@frikiradar.com'>hola@frikiradar.com</a>
+            </p>
+            <p>¡Saludos de parte de todo el equipo de FrikiRadar!</p>
+        </main>
+        <footer style="padding:5px;">
+            <p style="text-align:center">FrikiRadar</p>
+        </footer>
+    </body>
 
 </html>

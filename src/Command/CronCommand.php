@@ -24,7 +24,7 @@ class CronCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('job:cron')
+            ->setName('cron:command')
             ->setDescription('Cron frikiradar')
             ->addArgument('process', InputArgument::OPTIONAL, 'type proccess')
             ->addOption('option', null, InputOption::VALUE_OPTIONAL, 'process options', null)
