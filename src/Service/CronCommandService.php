@@ -79,13 +79,12 @@ class CronCommandService
             $creditText = $credits . " " . ($credits > 1 ? "Créditos" : "Crédito");
 
             $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
-            $this->em->detach($users);
 
             foreach ($users as $user) {
                 try {
                     // Le añadimos $credits créditos
                     $user->setCredits($user->getCredits() + $credits);
-                    $this->em->persist($user);
+                    $this->em->merge($user);
                     $this->em->flush();
 
                     $title = "🎁 " . $creditText;
