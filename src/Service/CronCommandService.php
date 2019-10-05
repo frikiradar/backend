@@ -76,29 +76,28 @@ class CronCommandService
     {
         if ($credits) {
             $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => 'albertoi'));
             $creditText = $credits . " " . ($credits > 1 ? "Créditos" : "Crédito");
 
-            // $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
+            $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
 
-            // foreach ($users as $user) {
-            try {
-                // Le añadimos $credits créditos
-                $user->setCredits($user->getCredits() + $credits);
-                $this->em->persist($user);
-                $this->em->flush();
+            foreach ($users as $user) {
+                try {
+                    // Le añadimos $credits créditos
+                    $user->setCredits($user->getCredits() + $credits);
+                    $this->em->persist($user);
+                    $this->em->flush();
 
-                $title = "🎁 " . $creditText;
-                $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
-                $url = "/tabs/radar";
-                $this->notification->push($fromUser, $user, $title, $text, $url, "credits");
+                    $title = "🎁 " . $creditText;
+                    $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
+                    $url = "/tabs/radar";
+                    $this->notification->push($fromUser, $user, $title, $text, $url, "credits");
 
-                $this->o->writeln("Regalo $creditText enviado a " . $user->getUsername());
-            } catch (Exception $ex) {
-                $this->o->writeln("Error al enviar el regalo $creditText a " . $user->getUsername() . " - Error: {$ex->getMessage()}");
+                    $this->o->writeln("Regalo $creditText enviado a " . $user->getUsername());
+                } catch (Exception $ex) {
+                    $this->o->writeln("Error al enviar el regalo $creditText a " . $user->getUsername() . " - Error: {$ex->getMessage()}");
+                }
+                $this->em->detach($user);
             }
-            $this->em->detach($user);
-            // }
         } else {
             $this->o->writeln("No se pueden regalar 0 créditos");
         }
