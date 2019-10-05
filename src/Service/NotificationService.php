@@ -18,8 +18,8 @@ class NotificationService
             if ($device->getActive() && !is_null($device->getToken())) {
                 $notification = PushNotification::create($title, $text);
                 $data = [
-                    'fromUser' => (string)$fromUser->getId(),
-                    'toUser' => (string)$toUser->getId(),
+                    'fromUser' => (string) $fromUser->getId(),
+                    'toUser' => (string) $toUser->getId(),
                     'url' => $url,
                     'icon' => $fromUser->getAvatar()
                 ];
@@ -45,8 +45,12 @@ class NotificationService
                     ->withAndroidConfig($config);
 
                 $firebase = (new Firebase\Factory())->create();
-                $messaging = $firebase->getMessaging();
-                @$messaging->send($message);
+                try {
+                    $messaging = $firebase->getMessaging();
+                    $messaging->send($message);
+                } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+                    // echo "Error al enviar la notificación";
+                }
             }
         }
     }

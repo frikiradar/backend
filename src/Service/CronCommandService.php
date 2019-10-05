@@ -85,6 +85,7 @@ class CronCommandService
                     // Le añadimos $credits créditos
                     $user->setCredits($user->getCredits() + $credits);
                     $this->em->merge($user);
+                    $this->em->flush();
 
                     $title = "🎁 " . $creditText;
                     $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
