@@ -41,7 +41,7 @@ class CronCommand extends Command
                 $this->cronService->reminder($i->getOption('days'));
                 break;
             case 'gift':
-                $this->cronService->gift($i->getOption('days'), $i->getOption('credits'));
+                $this->cronService->gift($i->getOption('credits'));
                 break;
             default:
                 $o->writeln("<bg=yellow;fg=black>Undefined process, use help to see list </> <fg=red;options=bold>Exiting</>");

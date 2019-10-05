@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Environment;
 
@@ -14,12 +16,18 @@ class CronCommandService
     private $mailer;
     private $em;
     private $twig;
+    private $notification;
 
-    public function __construct(EntityManagerInterface $entityManager, \Swift_Mailer $mailer, Environment $twig)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        \Swift_Mailer $mailer,
+        Environment $twig,
+        NotificationService $notification
+    ) {
         $this->em = $entityManager;
         $this->mailer = $mailer;
         $this->twig = $twig;
+        $this->notification = $notification;
     }
 
     public function setIo($i, $o)
@@ -64,6 +72,35 @@ class CronCommandService
         $process->start();*/
     }
 
-    public function gift($days, $credits)
-    { }
+    public function gift($credits)
+    {
+        if ($credits) {
+            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => 'albertoi'));
+            $creditText = $credits . " " . ($credits > 1 ? "Créditos" : "Crédito");
+
+            // $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
+
+            // foreach ($users as $user) {
+            try {
+                // Le añadimos $credits créditos
+                $user->setCredits($user->getCredits() + $credits);
+                $this->em->persist($user);
+                $this->em->flush();
+
+                $title = "🎁 " . $creditText;
+                $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
+                $url = "/tabs/radar";
+                $this->notification->push($fromUser, $user, $title, $text, $url, "credits");
+
+                $this->o->writeln("Regalo $creditText enviado a " . $user->getUsername());
+            } catch (Exception $ex) {
+                $this->o->writeln("Error al enviar el regalo $creditText a " . $user->getUsername() . " - Error: {$ex->getMessage()}");
+            }
+            $this->em->detach($user);
+            // }
+        } else {
+            $this->o->writeln("No se pueden regalar 0 créditos");
+        }
+    }
 }
