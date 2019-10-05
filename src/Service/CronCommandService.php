@@ -83,10 +83,8 @@ class CronCommandService
             foreach ($users as $user) {
                 try {
                     // Le añadimos $credits créditos
-                    $newUser = $user;
-                    $newUser->setCredits($user->getCredits() + $credits);
-                    $this->em->persist($newUser);
-                    $this->em->flush();
+                    $user->setCredits($user->getCredits() + $credits);
+                    $this->em->merge($user);
 
                     $title = "🎁 " . $creditText;
                     $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
@@ -97,8 +95,9 @@ class CronCommandService
                 } catch (Exception $ex) {
                     $this->o->writeln("Error al enviar el regalo $creditText a " . $user->getUsername() . " - Error: {$ex->getMessage()}");
                 }
-                $this->em->detach($user);
             }
+
+            $this->em->flush();
         } else {
             $this->o->writeln("No se pueden regalar 0 créditos");
         }
