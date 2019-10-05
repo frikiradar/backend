@@ -83,8 +83,9 @@ class CronCommandService
             foreach ($users as $user) {
                 try {
                     // Le añadimos $credits créditos
-                    $user->setCredits($user->getCredits() + $credits);
-                    $this->em->merge($user);
+                    $newUser = $user;
+                    $newUser->setCredits($user->getCredits() + $credits);
+                    $this->em->persist($newUser);
                     $this->em->flush();
 
                     $title = "🎁 " . $creditText;
