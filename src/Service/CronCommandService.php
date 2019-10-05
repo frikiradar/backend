@@ -79,6 +79,7 @@ class CronCommandService
             $creditText = $credits . " " . ($credits > 1 ? "Créditos" : "Crédito");
 
             $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
+            $this->em->detach($users);
 
             foreach ($users as $user) {
                 try {
