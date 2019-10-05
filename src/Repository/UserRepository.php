@@ -370,4 +370,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $this->getSuggestionUsername($username);
         }
     }
+
+    public function getUsersByLastLogin(int $days)
+    {
+        $today = date("Y-m-d");
+        $fromDate = date('Y-m-d', strtotime('-' . $days . ' days', strtotime($today)));
+        $toDate = date('Y-m-d', strtotime('-' . $days + 1 . ' days', strtotime($today)));
+
+        $dql = "SELECT u FROM App:User u WHERE u.last_login >= :fromDate
+        AND u.last_login < :toDate AND u.active = 1 AND u.mailing = 1";
+
+        $query = $this->getEntityManager()->createQuery($dql)->setParameters(["fromDate" => $fromDate, "toDate" => $toDate]);
+        return $query->getResult();
+    }
 }

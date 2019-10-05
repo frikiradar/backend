@@ -30,25 +30,31 @@ class CronCommandService
 
     public function reminder($days)
     {
-        $dql = "SELECT u FROM App:User u WHERE u.last_login < DATE_SUB(CONCAT(CURDATE(), ' ',CURTIME()), INTERVAL 120 DAY)
-        AND active IS true AND mailing IS true";
+        if ($days >= 15) {
+            // Recoge los usuarios que hace exactamente $days días que no se conectan
+            $users = $this->em->getRepository('App:User')->getUsersByLastLogin($days);
+            foreach ($users as $user) {
+                $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setTo($user->getEmail())
+                    ->setBody(
+                        $this->twig->render(
+                            "emails/reminder.html.twig",
+                            [
+                                'username' => $user->getUsername(),
+                            ]
+                        ),
+                        'text/html'
+                    );
 
-        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => 2));
-        $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
-            ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-            ->setTo($user->getEmail())
-            ->setBody(
-                $this->twig->render(
-                    "emails/reminder.html.twig",
-                    [
-                        'username' => $user->getUsername(),
-                    ]
-                ),
-                'text/html'
-            );
-
-        if (0 === $this->mailer->send($message)) {
-            throw new \RuntimeException('Unable to send email');
+                if (0 === $this->mailer->send($message)) {
+                    $this->o->writeln("Error al enviar el email a " . $user->getUsername() . " (" . $user->getEmail() . ")");
+                } else {
+                    $this->o->writeln("Email enviado a " . $user->getUsername() . " (" . $user->getEmail() . ")");
+                }
+            }
+        } else {
+            $this->o->writeln("El número de días es muy bajo");
         }
         /*$process = new Process(
             'php bin/console abo:crons ' . $commandName . ' --thread=' . $thread . ' --limit=' . $limit . ' --offset=' . $offset
