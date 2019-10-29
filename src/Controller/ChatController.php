@@ -188,7 +188,7 @@ class ChatController extends FOSRestController
         }
         $em->flush();
 
-        $chats = $em->getRepository('App:Chat')->isChat($fromUser, $toUser);
+        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
 
         return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
