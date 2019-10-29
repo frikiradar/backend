@@ -137,6 +137,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'to_user' => $fromUser
             ])) ? true : false;
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+            $user['chat'] = !empty($em->getRepository('App:Chat')->getChat($fromUser, $toUser)) ? true : false;
 
             if (!$user['block']) {
                 return $user;
