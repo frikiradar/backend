@@ -67,6 +67,18 @@ class ChatRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function isChat(User $fromUser, User $toUser)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
+            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+            ->setParameter('fromUser', $fromUser->getId())
+            ->setParameter('toUser', $toUser->getId())
+            ->orderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function getChatUsers(User $fromUser)
     {
         $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.timeCreation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE d.fromuser = :id OR d.touser = :id GROUP BY d.conversationId) ORDER BY c.id DESC";
