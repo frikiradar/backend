@@ -70,11 +70,11 @@ class ChatRepository extends ServiceEntityRepository
     public function isChat(User $fromUser, User $toUser)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
+            ->select('count(c.id)')
+            ->where('c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
-            ->orderBy('c.id', 'DESC')
             ->getQuery()
             ->getSingleScalarResult();
     }
