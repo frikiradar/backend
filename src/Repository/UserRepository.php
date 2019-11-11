@@ -87,6 +87,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->select(array(
                 'u.id',
                 'u.username',
+                'u.name',
                 'u.description',
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.gender',
