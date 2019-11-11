@@ -144,6 +144,7 @@ class UsersController extends FOSRestController
                 $user = new User();
                 $user->setEmail($email);
                 $user->setUsername($username);
+                $user->setName($username);
                 $user->setPassword($encoder->encodePassword($user, $password));
                 $user->setBirthday($birthday);
                 $user->setGender($request->request->get('gender') ?: null);
@@ -341,6 +342,7 @@ class UsersController extends FOSRestController
                  * @var User
                  */
                 $user = $this->getUser();
+                $user->setName($newUser->getName() ?: $newUser->getUsername());
                 $user->setDescription($newUser->getDescription());
                 $user->setBirthday($newUser->getBirthday());
                 $user->setGender($newUser->getGender());
