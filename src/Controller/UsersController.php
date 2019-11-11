@@ -158,7 +158,12 @@ class UsersController extends FOSRestController
                 $user->setMailing($request->request->get('mailing') ?: false);
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
-                $user->setCredits(3);
+
+                if (date("m-d") == "11-11") {
+                    $user->setCredits(5);
+                } else {
+                    $user->setCredits(3);
+                }
 
                 $geolocation = new GeolocationService();
                 $coords = $geolocation->geolocate($user->getIP());
