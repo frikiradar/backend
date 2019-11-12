@@ -1455,8 +1455,8 @@ class UsersController extends FOSRestController
                         $em->persist($friend);
                         $em->flush();
 
-                        $title = "🐲 Ey embajador! Has conseguido 3 créditos";
-                        $text = "Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
+                        $title = "🐲 Ey embajador!";
+                        $text = "Has conseguido 3 créditos. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
                         $url = "/tabs/radar";
                         $notification = new NotificationService();
                         $notification->push($user, $friend, $title, $text, $url, "credits");
@@ -1579,8 +1579,8 @@ class UsersController extends FOSRestController
                         $em->persist($friend);
                         $em->flush();
 
-                        $title = "🐲 Ey embajador! Has conseguido 1 mes FrikiRadar ILIMITADO";
-                        $text = "Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
+                        $title = "🐲 Ey embajador!";
+                        $text = "Has conseguido 1 mes FrikiRadar ILIMITADO. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
                         $url = "/tabs/radar";
                         $notification = new NotificationService();
                         $notification->push($user, $friend, $title, $text, $url, "premium");
