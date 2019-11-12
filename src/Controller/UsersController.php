@@ -1446,7 +1446,7 @@ class UsersController extends FOSRestController
                 $em->persist($user);
                 $em->flush();
 
-                if (empty($user->getPayments()) && $user->getMeet() === "friend") {
+                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
                     $referralUsername = $user->getReferral();
                     if (!empty($referralUsername)) {
                         $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
@@ -1563,7 +1563,7 @@ class UsersController extends FOSRestController
 
                 $user->setIsPremium(true);
 
-                if (empty($user->getPayments()) && $user->getMeet() === "friend") {
+                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
                     $referralUsername = $user->getReferral();
                     if (!empty($referralUsername)) {
                         $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
