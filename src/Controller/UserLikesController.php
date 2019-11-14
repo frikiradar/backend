@@ -123,6 +123,14 @@ class UserLikesController extends FOSRestController
      * )
      * 
      * @SWG\Tag(name="Get Likes")
+     * 
+     * @SWG\Parameter(
+     *     name="param",
+     *     in="body",
+     *     type="string",
+     *     description="received or delivered like",
+     *     schema={}
+     * )
      */
     public function getLikesAction(Request $request)
     {
