@@ -51,7 +51,7 @@ class LikeUserRepository extends ServiceEntityRepository
 
     public function getLikeUsers(User $user, $param)
     {
-        $dql = "SELECT IDENTITY(l.from_user) fromuser, l.date, l.time_read
+        $dql = "SELECT IDENTITY(" . ($param == "delivered" ? "l.to_user)" : "l.from_user)") . "fromuser, l.date, l.time_read
             FROM App:LikeUser l
             WHERE " . ($param == "delivered" ? "l.to_user" : "l.from_user") . " = :id ORDER BY l.id DESC";
 
