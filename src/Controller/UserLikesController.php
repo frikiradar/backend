@@ -138,6 +138,7 @@ class UserLikesController extends FOSRestController
                 $likes[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
+                    'name' => $user->getName(),
                     'description' => $user->getDescription(),
                     'avatar' =>  $user->getAvatar() ?: null
                 ];

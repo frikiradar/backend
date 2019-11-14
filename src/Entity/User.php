@@ -293,6 +293,12 @@ class User implements UserInterface
      */
     private $verified;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
+     */
+    private $name;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1013,6 +1019,18 @@ class User implements UserInterface
     public function setVerified(bool $verified): self
     {
         $this->verified = $verified;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

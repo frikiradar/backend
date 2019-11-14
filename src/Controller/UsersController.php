@@ -32,6 +32,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Service\GeolocationService;
 use DateInterval;
+use App\Service\NotificationService;
 
 /**
  * Class UsersController
@@ -144,6 +145,7 @@ class UsersController extends FOSRestController
                 $user = new User();
                 $user->setEmail($email);
                 $user->setUsername($username);
+                $user->setName($username);
                 $user->setPassword($encoder->encodePassword($user, $password));
                 $user->setBirthday($birthday);
                 $user->setGender($request->request->get('gender') ?: null);
@@ -341,6 +343,7 @@ class UsersController extends FOSRestController
                  * @var User
                  */
                 $user = $this->getUser();
+                $user->setName($newUser->getName() ?: $newUser->getUsername());
                 $user->setDescription($newUser->getDescription());
                 $user->setBirthday($newUser->getBirthday());
                 $user->setGender($newUser->getGender());
@@ -1443,6 +1446,23 @@ class UsersController extends FOSRestController
                 $em->persist($user);
                 $em->flush();
 
+                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
+                    $referralUsername = $user->getReferral();
+                    if (!empty($referralUsername)) {
+                        $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
+                        $friend->setCredits($friend->getCredits() + 3);
+
+                        $em->persist($friend);
+                        $em->flush();
+
+                        $title = "🐲 Ey embajador!";
+                        $text = "Has conseguido 3 créditos. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
+                        $url = "/tabs/radar";
+                        $notification = new NotificationService();
+                        $notification->push($user, $friend, $title, $text, $url, "credits");
+                    }
+                }
+
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
@@ -1543,6 +1563,30 @@ class UsersController extends FOSRestController
 
                 $user->setIsPremium(true);
 
+                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
+                    $referralUsername = $user->getReferral();
+                    if (!empty($referralUsername)) {
+                        $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
+                        if ($friend->getPremiumExpiration()) {
+                            $friendDatetime = $friend->getPremiumExpiration();
+                        } else {
+                            $friendDatetime = new \DateTime;
+                        }
+
+                        $friendDatetime->add(new DateInterval('P30D'));
+                        $friend->setPremiumExpiration($friendDatetime);
+
+                        $em->persist($friend);
+                        $em->flush();
+
+                        $title = "🐲 Ey embajador!";
+                        $text = "Has conseguido 1 mes FrikiRadar ILIMITADO. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
+                        $url = "/tabs/radar";
+                        $notification = new NotificationService();
+                        $notification->push($user, $friend, $title, $text, $url, "premium");
+                    }
+                }
+
                 return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
@@ -1636,6 +1680,8 @@ class UsersController extends FOSRestController
             );
 
             $user->setVerified(true);
+            $em->persist($user);
+            $em->flush();
 
             // Enviar email al administrador informando del motivo
             $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . " " . $request->request->get('currency')))
