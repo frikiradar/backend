@@ -9,6 +9,7 @@ use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
+use FOS\RestBundle\Request\ParamFetcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
@@ -124,21 +125,20 @@ class UserLikesController extends FOSRestController
      * 
      * @SWG\Tag(name="Get Likes")
      * 
-     * @SWG\Parameter(
+     * @Rest\QueryParam(
      *     name="param",
-     *     in="body",
-     *     type="string",
-     *     description="received or delivered like",
-     *     schema={}
+     *     default="1",
+     *     description="Like delivered or received"
      * )
+     * 
      */
-    public function getLikesAction(Request $request)
+    public function getLikesAction(ParamFetcherInterface $params)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser(), $request->request->get("param") ?: "received");
+            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser(), $params->get("param") ?: "received");
 
             foreach ($likes as $key => $like) {
                 $userId = $like["fromuser"];
