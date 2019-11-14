@@ -124,13 +124,13 @@ class UserLikesController extends FOSRestController
      * 
      * @SWG\Tag(name="Get Likes")
      */
-    public function getLikesAction()
+    public function getLikesAction(Request $request)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
-            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser());
+            $likes = $em->getRepository('App:LikeUser')->getLikeUsers($this->getUser(), $request->request->get("param") ?: "received");
 
             foreach ($likes as $key => $like) {
                 $userId = $like["fromuser"];
