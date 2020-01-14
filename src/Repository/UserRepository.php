@@ -180,7 +180,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         )
                     ) * 100) distance"
             ));
-        if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
+        if (!$this->security->isGranted('ROLE_DEMO')) {
             if ($ratio > 1000) {
                 $lastLogin = 3;
             } elseif ($ratio >= 500) {
@@ -200,7 +200,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                             'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                 )
                 ->andWhere('u.id <> :id')
-                ->andWhere("u.roles NOT LIKE '%ROLE_ADMIN%'")
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
@@ -255,8 +254,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ) * 100) distance
             FROM App:User u WHERE u.id IN
             (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')";
-        if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
-            $dql .= " AND u.roles NOT LIKE '%ROLE_ADMIN%' AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql .= " AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
         } else {
             $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
         }
@@ -288,7 +287,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
 
             // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
-            if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
+            if (!$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
                 if ($type == 'radar' && $users[$key]['distance'] <= 10 && $users[$key]['match'] >= 70) {
                     if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
                         $radar = new Radar();
