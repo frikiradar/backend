@@ -182,11 +182,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ));
         if (!$this->security->isGranted('ROLE_ADMIN') && !$this->security->isGranted('ROLE_DEMO')) {
             if ($ratio > 1000) {
-                $lastLogin = 7;
+                $lastLogin = 3;
             } elseif ($ratio >= 500) {
-                $lastLogin = 15;
+                $lastLogin = 5;
             } else {
-                $lastLogin = 30;
+                $lastLogin = 7;
             }
 
             $dql
