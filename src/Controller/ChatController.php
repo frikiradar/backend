@@ -78,6 +78,8 @@ class ChatController extends FOSRestController
             $chat->setTimeCreation(new \DateTime);
             $chat->setConversationId($conversationId);
             $em->persist($chat);
+            $fromUser->setLastLogin();
+            $em->persist($fromUser);
             $em->flush();
 
             if (!empty($text)) {
@@ -115,13 +117,14 @@ class ChatController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
+        $fromUser = $this->getUser();
         try {
-            $chats = $em->getRepository('App:Chat')->getChatUsers($this->getUser());
+            $chats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
 
             foreach ($chats as $key => $chat) {
-                $userId = $chat["fromuser"] == $this->getUser()->getId() ? $chat["touser"] : $chat["fromuser"];
+                $userId = $chat["fromuser"] == $fromUser->getId() ? $chat["touser"] : $chat["fromuser"];
                 $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $chats[$key]['count'] = $em->getRepository('App:Chat')->countUnreadUser($this->getUser(), $user);
+                $chats[$key]['count'] = $em->getRepository('App:Chat')->countUnreadUser($fromUser, $user);
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
@@ -137,6 +140,10 @@ class ChatController extends FOSRestController
                 'data' => "Error al obtener los usuarios - Error: {$ex->getMessage()}",
             ];
         }
+
+        $fromUser->setLastLogin();
+        $em->persist($fromUser);
+        $em->flush();
 
         return new Response($serializer->serialize($response, "json"));
     }
@@ -189,6 +196,9 @@ class ChatController extends FOSRestController
             $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             $publisher($update);
         }
+
+        $fromUser->setLastLogin();
+        $em->persist($fromUser);
         $em->flush();
 
         $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
