@@ -76,7 +76,8 @@ class UsersController extends FOSRestController
      * @SWG\Tag(name="User")
      */
     public function getLoginAction()
-    { }
+    {
+    }
 
     /**
      * @Rest\Post("/register", name="user_register")
@@ -189,14 +190,6 @@ class UsersController extends FOSRestController
                 if (0 === $mailer->send($message)) {
                     throw new HttpException(400, "La dirección de email introducida no es válida");
                 }
-
-                /*if ($user->getMailing()) {
-                    $mailing = new MailingService();
-                    $mailing->name = $username;
-                    $mailing->email = $email;
-                    $mailing->list = 3;
-                    $mailing->set();
-                }*/
 
                 $em->flush();
 
@@ -359,19 +352,6 @@ class UsersController extends FOSRestController
                 $user->setBlockMessages($newUser->getBlockMessages());
                 $user->setTwoStep($newUser->getTwoStep());
                 $user->setHideConnection($newUser->getHideConnection());
-
-                /*if (!$this->getUser()->getMailing() && $newUser->getMailing()) {
-                    $mailing = new MailingService();
-                    $mailing->name = $this->getUser()->getUsername();
-                    $mailing->email = $this->getUser()->getEmail();
-                    $mailing->list = 3;
-                    $mailing->set();
-                } elseif ($this->getUser()->getMailing() && !$newUser->getMailing()) {
-                    $mailing = new MailingService();
-                    $mailing->email = $this->getUser()->getEmail();
-                    $mailing->list = 3;
-                    $mailing->unsubscribeFromList();
-                }*/
 
                 $user->setMailing($newUser->getMailing());
                 $user->setIsPremium($user->isPremium());
