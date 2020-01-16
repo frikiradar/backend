@@ -27,26 +27,26 @@
     "sentry/sentry": "^2.0",
     "sentry/sentry-symfony": "^3.0-beta2",
     "symfony/apache-pack": "^1.0",
-    "symfony/asset": "4.3.*",
-    "symfony/console": "4.3.*",
-    "symfony/dotenv": "4.3.*",
+    "symfony/asset": "4.4.*",
+    "symfony/console": "4.4.*",
+    "symfony/dotenv": "5.0.*",
     "symfony/expression-language": "*",
     "symfony/flex": "^1.1",
     "symfony/form": "*",
-    "symfony/framework-bundle": "4.3.*",
+    "symfony/framework-bundle": "4.4.*",
     "symfony/maker-bundle": "^1.11",
     "symfony/mercure-bundle": "^0.1.1",
-    "symfony/messenger": "4.3.*",
+    "symfony/messenger": "4.4.*",
     "symfony/monolog-bundle": "^3.1",
     "symfony/orm-pack": "^1.0",
-    "symfony/process": "4.3.*",
+    "symfony/process": "4.4.*",
     "symfony/security-bundle": "*",
     "symfony/serializer-pack": "*",
     "symfony/swiftmailer-bundle": "^3.2",
-    "symfony/twig-bundle": "4.3.*",
+    "symfony/twig-bundle": "4.4.*",
     "symfony/validator": "*",
     "symfony/web-link": "*",
-    "symfony/yaml": "4.3.*",
+    "symfony/yaml": "4.4.*",
     "willdurand/geocoder-bundle": "^5.0"
   },
   "require-dev": {
@@ -55,7 +55,7 @@
     "symfony/maker-bundle": "^1.8",
     "symfony/profiler-pack": "*",
     "symfony/test-pack": "*",
-    "symfony/web-server-bundle": "4.3.*"
+    "symfony/web-server-bundle": "4.4.*"
   },
   "config": {
     "preferred-install": {
@@ -99,7 +99,7 @@
   "extra": {
     "symfony": {
       "allow-contrib": "true",
-      "require": "4.3.*"
+      "require": "4.4.*"
     }
   }
 }

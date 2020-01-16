@@ -18,7 +18,7 @@ class JWTAuthentication
     /**
      * @param RequestStack $requestStack
      */
-    public function __construct(RequestStack $requestStack, ContainerInterface $container, \Swift_Mailer $mailer, \Twig_Environment $templating)
+    public function __construct(RequestStack $requestStack, ContainerInterface $container, \Swift_Mailer $mailer, \Twig\Environment $templating)
     {
         $this->requestStack = $requestStack;
         $this->container = $container;
