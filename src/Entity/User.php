@@ -117,7 +117,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      * @Serializer\ReadOnly()
      */
     private $last_login;
