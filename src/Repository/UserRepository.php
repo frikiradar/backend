@@ -150,7 +150,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getUsersByDistance(User $user, int $ratio)
+    public function getUsersByDistance(User $user, int $ratio, $page)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
@@ -227,10 +227,18 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $users = $dql->getQuery()
             ->getResult();
 
-        return $this->enhanceUsers($users, $user);
+        $users = $this->enhanceUsers($users, $user);
+        usort($users, function ($a, $b) {
+            return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
+        });
+
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        return array_slice($users, $offset, $limit);
     }
 
-    public function searchUsers(string $search, User $user)
+    public function searchUsers(string $search, User $user, $order, $page)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
@@ -255,7 +263,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     )
                 ) * 100) distance
             FROM App:User u WHERE u.id IN
-            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')";
+            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
+            AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1";
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql .= " AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
         } else {
@@ -265,7 +274,24 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $users = $query->getResult();
 
-        return $this->enhanceUsers($users, $user, 'search');
+        $users = $this->enhanceUsers($users, $user, 'search');
+
+        switch ($order) {
+            case 'match':
+                usort($users, function ($a, $b) {
+                    return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
+                });
+                break;
+            default:
+                usort($users, function ($b, $a) {
+                    return (isset($b['distance']) ? $b['distance'] : 0) <=> (isset($a['distance']) ? $a['distance'] : 0);
+                });
+        }
+
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        return array_slice($users, $offset, $limit);
     }
 
     public function enhanceUsers($users, User $fromUser, $type = 'radar')

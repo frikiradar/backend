@@ -648,16 +648,6 @@ class UsersController extends FOSRestController
             $ratio = $ratio > 25000 ? 25000 : $ratio;
             $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
 
-            usort($users, function ($a, $b) {
-                return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
-            });
-
-            $limit = 15;
-            $offset = ($page - 1) * $limit;
-
-            $users = array_slice($users, $offset, $limit);
-
-
             /* PONDERACIÓN SOBRE 100
             $index = 1 / (max(array_column($users, 'match')) / 100);
             foreach ($users as $key => $rUsers) {
@@ -698,26 +688,23 @@ class UsersController extends FOSRestController
      *     description="Order",
      *     schema={}
      * )
+     * 
+     * @Rest\QueryParam(
+     *     name="page",
+     *     default="1",
+     *     description="Radar page"
+     * )
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request, ParamFetcherInterface $params)
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        try {
-            $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser());
+        $page = $params->get("page");
+        $order = $request->request->get("order");
 
-            switch ($request->request->get("order")) {
-                case 'match':
-                    usort($users, function ($a, $b) {
-                        return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
-                    });
-                    break;
-                default:
-                    usort($users, function ($a, $b) {
-                        return (isset($b['distance']) ? $b['distance'] : 0) <=> (isset($a['distance']) ? $a['distance'] : 0);
-                    });
-            }
+        try {
+            $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser(), $order, $page);
 
             return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
