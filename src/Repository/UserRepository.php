@@ -307,20 +307,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['last_login'] = !$u['hide_connection'] ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-
-            if ($user['block']) {
-                unset($users[$key]);
-            }
-
             $user['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
-            if ($user['hide']) {
+
+            if ($user['block'] || $user['hide']) {
                 unset($users[$key]);
-            }
-
-            $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
-
-            // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
-            if (!$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
+            } elseif (!$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
+                // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
                 if ($type == 'radar' && $users[$key]['distance'] <= 10 && $users[$key]['match'] >= 70) {
                     if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
                         $radar = new Radar();
