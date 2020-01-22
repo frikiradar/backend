@@ -40,7 +40,7 @@ class ConfigController extends FOSRestController
             $config['maintenance'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'maintenance'])->getValue();
             $config['min_version'] = $em->getRepository('App:Config')->findOneBy(['name' => 'min_version'])->getValue();
             $config['chat'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'chat'])->getValue();
-            $config['push_url'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'push_url'])->getValue();
+            $config['push_url'] = $em->getRepository('App:Config')->findOneBy(['name' => 'push_url'])->getValue();
 
             return new Response($serializer->serialize($config, "json"));
         } catch (Exception $ex) {
