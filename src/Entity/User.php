@@ -299,6 +299,11 @@ class User implements UserInterface
      */
     private $name;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\HideUser", mappedBy="from_user", orphanRemoval=true)
+     */
+    private $hideUsers;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -307,6 +312,7 @@ class User implements UserInterface
         $this->blockUsers = new ArrayCollection();
         $this->radars = new ArrayCollection();
         $this->payments = new ArrayCollection();
+        $this->hideUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -1031,6 +1037,37 @@ class User implements UserInterface
     public function setName(?string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|HideUser[]
+     */
+    public function getHideUsers(): Collection
+    {
+        return $this->hideUsers;
+    }
+
+    public function addHideUser(HideUser $hideUser): self
+    {
+        if (!$this->hideUsers->contains($hideUser)) {
+            $this->hideUsers[] = $hideUser;
+            $hideUser->setFromUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHideUser(HideUser $hideUser): self
+    {
+        if ($this->hideUsers->contains($hideUser)) {
+            $this->hideUsers->removeElement($hideUser);
+            // set the owning side to null (unless already changed)
+            if ($hideUser->getFromUser() === $this) {
+                $hideUser->setFromUser(null);
+            }
+        }
 
         return $this;
     }
