@@ -312,6 +312,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 unset($users[$key]);
             }
 
+            $user['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
+            if ($user['hide']) {
+                unset($users[$key]);
+            }
+
             $users[$key]['radar'] = !empty($em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser)) ? true : false;
 
             // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion

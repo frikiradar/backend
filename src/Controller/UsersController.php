@@ -30,6 +30,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Service\FileUploader;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
+use App\Entity\HideUser;
 use App\Service\GeolocationService;
 use DateInterval;
 use App\Service\NotificationService;
@@ -1203,6 +1204,49 @@ class UsersController extends FOSRestController
         }
 
         return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+    }
+
+    /**
+     * @Rest\Put("/v1/hide", name="hide")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario ocultado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al ocultar el usuario"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="user",
+     *     in="body",
+     *     type="string",
+     *     description="To user hide",
+     *     schema={}
+     * )
+     *
+     */
+    public function putHideAction(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $hideUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+
+            $newHide = new HideUser();
+            $newHide->setDate(new \DateTime);
+            $newHide->setFromUser($this->getUser());
+            $newHide->setHideUser($hideUser);
+            $em->persist($newHide);
+            $em->flush();
+
+            return new Response($serializer->serialize("Usuario ocultado correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al ocultar usuario - Error: {$ex->getMessage()}");
+        }
     }
 
     /**

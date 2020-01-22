@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\HideUser;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -47,4 +48,16 @@ class HideUserRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function isHide(User $fromUser, User $hideUser)
+    {
+        return $this->createQueryBuilder('b')
+            ->where('b.from_user = :fromUser AND b.hide_user = :hideUser')
+            ->setParameters([
+                'fromUser' => $fromUser,
+                'hideUser' => $hideUser
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
