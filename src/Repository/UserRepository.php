@@ -9,6 +9,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use App\Service\NotificationService;
 use App\Entity\Radar;
+use App\Entity\Tag;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -306,6 +307,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
             $users[$key]['last_login'] = !$u['hide_connection'] ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
+            $users[$key]['common_tags'] = $this->getCommonTags($fromUser->getTags(), $toUser->getTags());
             $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
             $user['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
 
@@ -370,6 +372,28 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         } else {
             return 0;
         }
+    }
+
+    private function getCommonTags($tagsA, $tagsB)
+    {
+        $a = $b = [];
+
+        foreach ($tagsA as $tag) {
+            $a[$tag->getCategory()][] = $tag->getName();
+        }
+        foreach ($tagsB as $tag) {
+            $b[$tag->getCategory()][] = $tag->getName();
+        }
+
+        $commonTags = [];
+        foreach ($a as $category => $tags) {
+            foreach ($tags as $name) {
+                if (isset($b[$category]) && in_array($name, $b[$category])) {
+                    $commonTags[] = $name;
+                }
+            }
+        }
+        return $commonTags;
     }
 
     private function orientation2Genre($orientation)
