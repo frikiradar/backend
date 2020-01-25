@@ -361,14 +361,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($matchIndexA && $matchIndexB) {
             $index = min($matchIndexA, $matchIndexB);
-            $afinity = $matches * $index * 100;
-            if ($afinity > 100) {
-                $afinity = $afinity * 0.8;
-            } elseif ($afinity < 80) {
-                $afinity = $afinity * 1.2;
-            }
+            $afinity = ($matches * $index) * 100;
             return $afinity < 100 ? round($afinity, 1) : 100;
-            // return $afinity;
         } else {
             return 0;
         }
