@@ -379,10 +379,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $a = $b = [];
 
         foreach ($tagsA as $tag) {
-            $a[$tag->getCategory()][] = $tag->getName();
+            $a[$tag->getCategory()->getName()][] = $tag->getName();
         }
         foreach ($tagsB as $tag) {
-            $b[$tag->getCategory()][] = $tag->getName();
+            $b[$tag->getCategory()->getName()][] = $tag->getName();
         }
 
         $commonTags = [];
