@@ -239,6 +239,80 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return array_slice($users, $offset, $limit);
     }
 
+    public function getRadarUsers(User $user, $page)
+    {
+        $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
+        $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        $dql = $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.description',
+                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                'u.location',
+                'u.last_login',
+                'u.hide_location',
+                'u.block_messages',
+                'u.hide_connection',
+                'u.gender',
+                'u.avatar',
+                "(GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
+                        )
+                    ) * 100) distance"
+            ));
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $lastLogin = 7;
+
+            $dql
+                ->andHaving('age BETWEEN :minage AND :maxage')
+                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                // ->andWhere('u.connection IN (:connection)')
+                ->andWhere(
+                    $user->getOrientation() == "Homosexual" ?
+                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                )
+                ->andWhere('u.id <> :id')
+                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
+                ->andWhere('u.active = 1')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                ->orderBy('distance', 'ASC')
+                ->setParameters(array(
+                    'minage' => $user->getMinage() ?: 18,
+                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
+                    'id' => $user->getId(),
+                    'lovegender' => $user->getLovegender() ?: 1,
+                    // 'connection' => $user->getConnection()
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
+                    'lastlogin' => $lastLogin
+                ));
+        } else {
+            $dql
+                ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
+                ->andWhere('u.id <> :id')
+                ->setParameters(array(
+                    'id' => $user->getId()
+                ));
+        }
+        $users = $dql->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getResult();
+
+        $users = $this->enhanceUsers($users, $user);
+
+        return array_slice($users, 0);
+    }
+
     public function searchUsers(string $search, User $user, $order, $page)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
@@ -307,11 +381,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
             $users[$key]['last_login'] = !$u['hide_connection'] ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
+            $users[$key]['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $fromUser,
+                'to_user' => $toUser
+            ])) ? true : false;
             $users[$key]['common_tags'] = $this->getCommonTags($fromUser->getTags(), $toUser->getTags());
-            $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-            $user['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
+            $users[$key]['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+            $users[$key]['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
 
-            if ($user['block'] || $user['hide']) {
+            if ($users[$key]['block']) {
                 unset($users[$key]);
             } elseif (!$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
                 // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
