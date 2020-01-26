@@ -662,7 +662,7 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Put("/v1/radar/{page}")
+     * @Rest\Put("/v1/radar/")
      *
      * @SWG\Response(
      *     response=201,
