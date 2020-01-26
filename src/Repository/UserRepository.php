@@ -341,7 +341,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%')
             AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1";
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $dql .= " AND u.roles NOT LIKE '%ROLE_DEM0%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
+            $dql .= " AND u.roles NOT LIKE '%ROLE_DEMO%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
         } else {
             $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
         }
@@ -378,6 +378,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $users[$key]['avatar'] = $u['avatar'] ?: "https://app.frikiradar.com/images/layout/default.jpg";
             $users[$key]['age'] = (int) $u['age'];
             $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+            // TODO: Quitar
             $users[$key]['location'] = !$u['hide_location'] ? $u['location'] : null;
             $users[$key]['last_login'] = !$u['hide_connection'] ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());

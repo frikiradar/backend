@@ -339,6 +339,7 @@ class UsersController extends FOSRestController
                 $user = $this->getUser();
                 $user->setName($newUser->getName() ?: $newUser->getUsername());
                 $user->setDescription($newUser->getDescription());
+                $user->setLocation($newUser->getLocation() ?: $user->getLocation());
                 $user->setBirthday($newUser->getBirthday());
                 $user->setGender($newUser->getGender());
                 $user->setOrientation($newUser->getOrientation());
