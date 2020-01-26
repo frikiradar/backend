@@ -661,7 +661,43 @@ class UsersController extends FOSRestController
         }
     }
 
+    /**
+     * @Rest\Put("/v1/radar/{page}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Coordenadas actualizadas correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al actualizar las coordenadas"
+     * )
+     * 
+     * @Rest\QueryParam(
+     *     name="page",
+     *     default="1",
+     *     description="Radar page"
+     * )
+     * 
+     */
+    public function getRadarUsers(int $page)
+    {
+        ini_set('max_execution_time', 60);
+        ini_set('memory_limit', '512M');
 
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+
+            $users = $em->getRepository('App:User')->getRadarUsers($this->getUser(), $page);
+
+            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
+        }
+    }
 
     /**
      * @Rest\Post("/v1/search")
