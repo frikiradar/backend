@@ -681,7 +681,7 @@ class UsersController extends FOSRestController
      * )
      * 
      */
-    public function getRadarUsers(ParamFetcherInterface $params)
+    public function getRadarUsers(Request $request)
     {
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
@@ -689,7 +689,7 @@ class UsersController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
-        $page = $params->get("page");
+        $page = $request->request->get("page");
 
         try {
 
