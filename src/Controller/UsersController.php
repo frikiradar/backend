@@ -454,13 +454,13 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            $location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
+            /*$location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
             if ($location) {
                 $user->setLocation($location["locality"]);
                 $user->setCountry($location["country"]);
                 $em->persist($user);
                 $em->flush();
-            }
+            }*/
 
             return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
