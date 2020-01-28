@@ -1275,16 +1275,19 @@ class UsersController extends FOSRestController
         $em = $this->getDoctrine()->getManager();
 
         try {
+            $fromUser = $this->getUser();
             $hideUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $newHide = new HideUser();
-            $newHide->setDate(new \DateTime);
-            $newHide->setFromUser($this->getUser());
-            $newHide->setHideUser($hideUser);
-            $em->persist($newHide);
-            $em->flush();
+            if (empty($em->getRepository('App:HideUser')->isHide($fromUser, $hideUser))) {
+                $newHide = new HideUser();
+                $newHide->setDate(new \DateTime);
+                $newHide->setFromUser($fromUser);
+                $newHide->setHideUser($hideUser);
+                $em->persist($newHide);
+                $em->flush();
 
-            return new Response($serializer->serialize("Usuario ocultado correctamente", "json"));
+                return new Response($serializer->serialize("Usuario ocultado correctamente", "json"));
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ocultar usuario - Error: {$ex->getMessage()}");
         }
