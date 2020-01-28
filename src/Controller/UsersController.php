@@ -1287,6 +1287,8 @@ class UsersController extends FOSRestController
                 $em->flush();
 
                 return new Response($serializer->serialize("Usuario ocultado correctamente", "json"));
+            } else {
+                throw new HttpException(400, "Error al ocultar usuario");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ocultar usuario - Error: {$ex->getMessage()}");
