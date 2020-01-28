@@ -41,7 +41,7 @@ class LabCommandService
 
     public function geolocation()
     {
-        $users = $this->em->getRepository('App:User')->findAll();
+        /*$users = $this->em->getRepository('App:User')->findAll();
 
         foreach ($users as $user) {
             if ((empty($user->getCountry()) || empty($user->getLocation())) && !empty($user->getCoordinates())) {
@@ -63,7 +63,7 @@ class LabCommandService
                 $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $country . " - " . $location);
                 $this->em->detach($user);
             }
-        }
+        }*/
     }
 
     public function notification($fromId, $toId)
