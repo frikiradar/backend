@@ -123,9 +123,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if (!is_null($user)) {
             $user['age'] = (int) $user['age'];
-            $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
-
-            $user['location'] = (!$toUser->getHideLocation() && !empty($toUser->getLocation())) ? $toUser->getLocation() : null;
+            $user['distance'] = !$toUser->getHideLocation() ? round($user['distance'], 0, PHP_ROUND_HALF_UP) : null;
             $user['last_login'] = (!$toUser->getHideConnection() && !empty($toUser->getLastLogin())) ? $toUser->getLastLogin() : null;
             $user['tags'] = $toUser->getTags();
             $user['avatar'] = $toUser->getAvatar() ?: null;
