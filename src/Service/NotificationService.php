@@ -9,8 +9,9 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 
 class NotificationService
 {
-    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
+    public function push(User $fromUser, $toUser, string $title, string $text, string $url, string $type)
     {
+        // if (gettype($toUser) === 'string') {
         foreach ($toUser->getDevices() as $device) {
             if ($device->getActive() && !is_null($device->getToken())) {
                 $tokens[] = $device->getToken();
@@ -27,6 +28,7 @@ class NotificationService
                 'body' => $text,
                 'sound' => "default",
                 'tag' => $tag,
+                'icon' => $fromUser->getAvatar(),
                 'click_action' => "FCM_PLUGIN_ACTIVITY",
             ],
             'data' => [
@@ -38,8 +40,7 @@ class NotificationService
             'collapse_key' => $tag
         ]);
 
-        $message = CloudMessage::withTarget('token', $device->getToken())
-            ->withAndroidConfig($config);
+        $message = CloudMessage::withAndroidConfig($config);
 
         $firebase = (new Firebase\Factory())->create();
         try {
@@ -58,32 +59,32 @@ class NotificationService
         }
     }
 
-    /*public function pushTopic(string $title, string $text, string $url, string $topic)
+    public function pushTopic(User $fromUser, string $title, string $text, string $url, string $topic)
     {
-                $data = [
-                    'url' => $url,
-                    // 'icon' => $fromUser->getAvatar()
-                ];
+        //fromUser debe ser frikiradar, el user 1
+        $message = CloudMessage::fromArray([
+            'topic' => $topic,
+            'notification' => [
+                'title' => $title,
+                'body' => $text,
+                'sound' => "default",
+                'tag' => $topic,
+                'click_action' => "FCM_PLUGIN_ACTIVITY",
+            ],
+            'data' => [
+                'fromUser' => (string) $fromUser->getId(),
+                'url' => $url,
+                'icon' => $fromUser->getAvatar()
+            ],
+            'collapse_key' => $topic
+        ]);
 
-                $message = CloudMessage::fromArray([
-                    'topic' => $topic,
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $text,
-                        'sound' => "default",
-                        'tag' => $topic,
-                        'click_action' => "FCM_PLUGIN_ACTIVITY",
-                    ]
-                ]);
-
-                $firebase = (new Firebase\Factory())->create();
-                try {
-                    $messaging = $firebase->getMessaging();
-                    $messaging->send($message);
-                } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
-                    // echo "Error al enviar la notificación";
-                }
-            }
+        $firebase = (new Firebase\Factory())->create();
+        try {
+            $messaging = $firebase->getMessaging();
+            $messaging->send($message);
+        } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+            // echo "Error al enviar la notificación";
         }
-    }*/
+    }
 }
