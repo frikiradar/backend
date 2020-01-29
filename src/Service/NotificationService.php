@@ -20,7 +20,7 @@ class NotificationService
 
         $tag = $type . '_' . $title;
 
-        $config = AndroidConfig::fromArray([
+        $message = CloudMessage::fromArray([
             'ttl' => '3600s',
             'priority' => 'high',
             'notification' => [
@@ -39,8 +39,6 @@ class NotificationService
             ],
             'collapse_key' => $tag
         ]);
-
-        $message = CloudMessage::withAndroidConfig($config);
 
         $firebase = (new Firebase\Factory())->create();
         try {
