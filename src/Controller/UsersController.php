@@ -1239,11 +1239,6 @@ class UsersController extends FOSRestController
 
         $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
-        foreach ($users as $key => $u) {
-            $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-            $users[$key]['avatar'] = $user->getAvatar() ?: null;
-        }
-
         return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
     }
 

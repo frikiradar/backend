@@ -104,6 +104,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.last_login',
                 'u.hide_connection',
                 'u.verified',
+                'u.avatar',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -122,11 +123,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getOneOrNullResult();
 
         if (!is_null($user)) {
+            $today = new \DateTime;
+
             $user['age'] = (int) $user['age'];
-            $user['distance'] = !$toUser->getHideLocation() ? round($user['distance'], 0, PHP_ROUND_HALF_UP) : null;
-            $user['last_login'] = (!$toUser->getHideConnection() && !empty($toUser->getLastLogin())) ? $toUser->getLastLogin() : null;
+            $user['distance'] = !$user['hide_location'] ? round($user['distance'], 0, PHP_ROUND_HALF_UP) : null;
+            $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             $user['tags'] = $toUser->getTags();
-            $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
@@ -268,7 +270,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ));
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 7;
+            $lastLogin = 30;
 
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
@@ -283,6 +285,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                ->addOrderBy('u.last_login', 'DESC')
                 ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'minage' => $user->getMinage() ?: 18,
@@ -370,13 +373,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function enhanceUsers($users, User $fromUser, $type = 'radar')
     {
         $em = $this->getEntityManager();
+        $today = new \DateTime;
 
         foreach ($users as $key => $u) {
             $toUser = $this->findOneBy(array('id' => $u['id']));
             $users[$key]['avatar'] = $u['avatar'] ?: "https://app.frikiradar.com/images/layout/default.jpg";
             $users[$key]['age'] = (int) $u['age'];
             $users[$key]['distance'] = !$u['hide_location'] ? round($u['distance'], 0, PHP_ROUND_HALF_UP) : null;
-            $users[$key]['last_login'] = !$u['hide_connection'] ? $u['last_login'] : null;
+            $users[$key]['last_login'] = (!$u['hide_connection'] && $today->diff($u['last_login'])->format('%a') <= 7) ? $u['last_login'] : null;
             $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $users[$key]['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
@@ -416,27 +420,28 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $a = $b = [];
 
         foreach ($tagsA as $tag) {
-            $a[$tag->getCategory()->getName()][] = $tag->getName();
+            $a[] = $tag->getName();
         }
         foreach ($tagsB as $tag) {
-            $b[$tag->getCategory()->getName()][] = $tag->getName();
+            $b[] = $tag->getName();
         }
 
         $matches = 0;
-        foreach ($a as $category => $tags) {
-            foreach ($tags as $name) {
-                if (isset($b[$category]) && in_array($name, $b[$category])) {
+        foreach ($a as $tagA) {
+            foreach ($b as $tagB) {
+                similar_text($tagA, $tagB, $percent);
+                if ($percent > 90) {
                     $matches++;
                 }
             }
         }
 
-        $matchIndexA = count($tagsA) ? $matches / count($tagsA) : 0;
-        $matchIndexB = count($tagsB) ? $matches / count($tagsB) : 0;
+        $matchIndexA = count($a) ? $matches / count($a) : 0;
+        $matchIndexB = count($b) ? $matches / count($b) : 0;
 
         if ($matchIndexA && $matchIndexB) {
             $index = min($matchIndexA, $matchIndexB);
-            $afinity = ($matches * $index) * 100;
+            $afinity = (($matches * $index) * 100) / 2;
             return $afinity < 100 ? round($afinity, 1) : 100;
         } else {
             return 0;
@@ -448,21 +453,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $a = $b = [];
 
         foreach ($tagsA as $tag) {
-            $a[$tag->getCategory()->getName()][] = $tag->getName();
+            $a[] = $tag->getName();
         }
         foreach ($tagsB as $tag) {
-            $b[$tag->getCategory()->getName()][] = $tag->getName();
+            $b[] = $tag->getName();
         }
 
         $commonTags = [];
-        foreach ($a as $category => $tags) {
-            foreach ($tags as $name) {
-                if (isset($b[$category]) && in_array($name, $b[$category])) {
-                    $commonTags[] = $name;
+        foreach ($a as $tagA) {
+            foreach ($b as $tagB) {
+                similar_text($tagA, $tagB, $percent);
+                if ($percent > 90) {
+                    $commonTags[] = $tagA;
                 }
             }
         }
-        return $commonTags;
+        return array_values(array_unique($commonTags));
     }
 
     private function orientation2Genre($orientation)
