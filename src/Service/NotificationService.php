@@ -39,7 +39,7 @@ class NotificationService
             'collapse_key' => $tag
         ]);
 
-        $message = CloudMessage::withAndroidConfig($config);
+        $message = CloudMessage->withAndroidConfig($config);
 
         $firebase = (new Firebase\Factory())->create();
         try {
@@ -78,7 +78,7 @@ class NotificationService
             'collapse_key' => $topic
         ]);
 
-        $message = CloudMessage::withAndroidConfig($config);
+        $message = CloudMessage->withAndroidConfig($config);
 
         $firebase = (new Firebase\Factory())->create();
         try {
