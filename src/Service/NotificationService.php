@@ -9,9 +9,8 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 
 class NotificationService
 {
-    public function push(User $fromUser, $toUser, string $title, string $text, string $url, string $type)
+    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
-        // if (gettype($toUser) === 'string') {
         foreach ($toUser->getDevices() as $device) {
             if ($device->getActive() && !is_null($device->getToken())) {
                 $tokens[] = $device->getToken();
@@ -20,7 +19,7 @@ class NotificationService
 
         $tag = $type . '_' . $title;
 
-        $message = CloudMessage::fromArray([
+        $message = AndroidConfig::fromArray([
             'ttl' => '3600s',
             'priority' => 'high',
             'notification' => [
@@ -57,10 +56,10 @@ class NotificationService
         }
     }
 
-    public function pushTopic(User $fromUser, string $title, string $text, string $url, string $topic)
+    public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url)
     {
-        //fromUser debe ser frikiradar, el user 1
-        $message = CloudMessage::fromArray([
+        //fromUser debe ser frikiradar, el user 1 y el toUser un string con el 'topic'
+        $message = AndroidConfig::fromArray([
             'topic' => $topic,
             'notification' => [
                 'title' => $title,
