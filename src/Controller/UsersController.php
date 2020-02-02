@@ -169,9 +169,6 @@ class UsersController extends FOSRestController
                     $user->setCredits(3);
                 }
 
-                $geolocation = new GeolocationService();
-                $coords = $geolocation->geolocate($user->getIP());
-                $user->setCoordinates($coords);
                 $em->persist($user);
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
@@ -387,12 +384,6 @@ class UsersController extends FOSRestController
                     }
                     $em->persist($user);
                     $em->flush();
-                }
-
-                if (!$user->getCoordinates()) {
-                    $geolocation = new GeolocationService();
-                    $coords = $geolocation->geolocate($user->getIP());
-                    $user->setCoordinates($coords);
                 }
 
                 $em->persist($user);

@@ -17,8 +17,11 @@ class GeolocationService
     public function geolocate($ip, $latitude = '', $longitude = ''): Point
     {
         $coords = new Point(0, 0);
+        $coords
+            ->setLatitude($latitude)
+            ->setLongitude($longitude);
 
-        if ($latitude && $longitude) {
+        /*if ($latitude && $longitude) {
             $coords
                 ->setLatitude($latitude)
                 ->setLongitude($longitude);
@@ -31,7 +34,7 @@ class GeolocationService
                     ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
                     ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
             }
-        }
+        }*/
         return $coords;
     }
 
