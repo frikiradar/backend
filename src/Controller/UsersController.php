@@ -159,7 +159,7 @@ class UsersController extends FOSRestController
                 $user->setVerified(false);
                 $user->setMeet($request->request->get('meet') ?: null);
                 $user->setReferral($request->request->get('referral') ?: null);
-                $user->setMailing($request->request->get('mailing') ?: false);
+                $user->setMailing($request->request->get('mailing') ?: true);
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
 
