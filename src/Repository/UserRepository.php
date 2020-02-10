@@ -152,94 +152,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getUsersByDistance(User $user, int $ratio, $page)
-    {
-        $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
-        $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
-
-        $ratio = $latitude && $longitude ? $ratio : 0;
-
-        $dql = $this->createQueryBuilder('u')
-            ->select(array(
-                'u.id',
-                'u.username',
-                'u.name',
-                'u.description',
-                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
-                'u.location',
-                'u.last_login',
-                'u.hide_location',
-                'u.block_messages',
-                'u.hide_connection',
-                'u.gender',
-                'u.avatar',
-                "(GLength(
-                        LineStringFromWKB(
-                            LineString(
-                                u.coordinates,
-                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                            )
-                        )
-                    ) * 100) distance"
-            ));
-        if (!$this->security->isGranted('ROLE_DEMO')) {
-            if ($ratio > 1000) {
-                $lastLogin = 7;
-            } elseif ($ratio >= 500) {
-                $lastLogin = 7;
-            } else {
-                $lastLogin = 14;
-            }
-
-            $dql
-                ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                // ->andWhere('u.connection IN (:connection)')
-                ->andWhere(
-                    $user->getOrientation() == "Homosexual" ?
-                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-                )
-                ->andWhere('u.id <> :id')
-                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
-                ->andWhere('u.active = 1')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->orderBy('distance', 'ASC')
-                ->setParameters(array(
-                    'ratio' => $ratio,
-                    'minage' => $user->getMinage() ?: 18,
-                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
-                    'id' => $user->getId(),
-                    'lovegender' => $user->getLovegender() ?: 1,
-                    // 'connection' => $user->getConnection()
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
-                    'lastlogin' => $lastLogin
-                ));
-        } else {
-            $dql
-                ->andHaving($ratio ? 'distance <= :ratio' : 'distance >= :ratio')
-                ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
-                ->andWhere('u.id <> :id')
-                ->setParameters(array(
-                    'ratio' => $ratio,
-                    'id' => $user->getId()
-                ));
-        }
-        $users = $dql->getQuery()
-            ->getResult();
-
-        $users = $this->enhanceUsers($users, $user);
-        usort($users, function ($a, $b) {
-            return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
-        });
-
-        $limit = 15;
-        $offset = ($page - 1) * $limit;
-
-        return array_slice($users, $offset, $limit);
-    }
-
     public function getRadarUsers(User $user, $page)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
@@ -283,6 +195,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                             'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                 )
                 ->andWhere('u.id <> :id')
+                ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')

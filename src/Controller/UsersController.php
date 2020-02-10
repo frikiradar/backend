@@ -608,52 +608,6 @@ class UsersController extends FOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/radar/{ratio}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Coordenadas actualizadas correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar las coordenadas"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="page",
-     *     default="1",
-     *     description="Radar page"
-     * )
-     * 
-     */
-    public function getOldRadarUsers(int $ratio, ParamFetcherInterface $params)
-    {
-        ini_set('max_execution_time', 60);
-        ini_set('memory_limit', '512M');
-
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $page = $params->get("page");
-
-        try {
-            $ratio = $ratio > 25000 ? 25000 : $ratio;
-            $users = $em->getRepository('App:User')->getUsersByDistance($this->getUser(), $ratio, $page);
-
-            /* PONDERACIÓN SOBRE 100
-            $index = 1 / (max(array_column($users, 'match')) / 100);
-            foreach ($users as $key => $rUsers) {
-                $users[$key]["match"] = $rUsers["match"] * $index;
-            }*/
-
-            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
      * @Rest\Put("/v1/radar")
      *
      * @SWG\Response(
