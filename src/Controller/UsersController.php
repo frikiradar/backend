@@ -1673,7 +1673,8 @@ class UsersController extends FOSRestController
                 $user,
                 new \DateTime,
                 $request->request->get('amount'),
-                $request->request->get('currency')
+                $request->request->get('currency'),
+                $request->request->get('json') ?: null
             );
 
             $user->setVerified(true);

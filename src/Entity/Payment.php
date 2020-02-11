@@ -77,6 +77,11 @@ class Payment
      */
     private $currency;
 
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $json;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -198,6 +203,18 @@ class Payment
     public function setCurrency(string $currency): self
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getJson(): ?string
+    {
+        return $this->json;
+    }
+
+    public function setJson(?string $json): self
+    {
+        $this->json = $json;
 
         return $this;
     }

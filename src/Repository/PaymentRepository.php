@@ -50,7 +50,7 @@ class PaymentRepository extends ServiceEntityRepository
     }
     */
 
-    public function setPayment(String $title, String $description, String $orderId, String $token, String $signature, String $type, User $user, DateTime $date, Float $amount, String $currency)
+    public function setPayment(String $title, String $description, String $orderId, String $token, String $signature, String $type, User $user, DateTime $date, Float $amount, String $currency, String $json = null)
     {
         $em = $this->getEntityManager();
 
@@ -65,6 +65,7 @@ class PaymentRepository extends ServiceEntityRepository
         $payment->setPaymentDate($date);
         $payment->setAmount($amount);
         $payment->setCurrency($currency);
+        $payment->setJson($json);
 
         $em->persist($payment);
         $em->flush();
