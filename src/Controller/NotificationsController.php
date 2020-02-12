@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpFoundation\Request;
+use App\Service\NotificationService;
 
 /**
  * Class ChatController
@@ -51,6 +53,56 @@ class NotificationsController extends FOSRestController
             return new Response($serializer->serialize($notifications, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Put("/v1/topic-message", name="topic-message")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Mensaje enviado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al enviar el mensaje"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="message",
+     *     in="body",
+     *     type="string",
+     *     description="Message",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="topic",
+     *     in="body",
+     *     type="string",
+     *     description="Topic",
+     *     schema={}
+     * )
+     *
+     */
+    public function putTopicMessage(Request $request)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $fromUser = $em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+            $topic = $request->request->get('topic');
+            $title = "Información importante";
+            $text = $request->request->get('message');
+
+            $notification = new NotificationService();
+            $notification->pushTopic($fromUser, $topic, $title, $text);
+
+            return new Response($serializer->serialize("Notificación enviada correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al enviar la notificación global - Error: {$ex->getMessage()}");
         }
     }
 }

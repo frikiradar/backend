@@ -58,7 +58,7 @@ class NotificationService
         }
     }
 
-    public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url)
+    public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url = '/')
     {
         //fromUser debe ser frikiradar, el user 1 y el toUser un string con el 'topic'
         $config = AndroidConfig::fromArray([
