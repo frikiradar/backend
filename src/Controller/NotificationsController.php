@@ -70,6 +70,14 @@ class NotificationsController extends FOSRestController
      * )
      * 
      * @SWG\Parameter(
+     *     name="title",
+     *     in="body",
+     *     type="string",
+     *     description="Title",
+     *     schema={}
+     * )
+     * 
+     * @SWG\Parameter(
      *     name="message",
      *     in="body",
      *     type="string",
@@ -94,7 +102,7 @@ class NotificationsController extends FOSRestController
         try {
             $fromUser = $em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
             $topic = $request->request->get('topic');
-            $title = "Información importante";
+            $title = $request->request->get('title') ?: "❤ ¡Información importante! 🎏";
             $text = $request->request->get('message');
 
             $notification = new NotificationService();
