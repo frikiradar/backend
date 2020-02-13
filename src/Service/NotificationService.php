@@ -78,6 +78,25 @@ class NotificationService
             'collapse_key' => $topic
         ]);
 
+        $config = AndroidConfig::fromArray([
+            'ttl' => '3600s',
+            'priority' => 'high',
+            'notification' => [
+                'title' => $title,
+                'body' => $text,
+                'sound' => "default",
+                'icon' => $fromUser->getAvatar(),
+                'click_action' => "FCM_PLUGIN_ACTIVITY",
+            ],
+            'data' => [
+                'url' => $url,
+                'icon' => $fromUser->getAvatar()
+            ],
+            'collapse_key' => $topic
+        ]);
+
+        $message = $message->withAndroidConfig($config);
+
         $firebase = (new Firebase\Factory())->create();
         try {
             $messaging = $firebase->getMessaging();
