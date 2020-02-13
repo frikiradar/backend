@@ -57,7 +57,7 @@ class NotificationsController extends FOSRestController
     }
 
     /**
-     * @Rest\Put("/v1/topic-message", name="topic-message")
+     * @Rest\Put("/v1/topic-message")
      *
      * @SWG\Response(
      *     response=201,
