@@ -938,9 +938,15 @@ class User implements UserInterface
     public function isPremium(): ?bool
     {
         if ($this->getPremiumExpiration() > new \DateTime) {
-            return true;
+            $this->isPremium = true;
+        } elseif (date("m-d") >= "02-14" && date("m-d") <= "02-16") {
+            // San valentín
+            $this->isPremium = true;
+        } else {
+            $this->isPremium = false;
         }
-        return false;
+
+        return $this->isPremium;
     }
 
     public function setIsPremium(?bool $isPremium): self
