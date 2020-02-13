@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Service\NotificationService;
 
 /**
- * Class ChatController
+ * Class NotificationsController
  *
  * @Route("/api")
  */
@@ -57,7 +57,7 @@ class NotificationsController extends FOSRestController
     }
 
     /**
-     * @Rest\Put("/v1/topic-message")
+     * @Rest\Put("/v1/topic-message", name="topic-message")
      *
      * @SWG\Response(
      *     response=201,
