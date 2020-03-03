@@ -255,18 +255,21 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default"})
+     * @Serializer\ReadOnly()
      */
     private $premium_expiration;
 
     /**
      * @Type("boolean")
      * @Groups({"default"})
+     * @Serializer\ReadOnly()
      */
     private $isPremium;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      * @Groups({"default"})
+     * @Serializer\ReadOnly()
      */
     private $credits;
 
