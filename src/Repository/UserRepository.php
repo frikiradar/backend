@@ -199,8 +199,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->orderBy('u.last_login', 'DESC')
-                ->addOrderBy('distance', 'ASC')
+                ->orderBy('distance', 'ASC')
+                ->addOrderBy('u.last_login', 'DESC')
                 ->setParameters(array(
                     'minage' => $user->getMinage() ?: 18,
                     'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
