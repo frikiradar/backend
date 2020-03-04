@@ -442,6 +442,7 @@ class UsersController extends FOSRestController
             $geolocation = new GeolocationService();
             $coords = $geolocation->geolocate($user->getIP(), $request->request->get('latitude'), $request->request->get('longitude'));
             $user->setCoordinates($coords);
+            $user->setIsPremium($user->isPremium());
             $em->persist($user);
             $em->flush();
 
