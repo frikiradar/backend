@@ -163,12 +163,6 @@ class UsersController extends FOSRestController
                 $user->setVerificationCode();
                 $user->setRoles(['ROLE_USER']);
 
-                if (date("m-d") == "11-11") {
-                    $user->setCredits(5);
-                } else {
-                    $user->setCredits(3);
-                }
-
                 $em->persist($user);
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
@@ -1407,68 +1401,6 @@ class UsersController extends FOSRestController
         }
     }
 
-    /**
-     * @Rest\Post("/v1/credits", name="add-credits")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Crédito añadido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al añadir los créditos"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="credits",
-     *     in="query",
-     *     type="string",
-     *     description="Los créditos",
-     *     schema={}
-     * )
-     * 
-     */
-    public function creditsAction(Request $request)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $credits = $request->request->get('credits');
-
-        if ($credits > 0) {
-            try {
-                $user = $this->getUser();
-                $user->setCredits($user->getCredits() + $credits);
-
-                $em->persist($user);
-                $em->flush();
-
-                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
-                    $referralUsername = $user->getReferral();
-                    if (!empty($referralUsername)) {
-                        $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
-                        $friend->setCredits($friend->getCredits() + 3);
-
-                        $em->persist($friend);
-                        $em->flush();
-
-                        $title = "🐲 Ey embajador!";
-                        $text = "Has conseguido 3 créditos. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
-                        $url = "/tabs/radar";
-                        $notification = new NotificationService();
-                        $notification->push($user, $friend, $title, $text, $url, "credits");
-                    }
-                }
-
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-            } catch (Exception $ex) {
-                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
-            }
-        } else {
-            throw new HttpException(400, "No hay créditos que añadir");
-        }
-    }
 
     /**
      * @Rest\Put("/v1/insertcoin", name="insertcoin")
