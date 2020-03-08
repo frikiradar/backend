@@ -34,7 +34,7 @@ class Chat
     private $touser;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="text")
      * @Groups({"message"})
      */
     private $text;
@@ -85,12 +85,12 @@ class Chat
         return $this;
     }
 
-    public function getText(): ?string
+    public function getText(): string
     {
         return $this->text;
     }
 
-    public function setText(?string $text): self
+    public function setText(string $text): self
     {
         $this->text = $text;
 

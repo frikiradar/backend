@@ -82,16 +82,14 @@ class ChatController extends FOSRestController
             $em->persist($fromUser);
             $em->flush();
 
-            if (!empty($text)) {
-                $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-                $publisher($update);
+            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $publisher($update);
 
-                $title = $fromUser->getUsername();
-                $url = "/chat/" . $chat->getFromuser()->getId();
+            $title = $fromUser->getUsername();
+            $url = "/chat/" . $chat->getFromuser()->getId();
 
-                $notification = new NotificationService();
-                $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
-            }
+            $notification = new NotificationService();
+            $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
             return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
         }
