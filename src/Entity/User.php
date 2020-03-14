@@ -945,6 +945,9 @@ class User implements UserInterface
         } elseif (date("m-d") >= "02-14" && date("m-d") <= "02-16") {
             // San valentín
             $this->isPremium = true;
+        } elseif (date("Y-m-d") >= "2020-03-14" && date("Y-m-d") <= "2020-04-14") {
+            // Coronavirus
+            $this->isPremium = true;
         } else {
             $this->isPremium = false;
         }
