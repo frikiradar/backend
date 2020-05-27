@@ -112,7 +112,7 @@ class NotificationsController extends FOSRestController
             if ($topic == 'test') {
                 $chat->setTouser($this->getUser());
             }
-            $chat->setText($title . "\r\n" . $text);
+            $chat->setText($title . "\r\n\r\n" . $text);
             $chat->setTimeCreation(new \DateTime);
             $chat->setConversationId('frikiradar');
             $em->persist($chat);
