@@ -109,6 +109,9 @@ class NotificationsController extends FOSRestController
             $url = "/chat/" . $fromUser->getId();
 
             $chat->setFromuser($fromUser);
+            if ($topic == 'test') {
+                $chat->setTouser($this->getUser());
+            }
             $chat->setText($text);
             $chat->setTimeCreation(new \DateTime);
             $chat->setConversationId('frikiradar');
