@@ -62,8 +62,7 @@ class ChatController extends FOSRestController
         $chat = new Chat();
         $fromUser = $this->getUser();
         $toUser = $em->getRepository('App:User')->find($request->request->get("touser"));
-
-        if (empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
+        if (empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
             $chat->setTouser($toUser);
             $chat->setFromuser($fromUser);
 
@@ -92,6 +91,8 @@ class ChatController extends FOSRestController
             $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
             return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+        } else {
+            throw new HttpException(400, "Error al marcar como leido - Error");
         }
     }
 
@@ -241,6 +242,71 @@ class ChatController extends FOSRestController
             }*/
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Delete("/v1/chat-message/{id}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Mensaje eliminado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al eliminar el mensaje"
+     * )
+     * 
+     */
+    public function deleteMessageAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $user = $this->getUser();
+            $message = $em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            if ($message->getFromuser()->getId() == $user->getId()) {
+                $em->remove($message);
+                $em->flush();
+                return new Response($serializer->serialize($message, "json", SerializationContext::create()->setGroups(array('message'))));
+            } else {
+                throw new HttpException(400, "Error al eliminar el mensaje. - Error: usuario no permitido.");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
+        }
+    }
+
+
+    /**
+     * @Rest\Delete("/v1/chat/{id}")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Chat eliminado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Chat al eliminar el mensaje"
+     * )
+     * 
+     */
+    public function deleteAction(int $id)
+    {
+        $serializer = $this->get('jms_serializer');
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $fromUser = $this->getUser();
+            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
+
+            return new Response($serializer->serialize($id, "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
         }
     }
 }

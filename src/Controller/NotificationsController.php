@@ -11,6 +11,7 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\NotificationService;
+use App\Entity\Chat;
 
 /**
  * Class NotificationsController
@@ -98,15 +99,23 @@ class NotificationsController extends FOSRestController
     {
         $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
+        $chat = new Chat();
 
         try {
             $fromUser = $em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
             $topic = $request->request->get('topic');
             $title = $request->request->get('title') ?: "❤ ¡Información importante! 🎏";
             $text = $request->request->get('message');
+            $url = "/chat/" . $fromUser->getId();
+
+            $chat->setFromuser($fromUser);
+            $chat->setText($text);
+            $chat->setTimeCreation(new \DateTime);
+            $chat->setConversationId('frikiradar');
+            $em->persist($chat);
 
             $notification = new NotificationService();
-            $notification->pushTopic($fromUser, $topic, $title, $text);
+            $notification->pushTopic($fromUser, $topic, $title, $text, $url);
 
             return new Response($serializer->serialize("Notificación enviada correctamente", "json"));
         } catch (Exception $ex) {

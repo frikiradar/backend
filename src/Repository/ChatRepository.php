@@ -81,7 +81,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
-        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.timeCreation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE d.fromuser = :id OR d.touser = :id AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
+        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.timeCreation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         return $query->getResult();
@@ -109,5 +109,17 @@ class ChatRepository extends ServiceEntityRepository
             ->setParameter('fromUser', $fromUser->getId())
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    public function deleteChatUser(User $toUser, User $fromUser)
+    {
+        return $this->createQueryBuilder('c')
+            ->delete()
+            ->where('c.touser = :toUser AND c.fromuser = :fromUser')
+            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+            ->setParameter('toUser', $toUser->getId())
+            ->setParameter('fromUser', $fromUser->getId())
+            ->getQuery()
+            ->execute();
     }
 }
