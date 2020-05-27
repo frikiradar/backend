@@ -189,11 +189,13 @@ class ChatController extends FOSRestController
         $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
         foreach ($unreadChats as $chat) {
             $conversationId = $chat->getConversationId();
-            $chat->setTimeRead(new \DateTime);
-            $em->merge($chat);
+            if ($conversationId !== 'frikiradar') {
+                $chat->setTimeRead(new \DateTime);
+                $em->merge($chat);
 
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
-            $publisher($update);
+                $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+                $publisher($update);
+            }
         }
 
         $fromUser->setLastLogin();

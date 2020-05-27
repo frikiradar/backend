@@ -55,9 +55,8 @@ class ChatRepository extends ServiceEntityRepository
         $offset = ($page - 1) * $limit;
 
         return $this->createQueryBuilder('c')
-            ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
+            ->andWhere($toUser->getUsername() == 'frikiradar' ? 'c.fromuser = 1 AND c.touser IS NULL' : 'c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
-            // ->orWhere('c.fromuser = 1 AND c.touser IS NULL')
             ->andWhere($read == true ? '1=1' : 'c.timeRead IS NULL')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
