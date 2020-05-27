@@ -116,6 +116,7 @@ class NotificationsController extends FOSRestController
             $chat->setTimeCreation(new \DateTime);
             $chat->setConversationId('frikiradar');
             $em->persist($chat);
+            $em->flush();
 
             $notification = new NotificationService();
             $notification->pushTopic($fromUser, $topic, $title, $text, $url);
