@@ -57,7 +57,7 @@ class ChatRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere('c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
-            ->orWhere('c.fromuser = 1 AND c.touser IS NULL')
+            // ->orWhere('c.fromuser = 1 AND c.touser IS NULL')
             ->andWhere($read == true ? '1=1' : 'c.timeRead IS NULL')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
