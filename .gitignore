@@ -11,3 +11,4 @@ public/images/avatar
 ###< symfony/phpunit-bridge ###
 vendor
 src/Migrations
+.env

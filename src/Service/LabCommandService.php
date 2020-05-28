@@ -70,8 +70,8 @@ class LabCommandService
     {
         $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $fromId));
         $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $toId));
-        $title = "albertoi";
-        $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+        $title = "Notificación de prueba";
+        $text = "test";
         $url = "/profile/" . $fromId;
         $this->notification->push($fromUser, $toUser, $title, $text, $url, "radar");
     }

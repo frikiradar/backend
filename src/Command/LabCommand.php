@@ -27,11 +27,14 @@ class LabCommand extends Command
             ->setName('lab:command')
             ->setDescription('Lab frikiradar')
             ->addArgument('process', InputArgument::OPTIONAL, 'type proccess')
-            ->addOption('option', null, InputOption::VALUE_OPTIONAL, 'process options', null);
+            ->addOption('option', null, InputOption::VALUE_OPTIONAL, 'process options', null)
+            ->addOption('fromuser', null, InputOption::VALUE_OPTIONAL, 'fromuser', null)
+            ->addOption('touser', null, InputOption::VALUE_OPTIONAL, 'touser', null);
     }
 
     protected function execute(InputInterface $i, OutputInterface $o)
     {
+        // Ejemplo: php bin/console lab:command notification --fromuser=1 --touser=2
         $this->labService->setIo($i, $o);
         $o->writeln('<info>Start Process ' . date('m-d H:i:s', time()) . '</info>');
         switch ($i->getArgument('process')) {
@@ -39,7 +42,7 @@ class LabCommand extends Command
                 $this->labService->geolocation();
                 break;
             case 'notification':
-                $this->labService->notification(1, 2);
+                $this->labService->notification($i->getOption('fromuser'), $i->getOption('touser'));
                 break;
             case 'email':
                 $this->labService->email(2);
