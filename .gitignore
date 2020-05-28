@@ -12,3 +12,4 @@ public/images/avatar
 vendor
 src/Migrations
 .env
+.env.prod
