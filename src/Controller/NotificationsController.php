@@ -114,7 +114,7 @@ class NotificationsController extends FOSRestController
             }
             $chat->setText($title . "\r\n\r\n" . $text);
             $chat->setTimeCreation(new \DateTime);
-            $chat->setConversationId($topic);
+            $chat->setConversationId('frikiradar');
             $em->persist($chat);
             $em->flush();
 
