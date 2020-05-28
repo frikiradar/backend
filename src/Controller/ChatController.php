@@ -189,7 +189,7 @@ class ChatController extends FOSRestController
         $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
         foreach ($unreadChats as $chat) {
             $conversationId = $chat->getConversationId();
-            if ($conversationId !== 'frikiradar') {
+            if (!is_null($chat->getFromUser())) {
                 $chat->setTimeRead(new \DateTime);
                 $em->merge($chat);
 
