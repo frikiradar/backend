@@ -71,36 +71,4 @@ class CronCommandService
         $process->disableOutput();
         $process->start();*/
     }
-
-    public function gift($credits)
-    {
-        if ($credits) {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-            $creditText = $credits . " " . ($credits > 1 ? "Créditos" : "Crédito");
-
-            $users = $this->em->getRepository('App:User')->getUsersWithoutCredits();
-
-            foreach ($users as $user) {
-                try {
-                    // Le añadimos $credits créditos
-                    $user->setCredits($user->getCredits() + $credits);
-                    $this->em->merge($user);
-                    $this->em->flush();
-
-                    $title = "🎁 " . $creditText;
-                    $text = "Te hemos regalado " . $creditText . " ¡Esperamos que lo disfrutes!";
-                    $url = "/tabs/radar";
-                    $this->notification->push($fromUser, $user, $title, $text, $url, "credits");
-
-                    $this->o->writeln("Regalo $creditText enviado a " . $user->getUsername());
-                } catch (Exception $ex) {
-                    $this->o->writeln("Error al enviar el regalo $creditText a " . $user->getUsername() . " - Error: {$ex->getMessage()}");
-                }
-            }
-
-            $this->em->flush();
-        } else {
-            $this->o->writeln("No se pueden regalar 0 créditos");
-        }
-    }
 }

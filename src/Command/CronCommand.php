@@ -28,8 +28,7 @@ class CronCommand extends Command
             ->setDescription('Cron frikiradar')
             ->addArgument('process', InputArgument::OPTIONAL, 'type proccess')
             ->addOption('option', null, InputOption::VALUE_OPTIONAL, 'process options', null)
-            ->addOption('days', null, InputOption::VALUE_OPTIONAL, 'días', null)
-            ->addOption('credits', null, InputOption::VALUE_OPTIONAL, 'créditos', null);;
+            ->addOption('days', null, InputOption::VALUE_OPTIONAL, 'días', null);
     }
 
     protected function execute(InputInterface $i, OutputInterface $o)
@@ -39,9 +38,6 @@ class CronCommand extends Command
         switch ($i->getArgument('process')) {
             case 'reminder':
                 $this->cronService->reminder($i->getOption('days'));
-                break;
-            case 'gift':
-                $this->cronService->gift($i->getOption('credits'));
                 break;
             default:
                 $o->writeln("<bg=yellow;fg=black>Undefined process, use help to see list </> <fg=red;options=bold>Exiting</>");

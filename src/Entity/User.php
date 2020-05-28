@@ -267,13 +267,6 @@ class User implements UserInterface
     private $isPremium;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"default"})
-     * @Serializer\ReadOnly()
-     */
-    private $credits;
-
-    /**
      * @ORM\Column(type="string", length=20, nullable=true)
      * @Groups({"default"})
      */
@@ -958,18 +951,6 @@ class User implements UserInterface
     public function setIsPremium(?bool $isPremium): self
     {
         $this->isPremium = $isPremium;
-
-        return $this;
-    }
-
-    public function getCredits(): ?int
-    {
-        return $this->credits;
-    }
-
-    public function setCredits(?int $credits): self
-    {
-        $this->credits = $credits;
 
         return $this;
     }

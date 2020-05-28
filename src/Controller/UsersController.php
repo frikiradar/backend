@@ -1401,54 +1401,6 @@ class UsersController extends FOSRestController
         }
     }
 
-
-    /**
-     * @Rest\Put("/v1/insertcoin", name="insertcoin")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Crédito pagado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al pagar el crédito"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="credits",
-     *     in="query",
-     *     type="string",
-     *     description="Los créditos",
-     *     schema={}
-     * )
-     * 
-     */
-    public function insertCoinAction(Request $request)
-    {
-        $serializer = $this->get('jms_serializer');
-        $em = $this->getDoctrine()->getManager();
-
-        $user = $this->getUser();
-        $credits = $request->request->get('credits');
-        if ($user->getCredits() > 0 && $credits > 0) {
-            try {
-                $user = $this->getUser();
-                $credits = $request->request->get('credits');
-                $user->setCredits($user->getCredits() - $credits);
-
-                $em->persist($user);
-                $em->flush();
-
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-            } catch (Exception $ex) {
-                throw new HttpException(400, "Error al pagar el crédito - Error: {$ex->getMessage()}");
-            }
-        } else {
-            throw new HttpException(400, "No tienes suficientes créditos");
-        }
-    }
-
     /**
      * @Rest\Post("/v1/premium", name="premium")
      *

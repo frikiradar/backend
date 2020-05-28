@@ -423,14 +423,4 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $query = $this->getEntityManager()->createQuery($dql)->setParameters(["fromDate" => $fromDate, "toDate" => $toDate]);
         return $query->getResult();
     }
-
-    public function getUsersWithoutCredits()
-    {
-        $today = date("Y-m-d");
-        $dql = "SELECT u FROM App:User u WHERE (u.credits = 0 OR u.credits IS NULL)
-        AND u.active = 1 AND (u.premium_expiration IS NULL OR u.premium_expiration < :today)";
-
-        $query = $this->getEntityManager()->createQuery($dql)->setParameter("today", $today);
-        return $query->getResult();
-    }
 }
