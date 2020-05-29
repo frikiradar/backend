@@ -175,7 +175,7 @@ class ChatController extends FOSRestController
      * 
      * @Rest\QueryParam(
      *     name="lastid",
-     *     default="1",
+     *     default="0",
      *     description="El id de chat a partir del cual tenemos que conseguir los nuevos mensajes"
      * )
      * 
@@ -187,7 +187,7 @@ class ChatController extends FOSRestController
 
         $read = $params->get("read");
         $page = $params->get("page");
-        $lastId = $params->get("lastid") ?: 0;
+        $lastId = 0; //$params->get("lastid") ?: 0;
 
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
         $fromUser = $this->getUser();
