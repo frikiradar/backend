@@ -158,7 +158,7 @@ class ChatController extends FOSRestController
      *
      * @SWG\Response(
      *     response=500,
-     *     description="Chat al obtener el usuario"
+     *     description="Error al obtener el chat"
      * )
      * 
      * @Rest\QueryParam(
@@ -173,6 +173,12 @@ class ChatController extends FOSRestController
      *     description="Chat page"
      * )
      * 
+     * @Rest\QueryParam(
+     *     name="lastid",
+     *     default="1",
+     *     description="El id de chat a partir del cual tenemos que conseguir los nuevos mensajes"
+     * )
+     * 
      */
     public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
     {
@@ -181,6 +187,7 @@ class ChatController extends FOSRestController
 
         $read = $params->get("read");
         $page = $params->get("page");
+        $lastId = $params->get("lastid") ?: 0;
 
         $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
         $fromUser = $this->getUser();
@@ -202,7 +209,7 @@ class ChatController extends FOSRestController
         $em->persist($fromUser);
         $em->flush();
 
-        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page);
+        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
 
         return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }

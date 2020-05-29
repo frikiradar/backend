@@ -49,7 +49,7 @@ class ChatRepository extends ServiceEntityRepository
     }
     */
 
-    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1)
+    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0)
     {
         $limit = 50;
         $offset = ($page - 1) * $limit;
@@ -58,8 +58,10 @@ class ChatRepository extends ServiceEntityRepository
             ->andWhere($toUser->getUsername() == 'frikiradar' ? 'c.fromuser = 1 AND c.touser IS NULL' : 'c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
             ->andWhere($read == true ? '1=1' : 'c.timeRead IS NULL')
+            ->andWhere('c.id > :lastId')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
+            ->setParameter('lastId', $lastId)
             ->orderBy('c.id', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit)
