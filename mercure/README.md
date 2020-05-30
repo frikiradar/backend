@@ -1,4 +1,4 @@
-<h1 align="center"><img src="public/mercure.svg" alt="Mercure: Live Updates Made Easy" title="Live Updates Made Easy"></h1>
+<h1 align="center"><a href="https://mercure.rocks"><img src="public/mercure.svg" alt="Mercure: Real-time Made Easy" title="Live Updates Made Easy"></a></h1>
 
 *Protocol and Reference Implementation*
 
@@ -7,14 +7,14 @@ It is especially useful to publish async and real-time updates of resources serv
 
 [![Awesome](https://awesome.re/badge.svg)](docs/ecosystem/awesome.md)
 [![GoDoc](https://godoc.org/github.com/dunglas/mercure?status.svg)](https://godoc.org/github.com/dunglas/mercure/hub)
-[![Build Status](https://travis-ci.com/dunglas/mercure.svg?branch=master)](https://travis-ci.com/dunglas/mercure)
+![CI](https://github.com/dunglas/mercure/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/dunglas/mercure/badge.svg?branch=master)](https://coveralls.io/github/dunglas/mercure?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dunglas/mercure)](https://goreportcard.com/report/github.com/dunglas/mercure)
 
 ![Subscriptions Schema](spec/subscriptions.png)
 
-* [Getting started](docs/getting-started.md)
-* [Full documentation](docs/)
+* [Getting started](https://mercure.rocks/docs/getting-started)
+* [Full documentation](https://mercure.rocks/docs)
 * [Demo](https://demo.mercure.rocks/)
 
 The protocol has been published as [an Internet Draft](https://datatracker.ietf.org/doc/draft-dunglas-mercure/) that [is maintained in this repository](spec/mercure.md).
