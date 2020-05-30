@@ -12,6 +12,6 @@ services:
       - PUBLISH_ALLOWED_ORIGINS=*
       - CORS_ALLOWED_ORIGINS=*
       # - ACME_HOSTS='frikiradar.com'
-    ports:
-      # - "3000:80"
-      # - "9090:443"
+    # ports:
+    # - "3000:80"
+    # - "9090:443"
