@@ -5,8 +5,8 @@ services:
     image: dunglas/mercure:latest
     environment:
       - JWT_KEY=FrikiChat
-      # - DEMO=1
-      # - DEBUG=1
+      - DEMO=1
+      - DEBUG=1
       # - ADDR='api.frikiradar.com:3000'
       - ALLOW_ANONYMOUS=1
       - PUBLISH_ALLOWED_ORIGINS=*
