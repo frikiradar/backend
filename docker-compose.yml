@@ -2,7 +2,7 @@ version: "3"
 
 services:
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:latest
     environment:
       - JWT_KEY=FrikiChat
       - DEMO=1
