@@ -182,7 +182,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ) * 100) distance"
             ));
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 90;
+            $lastLogin = 14;
 
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
