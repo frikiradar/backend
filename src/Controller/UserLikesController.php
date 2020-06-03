@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\LikeUser;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -14,14 +13,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use App\Service\NotificationService;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class UserLikesController
  *
  * @Route("/api")
  */
-class UserLikesController extends FOSRestController
+class UserLikesController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Put("/v1/like", name="like")
      *
@@ -46,7 +52,6 @@ class UserLikesController extends FOSRestController
      */
     public function putLikeAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -71,7 +76,7 @@ class UserLikesController extends FOSRestController
 
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
         }
@@ -93,7 +98,6 @@ class UserLikesController extends FOSRestController
      */
     public function removeLikeAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -104,7 +108,7 @@ class UserLikesController extends FOSRestController
 
             $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro - Error: {$ex->getMessage()}");
         }
@@ -134,7 +138,6 @@ class UserLikesController extends FOSRestController
      */
     public function getLikesAction(ParamFetcherInterface $params)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -151,7 +154,7 @@ class UserLikesController extends FOSRestController
                     'avatar' =>  $user->getAvatar() ?: null
                 ];
             }
-            return new Response($serializer->serialize($likes, "json"));
+            return new Response($this->serializer->serialize($likes, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los likes - Error: {$ex->getMessage()}");
         }
@@ -173,7 +176,6 @@ class UserLikesController extends FOSRestController
      */
     public function markAsReadAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -182,7 +184,7 @@ class UserLikesController extends FOSRestController
             $em->merge($like);
             $em->flush();
 
-            return new Response($serializer->serialize($like, "json", SerializationContext::create()->setGroups(array('like'))->enableMaxDepthChecks()));
+            return new Response($this->serializer->serialize($like, "json", SerializationContext::create()->setGroups(array('like'))->enableMaxDepthChecks()));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }

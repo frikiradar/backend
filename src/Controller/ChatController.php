@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -16,14 +15,21 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\Mercure\Publisher;
 use Symfony\Component\Mercure\Update;
 use App\Service\NotificationService;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class ChatController
  *
  * @Route("/api")
  */
-class ChatController extends FOSRestController
+class ChatController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Put("/v1/chat")
      * 
@@ -56,7 +62,6 @@ class ChatController extends FOSRestController
      */
     public function putAction(Request $request, Publisher $publisher)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $chat = new Chat();
@@ -81,7 +86,7 @@ class ChatController extends FOSRestController
             $em->persist($fromUser);
             $em->flush();
 
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             $publisher($update);
 
             $title = $fromUser->getUsername();
@@ -90,7 +95,7 @@ class ChatController extends FOSRestController
             $notification = new NotificationService();
             $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
-            return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            return new Response($this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
         } else {
             throw new HttpException(400, "Error al marcar como leido - Error");
         }
@@ -113,7 +118,6 @@ class ChatController extends FOSRestController
      */
     public function getChats()
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $fromUser = $this->getUser();
@@ -144,7 +148,7 @@ class ChatController extends FOSRestController
         $em->persist($fromUser);
         $em->flush();
 
-        return new Response($serializer->serialize($response, "json"));
+        return new Response($this->serializer->serialize($response, "json"));
     }
 
 
@@ -182,7 +186,6 @@ class ChatController extends FOSRestController
      */
     public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $read = $params->get("read");
@@ -200,7 +203,7 @@ class ChatController extends FOSRestController
                 $chat->setTimeRead(new \DateTime);
                 $em->merge($chat);
 
-                $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
                 $publisher($update);
             }
         }
@@ -211,7 +214,7 @@ class ChatController extends FOSRestController
 
         $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
 
-        return new Response($serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+        return new Response($this->serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
     }
 
 
@@ -231,7 +234,6 @@ class ChatController extends FOSRestController
      */
     public function markAsReadAction(int $id, Publisher $publisher)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -242,10 +244,10 @@ class ChatController extends FOSRestController
             $em->merge($chat);
             $em->flush();
 
-            $update = new Update($conversationId, $serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             $publisher($update);
 
-            return new Response($serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            return new Response($this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
             /*} else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
             }*/
@@ -270,7 +272,6 @@ class ChatController extends FOSRestController
      */
     public function deleteMessageAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -279,7 +280,7 @@ class ChatController extends FOSRestController
             if ($message->getFromuser()->getId() == $user->getId()) {
                 $em->remove($message);
                 $em->flush();
-                return new Response($serializer->serialize($message, "json", SerializationContext::create()->setGroups(array('message'))));
+                return new Response($this->serializer->serialize($message, "json", SerializationContext::create()->setGroups(array('message'))));
             } else {
                 throw new HttpException(400, "Error al eliminar el mensaje. - Error: usuario no permitido.");
             }
@@ -305,7 +306,6 @@ class ChatController extends FOSRestController
      */
     public function deleteAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -313,7 +313,7 @@ class ChatController extends FOSRestController
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
             $em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
 
-            return new Response($serializer->serialize($id, "json"));
+            return new Response($this->serializer->serialize($id, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
         }

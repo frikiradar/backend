@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DevicesController.php
  *
@@ -12,8 +13,8 @@
 
 namespace App\Controller;
 
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -22,15 +23,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use App\Entity\Device;
-
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class DevicesController
  *
  * @Route("/api")
  */
-class DevicesController extends FOSRestController
+class DevicesController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Get("/v1/devices")
      *
@@ -47,11 +53,9 @@ class DevicesController extends FOSRestController
      */
     public function getDevices()
     {
-        $serializer = $this->get('jms_serializer');
-
         try {
             $response = $this->getUser()->getDevices();
-            return new Response($serializer->serialize($response, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($response, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los dispositivos - Error: {$ex->getMessage()}");
         }
@@ -98,7 +102,6 @@ class DevicesController extends FOSRestController
      */
     public function setDeviceAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -109,7 +112,7 @@ class DevicesController extends FOSRestController
                 $request->request->get("token") ?: ""
             );
 
-            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -132,7 +135,6 @@ class DevicesController extends FOSRestController
      */
     public function unknownDeviceAction(Request $request, \Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -169,7 +171,7 @@ class DevicesController extends FOSRestController
             ];
         }
 
-        return new Response($serializer->serialize($response, "json"));
+        return new Response($this->serializer->serialize($response, "json"));
     }
 
     /**
@@ -188,7 +190,6 @@ class DevicesController extends FOSRestController
      */
     public function deleteAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -198,7 +199,7 @@ class DevicesController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -220,7 +221,6 @@ class DevicesController extends FOSRestController
      */
     public function switchAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -232,7 +232,7 @@ class DevicesController extends FOSRestController
             $em->persist($device);
             $em->flush();
 
-            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -254,7 +254,6 @@ class DevicesController extends FOSRestController
      */
     public function turnOffAction(string $uuid)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -267,9 +266,9 @@ class DevicesController extends FOSRestController
                 $device->setToken(null);
                 $em->persist($device);
                 $em->flush();
-                return new Response($serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
             } else {
-                return new Response($serializer->serialize("Dispositivo no encontrado", "json"));
+                return new Response($this->serializer->serialize("Dispositivo no encontrado", "json"));
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desactivar el dispositivo - Error: {$ex->getMessage()}");

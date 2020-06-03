@@ -2,21 +2,27 @@
 // src/Controller/ChatController.php
 namespace App\Controller;
 
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class ConfigController
  *
  * @Route("/api")
  */
-class ConfigController extends FOSRestController
+class ConfigController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Get("/config", name="config")
      *
@@ -33,7 +39,6 @@ class ConfigController extends FOSRestController
      */
     public function getConfig()
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -42,7 +47,7 @@ class ConfigController extends FOSRestController
             $config['chat'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'chat'])->getValue();
             $config['push_url'] = $em->getRepository('App:Config')->findOneBy(['name' => 'push_url'])->getValue();
 
-            return new Response($serializer->serialize($config, "json"));
+            return new Response($this->serializer->serialize($config, "json"));
         } catch (Exception $ex) {
             throw new HttpException(500, "No se puede obtener la configuración - Error: {$ex->getMessage()}");
         }

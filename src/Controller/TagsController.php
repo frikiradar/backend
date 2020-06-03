@@ -13,8 +13,9 @@
 
 namespace App\Controller;
 
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,8 +26,13 @@ use Swagger\Annotations as SWG;
  *
  * @Route("/api")
  */
-class TagsController extends FOSRestController
+class TagsController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Post("/v1/tags", name="tags")
      * 
@@ -61,11 +67,10 @@ class TagsController extends FOSRestController
      */
     public function searchTags(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $tags = $em->getRepository('App:Tag')->searchTags($request->request->get('tag'), $request->request->get('category'));
 
-        return new Response($serializer->serialize($tags, "json"));
+        return new Response($this->serializer->serialize($tags, "json"));
     }
 }

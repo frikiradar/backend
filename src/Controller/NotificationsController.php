@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,14 +11,21 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\NotificationService;
 use App\Entity\Chat;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class NotificationsController
  *
  * @Route("/api")
  */
-class NotificationsController extends FOSRestController
+class NotificationsController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Rest\Get("/v1/notifications")
      *
@@ -36,7 +42,6 @@ class NotificationsController extends FOSRestController
      */
     public function getNotifications()
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -51,7 +56,7 @@ class NotificationsController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($notifications, "json"));
+            return new Response($this->serializer->serialize($notifications, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
         }
@@ -97,7 +102,6 @@ class NotificationsController extends FOSRestController
      */
     public function putTopicMessage(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
         $chat = new Chat();
 
@@ -121,7 +125,7 @@ class NotificationsController extends FOSRestController
             $notification = new NotificationService();
             $notification->pushTopic($fromUser, $topic, $title, $text, $url);
 
-            return new Response($serializer->serialize("Notificación enviada correctamente", "json"));
+            return new Response($this->serializer->serialize("Notificación enviada correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar la notificación global - Error: {$ex->getMessage()}");
         }

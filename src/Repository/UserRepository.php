@@ -6,10 +6,9 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
 use App\Entity\Radar;
-use App\Entity\Tag;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -22,7 +21,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 {
     private $security;
 
-    public function __construct(RegistryInterface $registry, Security $security)
+    public function __construct(ManagerRegistry $registry, Security $security)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;

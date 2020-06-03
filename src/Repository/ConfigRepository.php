@@ -4,7 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Config;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
  * @method Config|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,7 +14,7 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class ConfigRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Config::class);
     }

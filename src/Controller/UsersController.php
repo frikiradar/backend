@@ -17,7 +17,6 @@ use App\Entity\User;
 use App\Entity\Tag;
 use App\Entity\Category;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -34,14 +33,21 @@ use App\Entity\HideUser;
 use App\Service\GeolocationService;
 use DateInterval;
 use App\Service\NotificationService;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use JMS\Serializer\SerializerInterface;
 
 /**
  * Class UsersController
  *
  * @Route("/api")
  */
-class UsersController extends FOSRestController
+class UsersController extends AbstractFOSRestController
 {
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     // USER URI's
 
     /**
@@ -134,7 +140,6 @@ class UsersController extends FOSRestController
      */
     public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -185,7 +190,7 @@ class UsersController extends FOSRestController
 
                 $em->flush();
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } else {
                 throw new HttpException(400, "Error: Ya hay un usuario registrado con estos datos.");
             }
@@ -193,7 +198,7 @@ class UsersController extends FOSRestController
             $message = (new \Swift_Message('Error de registro de usuario'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setBody("Datos del usuario:<br>" . $serializer->serialize($user, "json") . "<br>" . $ex->getMessage());
+                ->setBody("Datos del usuario:<br>" . $this->serializer->serialize($user, "json") . "<br>" . $ex->getMessage());
 
             $mailer->send($message);
             throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
@@ -218,7 +223,6 @@ class UsersController extends FOSRestController
     public function getAction()
     {
         $em = $this->getDoctrine()->getManager();
-        $serializer = $this->get('jms_serializer');
 
         $user = $this->getUser();
         $user->setImages($user->getImages());
@@ -228,7 +232,7 @@ class UsersController extends FOSRestController
         $em->persist($user);
         $em->flush();
 
-        return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+        return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
     }
 
     /**
@@ -247,7 +251,6 @@ class UsersController extends FOSRestController
      */
     public function getUserAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
         try {
             $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
@@ -261,7 +264,7 @@ class UsersController extends FOSRestController
                 $em->flush();
             }
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
@@ -283,17 +286,16 @@ class UsersController extends FOSRestController
      */
     public function checkUsernameAction(string $username)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
             $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
 
             if (empty($user)) {
-                return new Response($serializer->serialize($username, "json"));
+                return new Response($this->serializer->serialize($username, "json"));
             } else {
                 $username = $em->getRepository('App:User')->getSuggestionUsername($username);
-                return new Response($serializer->serialize($username, "json"));
+                return new Response($this->serializer->serialize($username, "json"));
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al comprobar el nombre de usuario - Error: {$ex->getMessage()}");
@@ -318,8 +320,6 @@ class UsersController extends FOSRestController
      */
     public function putAction(User $newUser)
     {
-        $serializer = $this->get('jms_serializer');
-
         try {
             if ($newUser->getId() == $this->getUser()->getId()) {
                 $em = $this->getDoctrine()->getManager();
@@ -384,7 +384,7 @@ class UsersController extends FOSRestController
                 $em->flush();
                 $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
             } else {
                 throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
@@ -427,7 +427,6 @@ class UsersController extends FOSRestController
      */
     public function putCoordinatesAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -448,7 +447,7 @@ class UsersController extends FOSRestController
                 $em->flush();
             }*/
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
         }
@@ -479,7 +478,6 @@ class UsersController extends FOSRestController
     public function uploadAvatarAction(Request $request)
     {
         $em = $this->getDoctrine()->getManager();
-        $serializer = $this->get('jms_serializer');
         $avatar = $request->files->get('avatar');
 
         $user = $this->getUser();
@@ -510,7 +508,7 @@ class UsersController extends FOSRestController
 
             $user->setImages($user->getImages());
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al subir la imagen");
         }
@@ -541,7 +539,6 @@ class UsersController extends FOSRestController
     public function updateAvatarAction(Request $request)
     {
         $em = $this->getDoctrine()->getManager();
-        $serializer = $this->get('jms_serializer');
 
         try {
             $src = $request->request->get('avatar');
@@ -552,7 +549,7 @@ class UsersController extends FOSRestController
 
             $user->setImages($user->getImages());
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al actualizar el avatar - Error: {$ex->getMessage()}");
         }
@@ -583,7 +580,6 @@ class UsersController extends FOSRestController
     public function deleteAvatarAction(Request $request)
     {
         $em = $this->getDoctrine()->getManager();
-        $serializer = $this->get('jms_serializer');
 
         try {
             $src = $request->request->get('avatar');
@@ -596,7 +592,7 @@ class UsersController extends FOSRestController
 
             $user->setImages($user->getImages());
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al borrar el avatar - Error: {$ex->getMessage()}");
         }
@@ -627,7 +623,6 @@ class UsersController extends FOSRestController
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
 
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $page = $request->request->get("page");
@@ -636,7 +631,7 @@ class UsersController extends FOSRestController
 
             $users = $em->getRepository('App:User')->getRadarUsers($this->getUser(), $page);
 
-            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
@@ -679,7 +674,6 @@ class UsersController extends FOSRestController
      */
     public function searchAction(Request $request, ParamFetcherInterface $params)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $page = $params->get("page");
@@ -688,7 +682,7 @@ class UsersController extends FOSRestController
         try {
             $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser(), $order, $page);
 
-            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }
@@ -710,7 +704,6 @@ class UsersController extends FOSRestController
      */
     public function activationEmailAction(\Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -737,7 +730,7 @@ class UsersController extends FOSRestController
                 throw new HttpException(400, "Error al enviar el email de activación");
             }
 
-            return new Response($serializer->serialize("Email enviado correctamente", "json"));
+            return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el email de activación - Error: {$ex->getMessage()}");
         }
@@ -767,7 +760,6 @@ class UsersController extends FOSRestController
      */
     public function activationAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $verificationCode = $request->request->get("verification_code");
@@ -778,7 +770,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al activar la cuenta");
         }
@@ -808,7 +800,6 @@ class UsersController extends FOSRestController
      */
     public function requestEmailAction(Request $request, \Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
@@ -842,7 +833,7 @@ class UsersController extends FOSRestController
                     throw new HttpException(400, "Error al enviar el email de recuperación");
                 }
 
-                return new Response($serializer->serialize("Email enviado correctamente", "json"));
+                return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
             }
@@ -891,7 +882,6 @@ class UsersController extends FOSRestController
      */
     public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $verificationCode = $request->request->get("verification_code");
@@ -908,7 +898,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
@@ -947,7 +937,6 @@ class UsersController extends FOSRestController
      */
     public function changePasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $user = $this->getUser();
@@ -958,7 +947,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "La contraseña actual no es válida");
         }
@@ -997,7 +986,6 @@ class UsersController extends FOSRestController
      */
     public function changeEmailAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $user = $this->getUser();
@@ -1008,7 +996,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } else {
             throw new HttpException(400, "El email actual no es válido");
         }
@@ -1038,7 +1026,6 @@ class UsersController extends FOSRestController
      */
     public function changeUsernameAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -1048,7 +1035,7 @@ class UsersController extends FOSRestController
             $em->persist($user);
             $em->flush();
 
-            return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Ya hay un usuario con ese nombre - Error: {$ex->getMessage()}");
         }
@@ -1086,7 +1073,6 @@ class UsersController extends FOSRestController
      */
     public function putBlockAction(Request $request, \Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -1112,7 +1098,7 @@ class UsersController extends FOSRestController
                 }
             }
 
-            return new Response($serializer->serialize("Usuario bloqueado correctamente", "json"));
+            return new Response($this->serializer->serialize("Usuario bloqueado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al bloquear usuario - Error: {$ex->getMessage()}");
         }
@@ -1134,7 +1120,6 @@ class UsersController extends FOSRestController
      */
     public function removeBlockAction(int $id)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -1151,7 +1136,7 @@ class UsersController extends FOSRestController
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
-            return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbloquear el usuario - Error: {$ex->getMessage()}");
         }
@@ -1174,12 +1159,11 @@ class UsersController extends FOSRestController
      */
     public function getBlocksAction()
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
-        return new Response($serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
     }
 
     /**
@@ -1206,7 +1190,6 @@ class UsersController extends FOSRestController
      */
     public function putHideAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -1221,7 +1204,7 @@ class UsersController extends FOSRestController
                 $em->persist($newHide);
                 $em->flush();
 
-                return new Response($serializer->serialize("Usuario ocultado correctamente", "json"));
+                return new Response($this->serializer->serialize("Usuario ocultado correctamente", "json"));
             } else {
                 throw new HttpException(400, "Error al ocultar usuario");
             }
@@ -1246,7 +1229,6 @@ class UsersController extends FOSRestController
      */
     public function twoStepAction(\Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         try {
@@ -1286,7 +1268,7 @@ class UsersController extends FOSRestController
             ];
         }
 
-        return new Response($serializer->serialize($response, "json"));
+        return new Response($this->serializer->serialize($response, "json"));
     }
 
     /**
@@ -1313,7 +1295,6 @@ class UsersController extends FOSRestController
      */
     public function verifyLoginAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $verificationCode = $request->request->get("verification_code");
@@ -1324,7 +1305,7 @@ class UsersController extends FOSRestController
                 $em->persist($user);
                 $em->flush();
 
-                return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu sesión: " . $e);
             }
@@ -1365,7 +1346,6 @@ class UsersController extends FOSRestController
      */
     public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $user = $this->getUser();
@@ -1392,7 +1372,7 @@ class UsersController extends FOSRestController
                     }
                 }
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
             }
@@ -1425,7 +1405,6 @@ class UsersController extends FOSRestController
      */
     public function setPremimAction(Request $request)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $days = $request->request->get('days');
@@ -1469,7 +1448,7 @@ class UsersController extends FOSRestController
                     }
                 }
 
-                return new Response($serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
             }
@@ -1542,7 +1521,6 @@ class UsersController extends FOSRestController
      */
     public function paymentAction(Request $request, \Swift_Mailer $mailer)
     {
-        $serializer = $this->get('jms_serializer');
         $em = $this->getDoctrine()->getManager();
 
         $user = $this->getUser();
@@ -1581,7 +1559,7 @@ class UsersController extends FOSRestController
                 // throw new HttpException(400, "Error al enviar el email del cobro");
             }
 
-            return new Response($serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
         }
@@ -1604,9 +1582,8 @@ class UsersController extends FOSRestController
      */
     public function getPayments()
     {
-        $serializer = $this->get('jms_serializer');
         $payments = $this->getUser()->getPayments();
 
-        return new Response($serializer->serialize($payments, "json", SerializationContext::create()->setGroups(array('payment'))));
+        return new Response($this->serializer->serialize($payments, "json", SerializationContext::create()->setGroups(array('payment'))));
     }
 }
