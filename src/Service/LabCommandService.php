@@ -14,6 +14,7 @@ class LabCommandService
     protected $o;
 
     private $notification;
+    private $em;
     private $mailer;
     private $twig;
 

@@ -10,13 +10,7 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 
 class NotificationService
 {
-    public function __construct(
-        EntityManagerInterface $entityManager
-    ) {
-        $this->em = $entityManager;
-    }
-
-    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
+    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type, EntityManagerInterface $em)
     {
         $tokens = [];
         foreach ($toUser->getDevices() as $device) {
@@ -66,8 +60,8 @@ class NotificationService
                     $today = new \DateTime;
                     if ($report->failures()->count() >= count($tokens) || $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                         $toUser->setActive(0);
-                        $this->em->persist($toUser);
-                        $this->em->flush();
+                        $em->persist($toUser);
+                        $em->flush();
                     }
                 }
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
