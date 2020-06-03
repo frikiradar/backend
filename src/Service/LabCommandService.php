@@ -13,9 +13,7 @@ class LabCommandService
     protected $io;
     protected $o;
 
-    private $geolocation;
     private $notification;
-    private $em;
     private $mailer;
     private $twig;
 

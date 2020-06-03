@@ -197,7 +197,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                // ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setParameters(array(
@@ -207,7 +207,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'lovegender' => $user->getLovegender() ?: 1,
                     // 'connection' => $user->getConnection()
                     'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
-                    'lastlogin' => $lastLogin
+                    // 'lastlogin' => $lastLogin
                 ));
         } else {
             $dql
