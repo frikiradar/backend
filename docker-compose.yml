@@ -14,4 +14,4 @@ services:
       # - ACME_HOSTS='frikiradar.com'
     ports:
       - "3000:80"
-    # - "9090:443"
+      - "9090:443"
