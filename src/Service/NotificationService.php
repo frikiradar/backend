@@ -6,15 +6,9 @@ use App\Entity\User;
 use Kreait\Firebase;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
-use Psr\Container\ContainerInterface;
 
 class NotificationService
 {
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
-
     public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
         $tokens = [];
