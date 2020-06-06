@@ -1213,6 +1213,69 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
+    /**
+     * @Rest\Delete("/v1/hide/{id}", name="unhide")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario desocultado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al desocultar el usuario"
+     * )
+     *
+     */
+    public function removeHideAction(int $id)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $hideUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+
+            $hide = $em->getRepository('App:HideUser')->findOneBy(array('hide_user' => $hideUser, 'from_user' => $this->getUser()));
+            $em->remove($hide);
+            $em->flush();
+
+            $users = $em->getRepository('App:HideUser')->getHideUsers($this->getUser());
+
+            foreach ($users as $key => $u) {
+                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $users[$key]['avatar'] = $user->getAvatar() ?: null;
+            }
+
+            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al desocultar el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Rest\Get("/v1/hides")
+     * 
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuarios ocultos obtenidos correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al obtener los usuarios ocultos"
+     * )
+     * 
+     * @SWG\Tag(name="Get Hides")
+     */
+    public function getHidesAction()
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $users = $em->getRepository('App:HideUser')->getHideUsers($this->getUser());
+
+        return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+    }
+
     /**
      * @Rest\Get("/v1/two-step", name="two step")
      *

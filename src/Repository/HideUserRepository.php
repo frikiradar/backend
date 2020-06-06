@@ -49,6 +49,16 @@ class HideUserRepository extends ServiceEntityRepository
     }
     */
 
+    public function getHideUsers(User $user)
+    {
+        $dql = "SELECT u.id, u.name, u.avatar            
+            FROM App:User u WHERE u.id IN
+            (SELECT IDENTITY(b.hide_user) FROM App:HideUser b WHERE b.from_user = :fromUser)";
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter("fromUser", $user);
+
+        return $query->getResult();
+    }
+
     public function isHide(User $fromUser, User $hideUser)
     {
         return $this->createQueryBuilder('b')
