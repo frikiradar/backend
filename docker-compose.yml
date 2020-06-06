@@ -7,11 +7,10 @@ services:
       - JWT_KEY=FrikiChat
       # - DEMO=1
       # - DEBUG=1
-      # - ADDR='api.frikiradar.com:3000'
       - ALLOW_ANONYMOUS=1
-      - PUBLISH_ALLOWED_ORIGINS=*
-      - CORS_ALLOWED_ORIGINS=*
-      - ACME_HOSTS='frikiradar.com'
+      - PUBLISH_ALLOWED_ORIGINS="api.frikiradar.com"
+      - CORS_ALLOWED_ORIGINS="api.frikiradar.com"
+      # - ACME_HOSTS="api.frikiradar.com"
     ports:
       - "3000:80"
       - "9090:443"
