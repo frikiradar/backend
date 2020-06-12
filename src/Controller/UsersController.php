@@ -1466,7 +1466,7 @@ class UsersController extends AbstractFOSRestController
      * )
      * 
      */
-    public function setPremimAction(Request $request)
+    public function setPremiumAction(Request $request)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -1514,7 +1514,7 @@ class UsersController extends AbstractFOSRestController
 
                 return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
             } catch (Exception $ex) {
-                throw new HttpException(400, "Error al añadir los créditos - Error: {$ex->getMessage()}");
+                throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
             }
         } else {
             throw new HttpException(400, "No hay días que añadir");

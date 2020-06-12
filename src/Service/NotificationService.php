@@ -48,8 +48,8 @@ class NotificationService
                 $messaging = $firebase->getMessaging();
                 $report = $messaging->sendMulticast($message, $tokens);
                 // TODO: Token caducado o erróneo, desactivar. Si la cuenta no tiene tokens activos entonces no aparecer en resultados de radar.
-                echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
-                echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
+                // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
+                // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
 
                 if ($report->hasFailures()) {
                     foreach ($report->failures()->getItems() as $failure) {
