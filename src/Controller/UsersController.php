@@ -1474,10 +1474,11 @@ class UsersController extends AbstractFOSRestController
         if ($days > 0) {
             try {
                 $user = $this->getUser();
-                if ($user->getPremiumExpiration()) {
+                $now = new \DateTime;
+                if ($user->getPremiumExpiration() > $now) {
                     $datetime = $user->getPremiumExpiration();
                 } else {
-                    $datetime = new \DateTime;
+                    $datetime = $now;
                 }
 
                 $datetime->add(new DateInterval('P' . $days . 'D'));
