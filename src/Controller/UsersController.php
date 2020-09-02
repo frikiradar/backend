@@ -1278,23 +1278,23 @@ class UsersController extends AbstractFOSRestController
     }
 
     /**
-     * @Rest\Put("/v1/hide", name="hide")
+     * @Rest\Put("/v1/view", name="view")
      *
      * @SWG\Response(
      *     response=201,
-     *     description="Usuario ocultado correctamente"
+     *     description="Usuario visto correctamente"
      * )
      *
      * @SWG\Response(
      *     response=500,
-     *     description="Error al ocultar el usuario"
+     *     description="Error al ver el usuario"
      * )
      * 
      * @SWG\Parameter(
      *     name="user",
      *     in="body",
      *     type="string",
-     *     description="To user hide",
+     *     description="To user view",
      *     schema={}
      * )
      *
