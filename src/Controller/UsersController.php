@@ -30,6 +30,7 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
+use App\Entity\ViewUser;
 use App\Service\GeolocationService;
 use DateInterval;
 use App\Service\NotificationService;
@@ -1274,6 +1275,49 @@ class UsersController extends AbstractFOSRestController
         $users = $em->getRepository('App:HideUser')->getHideUsers($this->getUser());
 
         return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+    }
+
+    /**
+     * @Rest\Put("/v1/hide", name="hide")
+     *
+     * @SWG\Response(
+     *     response=201,
+     *     description="Usuario ocultado correctamente"
+     * )
+     *
+     * @SWG\Response(
+     *     response=500,
+     *     description="Error al ocultar el usuario"
+     * )
+     * 
+     * @SWG\Parameter(
+     *     name="user",
+     *     in="body",
+     *     type="string",
+     *     description="To user hide",
+     *     schema={}
+     * )
+     *
+     */
+    public function putViewAction(Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        try {
+            $fromUser = $this->getUser();
+            $viewUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+
+            $newView = new ViewUser();
+            $newView->setDate(new \DateTime);
+            $newView->setFromUser($fromUser);
+            $newView->setToUser($viewUser);
+            $em->persist($newView);
+            $em->flush();
+
+            return new Response($this->serializer->serialize("Usuario visto correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al ver usuario - Error: {$ex->getMessage()}");
+        }
     }
 
     /**

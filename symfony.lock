@@ -279,7 +279,7 @@
         }
     },
     "nikic/php-parser": {
-        "version": "v4.2.1"
+        "version": "v4.9.1"
     },
     "ocramius/proxy-manager": {
         "version": "2.1.1"
@@ -594,6 +594,9 @@
     "symfony/polyfill-intl-idn": {
         "version": "v1.10.0"
     },
+    "symfony/polyfill-intl-normalizer": {
+        "version": "v1.18.1"
+    },
     "symfony/polyfill-mbstring": {
         "version": "v1.9.0"
     },
@@ -602,6 +605,9 @@
     },
     "symfony/polyfill-php73": {
         "version": "v1.11.0"
+    },
+    "symfony/polyfill-php80": {
+        "version": "v1.18.1"
     },
     "symfony/polyfill-uuid": {
         "version": "v1.13.1"

@@ -300,6 +300,11 @@ class User implements UserInterface
      */
     private $hideUsers;
 
+    /**
+     * @ORM\OneToMany(targetEntity=ViewUser::class, mappedBy="from_user", orphanRemoval=true)
+     */
+    private $viewUsers;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -309,6 +314,7 @@ class User implements UserInterface
         $this->radars = new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->hideUsers = new ArrayCollection();
+        $this->viewUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -781,8 +787,7 @@ class User implements UserInterface
             $key = '';
             $pattern = '123456789ABCDEFGHJKMNPRSTUVWXYZ';
             $max = strlen($pattern) - 1;
-            for ($i = 0; $i < 6; $i++) $key .= $pattern{
-                mt_rand(0, $max)};
+            for ($i = 0; $i < 6; $i++) $key .= $pattern[mt_rand(0, $max)];
 
             $this->verificationCode = $key;
         } else {
@@ -1059,6 +1064,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($hideUser->getFromUser() === $this) {
                 $hideUser->setFromUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ViewUser[]
+     */
+    public function getViewUsers(): Collection
+    {
+        return $this->viewUsers;
+    }
+
+    public function addViewUser(ViewUser $viewUser): self
+    {
+        if (!$this->viewUsers->contains($viewUser)) {
+            $this->viewUsers[] = $viewUser;
+            $viewUser->setFromUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeViewUser(ViewUser $viewUser): self
+    {
+        if ($this->viewUsers->contains($viewUser)) {
+            $this->viewUsers->removeElement($viewUser);
+            // set the owning side to null (unless already changed)
+            if ($viewUser->getFromUser() === $this) {
+                $viewUser->setFromUser(null);
             }
         }
 
