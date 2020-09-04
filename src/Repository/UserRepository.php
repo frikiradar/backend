@@ -256,39 +256,63 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
         $id = $user->getId();
 
-        $dql = "SELECT u.id,
-            u.username,
-            u.name,
-            u.description,
-            (DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age,
-            u.location,
-            u.hide_location,
-            u.hide_connection,
-            u.last_login,
-            u.premium_expiration,
-            u.block_messages,
-            u.avatar,
-            (GLength(
-                    LineStringFromWKB(
-                        LineString(
-                            u.coordinates,
-                            GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+        $dql = $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.description',
+                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                'u.location',
+                'u.last_login',
+                'u.premium_expiration',
+                'u.hide_location',
+                'u.block_messages',
+                'u.hide_connection',
+                'u.avatar',
+                "(GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
                         )
-                    )
-                ) * 100) distance
-            FROM App:User u WHERE (u.id IN
-            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%' AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1) OR u.name LIKE '%$search%' OR u.username LIKE '%$search%')
-            AND u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = $id)
-            AND u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = $id)
-            AND u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = $id)";
-        if (!$this->security->isGranted('ROLE_DEMO')) {
-            $dql .= " AND u.roles NOT LIKE '%ROLE_DEMO%' AND u.id <> $id AND u.active = 1";
-        } else {
-            $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
-        }
-        $query = $this->getEntityManager()->createQuery($dql);
+                    ) * 100) distance"
+            ));
 
-        $users = $query->getResult();
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql
+                ->andHaving('age BETWEEN :minage AND :maxage')
+                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                // ->andWhere('u.connection IN (:connection)')
+                ->andWhere(
+                    $user->getOrientation() == "Homosexual" ?
+                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                )
+                ->andWhere('u.id <> :id')
+                ->andWhere('u.avatar IS NOT NULL')
+                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
+                ->andWhere('u.active = 1')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
+                ->andWhere("(u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search . "%') AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1) OR u.name LIKE '%$search%' OR u.username LIKE '%$search%'")
+                ->orderBy('distance', 'ASC')
+                ->addOrderBy('u.last_login', 'DESC')
+                ->setParameters(array(
+                    'minage' => $user->getMinage() ?: 18,
+                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
+                    'id' => $user->getId(),
+                    'lovegender' => $user->getLovegender() ?: 1,
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
+                ));
+        } else {
+            $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
+        }
+
+        $users = $dql->getQuery()
+            ->getResult();
 
         $users = $this->enhanceUsers($users, $user, 'search');
 
@@ -304,7 +328,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 });
         }
 
-        $limit = 15;
+        $limit = 25;
         $offset = ($page - 1) * $limit;
 
         return array_slice($users, $offset, $limit);
