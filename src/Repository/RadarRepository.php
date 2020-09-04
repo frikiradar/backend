@@ -71,4 +71,13 @@ class RadarRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function findById($fromId, $toId)
+    {
+        $dql = "SELECT t.name FROM App:Radar r WHERE r.from_user = :from_id AND r.to_user = :to_id";
+        $query = $this->getEntityManager()->createQuery($dql)
+            ->setParameter('from_id', $fromId)
+            ->setParameter('to_id', $toId);
+        return $query->getOneOrNullResult();
+    }
 }

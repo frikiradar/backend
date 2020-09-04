@@ -296,6 +296,11 @@ class User implements UserInterface
     private $name;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\BlockUser", mappedBy="from_user", orphanRemoval=true)
+     */
+    private $blockUsers;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\HideUser", mappedBy="from_user", orphanRemoval=true)
      */
     private $hideUsers;
@@ -313,8 +318,15 @@ class User implements UserInterface
         $this->blockUsers = new ArrayCollection();
         $this->radars = new ArrayCollection();
         $this->payments = new ArrayCollection();
+        $this->blockUsers = new ArrayCollection();
         $this->hideUsers = new ArrayCollection();
         $this->viewUsers = new ArrayCollection();
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getId(): ?int
@@ -1035,6 +1047,24 @@ class User implements UserInterface
     public function setName(?string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|BlockUser[]
+     */
+    public function getBlockUsers(): Collection
+    {
+        return $this->blockUsers;
+    }
+
+    public function addBlockUser(BlockUser $blockUser): self
+    {
+        if (!$this->blockUsers->contains($blockUser)) {
+            $this->blockUsers[] = $blockUser;
+            $blockUser->setFromUser($this);
+        }
 
         return $this;
     }

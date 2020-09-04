@@ -617,6 +617,12 @@ class UsersController extends AbstractFOSRestController
      *     default="1",
      *     description="Radar page"
      * )
+     *
+     * @Rest\QueryParam(
+     *     name="ratio",
+     *     default="-1",
+     *     description="Ratio"
+     * )
      * 
      */
     public function getRadarUsers(Request $request)
@@ -627,10 +633,11 @@ class UsersController extends AbstractFOSRestController
         $em = $this->getDoctrine()->getManager();
 
         $page = $request->request->get("page");
+        $ratio = $request->request->get("ratio") ?: -1;
 
         try {
 
-            $users = $em->getRepository('App:User')->getRadarUsers($this->getUser(), $page);
+            $users = $em->getRepository('App:User')->getRadarUsers($this->getUser(), $page, $ratio);
 
             return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
         } catch (Exception $ex) {

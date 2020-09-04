@@ -151,11 +151,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getRadarUsers(User $user, $page)
+    public function getRadarUsers(User $user, $page, $ratio)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
-        $limit = 15;
+        $limit = 50;
         $offset = ($page - 1) * $limit;
 
         $dql = $this->createQueryBuilder('u')
@@ -167,6 +167,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.location',
                 'u.last_login',
+                'u.premium_expiration',
                 'u.hide_location',
                 'u.block_messages',
                 'u.hide_connection',
@@ -181,6 +182,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         )
                     ) * 100) distance"
             ));
+        if ($ratio > -1) {
+            $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
+        }
         if (!$this->security->isGranted('ROLE_DEMO')) {
             // $lastLogin = 14;
 
@@ -197,6 +201,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
+                // ->andWhere('u.id NOT IN (SELECT v.to_user FROM App:ViewUser v WHERE b.from_user = :id)')
                 // ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
@@ -217,20 +225,35 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'id' => $user->getId()
                 ));
         }
-        $users = $dql->getQuery()
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->getResult();
 
-        $users = $this->enhanceUsers($users, $user);
+        if ($ratio === -1) {
+            $users = $dql->getQuery()
+                ->setFirstResult($offset)
+                ->setMaxResults($limit)
+                ->getResult();
 
-        return array_slice($users, 0);
+            $users = $this->enhanceUsers($users, $user);
+            return array_slice($users, 0);
+        } else {
+            $users = $dql->getQuery()
+                ->getResult();
+
+            $users = $this->enhanceUsers($users, $user);
+            usort($users, function ($a, $b) {
+                return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
+            });
+
+            $offset = ($page - 1) * $limit;
+
+            return array_slice($users, $offset, $limit);
+        }
     }
 
     public function searchUsers(string $search, User $user, $order, $page)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        $id = $user->getId();
 
         $dql = "SELECT u.id,
             u.username,
@@ -241,6 +264,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             u.hide_location,
             u.hide_connection,
             u.last_login,
+            u.premium_expiration,
             u.block_messages,
             u.avatar,
             (GLength(
@@ -252,9 +276,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     )
                 ) * 100) distance
             FROM App:User u WHERE (u.id IN
-            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%' AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1) OR u.name LIKE '%$search%' OR u.username LIKE '%$search%')";
+            (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%$search%' AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1) OR u.name LIKE '%$search%' OR u.username LIKE '%$search%')
+            AND u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = $id)
+            AND u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = $id)
+            AND u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = $id)";
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $dql .= " AND u.roles NOT LIKE '%ROLE_DEMO%' AND u.id <> '" . $user->getId() . "' AND u.active = 1";
+            $dql .= " AND u.roles NOT LIKE '%ROLE_DEMO%' AND u.id <> $id AND u.active = 1";
         } else {
             $dql .= " AND u.roles LIKE '%ROLE_DEMO%'";
         }
@@ -286,30 +313,32 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $em = $this->getEntityManager();
         $today = new \DateTime;
+        $fromTags = $fromUser->getTags();
+        $toTags = $this->getTagsFromUsers($users);
 
         foreach ($users as $key => $u) {
-            $toUser = $this->findOneBy(array('id' => $u['id']));
             $users[$key]['avatar'] = $u['avatar'] ?: "https://app.frikiradar.com/images/layout/default.jpg";
             $users[$key]['age'] = (int) $u['age'];
             $users[$key]['distance'] = !$u['hide_location'] ? round($u['distance'], 0, PHP_ROUND_HALF_UP) : null;
             $users[$key]['last_login'] = (!$u['hide_connection'] && $today->diff($u['last_login'])->format('%a') <= 7) ? $u['last_login'] : null;
-            $users[$key]['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
-            $users[$key]['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
-                'from_user' => $fromUser,
-                'to_user' => $toUser
-            ])) ? true : false;
-            $users[$key]['common_tags'] = $this->getCommonTags($fromUser->getTags(), $toUser->getTags());
-            $users[$key]['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-            $users[$key]['hide'] = !empty($em->getRepository('App:HideUser')->isHide($fromUser, $toUser)) ? true : false;
+            // echo $toTags[$u['id']];
+            if (isset($toTags[$u['id']])) {
+                $users[$key]['match'] = $this->getMatchIndex($fromTags, $toTags[$u['id']]);
+                $users[$key]['common_tags'] = $this->getCommonTags($fromTags, $toTags[$u['id']]);
+            } else {
+                $users[$key]['match'] = 0;
+                $users[$key]['common_tags'] = [];
+            }
 
-            if ($users[$key]['block']) {
-                unset($users[$key]);
-            } elseif (!$this->security->isGranted('ROLE_DEMO') && $toUser->isPremium()) {
+            $isPremium = $u['last_login'] > new \DateTime ? true : false;
+
+            if (!$this->security->isGranted('ROLE_DEMO') && $isPremium) {
                 // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
                 if ($type == 'radar' && $users[$key]['distance'] <= 10 && $users[$key]['match'] >= 70) {
-                    if (empty($em->getRepository('App:Radar')->findOneBy(array('fromUser' => $fromUser, 'toUser' => $toUser)))) {
+                    if (empty($em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);
+                        $toUser = $this->findOneBy(array('id' => $u['id']));
                         $radar->setToUser($toUser);
                         $em->persist($radar);
                         $em->flush();
@@ -325,6 +354,26 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         return $users;
+    }
+
+    private function getTagsFromUsers($users)
+    {
+        $tagUsers = [];
+        foreach ($users as $u) {
+            $user = new User();
+            $user->setId($u['id']);
+            $tagUsers[] = $user;
+        }
+
+        $dql = "SELECT t FROM App:Tag t WHERE t.user IN (:users)";
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter('users', $tagUsers);
+
+        $tags = [];
+        foreach ($query->getResult() as $res) {
+            $tags[$res->getUser()->getId()][] = $res;
+        }
+
+        return $tags;
     }
 
     private function getMatchIndex($tagsA, $tagsB)
