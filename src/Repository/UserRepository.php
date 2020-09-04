@@ -254,7 +254,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
-        $id = $user->getId();
 
         $dql = $this->createQueryBuilder('u')
             ->select(array(
@@ -297,7 +296,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                ->andWhere("(u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search . "%') AND DATE_DIFF(CURRENT_DATE(), u.last_login) <= 1) OR u.name LIKE '%$search%' OR u.username LIKE '%$search%'")
+                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search . "%') OR u.name LIKE '%$search%' OR u.username LIKE '%$search%'")
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setParameters(array(
