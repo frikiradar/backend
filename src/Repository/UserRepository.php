@@ -204,7 +204,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                // ->andWhere('u.id NOT IN (SELECT v.to_user FROM App:ViewUser v WHERE b.from_user = :id)')
                 // ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
@@ -227,6 +226,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         if ($ratio === -1) {
+            $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id)');
+
             $users = $dql->getQuery()
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
