@@ -155,7 +155,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
-        $limit = 50;
+        $limit = 25;
         $offset = ($page - 1) * $limit;
 
         $dql = $this->createQueryBuilder('u')
