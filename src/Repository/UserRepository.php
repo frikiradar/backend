@@ -83,7 +83,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
         $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
 
-        $user = $this->createQueryBuilder('u')
+        $dql = $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
                 'u.username',
@@ -113,12 +113,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         )
                     ) * 100) distance"
             ))
-            ->andWhere('u.id = :id')
-            ->andWhere('u.active = 1')
-            ->setParameters(array(
-                'id' => $toUser->getId()
-            ))
-            ->getQuery()
+            ->andWhere('u.id = :id');
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql->andWhere('u.active = 1');
+        }
+
+        $user = $dql->setParameters(array(
+            'id' => $toUser->getId()
+        ))->getQuery()
             ->getOneOrNullResult();
 
         if (!is_null($user)) {
