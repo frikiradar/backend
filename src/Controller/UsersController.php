@@ -1312,14 +1312,16 @@ class UsersController extends AbstractFOSRestController
 
         try {
             $fromUser = $this->getUser();
-            $viewUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+            if ($fromUser->getUsername() !== 'frikiradar') {
+                $viewUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
 
-            $newView = new ViewUser();
-            $newView->setDate(new \DateTime);
-            $newView->setFromUser($fromUser);
-            $newView->setToUser($viewUser);
-            $em->persist($newView);
-            $em->flush();
+                $newView = new ViewUser();
+                $newView->setDate(new \DateTime);
+                $newView->setFromUser($fromUser);
+                $newView->setToUser($viewUser);
+                $em->persist($newView);
+                $em->flush();
+            }
 
             return new Response($this->serializer->serialize("Usuario visto correctamente", "json"));
         } catch (Exception $ex) {
