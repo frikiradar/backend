@@ -46,6 +46,7 @@ class ConfigController extends AbstractFOSRestController
             $config['min_version'] = $em->getRepository('App:Config')->findOneBy(['name' => 'min_version'])->getValue();
             $config['chat'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'chat'])->getValue();
             $config['push_url'] = $em->getRepository('App:Config')->findOneBy(['name' => 'push_url'])->getValue();
+            $config['patreon'] = $em->getRepository('App:Config')->findOneBy(['name' => 'patreon'])->getValue();
 
             return new Response($this->serializer->serialize($config, "json"));
         } catch (Exception $ex) {
