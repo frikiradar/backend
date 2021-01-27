@@ -20,14 +20,12 @@ class Tag
     private $id;
 
     /**
-     * @ORM\Id()
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
     private $name;
 
     /**
-     * @ORM\Id()
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="tags")
      * @ORM\JoinColumn(nullable=false)
      * @MaxDepth(1)
@@ -35,7 +33,6 @@ class Tag
     private $user;
 
     /**
-     * @ORM\Id()
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"default"})
