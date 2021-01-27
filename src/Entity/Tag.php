@@ -13,6 +13,14 @@ class Tag
 {
     /**
      * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     * @Groups({"default", "message", "like"})
+     */
+    private $id;
+
+    /**
+     * @ORM\Id()
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
@@ -40,6 +48,17 @@ class Tag
         $this->year = $user;
         $this->category = $category;
     }*/
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getName(): ?string
     {
