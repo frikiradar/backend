@@ -462,7 +462,7 @@ class UsersController extends AbstractController
 
 
     /**
-     * @Route("/v1/recover", name="recover-email", methods={"POST"})
+     * @Route("/recover", name="recover-email", methods={"POST"})
      */
     public function requestEmailAction(Request $request, \Swift_Mailer $mailer)
     {
@@ -508,7 +508,7 @@ class UsersController extends AbstractController
 
 
     /**
-     * @Route("/v1/recover", name="recover-password", methods={"PUT"})
+     * @Route("/recover", name="recover-password", methods={"PUT"})
      */
     public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
