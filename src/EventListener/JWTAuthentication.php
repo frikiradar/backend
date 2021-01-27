@@ -33,7 +33,7 @@ class JWTAuthentication
             $user->setVerificationCode();
 
             $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
                     $this->templating->render(

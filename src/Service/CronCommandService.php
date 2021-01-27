@@ -40,7 +40,7 @@ class CronCommandService
             $users = $this->em->getRepository('App:User')->getUsersByLastLogin($days);
             foreach ($users as $user) {
                 $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
-                    ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setTo($user->getEmail())
                     ->setBody(
                         $this->twig->render(
