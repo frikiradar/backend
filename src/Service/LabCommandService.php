@@ -76,7 +76,7 @@ class LabCommandService
     {
         $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $toId));
         $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
-            ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+            ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
             ->setTo($user->getEmail())
             ->setBody(
                 $this->twig->render(
