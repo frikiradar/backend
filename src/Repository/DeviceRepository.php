@@ -5,7 +5,9 @@ namespace App\Repository;
 use App\Entity\Device;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
  * @method Device|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,9 +17,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class DeviceRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, Device::class);
+        $this->em = $entityManager;
     }
 
     // /**
@@ -51,8 +54,6 @@ class DeviceRepository extends ServiceEntityRepository
 
     public function set(User $user, string $id, string $name, string $token = "")
     {
-        $em = $this->getEntityManager();
-
         $device = $this->findOneBy(array('deviceName' => $name, 'user' => $user));
 
         if (empty($device)) {
