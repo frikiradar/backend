@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Device;
+use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -20,11 +21,12 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class DevicesController extends AbstractController
 {
-    public function __construct(DeviceRepository $deviceRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    public function __construct(DeviceRepository $deviceRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
     {
         $this->deviceRepository = $deviceRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
+        $this->request = $request;
     }
 
     /**
