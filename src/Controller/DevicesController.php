@@ -1,118 +1,60 @@
 <?php
-
-/**
- * DevicesController.php
- *
- * Devices Controller
- *
- * @category   Controller
- * @package    FrikiRadar
- * @author     Alberto Merino
- * @copyright  2019 frikiradar.com
- */
-
+// src/Controller/DevicesController.php
 namespace App\Controller;
 
-use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use JMS\Serializer\SerializationContext;
+use App\Repository\DeviceRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Swagger\Annotations as SWG;
 use App\Entity\Device;
-use JMS\Serializer\SerializerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Class DevicesController
  *
- * @Route("/api")
+ * @Route(path="/api")
  */
-class DevicesController extends AbstractFOSRestController
+class DevicesController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(DeviceRepository $deviceRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
+        $this->deviceRepository = $deviceRepository;
         $this->serializer = $serializer;
+        $this->em = $entityManager;
     }
 
     /**
-     * @Rest\Get("/v1/devices")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivos obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener los dispositivos"
-     * )
-     * 
+     * @Route("/v1/devices", name="get_devices", methods={"GET"})
      */
     public function getDevices()
     {
         try {
             $response = $this->getUser()->getDevices();
-            return new Response($this->serializer->serialize($response, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($response, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los dispositivos - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/device", name="device")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivo añadido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al añadir el dispositivo"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="token",
-     *     in="body",
-     *     type="string",
-     *     description="Token",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="id",
-     *     in="body",
-     *     type="string",
-     *     description="Device Id",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="name",
-     *     in="body",
-     *     type="string",
-     *     description="Device Name",
-     *     schema={}
-     * )
-     *
-     * @Rest\View(serializerGroups={"device"})
+     * @Route("/v1/device", name="put_device", methods={"PUT"})
      */
     public function setDeviceAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $em->getRepository('App:Device')->set(
+            $this->em->getRepository('App:Device')->set(
                 $this->getUser(),
-                $request->request->get("id"),
-                $request->request->get("name"),
-                $request->request->get("token") ?: ""
+                $this->request->get($request, "id"),
+                $this->request->get($request, "name"),
+                $this->request->get($request, "token") ?: ""
             );
 
-            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -120,25 +62,12 @@ class DevicesController extends AbstractFOSRestController
 
 
     /**
-     * @Rest\Put("/v1/unknown-device", name="unknown device")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
+     * @Route("/v1/unknown-device", name="unknown_device", methods={"PUT"})
      */
     public function unknownDeviceAction(Request $request, \Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $device = $request->request->get("device");
+            $device = $this->request->get($request, "device");
 
             $message = (new \Swift_Message('Aviso de inicio de sesión desde un dispositivo desconocido'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -174,99 +103,63 @@ class DevicesController extends AbstractFOSRestController
         return new Response($this->serializer->serialize($response, "json"));
     }
 
+
     /**
-     * @Rest\Delete("/v1/device/{id}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivo eliminado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al eliminar el dispositivo"
-     * )
-     * 
+     * @Route("/v1/device/{id}", name="delete_device", methods={"DELETE"})
      */
     public function deleteAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
-            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $user, 'id' => $id));
+            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $user, 'id' => $id));
             $user->removeDevice($device);
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el dispositivo - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/switch-device/{id}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivo activado/desactivado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al activar/desactivar el dispositivo"
-     * )
-     * 
+     * @Route("/v1/switch-device/{id}", name="switch_device", methods={"GET"})
      */
     public function switchAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             /**
              * @var Device
              */
-            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'id' => $id));
+            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'id' => $id));
             $device->setActive(!$device->getActive());
-            $em->persist($device);
-            $em->flush();
+            $this->em->persist($device);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/turnoff-device/{uuid}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Dispositivo activado/desactivado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al activar/desactivar el dispositivo"
-     * )
-     * 
+     * @Route("/v1/turnoff-device/{uuid}", name="turnoff_device", methods={"GET"})
      */
     public function turnOffAction(string $uuid)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             /**
              * @var Device
              */
-            $device = $em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'deviceId' => $uuid));
+            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'deviceId' => $uuid));
 
             if (!empty($device)) {
                 $device->setToken(null);
-                $em->persist($device);
-                $em->flush();
-                return new Response($this->serializer->serialize($device, "json", SerializationContext::create()->setGroups(array('default'))));
+                $this->em->persist($device);
+                $this->em->flush();
+                return new Response($this->serializer->serialize($device, "json", ['groups' => 'default']));
             } else {
                 return new Response($this->serializer->serialize("Dispositivo no encontrado", "json"));
             }

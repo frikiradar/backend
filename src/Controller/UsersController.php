@@ -1,175 +1,85 @@
 <?php
 
-/**
- * UsersController.php
- *
- * Users Controller
- *
- * @category   Controller
- * @package    FrikiRadar
- * @author     Alberto Merino
- * @copyright  2019 frikiradar.com
- */
-
+// src/Controller/UsersController.php
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Entity\Tag;
 use App\Entity\Category;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Request\ParamFetcherInterface;
-use JMS\Serializer\SerializationContext;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Swagger\Annotations as SWG;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Service\FileUploader;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
-use DateInterval;
-use App\Service\NotificationService;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
-use JMS\Serializer\SerializerInterface;
+use App\Service\RequestService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+
 
 /**
  * Class UsersController
  *
- * @Route("/api")
+ * @Route(path="/api")
  */
-class UsersController extends AbstractFOSRestController
+class UsersController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
     {
+        $this->userRepository = $userRepository;
         $this->serializer = $serializer;
+        $this->em = $entityManager;
+        $this->request = $request;
     }
 
     // USER URI's
 
     /**
-     * @Rest\Post("/login", name="user_login")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User was logged in successfully"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="User was not logged in successfully"
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="username",
-     *     in="body",
-     *     type="string",
-     *     description="The username",
-     *     schema={
-     *     }
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="password",
-     *     in="body",
-     *     type="string",
-     *     description="The password",
-     *     schema={}
-     * )
-     *
-     * @SWG\Tag(name="User")
+     * @Route("/login", name="user_login", methods={"POST"})
      */
     public function getLoginAction()
     {
     }
 
     /**
-     * @Rest\Post("/register", name="user_register")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="User was successfully registered"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="User was not successfully registered"
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="email",
-     *     in="body",
-     *     type="string",
-     *     description="The username",
-     *     schema={}
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="username",
-     *     in="body",
-     *     type="string",
-     *     description="The username",
-     *     schema={}
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="birthday",
-     *     in="query",
-     *     type="string",
-     *     description="The birthday"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="gender",
-     *     in="query",
-     *     type="string",
-     *     description="The gender"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="password",
-     *     in="query",
-     *     type="string",
-     *     description="The password"
-     * )
-     *
-     * @SWG\Tag(name="User")
+     * @Route("/register", name="user_register", methods={"POST"})
      */
     public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
+        $email = $this->request->get($request, 'email');
+        $username = $this->request->get($request, 'username');
+        $password = $this->request->get($request, 'password');
+        $birthday = \DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]);
 
-        try {
-            $email = $request->request->get('email');
-            $username = $request->request->get('username');
-            $password = $request->request->get('password');
-            $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('birthday'));
+        if (is_null($this->em->getRepository('App:User')->findOneByUsernameOrEmail($username, $email))) {
+            $user = new User();
+            $user->setEmail($email);
+            $user->setUsername($username);
+            $user->setName($username);
+            $user->setPassword($encoder->encodePassword($user, $password));
+            $user->setBirthday($birthday);
+            $user->setGender($this->request->get($request, 'gender') ?: null);
+            $user->setLovegender($this->request->get($request, 'lovegender') ?: null);
+            $user->setRegisterDate();
+            $user->setRegisterIp();
+            $user->setActive(false);
+            $user->setTwoStep(false);
+            $user->setVerified(false);
+            $user->setMeet($this->request->get($request, 'meet') ?: null);
+            $user->setReferral($this->request->get($request, 'referral') ?: null);
+            $user->setMailing($this->request->get($request, 'mailing', false) ?: true);
+            $user->setVerificationCode();
+            $user->setRoles(['ROLE_USER']);
+            try {
 
-            if (is_null($em->getRepository('App:User')->findOneByUsernameOrEmail($username, $email))) {
-                $user = new User();
-                $user->setEmail($email);
-                $user->setUsername($username);
-                $user->setName($username);
-                $user->setPassword($encoder->encodePassword($user, $password));
-                $user->setBirthday($birthday);
-                $user->setGender($request->request->get('gender') ?: null);
-                $user->setLovegender($request->request->get('lovegender') ?: null);
-                $user->setRegisterDate();
-                $user->setRegisterIp();
-                $user->setActive(false);
-                $user->setTwoStep(false);
-                $user->setVerified(false);
-                $user->setMeet($request->request->get('meet') ?: null);
-                $user->setReferral($request->request->get('referral') ?: null);
-                $user->setMailing($request->request->get('mailing') ?: true);
-                $user->setVerificationCode();
-                $user->setRoles(['ROLE_USER']);
-
-                $em->persist($user);
+                $this->em->persist($user);
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
                     ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -189,113 +99,76 @@ class UsersController extends AbstractFOSRestController
                     throw new HttpException(400, "La dirección de email introducida no es válida");
                 }
 
-                $em->flush();
+                $this->em->flush();
 
-                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-            } else {
-                throw new HttpException(400, "Error: Ya hay un usuario registrado con estos datos.");
+                return new Response($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']));
+            } catch (Exception $ex) {
+                $message = (new \Swift_Message('Error de registro de usuario'))
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setBody("Datos del usuario:<br>" . $this->serializer->serialize($user, "json", ['groups' => 'default']) . "<br>" . $ex->getMessage());
+
+                $mailer->send($message);
+                throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
             }
-        } catch (Exception $ex) {
-            $message = (new \Swift_Message('Error de registro de usuario'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setBody("Datos del usuario:<br>" . $this->serializer->serialize($user, "json") . "<br>" . $ex->getMessage());
-
-            $mailer->send($message);
-            throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
+        } else {
+            throw new HttpException(400, "Error: Ya hay un usuario registrado con estos datos.");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/user")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el usuario"
-     * )
-     * 
-     * @SWG\Tag(name="Get User")
+     * @Route("/v1/user", name="get_user", methods={"GET"})
      */
     public function getAction()
     {
-        $em = $this->getDoctrine()->getManager();
-
         $user = $this->getUser();
         $user->setImages($user->getImages());
-        $user->setIsPremium($user->isPremium());
 
         $user->setLastLogin();
-        $em->persist($user);
-        $em->flush();
+        $this->em->persist($user);
+        $this->em->flush();
 
-        return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
     }
 
+
     /**
-     * @Rest\Get("/v1/user/{id}")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el usuario"
-     * )
-     * 
+     * @Route("/v1/user/{id}", name="get_user_id", methods={"GET"})
      */
     public function getUserAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
         try {
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-            $user = $em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
             $user['images'] = $toUser->getImages();
 
-            $radar = $em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
+            $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
             if (!is_null($radar)) {
                 $radar->setTimeRead(new \DateTime);
-                $em->merge($radar);
-                $em->flush();
+                $this->em->persist($radar);
+                $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/username/{username}")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Nombre de usuario libre"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Nombre de usuario no disponible"
-     * )
-     * 
+     * @Route("/username/{username}", name="check_username", methods={"GET"})
      */
     public function checkUsernameAction(string $username)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $user = $em->getRepository('App:User')->findOneBy(array('username' => $username));
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
 
             if (empty($user)) {
                 return new Response($this->serializer->serialize($username, "json"));
             } else {
-                $username = $em->getRepository('App:User')->getSuggestionUsername($username);
+                $username = $this->em->getRepository('App:User')->getSuggestionUsername($username);
                 return new Response($this->serializer->serialize($username, "json"));
             }
         } catch (Exception $ex) {
@@ -303,89 +176,72 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/user")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario actualizado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar el usuario"
-     * )
-     * 
-     * @ParamConverter("newUser", converter="fos_rest.request_body")
-     * @param User $newUser
+     * @Route("/v1/user", name="update_user", methods={"PUT"})
      */
-    public function putAction(User $newUser)
+    public function putAction(Request $request)
     {
         try {
-            if ($newUser->getId() == $this->getUser()->getId()) {
-                $em = $this->getDoctrine()->getManager();
-
+            if ($this->request->get($request, 'id') == $this->getUser()->getId()) {
                 /**
                  * @var User
                  */
                 $user = $this->getUser();
-                $user->setName($newUser->getName() ?: $newUser->getUsername());
-                $user->setDescription($newUser->getDescription());
-                $user->setLocation($newUser->getLocation() ?: $user->getLocation());
-                $user->setBirthday($newUser->getBirthday());
-                $user->setGender($newUser->getGender());
-                $user->setOrientation($newUser->getOrientation());
-                $user->setPronoun($newUser->getPronoun());
-                $user->setRelationship($newUser->getRelationship());
-                $user->setStatus($newUser->getStatus());
-                $user->setMinage($newUser->getMinage());
-                $user->setMaxage($newUser->getMaxage());
-                $user->setLovegender($newUser->getLovegender());
-                $user->setConnection($newUser->getConnection());
-                $user->setHideLocation($newUser->getHideLocation());
-                $user->setBlockMessages($newUser->getBlockMessages());
-                $user->setTwoStep($newUser->getTwoStep());
-                $user->setHideConnection($newUser->getHideConnection());
+                $user->setName($this->request->get($request, 'name') ?: $this->request->get($request, 'username'));
+                $user->setDescription($this->request->get($request, 'description'));
+                $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
+                $user->setBirthday(\DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]));
+                $user->setGender($this->request->get($request, 'gender'));
+                $user->setOrientation($this->request->get($request, 'orientation'));
+                $user->setPronoun($this->request->get($request, 'pronoun'));
+                $user->setRelationship($this->request->get($request, 'relationship'));
+                $user->setStatus($this->request->get($request, 'status'));
+                $user->setMinage($this->request->get($request, 'minage'));
+                $user->setMaxage($this->request->get($request, 'maxage'));
+                $user->setLovegender($this->request->get($request, 'lovegender'));
+                $user->setConnection($this->request->get($request, 'connection'));
+                $user->setHideLocation($this->request->get($request, 'hide_location'));
+                $user->setBlockMessages($this->request->get($request, 'block_messages'));
+                $user->setTwoStep($this->request->get($request, 'two_step'));
+                $user->setHideConnection($this->request->get($request, 'hide_connection'));
 
-                $user->setMailing($newUser->getMailing());
-                $user->setIsPremium($user->isPremium());
+                $user->setMailing($this->request->get($request, 'mailing'));
 
                 foreach ($user->getTags() as $tag) {
-                    $em->remove($tag);
+                    $this->em->remove($tag);
                 }
-                $em->merge($user);
-                $em->flush();
 
-                foreach ($newUser->getTags() as $tag) {
-                    $category = $em->getRepository('App:Category')->findOneBy(array('name' => $tag->getCategory()->getName()));
-                    $oldTag = $em->getRepository('App:Tag')->findOneBy(array('name' => $tag->getName(), 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+                $this->em->persist($user);
+
+                $tags = $this->request->get($request, 'tags');
+                foreach ($tags as $tag) {
+                    $category = $this->em->getRepository('App:Category')->findOneBy(array('name' => $tag['category']['name']));
+                    $oldTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $tag['name'], 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
 
                     if (empty($oldTag)) {
                         $newTag = new Tag();
                         $newTag->setUser($user);
-                        $newTag->setName($tag->getName());
+                        $newTag->setName($tag['name']);
 
                         if (!empty($category)) {
                             $newTag->setCategory($category);
                         } else {
                             $newCategory = new Category();
-                            $newCategory->setName($tag->getCategory()->getName());
+                            $newCategory->setName($category->getName());
                             $newTag->setCategory($newCategory);
 
-                            $em->persist($newCategory);
+                            $this->em->persist($newCategory);
                         }
 
                         $user->addTag($newTag);
                     }
-                    $em->persist($user);
-                    $em->flush();
+                    $this->em->persist($user);
                 }
 
-                $em->persist($user);
-                $em->flush();
-                $user->setAvatar($user->getAvatar()); //TODO: quitar cuando esten todos en db
+                $this->em->flush();
 
-                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default', 'tags'))));
+                return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
             } else {
                 throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
@@ -394,91 +250,41 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/coordinates", name="coordinates")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Coordenadas actualizadas correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar las coordenadas"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="latitude",
-     *     in="body",
-     *     type="string",
-     *     description="Latitude",
-     *     schema={}
-     * )
-     *
-     * 
-     * @SWG\Parameter(
-     *     name="longitude",
-     *     in="body",
-     *     type="string",
-     *     description="Longitude",
-     *     schema={}
-     * )
-     *
-     * @Rest\View(serializerGroups={"coordinates"})
+     * @Route("/v1/coordinates", name="coordinates", methods={"PUT"})
      */
     public function putCoordinatesAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
 
             $geolocation = new GeolocationService();
-            $coords = $geolocation->geolocate($user->getIP(), $request->request->get('latitude'), $request->request->get('longitude'));
+            $coords = $geolocation->geolocate($user->getIP(), $this->request->get($request, 'latitude'), $this->request->get($request, 'longitude'));
             $user->setCoordinates($coords);
-            $user->setIsPremium($user->isPremium());
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             /*$location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
             if ($location) {
                 $user->setLocation($location["locality"]);
                 $user->setCountry($location["country"]);
-                $em->persist($user);
-                $em->flush();
+                $this->em->persist($user);
+                $this->em->flush();
             }*/
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Post("/v1/avatar")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Avatar actualizado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar el avatar"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="avatar",
-     *     in="formData",
-     *     type="file",
-     *     description="avatar",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/avatar", name="avatar", methods={"POST"})
      */
     public function uploadAvatarAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
         $avatar = $request->files->get('avatar');
 
         $user = $this->getUser();
@@ -504,86 +310,46 @@ class UsersController extends AbstractFOSRestController
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
 
             $user->setAvatar($src);
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } else {
             throw new HttpException(400, "Error al subir la imagen");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/avatar")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Avatar actualizado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar el avatar"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="avatar",
-     *     in="body",
-     *     type="string",
-     *     description="Src del avatar elegido",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/avatar", name="update_avatar", methods={"PUT"})
      */
     public function updateAvatarAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $src = $request->request->get('avatar');
+            $src = $this->request->get($request, 'avatar');
             $user = $this->getUser();
             $user->setAvatar($src);
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al actualizar el avatar - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/delete-avatar")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Avatar borrado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al borrar el avatar"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="avatar",
-     *     in="body",
-     *     type="string",
-     *     description="Src del avatar elegido",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/delete-avatar", name="delete_avatar", methods={"PUT"})
      */
     public function deleteAvatarAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $src = $request->request->get('avatar');
+            $src = $this->request->get($request, 'avatar');
             $user = $this->getUser();
 
             $f = explode("/", $src);
@@ -593,132 +359,62 @@ class UsersController extends AbstractFOSRestController
 
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al borrar el avatar - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/radar")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Coordenadas actualizadas correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar las coordenadas"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="page",
-     *     default="1",
-     *     description="Radar page"
-     * )
-     *
-     * @Rest\QueryParam(
-     *     name="ratio",
-     *     default="-1",
-     *     description="Ratio"
-     * )
-     * 
+     * @Route("/v1/radar", name="radar", methods={"PUT"})
      */
     public function getRadarUsers(Request $request)
     {
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
 
-        $em = $this->getDoctrine()->getManager();
-
-        $page = $request->request->get("page");
-        $ratio = $request->request->get("ratio") ?: -1;
+        $page = $this->request->get($request, "page");
+        $ratio = $this->request->get($request, "ratio") ?: -1;
 
         try {
+            $users = $this->em->getRepository('App:User')->getRadarUsers($this->getUser(), $page, $ratio);
 
-            $users = $em->getRepository('App:User')->getRadarUsers($this->getUser(), $page, $ratio);
-
-            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
     }
 
-    /**
-     * @Rest\Post("/v1/search")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Resultados obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al encontrar coincidencias"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="query",
-     *     in="body",
-     *     type="string",
-     *     description="Query",
-     *     schema={}
-     * )
-     *
-     * @SWG\Parameter(
-     *     name="order",
-     *     in="body",
-     *     type="string",
-     *     description="Order",
-     *     schema={}
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="page",
-     *     default="1",
-     *     description="Radar page"
-     * )
-     */
-    public function searchAction(Request $request, ParamFetcherInterface $params)
-    {
-        $em = $this->getDoctrine()->getManager();
 
-        $page = $params->get("page");
-        $order = $request->request->get("order");
+    /**
+     * @Route("/v1/search", name="search", methods={"POST"})
+     */
+    public function searchAction(Request $request)
+    {
+        $page = $this->request->get($request, "page");
+        $order = $this->request->get($request, "order");
 
         try {
-            $users = $em->getRepository('App:User')->searchUsers($request->request->get("query"), $this->getUser(), $order, $page);
+            $users = $this->em->getRepository('App:User')->searchUsers($this->request->get($request, "query"), $this->getUser(), $order, $page);
 
-            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/activation", name="activation-email")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
+     * @Route("/v1/activation", name="activation-email", methods={"GET"})
      */
     public function activationEmailAction(\Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
             $user->setVerificationCode();
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -744,82 +440,42 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/activation", name="activation")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="verification_code",
-     *     in="body",
-     *     type="string",
-     *     description="Código de activación",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/activation", name="activation", methods={"PUT"})
      */
     public function activationAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $verificationCode = $request->request->get("verification_code");
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        $verificationCode = $this->request->get($request, "verification_code");
+        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
         if (!is_null($user)) {
             $user->setActive(true);
             $user->setVerificationCode(null);
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } else {
             throw new HttpException(400, "Error al activar la cuenta");
         }
     }
 
+
     /**
-     * @Rest\Post("/recover", name="recover-email")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="username",
-     *     in="body",
-     *     type="string",
-     *     description="Nombre de usuario o contraseña",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/recover", name="recover-email", methods={"POST"})
      */
     public function requestEmailAction(Request $request, \Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
-            $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username')));
+        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
+            $user = $this->em->getRepository('App:User')->findOneBy(array('email' => $this->request->get($request, 'username')));
         } else {
-            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username')));
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $this->request->get($request, 'username')));
         }
 
         if (!is_null($user)) {
             $user->setVerificationCode();
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             try {
 
@@ -850,249 +506,107 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Put("/recover", name="recover-password")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="verification_code",
-     *     in="body",
-     *     type="string",
-     *     description="Código de activación",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="password",
-     *     in="query",
-     *     type="string",
-     *     description="The password",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="username",
-     *     in="query",
-     *     type="string",
-     *     description="The username",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/recover", name="recover-password", methods={"PUT"})
      */
     public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
-        $em = $this->getDoctrine()->getManager();
+        $verificationCode = $this->request->get($request, "verification_code");
 
-        $verificationCode = $request->request->get("verification_code");
-
-        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $request->request->get('username'))) {
-            $user = $em->getRepository('App:User')->findOneBy(array('email' => $request->request->get('username'), 'verificationCode' => $verificationCode));
+        if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
+            $user = $this->em->getRepository('App:User')->findOneBy(array('email' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
         } else {
-            $user = $em->getRepository('App:User')->findOneBy(array('username' => $request->request->get('username'), 'verificationCode' => $verificationCode));
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
         }
 
         if (!is_null($user)) {
-            $user->setPassword($encoder->encodePassword($user, $request->request->get('password')));
+            $user->setPassword($encoder->encodePassword($user, $this->request->get($request, 'password')));
             $user->setVerificationCode(null);
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } else {
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/password", name="change-password")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Contraseña cambiada correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al cambiar la contraseña"
-     * )
-     * 
-     * 
-     * @SWG\Parameter(
-     *     name="old_password",
-     *     in="query",
-     *     type="string",
-     *     description="The old password",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="new_password",
-     *     in="query",
-     *     type="string",
-     *     description="The new password",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/password", name="change-password", methods={"PUT"})
      */
     public function changePasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
-        $em = $this->getDoctrine()->getManager();
-
         $user = $this->getUser();
 
-        if ($user->getPassword() == $encoder->encodePassword($user, $request->request->get("old_password"))) {
-            $user->setPassword($encoder->encodePassword($user, $request->request->get('new_password')));
+        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "old_password"))) {
+            $user->setPassword($encoder->encodePassword($user, $this->request->get($request, 'new_password')));
 
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } else {
             throw new HttpException(400, "La contraseña actual no es válida");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/email", name="change-email")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email cambiado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al cambiar el email"
-     * )
-     * 
-     * 
-     * @SWG\Parameter(
-     *     name="old_email",
-     *     in="query",
-     *     type="string",
-     *     description="The old email",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="new_email",
-     *     in="query",
-     *     type="string",
-     *     description="The new email",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/email", name="change-email", methods={"PUT"})
      */
     public function changeEmailAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         $user = $this->getUser();
 
-        if ($user->getEmail() == $request->request->get("old_email")) {
-            $user->setEmail($request->request->get('new_email'));
+        if ($user->getEmail() == $this->request->get($request, "old_email")) {
+            $user->setEmail($this->request->get($request, 'new_email'));
 
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } else {
             throw new HttpException(400, "El email actual no es válido");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/username", name="change-username")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Username cambiado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al cambiar el username"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="new_username",
-     *     in="query",
-     *     type="string",
-     *     description="The new username",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/username", name="change-username", methods={"PUT"})
      */
     public function changeUsernameAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
-            $user->setUsername($request->request->get('new_username'));
+            $user->setUsername($this->request->get($request, 'new_username'));
 
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Ya hay un usuario con ese nombre - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/block", name="block")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario bloqueado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al bloquear el usuario"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="user",
-     *     in="body",
-     *     type="string",
-     *     description="To user block",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="note",
-     *     in="body",
-     *     type="string",
-     *     description="Motive of block",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/block", name="block", methods={"PUT"})
      */
     public function putBlockAction(Request $request, \Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+            $blockUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
 
             $newBlock = new BlockUser();
             $newBlock->setDate(new \DateTime);
             $newBlock->setFromUser($this->getUser());
             $newBlock->setBlockUser($blockUser);
-            $newBlock->setNote($request->request->get('note'));
-            $em->persist($newBlock);
-            $em->flush();
+            $newBlock->setNote($this->request->get($request, 'note'));
+            $this->em->persist($newBlock);
+            $this->em->flush();
 
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
@@ -1112,105 +626,60 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Delete("/v1/block/{id}", name="unblock")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Bloqueo eliminado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al eliminar el bloqueo"
-     * )
-     *
+     * @Route("/v1/block/{id}", name="unblock", methods={"DELETE"})
      */
     public function removeBlockAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $blockUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $blockUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
 
-            $block = $em->getRepository('App:BlockUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
-            $em->remove($block);
-            $em->flush();
+            $block = $this->em->getRepository('App:BlockUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
+            $this->em->remove($block);
+            $this->em->flush();
 
-            $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
+            $users = $this->em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
             foreach ($users as $key => $u) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
-            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbloquear el usuario - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/blocks")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuarios bloqueados obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener los usuarios bloqueados"
-     * )
-     * 
-     * @SWG\Tag(name="Get Blocks")
+     * @Route("/v1/blocks", name="blocks", methods={"GET"})
      */
     public function getBlocksAction()
     {
-        $em = $this->getDoctrine()->getManager();
+        $users = $this->em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
-        $users = $em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
-
-        return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
     }
 
+
     /**
-     * @Rest\Put("/v1/hide", name="hide")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario ocultado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al ocultar el usuario"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="user",
-     *     in="body",
-     *     type="string",
-     *     description="To user hide",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/hide", name="hide", methods={"PUT"})
      */
     public function putHideAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $fromUser = $this->getUser();
-            $hideUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+            $hideUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
 
-            if (empty($em->getRepository('App:HideUser')->isHide($fromUser, $hideUser))) {
+            if (empty($this->em->getRepository('App:HideUser')->isHide($fromUser, $hideUser))) {
                 $newHide = new HideUser();
                 $newHide->setDate(new \DateTime);
                 $newHide->setFromUser($fromUser);
                 $newHide->setHideUser($hideUser);
-                $em->persist($newHide);
-                $em->flush();
+                $this->em->persist($newHide);
+                $this->em->flush();
 
                 return new Response($this->serializer->serialize("Usuario ocultado correctamente", "json"));
             } else {
@@ -1223,104 +692,58 @@ class UsersController extends AbstractFOSRestController
 
 
     /**
-     * @Rest\Delete("/v1/hide/{id}", name="unhide")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario desocultado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al desocultar el usuario"
-     * )
-     *
+     * @Route("/v1/hide/{id}", name="unhide", methods={"DELETE"})
      */
     public function removeHideAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $hideUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $hideUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
 
-            $hide = $em->getRepository('App:HideUser')->findOneBy(array('hide_user' => $hideUser, 'from_user' => $this->getUser()));
-            $em->remove($hide);
-            $em->flush();
+            $hide = $this->em->getRepository('App:HideUser')->findOneBy(array('hide_user' => $hideUser, 'from_user' => $this->getUser()));
+            $this->em->remove($hide);
+            $this->em->flush();
 
-            $users = $em->getRepository('App:HideUser')->getHideUsers($this->getUser());
+            $users = $this->em->getRepository('App:HideUser')->getHideUsers($this->getUser());
 
             foreach ($users as $key => $u) {
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
+                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
                 $users[$key]['avatar'] = $user->getAvatar() ?: null;
             }
 
-            return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desocultar el usuario - Error: {$ex->getMessage()}");
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/hides")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuarios ocultos obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener los usuarios ocultos"
-     * )
-     * 
-     * @SWG\Tag(name="Get Hides")
+     * @Route("/v1/hides", name="hides", methods={"GET"})
      */
     public function getHidesAction()
     {
-        $em = $this->getDoctrine()->getManager();
+        $users = $this->em->getRepository('App:HideUser')->getHideUsers($this->getUser());
 
-        $users = $em->getRepository('App:HideUser')->getHideUsers($this->getUser());
-
-        return new Response($this->serializer->serialize($users, "json", SerializationContext::create()->setGroups(array('default'))));
+        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
     }
 
+
     /**
-     * @Rest\Put("/v1/view", name="view")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario visto correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al ver el usuario"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="user",
-     *     in="body",
-     *     type="string",
-     *     description="To user view",
-     *     schema={}
-     * )
-     *
+     * @Route("/v1/view", name="view", methods={"PUT"})
      */
     public function putViewAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $fromUser = $this->getUser();
             if ($fromUser->getUsername() !== 'frikiradar') {
-                $viewUser = $em->getRepository('App:User')->findOneBy(array('id' => $request->request->get('user')));
+                $viewUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
 
                 $newView = new ViewUser();
                 $newView->setDate(new \DateTime);
                 $newView->setFromUser($fromUser);
                 $newView->setToUser($viewUser);
-                $em->persist($newView);
-                $em->flush();
+                $this->em->persist($newView);
+                $this->em->flush();
             }
 
             return new Response($this->serializer->serialize("Usuario visto correctamente", "json"));
@@ -1329,29 +752,17 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Get("/v1/two-step", name="two step")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Email enviado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al enviar el email"
-     * )
-     * 
+     * @Route("/v1/two-step", name="two_step", methods={"GET"})
      */
     public function twoStepAction(\Swift_Mailer $mailer)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
             $user->setVerificationCode();
-            $em->persist($user);
-            $em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu inicio de sesión'))
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -1387,41 +798,21 @@ class UsersController extends AbstractFOSRestController
         return new Response($this->serializer->serialize($response, "json"));
     }
 
+
     /**
-     * @Rest\Put("/v1/two-step", name="verify session")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Sesión verificada correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al verificar la sesión"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="verification_code",
-     *     in="body",
-     *     type="string",
-     *     description="Código de verificación",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/two-step", name="verify_session", methods={"PUT"})
      */
     public function verifyLoginAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $verificationCode = $request->request->get("verification_code");
-        $user = $em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        $verificationCode = $this->request->get($request, "verification_code");
+        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
         if (!is_null($user)) {
             try {
                 $user->setVerificationCode(null);
-                $em->persist($user);
-                $em->flush();
+                $this->em->persist($user);
+                $this->em->flush();
 
-                return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu sesión: " . $e);
             }
@@ -1430,277 +821,42 @@ class UsersController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Put("/v1/disable", name="disable")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario desactivado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al desactivar el usuario"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="password",
-     *     in="query",
-     *     type="string",
-     *     description="The password",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="note",
-     *     in="body",
-     *     type="string",
-     *     description="Motive of disable account",
-     *     schema={}
-     * )
-     * 
+     * @Route("/v1/disable", name="disable", methods={"PUT"})
      */
     public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
     {
-        $em = $this->getDoctrine()->getManager();
-
         $user = $this->getUser();
 
-        if ($user->getPassword() == $encoder->encodePassword($user, $request->request->get("password"))) {
+        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "password"))) {
             try {
                 // ponemos usuario en disable
                 $user->setActive(false);
                 // borramos sus dispositivos
                 $user->removeDevices();
 
-                $em->persist($user);
-                $em->flush();
+                $this->em->persist($user);
+                $this->em->flush();
 
-                if (!empty($request->request->get('note'))) {
+                if (!empty($this->request->get($request, 'note'))) {
                     // Enviar email al administrador informando del motivo
                     $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
                         ->setFrom([$user->getEmail() => $user->getUsername()])
                         ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                        ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $request->request->get('note'), 'text/html');
+                        ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
 
                     if (0 === $mailer->send($message)) {
                         // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
                     }
                 }
 
-                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
+                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
             }
         } else {
             throw new HttpException(400, "La contraseña no es correcta");
         }
-    }
-
-    /**
-     * @Rest\Post("/v1/premium", name="premium")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Premium añadido"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al añadir premium"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="days",
-     *     in="query",
-     *     type="string",
-     *     description="days",
-     *     schema={}
-     * )
-     * 
-     */
-    public function setPremiumAction(Request $request)
-    {
-        $em = $this->getDoctrine()->getManager();
-
-        $days = $request->request->get('days');
-        if ($days > 0) {
-            try {
-                $user = $this->getUser();
-                $now = new \DateTime;
-                if ($user->getPremiumExpiration() > $now) {
-                    $datetime = $user->getPremiumExpiration();
-                } else {
-                    $datetime = $now;
-                }
-
-                $datetime->add(new DateInterval('P' . $days . 'D'));
-                $user->setPremiumExpiration($datetime);
-                $em->persist($user);
-                $em->flush();
-
-                $user->setIsPremium(true);
-
-                if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
-                    $referralUsername = $user->getReferral();
-                    if (!empty($referralUsername)) {
-                        $friend = $em->getRepository('App:User')->findOneBy(array('username' => $referralUsername));
-                        if ($friend->getPremiumExpiration()) {
-                            $friendDatetime = $friend->getPremiumExpiration();
-                        } else {
-                            $friendDatetime = new \DateTime;
-                        }
-
-                        $friendDatetime->add(new DateInterval('P30D'));
-                        $friend->setPremiumExpiration($friendDatetime);
-
-                        $em->persist($friend);
-                        $em->flush();
-
-                        $title = "🐲 Ey embajador!";
-                        $text = "Has conseguido 1 mes FrikiRadar ILIMITADO. Gracias a tu amigo " . $user->getUsername() . " ¡Esperamos que lo disfrutes!";
-                        $url = "/tabs/radar";
-                        $notification = new NotificationService();
-                        $notification->push($user, $friend, $title, $text, $url, "premium");
-                    }
-                }
-
-                return new Response($this->serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('default'))));
-            } catch (Exception $ex) {
-                throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
-            }
-        } else {
-            throw new HttpException(400, "No hay días que añadir");
-        }
-    }
-
-    /**
-     * @Rest\Post("/v1/payment", name="payment")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Pago añadido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al añadir el pago"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="title",
-     *     in="query",
-     *     type="string",
-     *     description="title",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="description",
-     *     in="query",
-     *     type="string",
-     *     description="description",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="orderId",
-     *     in="query",
-     *     type="string",
-     *     description="orderId",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="token",
-     *     in="query",
-     *     type="string",
-     *     description="token",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="signature",
-     *     in="query",
-     *     type="string",
-     *     description="signature",
-     *     schema={}
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="type",
-     *     in="query",
-     *     type="string",
-     *     description="type",
-     *     schema={}
-     * )
-     * 
-     */
-    public function paymentAction(Request $request, \Swift_Mailer $mailer)
-    {
-        $em = $this->getDoctrine()->getManager();
-
-        $user = $this->getUser();
-
-        try {
-            $em->getRepository('App:Payment')->setPayment(
-                $request->request->get('title'),
-                $request->request->get('description'),
-                $request->request->get('order_id'),
-                $request->request->get('token'),
-                $request->request->get('signature'),
-                $request->request->get('type'),
-                $user,
-                new \DateTime,
-                $request->request->get('amount'),
-                $request->request->get('currency'),
-                $request->request->get('json') ?: null
-            );
-
-            $user->setVerified(true);
-            $em->persist($user);
-            $em->flush();
-
-            // Enviar email al administrador informando del motivo
-            $message = (new \Swift_Message($user->getUsername() . ' ha realizado un pago de ' . $request->request->get('amount') . " " . $request->request->get('currency')))
-                ->setFrom([$user->getEmail() => $user->getUsername()])
-                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setBody("<p>Usuario: <a href='mailto:" . $user->getEmail() . "'>" . $user->getUsername() . "</a></p>
-                            <p>Order Id: " . $request->request->get('order_id') . "</p>
-                            <p>Title: " . $request->request->get('title') . "</p>
-                            <p>Description: " . $request->request->get('description') . "</p>
-                            <p>Precio: " . $request->request->get('amount') . " " . $request->request->get('currency') . "</p>
-                            <p>Tienda: " . $request->request->get('type') . "</p>", 'text/html');
-
-            if (0 === $mailer->send($message)) {
-                // throw new HttpException(400, "Error al enviar el email del cobro");
-            }
-
-            return new Response($this->serializer->serialize($this->getUser(), "json", SerializationContext::create()->setGroups(array('default'))));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Rest\Get("/v1/payments")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Historial de pagos obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el historial de pagos"
-     * )
-     * 
-     * @SWG\Tag(name="Get Payments")
-     */
-    public function getPayments()
-    {
-        $payments = $this->getUser()->getPayments();
-
-        return new Response($this->serializer->serialize($payments, "json", SerializationContext::create()->setGroups(array('payment'))));
     }
 }

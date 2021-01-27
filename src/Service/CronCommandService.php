@@ -6,7 +6,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
-use Twig\Environment;
 
 class CronCommandService
 {
@@ -21,12 +20,10 @@ class CronCommandService
     public function __construct(
         EntityManagerInterface $entityManager,
         \Swift_Mailer $mailer,
-        Environment $twig,
         NotificationService $notification
     ) {
         $this->em = $entityManager;
         $this->mailer = $mailer;
-        $this->twig = $twig;
         $this->notification = $notification;
     }
 

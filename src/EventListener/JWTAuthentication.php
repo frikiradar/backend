@@ -5,30 +5,24 @@ namespace App\EventListener;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Doctrine\ORM\EntityManagerInterface;
 
 class JWTAuthentication
 {
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
     private $mailer;
 
     /**
      * @param RequestStack $requestStack
      */
-    public function __construct(RequestStack $requestStack, ContainerInterface $container, \Swift_Mailer $mailer, \Twig\Environment $templating)
+    public function __construct(ContainerInterface $container, \Swift_Mailer $mailer, EntityManagerInterface $entityManager)
     {
-        $this->requestStack = $requestStack;
         $this->container = $container;
         $this->mailer = $mailer;
-        $this->templating = $templating;
+        $this->em = $entityManager;
     }
 
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
     {
-        $em = $this->container->get('doctrine')->getManager();
         $user = $event->getUser();
         $user->setLastLogin();
         $user->setLastIP();
@@ -55,7 +49,7 @@ class JWTAuthentication
             $this->mailer->send($message);
         }
 
-        $em->persist($user);
-        $em->flush();
+        $this->em->persist($user);
+        $this->em->flush();
     }
 }

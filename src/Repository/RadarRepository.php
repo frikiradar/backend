@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Radar;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method Radar|null find($id, $lockMode = null, $lockVersion = null)
@@ -74,7 +74,7 @@ class RadarRepository extends ServiceEntityRepository
 
     public function findById($fromId, $toId)
     {
-        $dql = "SELECT t.name FROM App:Radar r WHERE r.from_user = :from_id AND r.to_user = :to_id";
+        $dql = "SELECT r FROM App:Radar r WHERE r.fromUser = :from_id AND r.toUser = :to_id";
         $query = $this->getEntityManager()->createQuery($dql)
             ->setParameter('from_id', $fromId)
             ->setParameter('to_id', $toId);

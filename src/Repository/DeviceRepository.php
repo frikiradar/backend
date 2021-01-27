@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Entity\Device;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method Device|null find($id, $lockMode = null, $lockVersion = null)
@@ -69,8 +69,8 @@ class DeviceRepository extends ServiceEntityRepository
         $device->setLastUpdate(new \DateTime);
 
         try {
-            $em->merge($device);
-            $em->flush();
+            $this->em->persist($device);
+            $this->em->flush();
 
             return $device;
         } catch (Exception $e) {

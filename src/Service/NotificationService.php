@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User;
-use Kreait\Firebase;
+use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
 
@@ -43,9 +43,8 @@ class NotificationService
 
             $message = CloudMessage::new()->withAndroidConfig($config);
 
-            $firebase = (new Firebase\Factory())->create();
             try {
-                $messaging = $firebase->getMessaging();
+                $messaging = (new Factory())->createMessaging();
                 $report = $messaging->sendMulticast($message, $tokens);
                 // TODO: Token caducado o erróneo, desactivar. Si la cuenta no tiene tokens activos entonces no aparecer en resultados de radar.
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
@@ -60,8 +59,8 @@ class NotificationService
                     if ($report->failures()->count() >= count($tokens) || $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                         $em = $this->container->get('doctrine')->getManager();
                         $toUser->setActive(0);
-                        $em->persist($toUser);
-                        $em->flush();
+                        $this->em->persist($toUser);
+                        $this->em->flush();
                     }
                 }
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
@@ -111,9 +110,8 @@ class NotificationService
 
         $message = $message->withAndroidConfig($config);
 
-        $firebase = (new Firebase\Factory())->create();
         try {
-            $messaging = $firebase->getMessaging();
+            $messaging = (new Factory())->createMessaging();
             $messaging->send($message);
         } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
             // echo "Error al enviar la notificación";

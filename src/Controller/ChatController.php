@@ -3,71 +3,44 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Request\ParamFetcherInterface;
-use JMS\Serializer\SerializationContext;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Repository\ChatRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Swagger\Annotations as SWG;
-use Symfony\Component\Mercure\Publisher;
+use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Mercure\Update;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\NotificationService;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
-use JMS\Serializer\SerializerInterface;
+use App\Service\RequestService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Class ChatController
  *
- * @Route("/api")
+ * @Route(path="/api")
  */
-class ChatController extends AbstractFOSRestController
+class ChatController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(ChatRepository $chatRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer, RequestService $request)
     {
+        $this->chatRepository = $chatRepository;
+        $this->em = $entityManager;
         $this->serializer = $serializer;
+        $this->request = $request;
     }
 
     /**
-     * @Rest\Put("/v1/chat")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuario actualizado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al actualizar el usuario"
-     * )
-     * 
-     * @SWG\Parameter(
-     *     name="touser",
-     *     in="body",
-     *     type="string",
-     *     description="To user id",
-     *     schema={}
-     * )
-     *
-     * 
-     * @SWG\Parameter(
-     *     name="text",
-     *     in="body",
-     *     type="string",
-     *     description="Text",
-     *     schema={}
-     * )
+     * @Route("/v1/chat", name="put_chat", methods={"PUT"})
      */
-    public function putAction(Request $request, Publisher $publisher)
+    public function put(Request $request, PublisherInterface $publisher)
     {
-        $em = $this->getDoctrine()->getManager();
-
         $chat = new Chat();
         $fromUser = $this->getUser();
-        $toUser = $em->getRepository('App:User')->find($request->request->get("touser"));
-        if (empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
+        $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
+        if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
             $chat->setTouser($toUser);
             $chat->setFromuser($fromUser);
 
@@ -76,17 +49,17 @@ class ChatController extends AbstractFOSRestController
 
             $conversationId = $min . "_" . $max;
 
-            $text = $request->request->get("text");
+            $text = $this->request->get($request, "text");
 
             $chat->setText($text);
             $chat->setTimeCreation(new \DateTime);
             $chat->setConversationId($conversationId);
-            $em->persist($chat);
+            $this->em->persist($chat);
             $fromUser->setLastLogin();
-            $em->persist($fromUser);
-            $em->flush();
+            $this->em->persist($fromUser);
+            $this->em->flush();
 
-            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
 
             $title = $fromUser->getUsername();
@@ -95,7 +68,7 @@ class ChatController extends AbstractFOSRestController
             $notification = new NotificationService();
             $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
-            return new Response($this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
         } else {
             throw new HttpException(400, "Error al marcar como leido - Error");
         }
@@ -103,31 +76,18 @@ class ChatController extends AbstractFOSRestController
 
 
     /**
-     * @Rest\Get("/v1/chats")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Usuarios del chat obtenidos correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener los usuarios"
-     * )
-     * 
+     * @Route("/v1/chats", name="get_chats", methods={"GET"})
      */
     public function getChats()
     {
-        $em = $this->getDoctrine()->getManager();
-
         $fromUser = $this->getUser();
         try {
-            $chats = $em->getRepository('App:Chat')->getChatUsers($fromUser);
+            $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
 
             foreach ($chats as $key => $chat) {
                 $userId = $chat["fromuser"] == $fromUser->getId() ? $chat["touser"] : $chat["fromuser"];
-                $user = $em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $chats[$key]['count'] = $em->getRepository('App:Chat')->countUnreadUser($fromUser, $user);
+                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $chats[$key]['count'] = $this->em->getRepository('App:Chat')->countUnreadUser($fromUser, $user);
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
@@ -145,109 +105,65 @@ class ChatController extends AbstractFOSRestController
         }
 
         $fromUser->setLastLogin();
-        $em->persist($fromUser);
-        $em->flush();
+        $this->em->persist($fromUser);
+        $this->em->flush();
 
         return new Response($this->serializer->serialize($response, "json"));
     }
 
 
     /**
-     * @Rest\Get("/v1/chat/{id}")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Chat obtenido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener el chat"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="read",
-     *     default="false",
-     *     description="Get read chats or not"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="lastid",
-     *     default="0",
-     *     description="El id de chat a partir del cual tenemos que conseguir los nuevos mensajes"
-     * )
-     * 
-     * @Rest\QueryParam(
-     *     name="page",
-     *     default="1",
-     *     description="Chat page"
-     * )
-     * 
+     * @Route("/v1/chat/{id}", name="get_chat", methods={"GET"})
      */
-    public function getChatAction(int $id, ParamFetcherInterface $params, Publisher $publisher)
+    public function getChatAction(int $id, Request $request, PublisherInterface $publisher)
     {
-        $em = $this->getDoctrine()->getManager();
+        $read = $this->request->get($request, "read");
+        $page = $this->request->get($request, "page");
+        $lastId = $this->request->get($request, "lastid", false) ?: 0;
 
-        $read = $params->get("read");
-        $page = $params->get("page");
-        $lastId = $params->get("lastid") ?: 0;
-
-        $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
         $fromUser = $this->getUser();
 
         //marcamos como leidos los antiguos
-        $unreadChats = $em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
+        $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
         foreach ($unreadChats as $chat) {
             $conversationId = $chat->getConversationId();
             if (!is_null($chat->getFromUser())) {
                 $chat->setTimeRead(new \DateTime);
-                $em->merge($chat);
+                $this->em->persist($chat);
 
-                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
             }
         }
 
         $fromUser->setLastLogin();
-        $em->persist($fromUser);
-        $em->flush();
+        $this->em->persist($fromUser);
+        $this->em->flush();
 
-        $chats = $em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
+        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
 
-        return new Response($this->serializer->serialize($chats, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
     }
 
 
     /**
-     * @Rest\Get("/v1/read-chat/{id}")
-     * 
-     * @SWG\Response(
-     *     response=201,
-     *     description="Mensaje leido correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al marcar como leido el mensaje"
-     * )
-     *
+     * @Route("/v1/read-chat/{id}", name="read_chat", methods={"GET"})
      */
-    public function markAsReadAction(int $id, Publisher $publisher)
+    public function markAsReadAction(int $id, PublisherInterface $publisher)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $chat = $em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             // if ($chat->getTouser()->getId() == $this->getUser()->getId()) {
             $conversationId = $chat->getConversationId();
             $chat->setTimeRead(new \DateTime);
-            $em->merge($chat);
-            $em->flush();
+            $this->em->persist($chat);
+            $this->em->flush();
 
-            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
 
-            return new Response($this->serializer->serialize($chat, "json", SerializationContext::create()->setGroups(array('message'))->enableMaxDepthChecks()));
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
             /*} else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
             }*/
@@ -256,31 +172,19 @@ class ChatController extends AbstractFOSRestController
         }
     }
 
+
     /**
-     * @Rest\Delete("/v1/chat-message/{id}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Mensaje eliminado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al eliminar el mensaje"
-     * )
-     * 
+     * @Route("/v1/chat-message/{id}", name="delete_message", methods={"DELETE"})
      */
     public function deleteMessageAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $user = $this->getUser();
-            $message = $em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             if ($message->getFromuser()->getId() == $user->getId()) {
-                $em->remove($message);
-                $em->flush();
-                return new Response($this->serializer->serialize($message, "json", SerializationContext::create()->setGroups(array('message'))));
+                $this->em->remove($message);
+                $this->em->flush();
+                return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
             } else {
                 throw new HttpException(400, "Error al eliminar el mensaje. - Error: usuario no permitido.");
             }
@@ -291,27 +195,14 @@ class ChatController extends AbstractFOSRestController
 
 
     /**
-     * @Rest\Delete("/v1/chat/{id}")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Chat eliminado correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Chat al eliminar el mensaje"
-     * )
-     * 
+     * @Route("/v1/chat/{id}", name="delete_chat", methods={"DELETE"})
      */
     public function deleteAction(int $id)
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
             $fromUser = $this->getUser();
-            $toUser = $em->getRepository('App:User')->findOneBy(array('id' => $id));
-            $em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
+            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $this->em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
 
             return new Response($this->serializer->serialize($id, "json"));
         } catch (Exception $ex) {

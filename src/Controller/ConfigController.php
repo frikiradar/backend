@@ -2,51 +2,38 @@
 // src/Controller/ChatController.php
 namespace App\Controller;
 
-use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Repository\ConfigRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Swagger\Annotations as SWG;
-use JMS\Serializer\SerializerInterface;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Class ConfigController
  *
- * @Route("/api")
+ * @Route(path="/api")
  */
-class ConfigController extends AbstractFOSRestController
+class ConfigController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer)
+    public function __construct(ConfigRepository $configRepository, SerializerInterface $serializer)
     {
+        $this->configRepository = $configRepository;
         $this->serializer = $serializer;
     }
 
     /**
-     * @Rest\Get("/config", name="config")
-     *
-     * @SWG\Response(
-     *     response=201,
-     *     description="Configuración obtenida correctamente"
-     * )
-     *
-     * @SWG\Response(
-     *     response=500,
-     *     description="Error al obtener la configuración"
-     * )
-     * 
+     * @Route("/config", name="config", methods={"GET"})
      */
     public function getConfig()
     {
-        $em = $this->getDoctrine()->getManager();
-
         try {
-            $config['maintenance'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'maintenance'])->getValue();
-            $config['min_version'] = $em->getRepository('App:Config')->findOneBy(['name' => 'min_version'])->getValue();
-            $config['chat'] = (bool) $em->getRepository('App:Config')->findOneBy(['name' => 'chat'])->getValue();
-            $config['push_url'] = $em->getRepository('App:Config')->findOneBy(['name' => 'push_url'])->getValue();
-            $config['patreon'] = $em->getRepository('App:Config')->findOneBy(['name' => 'patreon'])->getValue();
+            $config['maintenance'] = (bool) $this->configRepository->findOneBy(['name' => 'maintenance'])->getValue();
+            $config['min_version'] = $this->configRepository->findOneBy(['name' => 'min_version'])->getValue();
+            $config['chat'] = (bool) $this->configRepository->findOneBy(['name' => 'chat'])->getValue();
+            $config['push_url'] = $this->configRepository->findOneBy(['name' => 'push_url'])->getValue();
+            $config['patreon'] = $this->configRepository->findOneBy(['name' => 'patreon'])->getValue();
 
             return new Response($this->serializer->serialize($config, "json"));
         } catch (Exception $ex) {

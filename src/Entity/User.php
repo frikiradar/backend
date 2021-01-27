@@ -7,13 +7,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use JMS\Serializer\Annotation\Groups;
-use JMS\Serializer\Annotation\Type;
-use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
+use ApiPlatform\Core\Annotation\ApiResource;
 
 
 /**
+ * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface
@@ -41,7 +42,6 @@ class User implements UserInterface
     /**
      * @var array
      * @ORM\Column(type="json")
-     * @Serializer\ReadOnly()
      * @Groups({"default"})
      */
     private $roles = [];
@@ -50,7 +50,7 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Groups({"private"})
-     * @Serializer\ReadOnly()
+     * @Ignore()
      */
     private $password;
 
@@ -62,7 +62,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Serializer\ReadOnly()
+     * @Ignore()
      * @Groups({"default"})
      */
     private $register_date;
@@ -105,30 +105,28 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
-     * @Serializer\ReadOnly()
+     * @Ignore()
      */
     private $register_ip;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
-     * @Serializer\ReadOnly()
+     * @Ignore()
      */
     private $last_ip;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default", "message"})
-     * @Serializer\ReadOnly()
+     * @Ignore()
      */
     private $last_login;
 
     /**
-     * @var array
-     * @ORM\Column(type="json", nullable=true)
-     * @Type("array")
+     * @ORM\Column(type="json_array", nullable=true)
      * @Groups({"default"})
      */
-    private $lovegender = [];
+    private ?array $lovegender = [];
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -143,16 +141,14 @@ class User implements UserInterface
     private $maxage;
 
     /**
-     * @var array
-     * @ORM\Column(type="json", nullable=true)
-     * @Type("array")
+     * @ORM\Column(type="json_array", nullable=true)
      * @Groups({"default"})
      */
     private $connection;
 
     /**
      * @ORM\Column(type="point", nullable=true)
-     * @Serializer\ReadOnly()
+     * @Ignore()
      */
     private $coordinates;
 
@@ -164,23 +160,20 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="date", nullable=true)
-     * @Type("DateTime<'Y-m-d'>")
      * @Groups({"default"})
      */
     private $birthday;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Type("string")
      * @Groups({"default"})
      */
     private $avatar;
 
     /**
-     * @Type("array")
      * @Groups({"default"})
      */
-    private $images;
+    private array $images = [];
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -209,37 +202,37 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      * @Groups({"default"})
      */
-    private $active;
+    private bool $active = false;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"default"})
      */
-    private $hide_location;
+    private ?bool $hide_location = false;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"default"})
      */
-    private $hide_connection;
+    private ?bool $hide_connection = false;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"default"})
      */
-    private $block_messages;
+    private ?bool $block_messages = false;
 
     /**
      * @ORM\Column(type="boolean")
      * @Groups({"default"})
      */
-    private $two_step;
+    private ?bool $two_step = false;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      * @Groups({"default"})
      */
-    private $num_logins;
+    private ?int $num_logins = 0;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Radar", mappedBy="toUser", orphanRemoval=true)
@@ -250,50 +243,31 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      * @Groups({"default"})
      */
-    private $mailing;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
-     * @Serializer\ReadOnly()
-     */
-    private $premium_expiration;
-
-    /**
-     * @Type("boolean")
-     * @Groups({"default"})
-     * @Serializer\ReadOnly()
-     */
-    private $isPremium;
+    private bool $mailing;
 
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      * @Groups({"default"})
      */
-    private $meet;
+    private ?string $meet;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
      * @Groups({"default"})
      */
-    private $referral;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Payment", mappedBy="user", orphanRemoval=true)
-     */
-    private $payments;
+    private ?string $referral;
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
      * @Groups({"default"})
      */
-    private $verified;
+    private bool $verified;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"default"})
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\BlockUser", mappedBy="from_user", orphanRemoval=true)
@@ -317,7 +291,6 @@ class User implements UserInterface
         $this->devices = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
         $this->radars = new ArrayCollection();
-        $this->payments = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
         $this->hideUsers = new ArrayCollection();
         $this->viewUsers = new ArrayCollection();
@@ -936,42 +909,6 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getPremiumExpiration(): ?\DateTimeInterface
-    {
-        return $this->premium_expiration ? clone $this->premium_expiration : $this->premium_expiration;
-    }
-
-    public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): self
-    {
-        $this->premium_expiration = $premium_expiration ? clone $premium_expiration : $premium_expiration;
-
-        return $this;
-    }
-
-    public function isPremium(): ?bool
-    {
-        if ($this->getPremiumExpiration() > new \DateTime) {
-            $this->isPremium = true;
-        } elseif (date("m-d") >= "02-14" && date("m-d") <= "02-16") {
-            // San valentín
-            $this->isPremium = true;
-        } elseif (date("Y-m-d") >= "2020-11-19") {
-            // Coronavirus
-            $this->isPremium = true;
-        } else {
-            $this->isPremium = false;
-        }
-
-        return $this->isPremium;
-    }
-
-    public function setIsPremium(?bool $isPremium): self
-    {
-        $this->isPremium = $isPremium;
-
-        return $this;
-    }
-
     public function getMeet(): ?string
     {
         return $this->meet;
@@ -992,37 +929,6 @@ class User implements UserInterface
     public function setReferral(?string $referral): self
     {
         $this->referral = $referral;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Payment[]
-     */
-    public function getPayments(): Collection
-    {
-        return $this->payments;
-    }
-
-    public function addPayment(Payment $payment): self
-    {
-        if (!$this->payments->contains($payment)) {
-            $this->payments[] = $payment;
-            $payment->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removePayment(Payment $payment): self
-    {
-        if ($this->payments->contains($payment)) {
-            $this->payments->removeElement($payment);
-            // set the owning side to null (unless already changed)
-            if ($payment->getUser() === $this) {
-                $payment->setUser(null);
-            }
-        }
 
         return $this;
     }

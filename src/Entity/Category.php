@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
+ * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
  */
 class Category
@@ -15,13 +17,13 @@ class Category
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"default"})
+     * @Groups({"default", "tags"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=70, unique=true)
-     * @Groups({"default"})
+     * @Groups({"default", "tags"})
      */
     private $name;
 

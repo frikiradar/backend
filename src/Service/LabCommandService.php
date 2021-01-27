@@ -6,7 +6,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GeolocationService;
 use App\Service\NotificationService;
-use Twig\Environment;
 
 class LabCommandService
 {
@@ -22,14 +21,12 @@ class LabCommandService
         EntityManagerInterface $entityManager,
         GeolocationService $geolocation,
         NotificationService $notification,
-        \Swift_Mailer $mailer,
-        Environment $twig
+        \Swift_Mailer $mailer
     ) {
         $this->em = $entityManager;
         $this->geolocation = $geolocation;
         $this->notification = $notification;
         $this->mailer = $mailer;
-        $this->twig = $twig;
     }
 
     public function setIo($i, $o)

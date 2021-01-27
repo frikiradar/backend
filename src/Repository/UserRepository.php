@@ -6,10 +6,11 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
 use App\Entity\Radar;
-use Symfony\Component\Security\Core\Security;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,12 +20,11 @@ use Symfony\Component\Security\Core\Security;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
-    private $security;
-
-    public function __construct(ManagerRegistry $registry, Security $security)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
+        $this->em = $entityManager;
     }
 
     // /**
@@ -78,8 +78,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function findeOneUser(User $fromUser, User $toUser)
     {
-        $em = $this->getEntityManager();
-
         $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
         $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
 
@@ -132,16 +130,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['tags'] = $toUser->getTags();
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['avatar'] = $toUser->getAvatar() ?: null;
-            $user['like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
                 'to_user' => $toUser
             ])) ? true : false;
-            $user['from_like'] = !empty($em->getRepository('App:LikeUser')->findOneBy([
+            $user['from_like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $toUser,
                 'to_user' => $fromUser
             ])) ? true : false;
-            $user['block'] = !empty($em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-            $user['chat'] = !empty($em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
+            $user['block'] = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+            $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
 
             if (!$user['block']) {
                 return $user;
@@ -169,7 +167,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.location',
                 'u.last_login',
-                'u.premium_expiration',
                 'u.hide_location',
                 'u.block_messages',
                 'u.hide_connection',
@@ -267,7 +264,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
                 'u.location',
                 'u.last_login',
-                'u.premium_expiration',
                 'u.hide_location',
                 'u.block_messages',
                 'u.hide_connection',
@@ -338,7 +334,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function enhanceUsers($users, User $fromUser, $type = 'radar')
     {
-        $em = $this->getEntityManager();
         $today = new \DateTime;
         $fromTags = $fromUser->getTags();
         $toTags = $this->getTagsFromUsers($users);
@@ -357,18 +352,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['common_tags'] = [];
             }
 
-            $isPremium = $u['last_login'] > new \DateTime ? true : false;
-
-            if (!$this->security->isGranted('ROLE_DEMO') && $isPremium) {
-                // Si distance es <= 50 y afinidad >= 80 y entonces enviamos notificacion
-                if ($type == 'radar' && $users[$key]['distance'] <= 10 && $users[$key]['match'] >= 70) {
-                    if (empty($em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
+            if (!$this->security->isGranted('ROLE_DEMO')) {
+                // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
+                if ($type == 'radar' && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 90) {
+                    if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);
                         $toUser = $this->findOneBy(array('id' => $u['id']));
                         $radar->setToUser($toUser);
-                        $em->persist($radar);
-                        $em->flush();
+                        $this->em->persist($radar);
+                        $this->em->flush();
 
                         $notification = new NotificationService();
                         $title = $fromUser->getUsername();
