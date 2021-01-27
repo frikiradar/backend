@@ -612,7 +612,7 @@ class UsersController extends AbstractController
                 // Enviar email al administrador informando del motivo
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
-                    ->setTo(['noreply@frikiradar.app' => 'FrikiRadar'])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
 
                 if (0 === $mailer->send($message)) {
@@ -843,7 +843,7 @@ class UsersController extends AbstractController
                     // Enviar email al administrador informando del motivo
                     $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
                         ->setFrom([$user->getEmail() => $user->getUsername()])
-                        ->setTo(['noreply@frikiradar.app' => 'FrikiRadar'])
+                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
                         ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
 
                     if (0 === $mailer->send($message)) {
