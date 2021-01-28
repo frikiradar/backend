@@ -35,7 +35,7 @@ class Device
     /**
      * @ORM\Column(type="datetime")
      */
-    private $lastUpdate;
+    private $last_update;
 
     /**
      * @ORM\Column(type="boolean")
@@ -47,13 +47,13 @@ class Device
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
-    private $deviceId;
+    private $device_id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
-    private $deviceName;
+    private $device_name;
 
     public function getId(): ?int
     {
@@ -86,12 +86,12 @@ class Device
 
     public function getLastUpdate(): ?\DateTimeInterface
     {
-        return $this->lastUpdate;
+        return $this->last_update;
     }
 
-    public function setLastUpdate(\DateTimeInterface $lastUpdate): self
+    public function setLastUpdate(\DateTimeInterface $last_update): self
     {
-        $this->lastUpdate = $lastUpdate;
+        $this->last_update = $last_update;
 
         return $this;
     }
@@ -110,24 +110,24 @@ class Device
 
     public function getDeviceId(): ?string
     {
-        return $this->deviceId;
+        return $this->device_id;
     }
 
-    public function setDeviceId(string $deviceId): self
+    public function setDeviceId(string $device_id): self
     {
-        $this->deviceId = $deviceId;
+        $this->device_id = $device_id;
 
         return $this;
     }
 
     public function getDeviceName(): ?string
     {
-        return $this->deviceName;
+        return $this->device_name;
     }
 
-    public function setDeviceName(string $deviceName): self
+    public function setDeviceName(string $device_name): self
     {
-        $this->deviceName = $deviceName;
+        $this->device_name = $device_name;
 
         return $this;
     }

@@ -155,7 +155,7 @@ class DevicesController extends AbstractController
             /**
              * @var Device
              */
-            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'deviceId' => $uuid));
+            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
 
             if (!empty($device)) {
                 $device->setToken(null);
