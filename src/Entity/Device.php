@@ -35,7 +35,7 @@ class Device
     /**
      * @ORM\Column(type="datetime")
      */
-    private $lastUpdate;
+    private $last_update;
 
     /**
      * @ORM\Column(type="boolean")
@@ -47,13 +47,13 @@ class Device
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
-    private $deviceId;
+    private $device_id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"default"})
      */
-    private $deviceName;
+    private $device_name;
 
     public function getId(): ?int
     {

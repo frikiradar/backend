@@ -14,3 +14,4 @@ src/Migrations
 .env
 .env.prod
 .env.local
+migrations
