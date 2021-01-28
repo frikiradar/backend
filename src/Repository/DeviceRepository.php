@@ -54,7 +54,7 @@ class DeviceRepository extends ServiceEntityRepository
 
     public function set(User $user, string $id, string $name, string $token = "")
     {
-        $device = $this->findOneBy(array('deviceName' => $name, 'user' => $user));
+        $device = $this->findOneBy(array('device_name' => $name, 'user' => $user));
 
         if (empty($device)) {
             $device = new Device();
