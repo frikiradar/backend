@@ -6,8 +6,9 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class JWTAuthentication
+class JWTAuthentication  extends AbstractController
 {
     private $mailer;
 
@@ -36,7 +37,7 @@ class JWTAuthentication
                 ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
-                    $this->templating->render(
+                    $this->renderView(
                         "emails/registration.html.twig",
                         [
                             'username' => $user->getUsername(),
