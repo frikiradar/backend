@@ -20,11 +20,12 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
         $this->em = $entityManager;
+        $this->notification = $notification;
     }
 
     // /**
@@ -363,11 +364,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         $this->em->persist($radar);
                         $this->em->flush();
 
-                        $notification = new NotificationService();
                         $title = $fromUser->getUsername();
                         $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
                         $url = "/profile/" . $fromUser->getId();
-                        $notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+                        $this->notification->push($fromUser, $toUser, $title, $text, $url, "radar");
                     }
                 }
             }

@@ -6,9 +6,15 @@ use App\Entity\User;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
+use Doctrine\ORM\EntityManagerInterface;
 
 class NotificationService
 {
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
         $tokens = [];
@@ -57,7 +63,6 @@ class NotificationService
 
                     $today = new \DateTime;
                     if ($report->failures()->count() >= count($tokens) || $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
-                        $em = $this->container->get('doctrine')->getManager();
                         $toUser->setActive(0);
                         $this->em->persist($toUser);
                         $this->em->flush();

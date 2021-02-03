@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class JWTAuthentication  extends AbstractController
+class JWTAuthentication extends AbstractController
 {
     private $mailer;
 

@@ -26,12 +26,18 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class UserLikesController extends AbstractController
 {
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
-    {
+    public function __construct(
+        UserRepository $userRepository,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        RequestService $request,
+        NotificationService $notification
+    ) {
         $this->serializer = $serializer;
         $this->userRepository = $userRepository;
         $this->em = $entityManager;
         $this->request = $request;
+        $this->notification = $notification;
     }
 
 
@@ -56,8 +62,7 @@ class UserLikesController extends AbstractController
                 $text = "Te ha entregado su kokoro ❤️, ya puedes comenzar a chatear.";
                 $url = "/profile/" . $newLike->getFromUser()->getId();
 
-                $notification = new NotificationService();
-                $notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+                $this->notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             }
 
             $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);

@@ -3,13 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Mercure\Publisher;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\NotificationService;
@@ -25,11 +21,12 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class NotificationsController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
+    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request, NotificationService $notification)
     {
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
+        $this->notification = $notification;
     }
 
 
@@ -81,8 +78,7 @@ class NotificationsController extends AbstractController
             $this->em->persist($chat);
             $this->em->flush();
 
-            $notification = new NotificationService();
-            $notification->pushTopic($fromUser, $topic, $title, $text, $url);
+            $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
 
             return new Response($this->serializer->serialize("Notificación enviada correctamente", "json"));
         } catch (Exception $ex) {

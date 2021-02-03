@@ -24,12 +24,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class ChatController extends AbstractController
 {
-    public function __construct(ChatRepository $chatRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer, RequestService $request)
+    public function __construct(ChatRepository $chatRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer, RequestService $request, NotificationService $notification)
     {
         $this->chatRepository = $chatRepository;
         $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
+        $this->notification = $notification;
     }
 
     /**
@@ -65,8 +66,7 @@ class ChatController extends AbstractController
             $title = $fromUser->getUsername();
             $url = "/chat/" . $chat->getFromuser()->getId();
 
-            $notification = new NotificationService();
-            $notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
             return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
         } else {
@@ -85,7 +85,14 @@ class ChatController extends AbstractController
             $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
 
             foreach ($chats as $key => $chat) {
-                $userId = $chat["fromuser"] == $fromUser->getId() ? $chat["touser"] : $chat["fromuser"];
+                if ($chat["fromuser"] == $fromUser->getId()) {
+                    $userId = $chat["touser"];
+                } elseif (!is_null($chat["fromuser"])) {
+                    $userId = $chat["fromuser"];
+                } else {
+                    $userId = $chat["touser"];
+                }
+
                 $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
                 $chats[$key]['count'] = $this->em->getRepository('App:Chat')->countUnreadUser($fromUser, $user);
                 $chats[$key]['user'] = [
