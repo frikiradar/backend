@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 
@@ -151,7 +151,7 @@ class UsersController extends AbstractController
                 $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize($user, "json", [ObjectNormalizer::SKIP_NULL_VALUES => true, 'groups' => ['default', 'tags']]));
+            return new Response($this->serializer->serialize($user, "json", [AbstractObjectNormalizer::SKIP_NULL_VALUES => true, 'groups' => ['default', 'tags']]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
