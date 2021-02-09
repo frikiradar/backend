@@ -126,7 +126,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $today = new \DateTime;
 
             $user['age'] = (int) $user['age'];
-            $user['distance'] = !$user['hide_location'] ? round($user['distance'], 0, PHP_ROUND_HALF_UP) : null;
+            if (!$user['hide_location']) {
+                $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+            }
             $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             $user['tags'] = $toUser->getTags();
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
