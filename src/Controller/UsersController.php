@@ -150,7 +150,7 @@ class UsersController extends AbstractController
                 $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
+            return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
