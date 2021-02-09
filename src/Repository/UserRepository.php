@@ -346,7 +346,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         foreach ($users as $key => $u) {
             $users[$key]['avatar'] = $u['avatar'] ?: "https://app.frikiradar.com/images/layout/default.jpg";
             $users[$key]['age'] = (int) $u['age'];
-            $users[$key]['distance'] = !$u['hide_location'] ? round($u['distance'], 0, PHP_ROUND_HALF_UP) : null;
+            if (!$u['hide_location']) {
+                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+            } else {
+                unset($users[$key]['distance']);
+            }
             $users[$key]['last_login'] = (!$u['hide_connection'] && $today->diff($u['last_login'])->format('%a') <= 7) ? $u['last_login'] : null;
             // echo $toTags[$u['id']];
             if (isset($toTags[$u['id']])) {
