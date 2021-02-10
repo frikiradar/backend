@@ -73,7 +73,7 @@ class NotificationsController extends AbstractController
                 $chat->setTouser($this->getUser());
             }
             $chat->setText($title . "\r\n\r\n" . $text);
-            $chat->setTimeCreation(new \DateTime);
+            $chat->setTimeCreation();
             $chat->setConversationId('frikiradar');
             $this->em->persist($chat);
             $this->em->flush();

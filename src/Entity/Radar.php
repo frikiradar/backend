@@ -36,7 +36,7 @@ class Radar
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $timeRead;
+    private $time_read;
 
     public function __construct()
     {
@@ -86,12 +86,12 @@ class Radar
 
     public function getTimeRead(): ?\DateTimeInterface
     {
-        return $this->timeRead;
+        return $this->time_read;
     }
 
-    public function setTimeRead(?\DateTimeInterface $timeRead): self
+    public function setTimeRead(?\DateTimeInterface $time_read): self
     {
-        $this->timeRead = $timeRead;
+        $this->time_read = $time_read;
 
         return $this;
     }

@@ -54,7 +54,7 @@ class RadarRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('r')
             ->andWhere('r.fromUser = :fromUser')
             ->andWhere('r.toUser = :toUser')
-            ->andWhere('r.timeRead IS NULL')
+            ->andWhere('r.time_read IS NULL')
             ->setParameter('fromUser', $fromUser)
             ->setParameter('toUser', $toUser)
             ->getQuery()
@@ -66,7 +66,7 @@ class RadarRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('r')
             ->select('count(r.id)')
             ->where('r.toUser = :toUser')
-            ->andWhere('r.timeRead IS NULL')
+            ->andWhere('r.time_read IS NULL')
             ->setParameter('toUser', $toUser->getId())
             ->getQuery()
             ->getSingleScalarResult();

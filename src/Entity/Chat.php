@@ -43,13 +43,13 @@ class Chat
      * @ORM\Column(type="datetime")
      * @Groups({"message"})
      */
-    private $timeCreation;
+    private $time_creation;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"message"})
      */
-    private $timeRead;
+    private $time_read;
 
     /**
      * @ORM\Column(type="string")
@@ -99,24 +99,24 @@ class Chat
 
     public function getTimeCreation(): ?\DateTimeInterface
     {
-        return $this->timeCreation;
+        return $this->time_creation;
     }
 
-    public function setTimeCreation(\DateTimeInterface $timeCreation): self
+    public function setTimeCreation(): self
     {
-        $this->timeCreation = new \DateTime;
+        $this->time_creation = new \DateTime;
 
         return $this;
     }
 
     public function getTimeRead(): ?\DateTimeInterface
     {
-        return $this->timeRead;
+        return $this->time_read;
     }
 
-    public function setTimeRead(\DateTimeInterface $timeRead): self
+    public function setTimeRead(\DateTimeInterface $time_read): self
     {
-        $this->timeRead = $timeRead;
+        $this->time_read = $time_read;
 
         return $this;
     }

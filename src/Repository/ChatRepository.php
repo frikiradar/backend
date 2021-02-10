@@ -57,7 +57,7 @@ class ChatRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->andWhere($toUser->getUsername() == 'frikiradar' ? 'c.fromuser = 1 AND c.touser IS NULL' : 'c.fromuser = :fromUser AND c.touser = :toUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
-            ->andWhere($read == true ? '1=1' : 'c.timeRead IS NULL')
+            ->andWhere($read == true ? '1=1' : 'c.time_read IS NULL')
             ->andWhere('c.id > :lastId')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())
@@ -83,7 +83,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
-        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.timeCreation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
+        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         return $query->getResult();
@@ -94,7 +94,7 @@ class ChatRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->select('count(c.id)')
             ->where('c.touser = :toUser')
-            ->andWhere('c.timeRead IS NULL')
+            ->andWhere('c.time_read IS NULL')
             ->setParameter('toUser', $toUser->getId())
             ->getQuery()
             ->getSingleScalarResult();
@@ -106,7 +106,7 @@ class ChatRepository extends ServiceEntityRepository
             ->select('count(c.id)')
             ->where('c.touser = :toUser')
             ->andWhere('c.fromuser = :fromUser')
-            ->andWhere('c.timeRead IS NULL')
+            ->andWhere('c.time_read IS NULL')
             ->setParameter('toUser', $toUser->getId())
             ->setParameter('fromUser', $fromUser->getId())
             ->getQuery()

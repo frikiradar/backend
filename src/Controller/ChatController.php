@@ -53,7 +53,7 @@ class ChatController extends AbstractController
             $text = $this->request->get($request, "text");
 
             $chat->setText($text);
-            $chat->setTimeCreation(new \DateTime);
+            $chat->setTimeCreation();
             $chat->setConversationId($conversationId);
             $this->em->persist($chat);
             $fromUser->setLastLogin();
@@ -132,7 +132,7 @@ class ChatController extends AbstractController
         $fromUser = $this->getUser();
 
         //marcamos como leidos los antiguos
-        $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'timeRead' => null));
+        $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
         foreach ($unreadChats as $chat) {
             $conversationId = $chat->getConversationId();
             if (!is_null($chat->getFromUser())) {
