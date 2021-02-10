@@ -363,7 +363,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
-                if ($type == 'radar' && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 90) {
+                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 90) {
                     if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);
