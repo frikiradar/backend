@@ -61,18 +61,18 @@ class NotificationService
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
 
-                    /*$today = new \DateTime;
-                    if ($report->failures()->count() >= count($tokens) || $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
+                    $today = new \DateTime;
+                    if ($report->failures()->count() >= count($tokens) && $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                         $toUser->setActive(0);
                         $this->em->persist($toUser);
                         $this->em->flush();
-                    }*/
+                    }
                 }
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
             }
         } else {
-            // TODO: Cuenta no activa, desactivar.
+            // TODO: Cuenta no activa, desactivar. Revisar porque version web no activa tokens
         }
     }
 
