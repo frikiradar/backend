@@ -112,7 +112,7 @@ class UserLikesController extends AbstractController
                     ];
                 } else {
                     $likes[$key]['user'] = [
-                        'id' => null,
+                        'id' => $userId,
                         'username' => 'Usuario desconocido',
                         'name' => 'Usuario desconocido',
                         'description' => 'Usuario con cuenta desactivada',
