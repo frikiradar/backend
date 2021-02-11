@@ -61,12 +61,12 @@ class NotificationService
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
 
-                    $today = new \DateTime;
+                    /*$today = new \DateTime;
                     if ($report->failures()->count() >= count($tokens) || $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                         $toUser->setActive(0);
                         $this->em->persist($toUser);
                         $this->em->flush();
-                    }
+                    }*/
                 }
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
