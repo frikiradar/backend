@@ -101,14 +101,24 @@ class UserLikesController extends AbstractController
             foreach ($likes as $key => $like) {
                 $userId = $like["fromuser"];
                 $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $likes[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => $user->getUsername(),
-                    'name' => $user->getName(),
-                    'description' => $user->getDescription(),
-                    'avatar' =>  $user->getAvatar() ?: null,
-                    'active' => $user->getActive()
-                ];
+                $active = $user->getActive();
+                if ($active) {
+                    $likes[$key]['user'] = [
+                        'id' => $userId,
+                        'username' => $user->getUsername(),
+                        'name' => $user->getName(),
+                        'description' => $user->getDescription(),
+                        'avatar' =>  $user->getAvatar() ?: null,
+                    ];
+                } else {
+                    $likes[$key]['user'] = [
+                        'id' => null,
+                        'username' => 'Usuario desconocido',
+                        'name' => 'Usuario desconocido',
+                        'description' => 'Usuario con cuenta desactivada',
+                        'avatar' => null,
+                    ];
+                }
             }
             return new Response($this->serializer->serialize($likes, "json"));
         } catch (Exception $ex) {
