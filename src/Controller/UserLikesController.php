@@ -4,13 +4,9 @@ namespace App\Controller;
 
 use App\Entity\LikeUser;
 use App\Repository\UserRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Mercure\Publisher;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\NotificationService;
@@ -110,7 +106,8 @@ class UserLikesController extends AbstractController
                     'username' => $user->getUsername(),
                     'name' => $user->getName(),
                     'description' => $user->getDescription(),
-                    'avatar' =>  $user->getAvatar() ?: null
+                    'avatar' =>  $user->getAvatar() ?: null,
+                    'active' => $user->getActive()
                 ];
             }
             return new Response($this->serializer->serialize($likes, "json"));
