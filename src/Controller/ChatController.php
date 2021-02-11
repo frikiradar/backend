@@ -83,25 +83,6 @@ class ChatController extends AbstractController
         $fromUser = $this->getUser();
         try {
             $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
-
-            foreach ($chats as $key => $chat) {
-                if ($chat["fromuser"] == $fromUser->getId()) {
-                    $userId = $chat["touser"];
-                } elseif (!is_null($chat["fromuser"])) {
-                    $userId = $chat["fromuser"];
-                } else {
-                    $userId = $chat["touser"];
-                }
-
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $chats[$key]['count'] = $this->em->getRepository('App:Chat')->countUnreadUser($fromUser, $user);
-                $chats[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => $user->getUsername(),
-                    'name' => $user->getName(),
-                    'avatar' =>  $user->getAvatar() ?: null
-                ];
-            }
             $response = $chats;
         } catch (Exception $ex) {
             $response = [
