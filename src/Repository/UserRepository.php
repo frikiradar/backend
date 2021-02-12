@@ -103,6 +103,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_connection',
                 'u.verified',
                 'u.avatar',
+                'u.roles',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
