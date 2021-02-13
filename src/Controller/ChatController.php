@@ -39,6 +39,7 @@ class ChatController extends AbstractController
      */
     public function put(Request $request, PublisherInterface $publisher)
     {
+        $cache = new FilesystemAdapter();
         $chat = new Chat();
         $fromUser = $this->getUser();
         $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
@@ -60,6 +61,8 @@ class ChatController extends AbstractController
             $fromUser->setLastLogin();
             $this->em->persist($fromUser);
             $this->em->flush();
+
+            $cache->deleteItem('users.chat.' . $fromUser->getId());
 
             $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
@@ -86,7 +89,7 @@ class ChatController extends AbstractController
         try {
             $chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
             if (!$chatsCache->isHit()) {
-                $chatsCache->expiresAfter(60);
+                $chatsCache->expiresAfter(3600);
                 $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
                 $chatsCache->set($chats);
                 $cache->save($chatsCache);
