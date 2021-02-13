@@ -49,13 +49,21 @@ class LikeUserRepository extends ServiceEntityRepository
     }
     */
 
-    public function getLikeUsers(User $user, $param)
+    public function getLikeUsers(User $user, $param, $page = null)
     {
         $dql = "SELECT IDENTITY(" . ($param == "delivered" ? "l.to_user)" : "l.from_user)") . " fromuser, l.date" . ($param == "delivered" ? " " : ", l.time_read ") .
             "FROM App:LikeUser l
             WHERE " . ($param == "delivered" ? "l.from_user" : "l.to_user") . " = :id ORDER BY l.id DESC";
 
-        $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $user->getId());
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('id', $user->getId());
+        if (!is_null($page)) {
+            $limit = 15;
+            $offset = ($page - 1) * $limit;
+            $query->setFirstResult($offset)
+                ->setMaxResults($limit);
+        }
         return $query->getResult();
     }
 

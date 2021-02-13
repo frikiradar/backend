@@ -15,6 +15,7 @@ use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -80,23 +81,25 @@ class ChatController extends AbstractController
      */
     public function getChats()
     {
+        $cache = new FilesystemAdapter();
         $fromUser = $this->getUser();
         try {
-            $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
-            $response = $chats;
+            $chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
+            if (!$chatsCache->isHit()) {
+                $chatsCache->expiresAfter(60);
+                $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
+                $chatsCache->set($chats);
+                $cache->save($chatsCache);
+                $fromUser->setLastLogin();
+                $this->em->persist($fromUser);
+                $this->em->flush();
+            } else {
+                $chats = $chatsCache->get();
+            }
+            return new Response($this->serializer->serialize($chats, "json"));
         } catch (Exception $ex) {
-            $response = [
-                'code' => 500,
-                'error' => true,
-                'data' => "Error al obtener los usuarios - Error: {$ex->getMessage()}",
-            ];
+            throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
-
-        $fromUser->setLastLogin();
-        $this->em->persist($fromUser);
-        $this->em->flush();
-
-        return new Response($this->serializer->serialize($response, "json"));
     }
 
 
@@ -105,6 +108,10 @@ class ChatController extends AbstractController
      */
     public function getChatAction(int $id, Request $request, PublisherInterface $publisher)
     {
+        $user = $this->getUser();
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('users.chat.' . $user->getId());
+
         $read = $this->request->get($request, "read");
         $page = $this->request->get($request, "page");
         $lastId = $this->request->get($request, "lastid", false) ?: 0;
@@ -129,7 +136,15 @@ class ChatController extends AbstractController
         $this->em->persist($fromUser);
         $this->em->flush();
 
-        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
+        $chatsCache = $cache->getItem('users.chat.' . $fromUser->getId() . $toUser->getId() . $read . $page . $lastId);
+        if (!$chatsCache->isHit()) {
+            $chatsCache->expiresAfter(3600);
+            $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
+            $chatsCache->set($chats);
+            $cache->save($chatsCache);
+        } else {
+            $chats = $chatsCache->get();
+        }
 
         return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
     }
@@ -168,6 +183,9 @@ class ChatController extends AbstractController
     {
         try {
             $user = $this->getUser();
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.chat.' . $user->getId());
+
             $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             if ($message->getFromuser()->getId() == $user->getId()) {
                 $this->em->remove($message);
@@ -189,6 +207,9 @@ class ChatController extends AbstractController
     {
         try {
             $fromUser = $this->getUser();
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.chat.' . $fromUser->getId());
+
             $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
             $this->em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
 

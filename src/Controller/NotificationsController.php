@@ -12,6 +12,7 @@ use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -35,17 +36,27 @@ class NotificationsController extends AbstractController
      */
     public function getNotifications()
     {
+        $cache = new FilesystemAdapter();
+        $user = $this->getUser();
         try {
-            $countRadar = $this->em->getRepository('App:Radar')->countUnread($this->getUser());
-            $countChats = $this->em->getRepository('App:Chat')->countUnread($this->getUser());
-            $countLikes = $this->em->getRepository('App:LikeUser')->countUnread($this->getUser());
+            $notificationsCache = $cache->getItem('users.notifications.' . $user->getId());
+            if (!$notificationsCache->isHit()) {
+                $notificationsCache->expiresAfter(60);
+                $countRadar = $this->em->getRepository('App:Radar')->countUnread($user);
+                $countChats = $this->em->getRepository('App:Chat')->countUnread($user);
+                $countLikes = $this->em->getRepository('App:LikeUser')->countUnread($user);
 
-            $notifications = ["radar" => (int) $countRadar, "chats" => (int) $countChats, "likes" => (int) $countLikes];
+                $notifications = ["radar" => (int) $countRadar, "chats" => (int) $countChats, "likes" => (int) $countLikes];
+                $notificationsCache->set($notifications);
+                $cache->save($notificationsCache);
 
-            $user = $this->getUser();
-            $user->setLastLogin();
-            $this->em->persist($user);
-            $this->em->flush();
+                $user = $this->getUser();
+                $user->setLastLogin();
+                $this->em->persist($user);
+                $this->em->flush();
+            } else {
+                $notifications = $notificationsCache->get();
+            }
 
             return new Response($this->serializer->serialize($notifications, "json"));
         } catch (Exception $ex) {

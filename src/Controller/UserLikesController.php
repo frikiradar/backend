@@ -13,6 +13,7 @@ use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -95,30 +96,43 @@ class UserLikesController extends AbstractController
      */
     public function getLikesAction(Request $request)
     {
+        $cache = new FilesystemAdapter();
         try {
-            $likes = $this->em->getRepository('App:LikeUser')->getLikeUsers($this->getUser(), $this->request->get($request, "param") ?: "received");
+            $param = $this->request->get($request, "param") ?: "received";
+            $page = $this->request->get($request, "page") ?: null;
+            $user = $this->getUser();
 
-            foreach ($likes as $key => $like) {
-                $userId = $like["fromuser"];
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                $active = $user->getActive();
-                if ($active) {
-                    $likes[$key]['user'] = [
-                        'id' => $userId,
-                        'username' => $user->getUsername(),
-                        'name' => $user->getName(),
-                        'description' => $user->getDescription(),
-                        'avatar' =>  $user->getAvatar() ?: null,
-                    ];
-                } else {
-                    $likes[$key]['user'] = [
-                        'id' => $userId,
-                        'username' => 'Usuario desconocido',
-                        'name' => 'Usuario desconocido',
-                        'description' => 'Usuario con cuenta desactivada',
-                        'avatar' => null,
-                    ];
+            $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
+            if (!$likesCache->isHit()) {
+                $likesCache->expiresAfter(5 * 60);
+                $likes = $this->em->getRepository('App:LikeUser')->getLikeUsers($user, $param, $page);
+
+                foreach ($likes as $key => $like) {
+                    $userId = $like["fromuser"];
+                    $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                    $active = $user->getActive();
+                    if ($active) {
+                        $likes[$key]['user'] = [
+                            'id' => $userId,
+                            'username' => $user->getUsername(),
+                            'name' => $user->getName(),
+                            'description' => $user->getDescription(),
+                            'avatar' =>  $user->getAvatar() ?: null,
+                        ];
+                    } else {
+                        $likes[$key]['user'] = [
+                            'id' => $userId,
+                            'username' => 'Usuario desconocido',
+                            'name' => 'Usuario desconocido',
+                            'description' => 'Usuario con cuenta desactivada',
+                            'avatar' => null,
+                        ];
+                    }
                 }
+                $likesCache->set($likes);
+                $cache->save($likesCache);
+            } else {
+                $likes = $likesCache->get();
             }
             return new Response($this->serializer->serialize($likes, "json"));
         } catch (Exception $ex) {

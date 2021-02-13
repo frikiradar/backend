@@ -23,6 +23,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 
 /**
@@ -139,16 +140,25 @@ class UsersController extends AbstractController
      */
     public function getUserAction(int $id)
     {
+        $cache = new FilesystemAdapter();
         try {
-            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-            $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
-            $user['images'] = $toUser->getImages();
+            $userCache = $cache->getItem('users.get.' . $id);
+            if (!$userCache->isHit()) {
+                $userCache->expiresAfter(5 * 60);
+                $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+                $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+                $user['images'] = $toUser->getImages();
+                $userCache->set($user);
+                $cache->save($userCache);
 
-            $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
-            if (!is_null($radar)) {
-                $radar->setTimeRead(new \DateTime);
-                $this->em->persist($radar);
-                $this->em->flush();
+                $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
+                if (!is_null($radar)) {
+                    $radar->setTimeRead(new \DateTime);
+                    $this->em->persist($radar);
+                    $this->em->flush();
+                }
+            } else {
+                $user = $userCache->get();
             }
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
@@ -374,12 +384,21 @@ class UsersController extends AbstractController
     {
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
+        $cache = new FilesystemAdapter();
 
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
-
+        $user = $this->getUser();
         try {
-            $users = $this->em->getRepository('App:User')->getRadarUsers($this->getUser(), $page, $ratio);
+            $usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
+            if (!$usersCache->isHit()) {
+                $usersCache->expiresAfter(60 * 5);
+                $users = $this->em->getRepository('App:User')->getRadarUsers($user, $page, $ratio);
+                $usersCache->set($users);
+                $cache->save($usersCache);
+            } else {
+                $users = $usersCache->get();
+            }
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -393,11 +412,22 @@ class UsersController extends AbstractController
      */
     public function searchAction(Request $request)
     {
+        $cache = new FilesystemAdapter();
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
+        $query = $this->request->get($request, "query");
 
+        $user = $this->getUser();
         try {
-            $users = $this->em->getRepository('App:User')->searchUsers($this->request->get($request, "query"), $this->getUser(), $order, $page);
+            $searchCache = $cache->getItem('users.search.' . $user->getId() . $page . $order . $query);
+            if (!$searchCache->isHit()) {
+                $searchCache->expiresAfter(60);
+                $users = $this->em->getRepository('App:User')->searchUsers($query, $user, $order, $page);
+                $searchCache->set($users);
+                $cache->save($searchCache);
+            } else {
+                $users = $searchCache->get();
+            }
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
