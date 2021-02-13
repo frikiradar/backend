@@ -99,12 +99,11 @@ class UserLikesController extends AbstractController
         $cache = new FilesystemAdapter();
         try {
             $param = $this->request->get($request, "param") ?: "received";
-            if ($this->request->get($request, "page")) {
+            if (!empty($this->request->get($request, "page"))) {
                 $page = $this->request->get($request, "page");
             } else {
                 $page = null;
             }
-            $page = $this->request->get($request, "page") ?: null;
             $user = $this->getUser();
 
             $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
