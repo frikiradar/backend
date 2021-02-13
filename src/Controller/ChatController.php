@@ -123,7 +123,7 @@ class ChatController extends AbstractController
         $fromUser = $this->getUser();
 
         // TODO: Borrar cache hasta mover cache de chat a local
-        $cache->getItem('users.chat.' . $fromUser->getId() . $toUser->getId() . $read . $page . $lastId);
+        $cache->deleteItem('users.chat.' . $fromUser->getId() . $toUser->getId() . $read . $page . $lastId);
 
         //marcamos como leidos los antiguos
         $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
