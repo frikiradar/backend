@@ -40,6 +40,11 @@ class Chat
     private $text;
 
     /**
+     * @Groups({"message"})
+     */
+    private $image;
+
+    /**
      * @ORM\Column(type="datetime")
      * @Groups({"message"})
      */
@@ -85,7 +90,7 @@ class Chat
         return $this;
     }
 
-    public function getText(): string
+    public function getText(): ?string
     {
         return $this->text;
     }
@@ -93,6 +98,18 @@ class Chat
     public function setText(string $text): self
     {
         $this->text = $text;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

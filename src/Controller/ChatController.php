@@ -52,20 +52,31 @@ class ChatController extends AbstractController
 
             $conversationId = $min . "_" . $max;
 
-            $text = $this->request->get($request, "text");
+            $text = $this->request->get($request, "text", false);
+            $image = $this->request->get($request, "image", false);
+            if (!empty($text)) {
+                $chat->setText($text);
+                $chat->setTimeCreation();
+                $chat->setConversationId($conversationId);
+                $this->em->persist($chat);
+                $fromUser->setLastLogin();
+                $this->em->persist($fromUser);
+                $this->em->flush();
+            } else {
+                $text = $fromUser->getName() . ' te ha enviado una imagen.';
+                $chat->setImage($image);
+                $chat->setTimeCreation();
+                $chat->setConversationId($conversationId);
+                $fromUser->setLastLogin();
+                $this->em->persist($fromUser);
+                $this->em->flush();
+            }
 
-            $chat->setText($text);
-            $chat->setTimeCreation();
-            $chat->setConversationId($conversationId);
-            $this->em->persist($chat);
-            $fromUser->setLastLogin();
-            $this->em->persist($fromUser);
-            $this->em->flush();
-
-            $cache->deleteItem('users.chat.' . $fromUser->getId());
 
             $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
+
+            $cache->deleteItem('users.chat.' . $fromUser->getId());
 
             $title = $fromUser->getUsername();
             $url = "/chat/" . $chat->getFromuser()->getId();
