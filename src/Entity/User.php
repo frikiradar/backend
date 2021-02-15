@@ -443,9 +443,13 @@ class User implements UserInterface
         return $this->last_login;
     }
 
-    public function setLastLogin(): self
+    public function setLastLogin(null|bool|\DateTimeInterface $last_login = false): self
     {
-        $this->last_login = new \DateTime();
+        if ($last_login === false) {
+            $this->last_login = new \DateTime();
+        } else {
+            $this->last_login = $last_login;
+        }
 
         return $this;
     }

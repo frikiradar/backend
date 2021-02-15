@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Chat;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -15,9 +16,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ChatRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, Chat::class);
+        $this->em = $entityManager;
     }
 
     // /**
@@ -101,7 +103,9 @@ class ChatRepository extends ServiceEntityRepository
             $user = $query->getOneOrNullResult();
             $chats[$key]['count'] = $this->countUnreadUser($fromUser, $user);
             $active = $user->getActive();
-            if ($active) {
+            $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
+
+            if ($active && !$blocked) {
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),

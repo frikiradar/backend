@@ -122,16 +122,17 @@ class ChatController extends AbstractController
      */
     public function getChatAction(int $id, Request $request, PublisherInterface $publisher)
     {
-        $user = $this->getUser();
+        $fromUser = $this->getUser();
         $cache = new FilesystemAdapter();
-        $cache->deleteItem('users.chat.' . $user->getId());
+        $cache->deleteItem('users.chat.' . $fromUser->getId());
 
         $read = $this->request->get($request, "read");
         $page = $this->request->get($request, "page");
         $lastId = $this->request->get($request, "lastid", false) ?: 0;
 
         $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-        $fromUser = $this->getUser();
+
+        $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
         //marcamos como leidos los antiguos
         $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
@@ -149,7 +150,24 @@ class ChatController extends AbstractController
         $fromUser->setLastLogin();
         $this->em->persist($fromUser);
         $this->em->flush();
+
         $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
+        foreach ($chats as $key => $chat) {
+            if (!$chat->getFromuser()->getActive() || $blocked) {
+                $chats[$key]->getFromuser()->setUsername('Usuario desconocido');
+                $chats[$key]->getFromuser()->setName('Usuario desconocido');
+                $chats[$key]->getFromuser()->setAvatar(null);
+                $chats[$key]->getFromuser()->setActive(false);
+                $chats[$key]->getFromuser()->setLastLogin(null);
+            }
+            if (!$chat->getTouser()->getActive() || $blocked) {
+                $chats[$key]->getTouser()->setUsername('Usuario desconocido');
+                $chats[$key]->getTouser()->setName('Usuario desconocido');
+                $chats[$key]->getTouser()->setAvatar(null);
+                $chats[$key]->getTouser()->setActive(false);
+                $chats[$key]->getTouser()->setLastLogin(null);
+            }
+        }
 
         return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
     }

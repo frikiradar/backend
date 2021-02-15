@@ -45,6 +45,11 @@ class Chat
     private $image;
 
     /**
+     * @Groups({"message"})
+     */
+    private $audio;
+
+    /**
      * @ORM\Column(type="datetime")
      * @Groups({"message"})
      */
@@ -110,6 +115,18 @@ class Chat
     public function setImage(string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getAudio(): ?string
+    {
+        return $this->audio;
+    }
+
+    public function setAudio(string $audio): self
+    {
+        $this->audio = $audio;
 
         return $this;
     }
