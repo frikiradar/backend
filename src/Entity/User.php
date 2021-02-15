@@ -330,6 +330,10 @@ class User implements UserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
+        if (in_array('ROLE_ADMIN', $roles)) {
+            $roles[] = 'ROLE_MASTER';
+        }
+
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
