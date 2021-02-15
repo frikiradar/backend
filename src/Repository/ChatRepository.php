@@ -100,13 +100,22 @@ class ChatRepository extends ServiceEntityRepository
             $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $userId);
             $user = $query->getOneOrNullResult();
             $chats[$key]['count'] = $this->countUnreadUser($fromUser, $user);
-
-            $chats[$key]['user'] = [
-                'id' => $user->getId(),
-                'username' => $user->getUsername(),
-                'name' => $user->getName(),
-                'avatar' =>  $user->getAvatar() ?: null
-            ];
+            $active = $user->getActive();
+            if ($active) {
+                $chats[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => $user->getUsername(),
+                    'name' => $user->getName(),
+                    'avatar' =>  $user->getAvatar() ?: null
+                ];
+            } else {
+                $chats[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => 'Usuario desconocido',
+                    'name' => 'Usuario desconocido',
+                    'avatar' => null
+                ];
+            }
         }
 
         return $chats;

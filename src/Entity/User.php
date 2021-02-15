@@ -35,14 +35,14 @@ class User implements UserInterface
      *     message="Solo se permiten caracteres alfanuméricos, puntos y/o guiones; ni letras con tildes, ni caracteres especiales",
      *     payload = {"severity" = "error"}
      * )
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $username;
 
     /**
      * @var array
      * @ORM\Column(type="json")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $roles = [];
 
@@ -118,7 +118,6 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default", "message"})
-     * @Ignore()
      */
     private $last_login;
 
@@ -166,7 +165,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $avatar;
 
@@ -200,7 +199,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private bool $active = false;
 
@@ -259,13 +258,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private bool $verified;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private ?string $name;
 

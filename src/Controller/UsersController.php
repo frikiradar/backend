@@ -147,7 +147,9 @@ class UsersController extends AbstractController
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
                 $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
-                $user['images'] = $toUser->getImages();
+                if ($user['active']) {
+                    $user['images'] = $toUser->getImages();
+                }
 
                 $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
                 if (!is_null($radar)) {
