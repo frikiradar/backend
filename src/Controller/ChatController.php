@@ -153,14 +153,14 @@ class ChatController extends AbstractController
 
         $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
         foreach ($chats as $key => $chat) {
-            if (!$chat->getFromuser()->getActive() || $blocked) {
+            if ((null !== $chat->getFromuser() && !$chat->getFromuser()->getActive()) || $blocked) {
                 $chats[$key]->getFromuser()->setUsername('Usuario desconocido');
                 $chats[$key]->getFromuser()->setName('Usuario desconocido');
                 $chats[$key]->getFromuser()->setAvatar(null);
                 $chats[$key]->getFromuser()->setActive(false);
                 $chats[$key]->getFromuser()->setLastLogin(null);
             }
-            if (!$chat->getTouser()->getActive() || $blocked) {
+            if ((null !== $chat->getTouser() && !$chat->getTouser()->getActive()) || $blocked) {
                 $chats[$key]->getTouser()->setUsername('Usuario desconocido');
                 $chats[$key]->getTouser()->setName('Usuario desconocido');
                 $chats[$key]->getTouser()->setAvatar(null);
