@@ -443,7 +443,7 @@ class User implements UserInterface
         return $this->last_login;
     }
 
-    public function setLastLogin(null|bool|\DateTimeInterface $last_login = false): self
+    public function setLastLogin($last_login = false): self
     {
         if ($last_login === false) {
             $this->last_login = new \DateTime();
