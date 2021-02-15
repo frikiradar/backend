@@ -148,8 +148,6 @@ class UsersController extends AbstractController
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
                 $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
                 $user['images'] = $toUser->getImages();
-                $userCache->set($user);
-                $cache->save($userCache);
 
                 $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
                 if (!is_null($radar)) {
@@ -157,11 +155,15 @@ class UsersController extends AbstractController
                     $this->em->persist($radar);
                     $this->em->flush();
                 }
+
+                $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+                $userCache->set($user);
+                $cache->save($userCache);
             } else {
                 $user = $userCache->get();
             }
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
+            return new Response($user);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
