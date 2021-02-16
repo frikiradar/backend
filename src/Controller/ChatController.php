@@ -101,15 +101,28 @@ class ChatController extends AbstractController
 
             $text = $fromUser->getName() . ' te ha enviado una imagen.';
             $filename = date('YmdHis');
-            $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/", $filename);
-            $image = $uploader->upload($imageFile);
-            $chat->setImage($image);
-            $chat->setTimeCreation();
-            $chat->setConversationId($conversationId);
-            $this->em->persist($chat);
-            $fromUser->setLastLogin();
-            $this->em->persist($fromUser);
-            $this->em->flush();
+            if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                $absolutePath = 'images/chat/';
+                $server = "https://$_SERVER[HTTP_HOST]";
+                $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
+                $image = $uploader->upload($imageFile);
+                $chat->setImage($image);
+                $chat->setTimeCreation();
+                $chat->setConversationId($conversationId);
+            } else {
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                $server = "https://app.frikiradar.com";
+                $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
+                $image = $uploader->upload($imageFile);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $chat->setImage($src);
+                $chat->setTimeCreation();
+                $chat->setConversationId($conversationId);
+                $this->em->persist($chat);
+                $fromUser->setLastLogin();
+                $this->em->persist($fromUser);
+                $this->em->flush();
+            }
 
             $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
