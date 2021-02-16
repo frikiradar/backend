@@ -34,17 +34,19 @@ class Chat
     private $touser;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      * @Groups({"message"})
      */
     private $text;
 
     /**
+     * @ORM\Column(type="text", nullable=true)
      * @Groups({"message"})
      */
     private $image;
 
     /**
+     * @ORM\Column(type="text", nullable=true)
      * @Groups({"message"})
      */
     private $audio;

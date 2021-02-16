@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use App\Repository\ChatRepository;
+use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -53,25 +54,62 @@ class ChatController extends AbstractController
             $conversationId = $min . "_" . $max;
 
             $text = $this->request->get($request, "text", false);
-            $image = $this->request->get($request, "image", false);
-            if (!empty($text)) {
-                $chat->setText($text);
-                $chat->setTimeCreation();
-                $chat->setConversationId($conversationId);
-                $this->em->persist($chat);
-                $fromUser->setLastLogin();
-                $this->em->persist($fromUser);
-                $this->em->flush();
-            } else {
-                $text = $fromUser->getName() . ' te ha enviado una imagen.';
-                $chat->setImage($image);
-                $chat->setTimeCreation();
-                $chat->setConversationId($conversationId);
-                $fromUser->setLastLogin();
-                $this->em->persist($fromUser);
-                $this->em->flush();
-            }
 
+            $chat->setText($text);
+            $chat->setTimeCreation();
+            $chat->setConversationId($conversationId);
+            $this->em->persist($chat);
+            $fromUser->setLastLogin();
+            $this->em->persist($fromUser);
+            $this->em->flush();
+
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+            $publisher($update);
+
+            $cache->deleteItem('users.chat.' . $fromUser->getId());
+
+            $title = $fromUser->getUsername();
+            $url = "/chat/" . $chat->getFromuser()->getId();
+
+            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
+        } else {
+            throw new HttpException(400, "Error al marcar como leido - Error");
+        }
+    }
+
+    /**
+     * @Route("/v1/chat-upload", name="chat_upload", methods={"POST"})
+     */
+    public function upload(Request $request, PublisherInterface $publisher)
+    {
+        $cache = new FilesystemAdapter();
+        $chat = new Chat();
+        $fromUser = $this->getUser();
+        $toUser = $this->em->getRepository('App:User')->find($request->request->get("touser"));
+        if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
+            $chat->setTouser($toUser);
+            $chat->setFromuser($fromUser);
+
+            $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+            $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+
+            $conversationId = $min . "_" . $max;
+
+            $imageFile = $request->files->get('image');
+
+            $text = $fromUser->getName() . ' te ha enviado una imagen.';
+            $filename = date('YmdHis');
+            $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/", $filename);
+            $image = $uploader->upload($imageFile);
+            $chat->setImage($image);
+            $chat->setTimeCreation();
+            $chat->setConversationId($conversationId);
+            $this->em->persist($chat);
+            $fromUser->setLastLogin();
+            $this->em->persist($fromUser);
+            $this->em->flush();
 
             $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
