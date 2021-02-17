@@ -126,10 +126,6 @@ class ChatController extends AbstractController
                     $this->em->flush();
                 }
 
-                if (empty($text) && !empty($image)) {
-                    $chat->setText($fromUser->getName() . ' te ha enviado una imagen.');
-                }
-
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
 
@@ -137,6 +133,10 @@ class ChatController extends AbstractController
 
                 $title = $fromUser->getUsername();
                 $url = "/chat/" . $chat->getFromuser()->getId();
+
+                if (empty($text) && !empty($image)) {
+                    $text = $fromUser->getName() . ' te ha enviado una imagen.';
+                }
 
                 $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
@@ -271,6 +271,15 @@ class ChatController extends AbstractController
 
             $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             if ($message->getFromuser()->getId() == $user->getId()) {
+                $conversationId = $message->getConversationId();
+                $image = $message->getImage();
+                if ($image) {
+                    $f = explode("/", $image);
+                    $filename = $f[count($f) - 1];
+                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
+                    unlink($file);
+                }
+
                 $this->em->remove($message);
                 $this->em->flush();
                 return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
