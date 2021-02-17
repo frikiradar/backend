@@ -99,8 +99,8 @@ class ChatController extends AbstractController
                 $conversationId = $min . "_" . $max;
 
                 $imageFile = $request->files->get('image');
+                $text = $request->request->get("text");
 
-                $text = $fromUser->getName() . ' te ha enviado una imagen.';
                 $filename = date('YmdHis');
                 if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
                     $absolutePath = 'images/chat/';
@@ -117,12 +117,17 @@ class ChatController extends AbstractController
                     $image = $uploader->upload($imageFile);
                     $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                     $chat->setImage($src);
+                    $chat->setText($text);
                     $chat->setTimeCreation();
                     $chat->setConversationId($conversationId);
                     $this->em->persist($chat);
                     $fromUser->setLastLogin();
                     $this->em->persist($fromUser);
                     $this->em->flush();
+                }
+
+                if (empty($text) && !empty($image)) {
+                    $chat->setText($fromUser->getName() . ' te ha enviado una imagen.');
                 }
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
