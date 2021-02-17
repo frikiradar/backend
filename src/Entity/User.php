@@ -677,7 +677,7 @@ class User implements UserInterface
                 }
             }
         }
-        $this->images = array_unique($this->images);
+        $this->images = array_unique($images);
 
         return $this->images;
     }
