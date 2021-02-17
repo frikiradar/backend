@@ -106,7 +106,7 @@ class ChatController extends AbstractController
                     $absolutePath = 'images/chat/';
                     $server = "https://$_SERVER[HTTP_HOST]";
                     $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
-                    $image = $uploader->upload($imageFile);
+                    $image = $uploader->upload($imageFile, false, 70);
                     $chat->setImage($image);
                     $chat->setTimeCreation();
                     $chat->setConversationId($conversationId);
@@ -114,7 +114,7 @@ class ChatController extends AbstractController
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
                     $server = "https://app.frikiradar.com";
                     $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
-                    $image = $uploader->upload($imageFile);
+                    $image = $uploader->upload($imageFile, false, 50);
                     $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                     $chat->setImage($src);
                     $chat->setText($text);

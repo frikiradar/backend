@@ -1,5 +1,5 @@
 <?php
- // src/Service/FileUploader.php
+// src/Service/FileUploader.php
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -19,7 +19,7 @@ class FileUploader
         $this->targetFilename = $targetFilename;
     }
 
-    public function upload(UploadedFile $file)
+    public function upload(UploadedFile $file, $square = true, $quality = 90)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
@@ -34,13 +34,22 @@ class FileUploader
                 'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
                 'resolution-x' => 150,
                 'resolution-y' => 150,
-                'jpeg_quality' => 90
+                'jpeg_quality' => $quality
             );
 
             $image = $imagine
-                ->open($file->getRealPath())
-                ->resize(new Box(512, 512))
-                ->save($targetSrc, $options);
+                ->open($file->getRealPath());
+            if ($square) {
+                $image->resize(new Box(512, 512));
+            } else {
+                $size = $image->getSize();
+                $height = $size->getHeight();
+                $width = $size->getWidth();
+                $newWidth = 700;
+                $newHeigth = $height * $newWidth / $width;
+                $image->resize(new Box($newWidth, $newHeigth));
+            }
+            $image = $image->save($targetSrc, $options);
             if ($image) {
                 return $targetSrc;
             }
