@@ -24,7 +24,7 @@ class Config
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=70, nullable=true)
+     * @ORM\Column(type="text", length=65535, nullable=true)
      */
     private $value;
 
