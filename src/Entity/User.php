@@ -673,11 +673,11 @@ class User implements UserInterface
                 $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
 
                 if ($this->avatar !== $image) {
-                    $images[] = $image;
+                    $this->images[] = $image;
                 }
             }
         }
-        $this->images = array_unique($images);
+        $this->images = array_unique($this->images);
 
         return $this->images;
     }
