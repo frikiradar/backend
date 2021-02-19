@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use App\Repository\ChatRepository;
+use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,13 +27,21 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class ChatController extends AbstractController
 {
-    public function __construct(ChatRepository $chatRepository, EntityManagerInterface $entityManager, SerializerInterface $serializer, RequestService $request, NotificationService $notification)
-    {
+    public function __construct(
+        ChatRepository $chatRepository,
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer,
+        RequestService $request,
+        NotificationService $notification,
+        AccessCheckerService $accessChecker
+    ) {
         $this->chatRepository = $chatRepository;
         $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
         $this->notification = $notification;
+
+        $accessChecker->checkAccess();
     }
 
     /**

@@ -15,6 +15,7 @@ use App\Entity\ViewUser;
 use App\Service\GeolocationService;
 use App\Service\NotificationService;
 use App\Service\RequestService;
+use App\Service\AccessCheckerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,13 +41,16 @@ class UsersController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         RequestService $request,
-        NotificationService $notification
+        NotificationService $notification,
+        AccessCheckerService $accessChecker
     ) {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
+
+        $accessChecker->checkAccess();
     }
 
     // USER URI's
