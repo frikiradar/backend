@@ -105,7 +105,7 @@ class ChatRepository extends ServiceEntityRepository
             $active = $user->getActive();
             $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
 
-            if ($active && !$blocked) {
+            if (!$blocked) {
                 $chats[$key]['user'] = [
                     'id' => $userId,
                     'username' => $user->getUsername(),
