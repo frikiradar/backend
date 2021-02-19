@@ -397,21 +397,21 @@ class UsersController extends AbstractController
     {
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
-        $cache = new FilesystemAdapter();
+        // $cache = new FilesystemAdapter();
 
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
         $user = $this->getUser();
         try {
-            $usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
+            /*$usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
             if (!$usersCache->isHit()) {
-                $usersCache->expiresAfter(60 * 5);
-                $users = $this->em->getRepository('App:User')->getRadarUsers($user, $page, $ratio);
-                $usersCache->set($users);
+                $usersCache->expiresAfter(60 * 5);*/
+            $users = $this->em->getRepository('App:User')->getRadarUsers($user, $page, $ratio);
+            /*$usersCache->set($users);
                 $cache->save($usersCache);
             } else {
                 $users = $usersCache->get();
-            }
+            }*/
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
