@@ -11,13 +11,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 
 
 /**
  * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User implements UserInterface
+class User implements UserInterface, EquatableInterface
 {
     /**
      * @ORM\Id()
@@ -285,16 +286,19 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"default"})
      */
     private $banned;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $ban_reason;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"default"})
      */
     private $ban_end;
 
@@ -1098,5 +1102,30 @@ class User implements UserInterface
         $this->ban_end = $ban_end;
 
         return $this;
+    }
+
+    public function isEqualTo(UserInterface $user)
+    {
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        if ($this->password !== $user->getPassword()) {
+            return false;
+        }
+
+        if ($this->username !== $user->getUsername()) {
+            return false;
+        }
+
+        if ($this->roles !== $user->getRoles()) {
+            return false;
+        }
+
+        if ($this->banned !== $user->getBanned()) {
+            return false;
+        }
+
+        return true;
     }
 }
