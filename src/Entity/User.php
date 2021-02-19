@@ -211,7 +211,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private ?bool $hide_connection = false;
 
@@ -282,6 +282,21 @@ class User implements UserInterface
      * @ORM\OneToMany(targetEntity=ViewUser::class, mappedBy="from_user", orphanRemoval=true)
      */
     private $viewUsers;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default" : 0})
+     */
+    private $banned;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $ban_reason;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $ban_end;
 
     public function __construct()
     {
@@ -440,6 +455,10 @@ class User implements UserInterface
 
     public function getLastLogin(): ?\DateTimeInterface
     {
+        if ($this->getHideConnection()) {
+            return null;
+        }
+
         return $this->last_login;
     }
 
@@ -1041,6 +1060,42 @@ class User implements UserInterface
                 $viewUser->setFromUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getBanned(): ?bool
+    {
+        return $this->banned;
+    }
+
+    public function setBanned(bool $banned): self
+    {
+        $this->banned = $banned;
+
+        return $this;
+    }
+
+    public function getBanReason(): ?string
+    {
+        return $this->ban_reason;
+    }
+
+    public function setBanReason(?string $ban_reason): self
+    {
+        $this->ban_reason = $ban_reason;
+
+        return $this;
+    }
+
+    public function getBanEnd(): ?\DateTimeInterface
+    {
+        return $this->ban_end;
+    }
+
+    public function setBanEnd(?\DateTimeInterface $ban_end): self
+    {
+        $this->ban_end = $ban_end;
 
         return $this;
     }
