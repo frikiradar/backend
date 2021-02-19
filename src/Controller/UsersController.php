@@ -7,11 +7,13 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Entity\Tag;
 use App\Entity\Category;
-use App\Service\FileUploader;
+use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
+use App\Entity\Chat;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
+use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,12 +35,18 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
  */
 class UsersController extends AbstractController
 {
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
-    {
+    public function __construct(
+        UserRepository $userRepository,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        RequestService $request,
+        NotificationService $notification
+    ) {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
+        $this->notification = $notification;
     }
 
     // USER URI's
@@ -306,7 +314,7 @@ class UsersController extends AbstractController
 
         $id = $user->getId();
         $filename = date('YmdHis');
-        $uploader = new FileUploader("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
+        $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
         if (isset($image)) {
@@ -892,6 +900,50 @@ class UsersController extends AbstractController
             }
         } else {
             throw new HttpException(400, "La contraseña no es correcta");
+        }
+    }
+
+    /**
+     * @Route("/v1/ban", name="ban", methods={"PUT"})
+     */
+    public function ban(Request $request)
+    {
+        $chat = new Chat();
+
+        try {
+            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+            $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
+            $title = "⚠️ Tu cuenta ha sido baneada";
+            $date = $this->request->get($request, 'date', false);
+            $text = $this->request->get($request, 'message');
+
+            $url = "/chat/" . $fromUser->getId();
+
+            $toUser->setBanned(true);
+            $toUser->setBanReason($text);
+            $toUser->setBanEnd(\DateTime::createFromFormat('Y-m-d', $date));
+            $this->em->persist($toUser);
+
+            if (!empty($date)) {
+                $text = $text . PHP_EOL . "Fecha de finalización: " . $date;
+            } else {
+                $text = $text . PHP_EOL . "Fecha de finalización: Indefinida";
+            }
+
+            $chat->setFromuser($fromUser);
+            $chat->setTouser($toUser);
+
+            $chat->setText($title . "\r\n\r\n" . $text);
+            $chat->setTimeCreation();
+            $chat->setConversationId('frikiradar');
+            $this->em->persist($chat);
+            $this->em->flush();
+
+            $this->notification->push($fromUser, $toUser, $title, $text, $url, "ban");
+
+            return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al realizar el baneo - Error: {$ex->getMessage()}");
         }
     }
 }

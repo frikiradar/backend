@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class JsonExceptionResponseTransformerListener
 {
-    public function onKernelException(ExceptionEven $event): void
+    public function onKernelException(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
 

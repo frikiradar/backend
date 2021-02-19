@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use App\Repository\ChatRepository;
-use App\Service\FileUploader;
+use App\Service\FileUploaderService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -105,7 +105,7 @@ class ChatController extends AbstractController
                 if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
                     $absolutePath = 'images/chat/';
                     $server = "https://$_SERVER[HTTP_HOST]";
-                    $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
+                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
                     $image = $uploader->upload($imageFile, false, 70);
                     $chat->setImage($image);
                     $chat->setTimeCreation();
@@ -113,7 +113,7 @@ class ChatController extends AbstractController
                 } else {
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
                     $server = "https://app.frikiradar.com";
-                    $uploader = new FileUploader($absolutePath . $conversationId . "/", $filename);
+                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
                     $image = $uploader->upload($imageFile, false, 50);
                     $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                     $chat->setImage($src);

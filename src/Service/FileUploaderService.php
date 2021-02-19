@@ -1,5 +1,5 @@
 <?php
-// src/Service/FileUploader.php
+// src/Service/FileUploaderService.php
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -8,7 +8,7 @@ use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
 
-class FileUploader
+class FileUploaderService
 {
     private $targetDirectory;
     private $targetFilename;
