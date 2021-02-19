@@ -921,7 +921,7 @@ class UsersController extends AbstractController
 
             $toUser->setBanned(true);
             $toUser->setBanReason($text);
-            $toUser->setBanEnd(\DateTime::createFromFormat('Y-m-d', $date));
+            $toUser->setBanEnd($date ? \DateTime::createFromFormat('Y-m-d', $date) : null);
             $this->em->persist($toUser);
 
             if (!empty($date)) {
