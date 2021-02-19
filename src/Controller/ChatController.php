@@ -157,21 +157,21 @@ class ChatController extends AbstractController
      */
     public function getChats()
     {
-        $cache = new FilesystemAdapter();
+        // $cache = new FilesystemAdapter();
         $fromUser = $this->getUser();
         try {
-            $chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
+            /*$chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
             if (!$chatsCache->isHit()) {
-                $chatsCache->expiresAfter(3600);
-                $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
-                $chatsCache->set($chats);
-                $cache->save($chatsCache);
-                $fromUser->setLastLogin();
-                $this->em->persist($fromUser);
-                $this->em->flush();
-            } else {
+                $chatsCache->expiresAfter(3600);*/
+            $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
+            /*$chatsCache->set($chats);
+                $cache->save($chatsCache);*/
+            $fromUser->setLastLogin();
+            $this->em->persist($fromUser);
+            $this->em->flush();
+            /*} else {
                 $chats = $chatsCache->get();
-            }
+            }*/
             return new Response($this->serializer->serialize($chats, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
