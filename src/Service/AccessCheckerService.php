@@ -14,7 +14,7 @@ class AccessCheckerService extends AbstractController
             $user = $this->getUser();
         }
 
-        if ($user->getBanned()) {
+        if (!empty($user) && $user->getBanned()) {
             $now = new \DateTime;
             if ($user->getBanEnd() > $now || is_null($user->getBanEnd())) {
                 throw new HttpException(401, "Tu cuenta está baneada");
