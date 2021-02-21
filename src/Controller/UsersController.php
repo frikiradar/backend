@@ -689,11 +689,6 @@ class UsersController extends AbstractController
 
             $users = $this->em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
-            foreach ($users as $key => $u) {
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-                $users[$key]['avatar'] = $user->getAvatar() ?: null;
-            }
-
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbloquear el usuario - Error: {$ex->getMessage()}");
@@ -752,11 +747,6 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             $users = $this->em->getRepository('App:HideUser')->getHideUsers($this->getUser());
-
-            foreach ($users as $key => $u) {
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $u['id']));
-                $users[$key]['avatar'] = $user->getAvatar() ?: null;
-            }
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -949,6 +939,41 @@ class UsersController extends AbstractController
             return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al realizar el baneo - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/bans", name="bans", methods={"GET"})
+     */
+    public function getBansAction()
+    {
+        $users = $this->em->getRepository('App:User')->getBanUsers();
+
+        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+    }
+
+    /**
+     * @Route("/v1/ban/{id}", name="unban", methods={"DELETE"})
+     */
+    public function removeBanAction(int $id)
+    {
+        try {
+            /**
+             * @var User
+             */
+            $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+
+            $user->setBanned(0);
+            $user->setBanReason(null);
+            $user->setBanEnd(null);
+            $this->em->persist($user);
+            $this->em->flush();
+
+            $users = $this->em->getRepository('App:User')->getBanUsers();
+
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al desbanear el usuario - Error: {$ex->getMessage()}");
         }
     }
 }

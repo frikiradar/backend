@@ -501,4 +501,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $query = $this->getEntityManager()->createQuery($dql)->setParameters(["fromDate" => $fromDate, "toDate" => $toDate]);
         return $query->getResult();
     }
+
+    public function getBanUsers()
+    {
+        $dql = "SELECT u.id, u.name, u.avatar, u.ban_reason, u.ban_end            
+            FROM App:User u WHERE u.banned = 1";
+        $query = $this->getEntityManager()->createQuery($dql);
+
+        return $query->getResult();
+    }
 }
