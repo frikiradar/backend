@@ -25,7 +25,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
 
         if ($user->getBanned()) {
             $now = new \DateTime;
-            if ($user->getBanEnd() > $now || is_null($user->getBanEnd())) {
+            if (is_null($user->getBanEnd())) {
                 $data = [
                     'message' => 'Banned account.',
                     'reason' => $user->getBanReason(),
@@ -34,7 +34,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
 
                 $text = json_encode($data);
                 throw new CustomUserMessageAuthenticationException($text);
-            } else {
+            } elseif ($user->getBanEnd() <= $now) {
                 $user->setBanned(false);
                 $user->setBanReason(null);
                 $user->setBanEnd(null);

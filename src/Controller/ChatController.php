@@ -40,8 +40,7 @@ class ChatController extends AbstractController
         $this->serializer = $serializer;
         $this->request = $request;
         $this->notification = $notification;
-
-        $accessChecker->checkAccess();
+        $this->accessChecker = $accessChecker;
     }
 
     /**
@@ -49,11 +48,19 @@ class ChatController extends AbstractController
      */
     public function put(Request $request, PublisherInterface $publisher)
     {
+        $fromUser = $this->getUser();
+        $id = $this->request->get($request, "touser");
+        if ($fromUser->getBanned() && $id !== 1) {
+            $this->accessChecker->checkAccess($fromUser);
+        }
+
         $cache = new FilesystemAdapter();
         $chat = new Chat();
-        $fromUser = $this->getUser();
-        $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
-        if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
+        $toUser = $this->em->getRepository('App:User')->find($id);
+        if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
+            if (!$fromUser->getBanned() && $id == 1) {
+                throw new HttpException(400, "No se puede escribir al usuario frikiradar sin estar baneado - Error");
+            }
             $chat->setTouser($toUser);
             $chat->setFromuser($fromUser);
 
@@ -93,10 +100,11 @@ class ChatController extends AbstractController
      */
     public function upload(Request $request, PublisherInterface $publisher)
     {
+        $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
         try {
             $cache = new FilesystemAdapter();
             $chat = new Chat();
-            $fromUser = $this->getUser();
             $toUser = $this->em->getRepository('App:User')->find($request->request->get("touser"));
             if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
                 $chat->setTouser($toUser);
@@ -166,8 +174,9 @@ class ChatController extends AbstractController
      */
     public function getChats()
     {
-        // $cache = new FilesystemAdapter();
         $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
+        // $cache = new FilesystemAdapter();
         try {
             /*$chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
             if (!$chatsCache->isHit()) {
@@ -279,8 +288,9 @@ class ChatController extends AbstractController
      */
     public function deleteMessageAction(int $id)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
-            $user = $this->getUser();
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $user->getId());
 

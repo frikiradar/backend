@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Chat;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -117,6 +118,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('u.id = :id');
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql->andWhere('u.active = 1');
+            $dql->andWhere('u.banned <> 1');
         }
 
         $user = $dql->setParameters(array(
@@ -207,6 +209,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
+                ->andWhere('u.banned <> 1')
                 ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)")
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
@@ -299,6 +302,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
+                ->andWhere('u.banned <> 1')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
@@ -500,6 +504,56 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameters(["fromDate" => $fromDate, "toDate" => $toDate]);
         return $query->getResult();
+    }
+
+    public function banUser(User $toUser, $reason, $days, $hours)
+    {
+        $chat = new Chat();
+        $fromUser = $this->findOneBy(array('username' => 'frikiradar'));
+        $title = "⚠️ Te hemos baneado";
+
+        if (!is_null($hours) && $hours > 24) {
+            $hours = $hours % 24;
+            $days = $days + intdiv($hours, 24);
+        }
+
+        $date = null;
+        if (!is_null($days) || !is_null($hours)) {
+            $date = new \DateTime();
+            $date->add(new \DateInterval('P' . ($days ?: 0) . 'DT' . ($hours ?: 0) . 'H'));
+        }
+
+        $url = "/chat/" . $fromUser->getId();
+
+        $toUser->setBanned(true);
+        $toUser->setBanReason($reason);
+        $toUser->setBanEnd($date ?: null);
+        $this->em->persist($toUser);
+
+
+        $text = 'Te hemos baneado por el siguiente motivo: ' . $reason . PHP_EOL;
+        if (!empty($hours) || !empty($days)) {
+            $text = $text . "El castigo terminará en ";
+            if (!empty($days)) {
+                $text = $text . ($days ?: 0) . ($days == 1 ? " día" : " días") . (!empty($hours) ? ' y ' : '.');
+            }
+            if (!empty($hours)) {
+                $text = $text . ($hours ?: 0) . ($hours == 1 ? " hora." : " horas.");
+            }
+        } else {
+            $text = $text . "Fecha de finalización: Indefinida";
+        }
+
+        $chat->setFromuser($fromUser);
+        $chat->setTouser($toUser);
+
+        $chat->setText($title . "\r\n\r\n" . $text);
+        $chat->setTimeCreation();
+        $chat->setConversationId('frikiradar');
+        $this->em->persist($chat);
+        $this->em->flush();
+
+        $this->notification->push($fromUser, $toUser, $title, $text, $url, "ban");
     }
 
     public function getBanUsers()

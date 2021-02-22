@@ -9,7 +9,6 @@ use App\Entity\Tag;
 use App\Entity\Category;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
-use App\Entity\Chat;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
@@ -49,8 +48,7 @@ class UsersController extends AbstractController
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
-
-        $accessChecker->checkAccess();
+        $this->accessChecker = $accessChecker;
     }
 
     // USER URI's
@@ -144,7 +142,7 @@ class UsersController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
-        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
+        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
     }
 
 
@@ -153,18 +151,20 @@ class UsersController extends AbstractController
      */
     public function getUserAction(int $id)
     {
+        $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
         $cache = new FilesystemAdapter();
         try {
             $userCache = $cache->getItem('users.get.' . $id);
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+                $user = $this->em->getRepository('App:User')->findeOneUser($fromUser, $toUser);
                 if ($user['active']) {
                     $user['images'] = $toUser->getImages();
                 }
 
-                $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $this->getUser());
+                $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
                 if (!is_null($radar)) {
                     $radar->setTimeRead(new \DateTime);
                     $this->em->persist($radar);
@@ -210,12 +210,13 @@ class UsersController extends AbstractController
      */
     public function putAction(Request $request)
     {
+        /**
+         * @var User
+         */
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
             if ($this->request->get($request, 'id') == $this->getUser()->getId()) {
-                /**
-                 * @var User
-                 */
-                $user = $this->getUser();
                 $user->setName($this->request->get($request, 'name') ?: $this->request->get($request, 'username'));
                 $user->setDescription($this->request->get($request, 'description'));
                 $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
@@ -284,9 +285,9 @@ class UsersController extends AbstractController
      */
     public function putCoordinatesAction(Request $request)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
-            $user = $this->getUser();
-
             $geolocation = new GeolocationService();
             $coords = $geolocation->geolocate($user->getIP(), $this->request->get($request, 'latitude'), $this->request->get($request, 'longitude'));
             $user->setCoordinates($coords);
@@ -313,9 +314,9 @@ class UsersController extends AbstractController
      */
     public function uploadAvatarAction(Request $request)
     {
-        $avatar = $request->files->get('avatar');
-
         $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $avatar = $request->files->get('avatar');
 
         $id = $user->getId();
         $filename = date('YmdHis');
@@ -355,9 +356,10 @@ class UsersController extends AbstractController
      */
     public function updateAvatarAction(Request $request)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
             $src = $this->request->get($request, 'avatar');
-            $user = $this->getUser();
             $user->setAvatar($src);
             $this->em->persist($user);
             $this->em->flush();
@@ -376,9 +378,10 @@ class UsersController extends AbstractController
      */
     public function deleteAvatarAction(Request $request)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
             $src = $this->request->get($request, 'avatar');
-            $user = $this->getUser();
 
             $f = explode("/", $src);
             $filename = $f[count($f) - 1];
@@ -399,13 +402,14 @@ class UsersController extends AbstractController
      */
     public function getRadarUsers(Request $request)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
         // $cache = new FilesystemAdapter();
 
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
-        $user = $this->getUser();
         try {
             /*$usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
             if (!$usersCache->isHit()) {
@@ -429,12 +433,13 @@ class UsersController extends AbstractController
      */
     public function searchAction(Request $request)
     {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
         $query = $this->request->get($request, "query");
 
-        $user = $this->getUser();
         try {
             $searchCache = $cache->getItem('users.search.' . $user->getId() . $page . $order . $query);
             if (!$searchCache->isHit()) {
@@ -903,38 +908,12 @@ class UsersController extends AbstractController
      */
     public function ban(Request $request)
     {
-        $chat = new Chat();
-
         try {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
             $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
-            $title = "⚠️ Tu cuenta ha sido baneada";
-            $date = $this->request->get($request, 'date', false);
-            $text = $this->request->get($request, 'message');
-
-            $url = "/chat/" . $fromUser->getId();
-
-            $toUser->setBanned(true);
-            $toUser->setBanReason($text);
-            $toUser->setBanEnd($date ? \DateTime::createFromFormat('Y-m-d', $date) : null);
-            $this->em->persist($toUser);
-
-            if (!empty($date)) {
-                $text = $text . PHP_EOL . "Fecha de finalización: " . $date;
-            } else {
-                $text = $text . PHP_EOL . "Fecha de finalización: Indefinida";
-            }
-
-            $chat->setFromuser($fromUser);
-            $chat->setTouser($toUser);
-
-            $chat->setText($title . "\r\n\r\n" . $text);
-            $chat->setTimeCreation();
-            $chat->setConversationId('frikiradar');
-            $this->em->persist($chat);
-            $this->em->flush();
-
-            $this->notification->push($fromUser, $toUser, $title, $text, $url, "ban");
+            $reason = $this->request->get($request, 'message');
+            $days = $this->request->get($request, 'days', false);
+            $hours = $this->request->get($request, 'hours', false);
+            $this->em->getRepository('App:User')->banUser($toUser, $reason, $days, $hours);
 
             return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
         } catch (Exception $ex) {
@@ -973,7 +952,7 @@ class UsersController extends AbstractController
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al desbanear el usuario - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
         }
     }
 }
