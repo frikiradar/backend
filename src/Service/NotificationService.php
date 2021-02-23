@@ -84,7 +84,7 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => "default",
+                'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
                 'tag' => $topic,
                 'click_action' => "FCM_PLUGIN_ACTIVITY",
             ],
@@ -102,7 +102,7 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => "default",
+                'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
                 'icon' => $fromUser->getAvatar(),
                 'click_action' => "FCM_PLUGIN_ACTIVITY",
             ],
