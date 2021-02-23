@@ -85,8 +85,9 @@ class NotificationService
                 'title' => $title,
                 'body' => $text,
                 'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
+                'channel_id' => ($topic == 'test' ? $topic : null),
                 'tag' => $topic,
-                'click_action' => "FCM_PLUGIN_ACTIVITY",
+                'click_action' => ($topic == 'test' ? null : "FCM_PLUGIN_ACTIVITY"),
             ],
             'data' => [
                 'fromUser' => (string) $fromUser->getId(),
@@ -103,8 +104,9 @@ class NotificationService
                 'title' => $title,
                 'body' => $text,
                 'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
+                'channel_id' => ($topic == 'test' ? $topic : null),
                 'icon' => $fromUser->getAvatar(),
-                'click_action' => "FCM_PLUGIN_ACTIVITY",
+                'click_action' => ($topic == 'test' ? null : "FCM_PLUGIN_ACTIVITY"),
             ],
             'data' => [
                 'url' => $url,
