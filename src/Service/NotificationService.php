@@ -27,17 +27,24 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
+            $notification = [
+                'title' => $title,
+                'body' => $text,
+                'sound' => "default",
+                'tag' => $tag,
+                'icon' => $fromUser->getAvatar(),
+                'click_action' => "FCM_PLUGIN_ACTIVITY",
+            ];
+            if (in_array('ROLE_MASTER', $toUser->getRoles())) {
+                $notification['sound'] = 'bipbip';
+                $notification['channel_id'] = $type;
+                unset($notification['click_action']);
+            }
+
             $config = AndroidConfig::fromArray([
                 'ttl' => '3600s',
                 'priority' => 'high',
-                'notification' => [
-                    'title' => $title,
-                    'body' => $text,
-                    'sound' => "default",
-                    'tag' => $tag,
-                    'icon' => $fromUser->getAvatar(),
-                    'click_action' => "FCM_PLUGIN_ACTIVITY",
-                ],
+                'notification' => $notification,
                 'data' => [
                     'fromUser' => (string) $fromUser->getId(),
                     'toUser' => (string) $toUser->getId(),
@@ -84,14 +91,14 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
-                'channel_id' => ($topic == 'test' ? $topic : null),
-                'tag' => $topic,
-                'click_action' => ($topic == 'test' ? null : "FCM_PLUGIN_ACTIVITY"),
+                'sound' => 'bipbip',
+                'channel_id' => $topic,
+                'tag' => $topic
             ],
             'data' => [
                 'fromUser' => (string) $fromUser->getId(),
                 'url' => $url,
+                'topic' => $topic,
                 'icon' => $fromUser->getAvatar()
             ],
             'collapse_key' => $topic
@@ -103,13 +110,13 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => ($topic == 'test' ? 'bipbip' : 'default'),
-                'channel_id' => ($topic == 'test' ? $topic : null),
-                'icon' => $fromUser->getAvatar(),
-                'click_action' => ($topic == 'test' ? null : "FCM_PLUGIN_ACTIVITY"),
+                'sound' => 'bipbip',
+                'channel_id' => $topic,
+                'icon' => $fromUser->getAvatar()
             ],
             'data' => [
                 'url' => $url,
+                'topic' => $topic,
                 'icon' => $fromUser->getAvatar()
             ],
             'collapse_key' => $topic
