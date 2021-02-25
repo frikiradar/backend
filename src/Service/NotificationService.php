@@ -27,24 +27,18 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
-            $notification = [
-                'title' => $title,
-                'body' => $text,
-                'sound' => "default",
-                'tag' => $tag,
-                'icon' => $fromUser->getAvatar(),
-                'click_action' => "FCM_PLUGIN_ACTIVITY",
-            ];
-            if (in_array('ROLE_MASTER', $toUser->getRoles())) {
-                $notification['sound'] = 'bipbip';
-                $notification['channel_id'] = $type;
-                unset($notification['click_action']);
-            }
-
             $config = AndroidConfig::fromArray([
                 'ttl' => '3600s',
                 'priority' => 'high',
-                'notification' => $notification,
+                'notification' => [
+                    'title' => $title,
+                    'body' => $text,
+                    'sound' => "default",
+                    'tag' => $tag,
+                    'sound' => 'bipbip',
+                    'channel_id' => $type,
+                    'icon' => $fromUser->getAvatar()
+                ],
                 'data' => [
                     'fromUser' => (string) $fromUser->getId(),
                     'toUser' => (string) $toUser->getId(),
