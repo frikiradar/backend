@@ -49,7 +49,8 @@ class NotificationService
                     'fromUser' => (string) $fromUser->getId(),
                     'toUser' => (string) $toUser->getId(),
                     'url' => $url,
-                    'icon' => $fromUser->getAvatar()
+                    'icon' => $fromUser->getAvatar(),
+                    'topic' => $type
                 ],
                 'collapse_key' => $tag
             ]);
