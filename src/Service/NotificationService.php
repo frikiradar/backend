@@ -35,7 +35,6 @@ class NotificationService
                     'body' => $text,
                     'sound' => "default",
                     'tag' => $tag,
-                    'sound' => 'bipbip',
                     'channel_id' => $type,
                     'icon' => $fromUser->getAvatar()
                 ],
@@ -86,7 +85,7 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => 'bipbip',
+                'sound' => 'default',
                 'channel_id' => $topic,
                 'tag' => $topic
             ],
@@ -105,7 +104,7 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => 'bipbip',
+                'sound' => 'default',
                 'channel_id' => $topic,
                 'icon' => $fromUser->getAvatar()
             ],
