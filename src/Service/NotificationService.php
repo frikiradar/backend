@@ -6,6 +6,7 @@ use App\Entity\User;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Firebase\Messaging\WebPushConfig;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NotificationService
@@ -27,7 +28,7 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
-            $config = AndroidConfig::fromArray([
+            $androidConfig = AndroidConfig::fromArray([
                 'ttl' => '3600s',
                 'priority' => 'high',
                 'notification' => [
@@ -48,7 +49,20 @@ class NotificationService
                 'collapse_key' => $tag
             ]);
 
-            $message = CloudMessage::new()->withAndroidConfig($config);
+            $message = CloudMessage::new()->withAndroidConfig($androidConfig);
+
+            $webConfig = WebPushConfig::fromArray([
+                'notification' => [
+                    'title' => $title,
+                    'body' => $text,
+                    'icon' => $fromUser->getAvatar(),
+                ],
+                'fcm_options' => [
+                    'link' => $url,
+                ],
+            ]);
+
+            $message->withWebPushConfig($webConfig);
 
             try {
                 $messaging = (new Factory())->createMessaging();
@@ -98,7 +112,7 @@ class NotificationService
             'collapse_key' => $topic
         ]);
 
-        $config = AndroidConfig::fromArray([
+        $androidConfig = AndroidConfig::fromArray([
             'ttl' => '3600s',
             'priority' => 'high',
             'notification' => [
@@ -116,7 +130,20 @@ class NotificationService
             'collapse_key' => $topic
         ]);
 
-        $message = $message->withAndroidConfig($config);
+        $message = $message->withAndroidConfig($androidConfig);
+
+        $webConfig = WebPushConfig::fromArray([
+            'notification' => [
+                'title' => $title,
+                'body' => $text,
+                'icon' => $fromUser->getAvatar(),
+            ],
+            'fcm_options' => [
+                'link' => $url,
+            ],
+        ]);
+
+        $message->withWebPushConfig($webConfig);
 
         try {
             $messaging = (new Factory())->createMessaging();
