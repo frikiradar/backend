@@ -28,6 +28,9 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
+            $notification
+
+
             $message = new RawMessageFromArray([
                 'notification' => [
                     'title' => $title,
@@ -87,7 +90,7 @@ class NotificationService
     public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url = '/')
     {
         //fromUser debe ser frikiradar, el user 1 y el toUser un string con el 'topic'
-        $message = new RawMessageFromArray([
+        /*$message = new RawMessageFromArray([
             'topic' => $topic,
             'notification' => [
                 'title' => $title,
@@ -114,9 +117,9 @@ class NotificationService
                 ],
                 'collapse_key' => $topic
             ]
-        ]);
+        ]);*/
 
-        /*$message = CloudMessage::fromArray([
+        $message = CloudMessage::fromArray([
             'topic' => $topic,
             'notification' => [
                 'title' => $title,
