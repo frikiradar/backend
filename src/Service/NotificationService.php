@@ -32,7 +32,6 @@ class NotificationService
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    'icon' => $fromUser->getAvatar(),
                     // 'image' => $fromUser->getAvatar()
                 ],
                 'data' => [
