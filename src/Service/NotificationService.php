@@ -157,7 +157,7 @@ class NotificationService
             'collapse_key' => $topic
         ]);
 
-        $message = $message->withAndroidConfig($androidConfig);*/
+        $message = $message->withAndroidConfig($androidConfig);
 
         try {
             $messaging = (new Factory())->createMessaging();
