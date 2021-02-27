@@ -92,53 +92,19 @@ class NotificationService
 
     public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url = '/')
     {
-        //fromUser debe ser frikiradar, el user 1 y el toUser un string con el 'topic'
-        /*$message = new RawMessageFromArray([
-            'topic' => $topic,
-            'notification' => [
-                'title' => $title,
-                'body' => $text,
-                'image' => $fromUser->getAvatar(),
-            ],
-            'data' => [
-                'fromUser' => (string) $fromUser->getId(),
-                'url' => $url,
-                'icon' => $fromUser->getAvatar(),
-                'topic' => $topic
-            ],
-            'android' => [
-                'ttl' => '3600s',
-                'priority' => 'high',
-                'notification' => [
-                    'title' => $title,
-                    'body' => $text,
-                    'sound' => "default",
-                    'tag' => $topic,
-                    'channel_id' => $topic,
-                    'icon' => $fromUser->getAvatar(),
-                    'color' => '#e91e63'
-                ],
-                'collapse_key' => $topic
-            ]
-        ]);*/
-
-        $message = CloudMessage::fromArray([
-            'topic' => $topic,
-            'notification' => [
-                'title' => $title,
-                'body' => $text,
-                'sound' => 'default',
-                'channel_id' => $topic,
-                'tag' => $topic
-            ],
-            'data' => [
-                'fromUser' => (string) $fromUser->getId(),
-                'url' => $url,
-                'topic' => $topic,
-                'icon' => $fromUser->getAvatar()
-            ],
-            'collapse_key' => $topic
+        $notification = Notification::fromArray([
+            'title' => $title,
+            'body' => $text,
+            'image' => $fromUser->getAvatar(),
+            'tag' => $topic
         ]);
+
+        $data = [
+            'fromUser' => (string) $fromUser->getId(),
+            'url' => $url,
+            'icon' => $fromUser->getAvatar(),
+            'topic' => $topic,
+        ];
 
         $androidConfig = AndroidConfig::fromArray([
             'ttl' => '3600s',
@@ -146,19 +112,19 @@ class NotificationService
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => 'default',
+                'sound' => "default",
+                'tag' => $topic,
                 'channel_id' => $topic,
-                'icon' => $fromUser->getAvatar()
-            ],
-            'data' => [
-                'url' => $url,
-                'topic' => $topic,
-                'icon' => $fromUser->getAvatar()
+                'icon' => $fromUser->getAvatar(),
+                'color' => '#e91e63'
             ],
             'collapse_key' => $topic
         ]);
 
-        $message = $message->withAndroidConfig($androidConfig);
+        $message = CloudMessage::withTarget('topic', $topic)
+            ->withAndroidConfig($androidConfig)
+            ->withNotification($notification)
+            ->withData($data);
 
         try {
             $messaging = (new Factory())->createMessaging();
