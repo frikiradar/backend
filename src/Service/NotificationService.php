@@ -28,37 +28,39 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
-            $notification
+            $notification = Notification::fromArray([
+                'title' => $title,
+                'body' => $text,
+                'image' => $fromUser->getAvatar()
+            ]);
 
+            $data = [
+                'fromUser' => (string) $fromUser->getId(),
+                'toUser' => (string) $toUser->getId(),
+                'url' => $url,
+                'icon' => $fromUser->getAvatar(),
+                'topic' => $type
+            ];
 
-            $message = new RawMessageFromArray([
+            $androidConfig = AndroidConfig::fromArray([
+                'ttl' => '3600s',
+                'priority' => 'high',
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    // 'image' => $fromUser->getAvatar()
-                ],
-                'data' => [
-                    'fromUser' => (string) $fromUser->getId(),
-                    'toUser' => (string) $toUser->getId(),
-                    'url' => $url,
+                    'sound' => "default",
+                    'tag' => $tag,
+                    'channel_id' => $type,
                     'icon' => $fromUser->getAvatar(),
-                    'topic' => $type
+                    'color' => '#e91e63'
                 ],
-                'android' => [
-                    'ttl' => '3600s',
-                    'priority' => 'high',
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $text,
-                        'sound' => "default",
-                        'tag' => $tag,
-                        'channel_id' => $type,
-                        'icon' => $fromUser->getAvatar(),
-                        'color' => '#e91e63'
-                    ],
-                    'collapse_key' => $tag
-                ],
+                'collapse_key' => $tag
             ]);
+
+            $message = CloudMessage::new()
+                ->withAndroidConfig($androidConfig)
+                ->withNotification($notification)
+                ->withData($data);
 
             try {
                 $messaging = (new Factory())->createMessaging();
