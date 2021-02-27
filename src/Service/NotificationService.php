@@ -6,8 +6,8 @@ use App\Entity\User;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
-use Kreait\Firebase\Messaging\WebPushConfig;
 use Doctrine\ORM\EntityManagerInterface;
+use Kreait\Firebase\Messaging\RawMessageFromArray;
 
 class NotificationService
 {
@@ -28,7 +28,37 @@ class NotificationService
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
-            $androidConfig = AndroidConfig::fromArray([
+            $message = new RawMessageFromArray([
+                'notification' => [
+                    'title' => $title,
+                    'body' => $text,
+                    'image' => $fromUser->getAvatar(),
+                ],
+                'data' => [
+                    'fromUser' => (string) $fromUser->getId(),
+                    'toUser' => (string) $toUser->getId(),
+                    'url' => $url,
+                    'icon' => $fromUser->getAvatar(),
+                    'topic' => $type
+                ],
+                'android' => [
+                    'ttl' => '3600s',
+                    'priority' => 'high',
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $text,
+                        'sound' => "default",
+                        'tag' => $tag,
+                        'channel_id' => $type,
+                        'icon' => $fromUser->getAvatar(),
+                        'color' => '#e91e63'
+                    ],
+                    'collapse_key' => $tag
+                ],
+            ]);
+
+
+            /*$androidConfig = AndroidConfig::fromArray([
                 'ttl' => '3600s',
                 'priority' => 'high',
                 'notification' => [
@@ -49,20 +79,7 @@ class NotificationService
                 'collapse_key' => $tag
             ]);
 
-            $message = CloudMessage::new()->withAndroidConfig($androidConfig);
-
-            $webConfig = WebPushConfig::fromArray([
-                'notification' => [
-                    'title' => $title,
-                    'body' => $text,
-                    'icon' => $fromUser->getAvatar(),
-                ],
-                'fcm_options' => [
-                    'link' => $url,
-                ],
-            ]);
-
-            $message->withWebPushConfig($webConfig);
+            $message = CloudMessage::new()->withAndroidConfig($androidConfig);*/
 
             try {
                 $messaging = (new Factory())->createMessaging();
@@ -131,19 +148,6 @@ class NotificationService
         ]);
 
         $message = $message->withAndroidConfig($androidConfig);
-
-        $webConfig = WebPushConfig::fromArray([
-            'notification' => [
-                'title' => $title,
-                'body' => $text,
-                'icon' => $fromUser->getAvatar(),
-            ],
-            'fcm_options' => [
-                'link' => $url,
-            ],
-        ]);
-
-        $message->withWebPushConfig($webConfig);
 
         try {
             $messaging = (new Factory())->createMessaging();
