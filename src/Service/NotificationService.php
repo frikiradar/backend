@@ -38,7 +38,7 @@ class NotificationService
                 'fromUser' => (string) $fromUser->getId(),
                 'toUser' => (string) $toUser->getId(),
                 'url' => $url,
-                'icon' => $fromUser->getAvatar(),
+                'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
                 'topic' => $type
             ];
 
@@ -51,7 +51,7 @@ class NotificationService
                     'sound' => "default",
                     'tag' => $tag,
                     'channel_id' => $type,
-                    'icon' => $fromUser->getAvatar(),
+                    'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
                     'color' => '#e91e63'
                 ],
                 'collapse_key' => $tag
@@ -101,7 +101,7 @@ class NotificationService
         $data = [
             'fromUser' => (string) $fromUser->getId(),
             'url' => $url,
-            'icon' => $fromUser->getAvatar(),
+            'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
             'topic' => $topic,
         ];
 
@@ -114,7 +114,7 @@ class NotificationService
                 'sound' => "default",
                 'tag' => $topic,
                 'channel_id' => $topic,
-                'icon' => $fromUser->getAvatar(),
+                'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
                 'color' => '#e91e63'
             ],
             'collapse_key' => $topic
