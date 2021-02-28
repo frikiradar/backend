@@ -435,21 +435,21 @@ class UsersController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        $cache = new FilesystemAdapter();
+        // $cache = new FilesystemAdapter();
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
         $query = $this->request->get($request, "query");
 
         try {
-            $searchCache = $cache->getItem('users.search.' . $user->getId() . $page . $order . $query);
+            /*$searchCache = $cache->getItem('users.search.' . $user->getId() . $page . $order . $query);
             if (!$searchCache->isHit()) {
-                $searchCache->expiresAfter(60);
-                $users = $this->em->getRepository('App:User')->searchUsers($query, $user, $order, $page);
-                $searchCache->set($users);
+                $searchCache->expiresAfter(60);*/
+            $users = $this->em->getRepository('App:User')->searchUsers($query, $user, $order, $page);
+            /*$searchCache->set($users);
                 $cache->save($searchCache);
             } else {
                 $users = $searchCache->get();
-            }
+            }*/
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -900,59 +900,6 @@ class UsersController extends AbstractController
             }
         } else {
             throw new HttpException(400, "La contraseña no es correcta");
-        }
-    }
-
-    /**
-     * @Route("/v1/ban", name="ban", methods={"PUT"})
-     */
-    public function ban(Request $request)
-    {
-        try {
-            $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
-            $reason = $this->request->get($request, 'message');
-            $days = $this->request->get($request, 'days', false);
-            $hours = $this->request->get($request, 'hours', false);
-            $this->em->getRepository('App:User')->banUser($toUser, $reason, $days, $hours);
-
-            return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al realizar el baneo - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Route("/v1/bans", name="bans", methods={"GET"})
-     */
-    public function getBansAction()
-    {
-        $users = $this->em->getRepository('App:User')->getBanUsers();
-
-        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
-    }
-
-    /**
-     * @Route("/v1/ban/{id}", name="unban", methods={"DELETE"})
-     */
-    public function removeBanAction(int $id)
-    {
-        try {
-            /**
-             * @var User
-             */
-            $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-
-            $user->setBanned(0);
-            $user->setBanReason(null);
-            $user->setBanEnd(null);
-            $this->em->persist($user);
-            $this->em->flush();
-
-            $users = $this->em->getRepository('App:User')->getBanUsers();
-
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
         }
     }
 }

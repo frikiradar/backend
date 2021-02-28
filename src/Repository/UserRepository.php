@@ -104,6 +104,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.last_login',
                 'u.hide_connection',
                 'u.verified',
+                'u.banned',
                 'u.avatar',
                 'u.roles',
                 "(GLength(
@@ -118,6 +119,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('u.id = :id');
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql->andWhere('u.active = 1');
+        }
+
+        if (!$this->security->isGranted('ROLE_MASTER')) {
             $dql->andWhere('u.banned <> 1');
         }
 
@@ -128,6 +132,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if (!is_null($user)) {
             $today = new \DateTime;
+
+            if ($user['banned'] && $this->security->isGranted('ROLE_MASTER')) {
+                $user['name'] = $user['name'] . ' (baneado)';
+            }
 
             $user['age'] = (int) $user['age'];
             if (!$user['hide_location']) {
@@ -289,33 +297,35 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ));
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $dql
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                // ->andWhere('u.connection IN (:connection)')
-                ->andWhere(
-                    $user->getOrientation() == "Homosexual" ?
-                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-                )
-                ->andWhere('u.id <> :id')
-                ->andWhere('u.avatar IS NOT NULL')
+            if (!$this->security->isGranted('ROLE_MASTER')) {
+                $dql
+                    ->andHaving('age BETWEEN :minage AND :maxage')
+                    ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                    // ->andWhere('u.connection IN (:connection)')
+                    ->andWhere(
+                        $user->getOrientation() == "Homosexual" ?
+                            'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                                'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                    )
+                    ->andWhere('u.avatar IS NOT NULL')
+                    ->andWhere('u.banned <> 1')
+                    ->andWhere('u.active = 1');
+            }
+            $dql->andWhere('u.id <> :id')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
-                ->andWhere('u.active = 1')
-                ->andWhere('u.banned <> 1')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
                 ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search . "%') OR u.name LIKE '%$search%' OR u.username LIKE '%$search%'")
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
-                ->setParameters(array(
-                    'minage' => $user->getMinage() ?: 18,
-                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
-                    'id' => $user->getId(),
-                    'lovegender' => $user->getLovegender() ?: 1,
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
-                ));
+                ->setParameter('id', $user->getId());
+            if (!$this->security->isGranted('ROLE_MASTER')) {
+                $dql->setParameter('minage', $user->getMinage() ?: 18)
+                    ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
+                    ->setParameter('lovegender', $user->getLovegender() ?: 1)
+                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1);
+            }
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
         }
@@ -558,10 +568,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function getBanUsers()
     {
+        $fromUser = $this->findOneBy(array('id' => 1));
         $dql = "SELECT u.id, u.name, u.avatar, u.ban_reason, u.ban_end            
             FROM App:User u WHERE u.banned = 1";
-        $query = $this->getEntityManager()->createQuery($dql);
+        $users = $this->getEntityManager()->createQuery($dql)->getResult();
+        foreach ($users as $key => $user) {
+            $toUser = $this->findOneBy(array('id' => $user['id']));
+            $users[$key]['count'] = intval($this->em->getRepository('App:Chat')->countUnreadUser($fromUser, $toUser));
+        }
 
-        return $query->getResult();
+        usort($users, function ($a, $b) {
+            return ($b['count'] <=> $a['count']);
+        });
+
+        return $users;
     }
 }

@@ -335,35 +335,4 @@ class ChatController extends AbstractController
             throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
         }
     }
-
-    /**
-     * @Route("/v1/warn", name="warn_chat", methods={"PUT"})
-     */
-    public function warn(Request $request)
-    {
-        $chat = new Chat();
-
-        try {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-            $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
-            $title = "⚠️ Aviso de moderación";
-            $text = $this->request->get($request, 'message');
-            $url = "/chat/" . $fromUser->getId();
-
-            $chat->setFromuser($fromUser);
-            $chat->setTouser($toUser);
-
-            $chat->setText($title . "\r\n\r\n" . $text);
-            $chat->setTimeCreation();
-            $chat->setConversationId('frikiradar');
-            $this->em->persist($chat);
-            $this->em->flush();
-
-            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
-
-            return new Response($this->serializer->serialize("Aviso enviado correctamente", "json"));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al enviar el aviso de moderación - Error: {$ex->getMessage()}");
-        }
-    }
 }

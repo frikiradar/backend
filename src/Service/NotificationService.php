@@ -31,8 +31,7 @@ class NotificationService
             $notification = Notification::fromArray([
                 'title' => $title,
                 'body' => $text,
-                'image' => $fromUser->getAvatar(),
-                'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png'
+                'image' => $fromUser->getAvatar()
             ]);
 
             $data = [
@@ -97,8 +96,7 @@ class NotificationService
             'title' => $title,
             'body' => $text,
             'image' => $fromUser->getAvatar(),
-            'tag' => $topic,
-            'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png'
+            'tag' => $topic
         ]);
 
         $data = [

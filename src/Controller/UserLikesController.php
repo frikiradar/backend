@@ -111,31 +111,20 @@ class UserLikesController extends AbstractController
                 foreach ($likes as $key => $like) {
                     $userId = $like["fromuser"];
                     $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                    $active = $user->getActive();
-                    if ($active) {
-                        $likes[$key]['user'] = [
-                            'id' => $userId,
-                            'username' => $user->getUsername(),
-                            'name' => $user->getName(),
-                            'description' => $user->getDescription(),
-                            'avatar' =>  $user->getAvatar() ?: null,
-                        ];
-                    } else {
-                        $likes[$key]['user'] = [
-                            'id' => $userId,
-                            'username' => 'Usuario desconocido',
-                            'name' => 'Usuario desconocido',
-                            'description' => 'Usuario con cuenta desactivada',
-                            'avatar' => null,
-                        ];
-                    }
+                    $likes[$key]['user'] = [
+                        'id' => $userId,
+                        'username' => $user->getUsername(),
+                        'name' => $user->getName(),
+                        'description' => $user->getDescription(),
+                        'avatar' =>  $user->getAvatar() ?: null,
+                    ];
                 }
                 $likesCache->set($likes);
                 $cache->save($likesCache);
             } else {
                 $likes = $likesCache->get();
             }
-            return new Response($this->serializer->serialize($likes, "json"));
+            return new Response($this->serializer->serialize($likes, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los likes - Error: {$ex->getMessage()}");
         }

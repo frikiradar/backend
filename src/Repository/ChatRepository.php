@@ -51,14 +51,19 @@ class ChatRepository extends ServiceEntityRepository
     }
     */
 
-    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0)
+    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0, $banned = false)
     {
         $limit = 15;
         $offset = ($page - 1) * $limit;
 
-        return $this->createQueryBuilder('c')
-            ->andWhere($toUser->getUsername() == 'frikiradar' ? 'c.fromuser = 1 AND c.touser IS NULL' : 'c.fromuser = :fromUser AND c.touser = :toUser')
-            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+        $dql = $this->createQueryBuilder('c');
+        if ($toUser->getId() == 1 && !$banned) {
+            $dql->andWhere('c.fromuser = 1 AND c.touser IS NULL');
+        } else {
+            $dql->andWhere('c.fromuser = :fromUser AND c.touser = :toUser');
+        }
+
+        return $dql->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
             ->andWhere($read == true ? '1=1' : 'c.time_read IS NULL')
             ->andWhere('c.id > :lastId')
             ->setParameter('fromUser', $fromUser->getId())
@@ -101,7 +106,7 @@ class ChatRepository extends ServiceEntityRepository
             $dql = "SELECT u FROM App:User u WHERE u.id = :id";
             $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $userId);
             $user = $query->getOneOrNullResult();
-            $chats[$key]['count'] = $this->countUnreadUser($fromUser, $user);
+            $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
             $active = $user->getActive();
             $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
 

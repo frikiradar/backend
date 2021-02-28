@@ -63,37 +63,4 @@ class NotificationsController extends AbstractController
             throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
         }
     }
-
-
-    /**
-     * @Route("/v1/topic-message", name="topic_message", methods={"PUT"})
-     */
-    public function putTopicMessage(Request $request)
-    {
-        $chat = new Chat();
-
-        try {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-            $topic = $this->request->get($request, 'topic');
-            $title = $this->request->get($request, 'title') ?: "❤ ¡Información importante! 🎏";
-            $text = $this->request->get($request, 'message');
-            $url = "/chat/" . $fromUser->getId();
-
-            $chat->setFromuser($fromUser);
-            if ($topic == 'test') {
-                $chat->setTouser($this->getUser());
-            }
-            $chat->setText($title . "\r\n\r\n" . $text);
-            $chat->setTimeCreation();
-            $chat->setConversationId('frikiradar');
-            $this->em->persist($chat);
-            $this->em->flush();
-
-            $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
-
-            return new Response($this->serializer->serialize("Notificación enviada correctamente", "json"));
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al enviar la notificación global - Error: {$ex->getMessage()}");
-        }
-    }
 }
