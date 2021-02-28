@@ -31,14 +31,16 @@ class NotificationService
             $notification = Notification::fromArray([
                 'title' => $title,
                 'body' => $text,
-                'image' => $fromUser->getAvatar()
+                'image' => $fromUser->getAvatar(),
+                'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png'
             ]);
 
             $data = [
                 'fromUser' => (string) $fromUser->getId(),
                 'toUser' => (string) $toUser->getId(),
                 'url' => $url,
-                'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
+                'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
+                'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
                 'topic' => $type
             ];
 
@@ -51,7 +53,7 @@ class NotificationService
                     'sound' => "default",
                     'tag' => $tag,
                     'channel_id' => $type,
-                    'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
+                    'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
                     'color' => '#e91e63'
                 ],
                 'collapse_key' => $tag
@@ -95,13 +97,14 @@ class NotificationService
             'title' => $title,
             'body' => $text,
             'image' => $fromUser->getAvatar(),
-            'tag' => $topic
+            'tag' => $topic,
+            'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png'
         ]);
 
         $data = [
             'fromUser' => (string) $fromUser->getId(),
             'url' => $url,
-            'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
+            'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
             'topic' => $topic,
         ];
 
@@ -114,7 +117,7 @@ class NotificationService
                 'sound' => "default",
                 'tag' => $topic,
                 'channel_id' => $topic,
-                'icon' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
+                'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
                 'color' => '#e91e63'
             ],
             'collapse_key' => $topic
