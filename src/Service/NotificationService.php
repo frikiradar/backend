@@ -8,7 +8,6 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\Notification;
-use Kreait\Firebase\Messaging\RawMessageFromArray;
 
 class NotificationService
 {
