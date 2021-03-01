@@ -95,7 +95,7 @@ class AdminController extends AbstractController
      */
     public function put(Request $request)
     {
-        $fromUser = $this->getUser();
+        $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
         $id = $this->request->get($request, "touser");
 
         $chat = new Chat();
@@ -112,8 +112,6 @@ class AdminController extends AbstractController
         $chat->setTimeCreation();
         $chat->setConversationId($conversationId);
         $this->em->persist($chat);
-        $fromUser->setLastLogin();
-        $this->em->persist($fromUser);
         $this->em->flush();
 
         $title = $fromUser->getUsername();

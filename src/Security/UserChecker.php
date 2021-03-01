@@ -23,7 +23,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
             return;
         }
 
-        if ($user->getBanned()) {
+        if ($user->getBanned() !== false) {
             $now = new \DateTime;
             if (is_null($user->getBanEnd())) {
                 $data = [

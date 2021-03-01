@@ -20,16 +20,16 @@ class AccessCheckerService extends AbstractController
         if (!$user instanceof User) {
             $user = $this->getUser();
         }
-
-        if (!empty($user) && $user->getBanned()) {
+        $now = new \DateTime;
+        if (!empty($user) && $user->getBanned() !== false) {
             $now = new \DateTime;
             if ($user->getBanEnd() > $now || is_null($user->getBanEnd())) {
-                throw new HttpException(401, "Tu cuenta está baneada");
+                throw new HttpException(401, "Banned account.");
             }
         }
 
         if (preg_match("/tengo\s(\d+)\saños/", strtolower($user->getDescription()), $matches)) {
-            if (!$user->getBanned() && $matches[1] < 18) {
+            if ($user->getBanned() === false && $matches[1] < 18) {
                 try {
                     $age = $matches[1];
                     // Baneamos la cuenta

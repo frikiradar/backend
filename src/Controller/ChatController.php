@@ -231,7 +231,7 @@ class ChatController extends AbstractController
         $this->em->persist($fromUser);
         $this->em->flush();
 
-        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId);
+        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->getBanned());
         foreach ($chats as $key => $chat) {
             if ((null !== $chat->getFromuser() && !$chat->getFromuser()->getActive()) || $blocked) {
                 if ($blocked) {
