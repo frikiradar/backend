@@ -701,7 +701,7 @@ class User implements UserInterface, EquatableInterface
                 $server = "https://app.frikiradar.com";
                 $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
 
-                if ($this->avatar !== $image && !strpos($file, '-128')) {
+                if ($this->avatar !== $image && !strpos($file, '-128px')) {
                     $this->images[] = $image;
                 }
             }

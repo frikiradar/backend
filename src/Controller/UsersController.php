@@ -323,14 +323,14 @@ class UsersController extends AbstractController
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
-        $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename . '-128');
+        $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename . '-128px');
         $thumbnail = $uploader->upload($avatar, true, 90, 128);
 
         if (isset($thumbnail) && isset($image)) {
             // $server = "https://$_SERVER[HTTP_HOST]";
             $server = "https://app.frikiradar.com";
 
-            $thumbnails = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*-128.jpg");
+            $thumbnails = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*-128px.jpg");
             usort($thumbnails, function ($a, $b) {
                 return basename($b) <=> basename($a);
             });
@@ -379,7 +379,7 @@ class UsersController extends AbstractController
 
             $file = basename($src);
             $file = explode(".", $file);
-            $filename = $file[0] . '-128' . $file[1];
+            $filename = $file[0] . '-128px' . $file[1];
             $thumbnail = $server . "/images/avatar/" . $user->getId() . "/" . $filename;
             $user->setThumbnail($thumbnail);
 
@@ -408,7 +408,7 @@ class UsersController extends AbstractController
 
             $filename = basename($src);
             $file = explode(".", $filename);
-            $thumbnail = $file[0] . '-128' . $file[1];
+            $thumbnail = $file[0] . '-128px' . $file[1];
 
             $avatar = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $filename;
             unlink($avatar);
