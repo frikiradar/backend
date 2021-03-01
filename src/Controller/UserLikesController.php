@@ -117,6 +117,7 @@ class UserLikesController extends AbstractController
                         'name' => $user->getName(),
                         'description' => $user->getDescription(),
                         'avatar' =>  $user->getAvatar() ?: null,
+                        'thumbnail' => $user->getThumbnail() ?: null
                     ];
                 }
                 $likesCache->set($likes);
