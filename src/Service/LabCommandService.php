@@ -108,39 +108,40 @@ class LabCommandService
 
         foreach ($users as $user) {
             $id = $user->getId();
-            $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
-            foreach ($files as $src) {
-                if (!strpos($src, '-128px')) {
-                    // Es una imagen normal, comprobamos si ya tiene thumbnail
-                    $file = basename($src);
-                    $file = explode(".", $file);
-                    $thumbnail = $file[0] . '-128px.' . $file[1];
 
-                    // Si tiene thumbnail ignoramos, sino lo creamos
-                    $targetSrc = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/" . $thumbnail;
-                    if (array_search($targetSrc, $files) === false) {
-                        // No tiene thumbnail, lo creamos
-                        $thumbnailSrc = $this->avatarToThumbnail($src, $targetSrc);
+            if ($id > 3339) {
+                $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
+                foreach ($files as $src) {
+                    if (!strpos($src, '-128px')) {
+                        // Es una imagen normal, comprobamos si ya tiene thumbnail
+                        $file = basename($src);
+                        $file = explode(".", $file);
+                        $thumbnail = $file[0] . '-128px.' . $file[1];
+
+                        // Si tiene thumbnail ignoramos, sino lo creamos
+                        $targetSrc = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/" . $thumbnail;
+                        if (array_search($targetSrc, $files) === false) {
+                            // No tiene thumbnail, lo creamos
+                            $thumbnailSrc = $this->avatarToThumbnail($src, $targetSrc);
+                        }
                     }
                 }
-            }
 
-            $avatar = $user->getAvatar();
-            if (strpos($avatar, 'default.jpg') == false) {
-                $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
+                $avatar = $user->getAvatar();
+                if (strpos($avatar, 'default.jpg') == false) {
+                    $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
 
-                $file = basename($avatar);
-                $file = explode(".", $file);
-                $thumbnail = $server . $file[0] . '-128px.' . $file[1];
+                    $file = basename($avatar);
+                    $file = explode(".", $file);
+                    $thumbnail = $server . $file[0] . '-128px.' . $file[1];
 
-                $user->setThumbnail($thumbnail);
-                $this->em->persist($user);
-                $this->em->flush();
+                    $user->setThumbnail($thumbnail);
+                    $this->em->persist($user);
+                    $this->em->flush();
 
-                $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
-                $this->em->detach($user);
-
-                sleep(5);
+                    $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
+                    $this->em->detach($user);
+                }
             }
         }
     }
