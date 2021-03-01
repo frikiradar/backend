@@ -171,6 +171,12 @@ class User implements UserInterface, EquatableInterface
     private $avatar;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default", "message"})
+     */
+    private $thumbnail;
+
+    /**
      * @Groups({"default"})
      */
     private array $images = [];
@@ -695,7 +701,7 @@ class User implements UserInterface, EquatableInterface
                 $server = "https://app.frikiradar.com";
                 $image = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
 
-                if ($this->avatar !== $image) {
+                if ($this->avatar !== $image && !strpos($file, '-64px')) {
                     $this->images[] = $image;
                 }
             }
@@ -1127,5 +1133,17 @@ class User implements UserInterface, EquatableInterface
         }
 
         return true;
+    }
+
+    public function getThumbnail(): ?string
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(?string $thumbnail): self
+    {
+        $this->thumbnail = $thumbnail;
+
+        return $this;
     }
 }

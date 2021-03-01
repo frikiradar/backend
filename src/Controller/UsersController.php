@@ -323,21 +323,36 @@ class UsersController extends AbstractController
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
 
-        if (isset($image)) {
+        $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename . '-64px');
+        $thumbnail = $uploader->upload($avatar, true, 90, 64);
+
+        if (isset($thumbnail) && isset($image)) {
+            // $server = "https://$_SERVER[HTTP_HOST]";
+            $server = "https://app.frikiradar.com";
+
+            $thumbnails = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*-64px.jpg");
+            usort($thumbnails, function ($a, $b) {
+                return basename($b) <=> basename($a);
+            });
+            foreach ($thumbnails as $key => $file) {
+                if ($key > 9) {
+                    unlink($file);
+                }
+            }
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $thumbnail);
+            $user->setThumbnail($src);
+            $this->em->persist($user);
+
             $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
             usort($files, function ($a, $b) {
                 return basename($b) <=> basename($a);
             });
             foreach ($files as $key => $file) {
-                if ($key > 3) {
+                if ($key > 9) {
                     unlink($file);
                 }
             }
-
-            // $server = "https://$_SERVER[HTTP_HOST]";
-            $server = "https://app.frikiradar.com";
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-
             $user->setAvatar($src);
             $this->em->persist($user);
             $this->em->flush();
@@ -359,7 +374,15 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
+            $server = "https://app.frikiradar.com";
             $src = $this->request->get($request, 'avatar');
+
+            $file = basename($src);
+            $file = explode(".", $file);
+            $filename = $file[0] . '-64px' . $file[1];
+            $thumbnail = $server . "/images/avatar/" . $user->getId() . "/" . $filename;
+            $user->setThumbnail($thumbnail);
+
             $user->setAvatar($src);
             $this->em->persist($user);
             $this->em->flush();
@@ -383,10 +406,15 @@ class UsersController extends AbstractController
         try {
             $src = $this->request->get($request, 'avatar');
 
-            $f = explode("/", $src);
-            $filename = $f[count($f) - 1];
-            $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $filename;
-            unlink($file);
+            $filename = basename($src);
+            $file = explode(".", $filename);
+            $thumbnail = $file[0] . '-64px' . $file[1];
+
+            $avatar = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $filename;
+            unlink($avatar);
+
+            $thumbnail = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $thumbnail;
+            unlink($thumbnail);
 
             $user->setImages($user->getImages());
 

@@ -19,7 +19,7 @@ class FileUploaderService
         $this->targetFilename = $targetFilename;
     }
 
-    public function upload(UploadedFile $file, $square = true, $quality = 90)
+    public function upload(UploadedFile $file, $square = true, $quality = 90, $size = 512)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
@@ -40,12 +40,12 @@ class FileUploaderService
             $image = $imagine
                 ->open($file->getRealPath());
             if ($square) {
-                $image->resize(new Box(512, 512));
+                $image->resize(new Box($size, $size));
             } else {
                 $size = $image->getSize();
                 $height = $size->getHeight();
                 $width = $size->getWidth();
-                $newWidth = 700;
+                $newWidth = $size;
                 $newHeigth = $height * $newWidth / $width;
                 $image->resize(new Box($newWidth, $newHeigth));
             }
