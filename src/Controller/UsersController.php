@@ -381,8 +381,8 @@ class UsersController extends AbstractController
             $file = explode(".", $file);
             $filename = $file[0] . '-128px.' . $file[1];
             $thumbnail = $server . "/images/avatar/" . $user->getId() . "/" . $filename;
-            $user->setThumbnail($thumbnail);
 
+            $user->setThumbnail($thumbnail);
             $user->setAvatar($src);
             $this->em->persist($user);
             $this->em->flush();

@@ -1137,7 +1137,7 @@ class User implements UserInterface, EquatableInterface
 
     public function getThumbnail(): ?string
     {
-        return $this->thumbnail;
+        return $this->thumbnail ?: $this->getAvatar();
     }
 
     public function setThumbnail(?string $thumbnail): self
