@@ -136,7 +136,7 @@ class LabCommandService
             $this->em->flush();
 
             $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
-            $this->em->clear();
+            $this->em->detach($user);
 
             sleep(5);
         }
