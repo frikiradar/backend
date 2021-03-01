@@ -6,6 +6,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GeolocationService;
 use App\Service\NotificationService;
+use App\Entity\User;
+use Imagine\Imagick\Imagine;
+use Imagine\Image\ImageInterface;
+use Imagine\Image\Box;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class LabCommandService
 {
@@ -91,6 +96,77 @@ class LabCommandService
 
         if (0 === $this->mailer->send($message)) {
             throw new \RuntimeException('Unable to send email');
+        }
+    }
+
+    public function thumbnails()
+    {
+        /**
+         * @var User[]
+         */
+        // $users = $this->em->getRepository('App:User')->findAll();
+
+        // foreach ($users as $user) {
+        /**
+         * @var User
+         */
+        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => 2));
+        $id = $user->getId();
+        $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
+        foreach ($files as $src) {
+            if (!strpos($src, '-128px')) {
+                // Es una imagen normal, comprobamos si ya tiene thumbnail
+                $file = basename($src);
+                $file = explode(".", $file);
+                $thumbnail = $file[0] . '-128px.' . $file[1];
+
+                // Si tiene thumbnail ignoramos, sino lo creamos
+                $targetSrc = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/" . $thumbnail;
+                if (array_search($targetSrc, $files) === false) {
+                    // No tiene thumbnail, lo creamos
+                    $thumbnailSrc = $this->avatarToThumbnail($src, $targetSrc);
+                }
+            }
+        }
+
+        $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
+        $avatar = $user->getAvatar();
+        $file = basename($avatar);
+        $file = explode(".", $file);
+        $thumbnail = $server . $file[0] . '-128px.' . $file[1];
+
+        $user->setThumbnail($thumbnail);
+        $this->em->persist($user);
+        $this->em->flush();
+
+        $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
+        $this->em->clear($user);
+        // }
+    }
+
+    private function avatarToThumbnail($src, $targetSrc)
+    {
+        try {
+            $imagine = new Imagine();
+
+            $options = array(
+                'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+                'resolution-x' => 150,
+                'resolution-y' => 150,
+                'jpeg_quality' => 70
+            );
+
+            $image = $imagine
+                ->open($src);
+            $image->resize(new Box(128, 128));
+
+            $image = $image->save($targetSrc, $options);
+            if ($image) {
+                return $targetSrc;
+            }
+        } catch (FileException $e) {
+            // ... handle exception if something happens during file upload
+            print_r($e);
         }
     }
 }
