@@ -379,7 +379,7 @@ class UsersController extends AbstractController
 
             $file = basename($src);
             $file = explode(".", $file);
-            $filename = $file[0] . '-128px' . $file[1];
+            $filename = $file[0] . '-128px.' . $file[1];
             $thumbnail = $server . "/images/avatar/" . $user->getId() . "/" . $filename;
             $user->setThumbnail($thumbnail);
 
@@ -408,7 +408,7 @@ class UsersController extends AbstractController
 
             $filename = basename($src);
             $file = explode(".", $filename);
-            $thumbnail = $file[0] . '-128px' . $file[1];
+            $thumbnail = $file[0] . '-128px.' . $file[1];
 
             $avatar = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $filename;
             unlink($avatar);
