@@ -125,20 +125,23 @@ class LabCommandService
                 }
             }
 
-            $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
             $avatar = $user->getAvatar();
-            $file = basename($avatar);
-            $file = explode(".", $file);
-            $thumbnail = $server . $file[0] . '-128px.' . $file[1];
+            if (strpos($avatar, 'default.jpg') == false) {
+                $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
 
-            $user->setThumbnail($thumbnail);
-            $this->em->persist($user);
-            $this->em->flush();
+                $file = basename($avatar);
+                $file = explode(".", $file);
+                $thumbnail = $server . $file[0] . '-128px.' . $file[1];
 
-            $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
-            $this->em->detach($user);
+                $user->setThumbnail($thumbnail);
+                $this->em->persist($user);
+                $this->em->flush();
 
-            sleep(5);
+                $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
+                $this->em->detach($user);
+
+                sleep(5);
+            }
         }
     }
 
