@@ -108,6 +108,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.ban_end',
                 'u.ban_reason',
                 'u.avatar',
+                'u.thumbnail',
                 'u.roles',
                 "(GLength(
                         LineStringFromWKB(
@@ -191,6 +192,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_connection',
                 'u.gender',
                 'u.avatar',
+                'u.thumbnail',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -288,6 +290,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.block_messages',
                 'u.hide_connection',
                 'u.avatar',
+                'u.thumbnail',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
