@@ -104,44 +104,44 @@ class LabCommandService
         /**
          * @var User[]
          */
-        // $users = $this->em->getRepository('App:User')->findAll();
+        $users = $this->em->getRepository('App:User')->findAll();
 
-        // foreach ($users as $user) {
-        /**
-         * @var User
-         */
-        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => 2));
-        $id = $user->getId();
-        $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
-        foreach ($files as $src) {
-            if (!strpos($src, '-128px')) {
-                // Es una imagen normal, comprobamos si ya tiene thumbnail
-                $file = basename($src);
-                $file = explode(".", $file);
-                $thumbnail = $file[0] . '-128px.' . $file[1];
+        foreach ($users as $user) {
+            $id = $user->getId();
+            $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
+            foreach ($files as $src) {
+                if (!strpos($src, '-128px')) {
+                    // Es una imagen normal, comprobamos si ya tiene thumbnail
+                    $file = basename($src);
+                    $file = explode(".", $file);
+                    $thumbnail = $file[0] . '-128px.' . $file[1];
 
-                // Si tiene thumbnail ignoramos, sino lo creamos
-                $targetSrc = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/" . $thumbnail;
-                if (array_search($targetSrc, $files) === false) {
-                    // No tiene thumbnail, lo creamos
-                    $thumbnailSrc = $this->avatarToThumbnail($src, $targetSrc);
+                    // Si tiene thumbnail ignoramos, sino lo creamos
+                    $targetSrc = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/" . $thumbnail;
+                    if (array_search($targetSrc, $files) === false) {
+                        // No tiene thumbnail, lo creamos
+                        $thumbnailSrc = $this->avatarToThumbnail($src, $targetSrc);
+                    }
                 }
             }
+
+            if (empty($user->getThumbnail())) {
+                $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
+                $avatar = $user->getAvatar();
+                $file = basename($avatar);
+                $file = explode(".", $file);
+                $thumbnail = $server . $file[0] . '-128px.' . $file[1];
+
+                $user->setThumbnail($thumbnail);
+                $this->em->persist($user);
+                $this->em->flush();
+
+                $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
+                $this->em->clear();
+            }
+
+            sleep(5);
         }
-
-        $server = "https://app.frikiradar.com/images/avatar/" . $id . "/";
-        $avatar = $user->getAvatar();
-        $file = basename($avatar);
-        $file = explode(".", $file);
-        $thumbnail = $server . $file[0] . '-128px.' . $file[1];
-
-        $user->setThumbnail($thumbnail);
-        $this->em->persist($user);
-        $this->em->flush();
-
-        $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $thumbnail);
-        $this->em->clear($user);
-        // }
     }
 
     private function avatarToThumbnail($src, $targetSrc)
