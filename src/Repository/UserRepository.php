@@ -105,6 +105,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_connection',
                 'u.verified',
                 'u.banned',
+                'u.ban_end',
+                'u.ban_reason',
                 'u.avatar',
                 'u.roles',
                 "(GLength(
