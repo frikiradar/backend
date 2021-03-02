@@ -109,7 +109,7 @@ class LabCommandService
         foreach ($users as $user) {
             $id = $user->getId();
 
-            if ($id > 14408) {
+            if ($id > 38718) {
                 $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
                 foreach ($files as $src) {
                     if (!strpos($src, '-128px')) {
