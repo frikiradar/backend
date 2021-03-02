@@ -42,9 +42,9 @@ class FileUploaderService
             if ($square) {
                 $image->resize(new Box($size, $size));
             } else {
-                $size = $image->getSize();
-                $height = $size->getHeight();
-                $width = $size->getWidth();
+                $imageSize = $image->getSize();
+                $height = $imageSize->getHeight();
+                $width = $imageSize->getWidth();
                 $newWidth = $size;
                 $newHeigth = $height * $newWidth / $width;
                 $image->resize(new Box($newWidth, $newHeigth));
