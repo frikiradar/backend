@@ -133,6 +133,7 @@ class ChatController extends AbstractController
                     $image = $uploader->upload($imageFile, false, 70);
                     $chat->setImage($image);
                     $chat->setTimeCreation();
+                    $chat->setEdited(0);
                     $chat->setConversationId($conversationId);
                 } else {
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
@@ -143,6 +144,7 @@ class ChatController extends AbstractController
                     $chat->setImage($src);
                     $chat->setText($text);
                     $chat->setTimeCreation();
+                    $chat->setEdited(0);
                     $chat->setConversationId($conversationId);
                     $this->em->persist($chat);
                     $fromUser->setLastLogin();
