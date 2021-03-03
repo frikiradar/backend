@@ -155,7 +155,7 @@ class UsersController extends AbstractController
         $this->accessChecker->checkAccess($fromUser);
         $cache = new FilesystemAdapter();
         try {
-            $userCache = $cache->getItem('users.get.' . $id);
+            $userCache = $cache->getItem('users.get.' . $fromUser->getId() . '.' . $id);
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
