@@ -15,6 +15,7 @@ class Chat
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @MaxDepth(1)
      * @Groups({"message"})
      */
     private $id;
@@ -67,6 +68,20 @@ class Chat
      * @ORM\Column(type="string")
      */
     private $conversationId;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Chat", cascade={"persist"})
+     * @MaxDepth(1)
+     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="CASCADE")
+     * @Groups({"message"})
+     */
+    private $reply_to;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"message"})
+     */
+    private $edited;
 
     public function getId(): ?int
     {
@@ -165,6 +180,30 @@ class Chat
     public function setConversationId(string $conversationId): self
     {
         $this->conversationId = $conversationId;
+
+        return $this;
+    }
+
+    public function getReplyTo(): ?Chat
+    {
+        return $this->reply_to;
+    }
+
+    public function setReplyTo(?Chat $reply_to): self
+    {
+        $this->reply_to = $reply_to;
+
+        return $this;
+    }
+
+    public function getEdited(): ?bool
+    {
+        return $this->edited;
+    }
+
+    public function setEdited(bool $edited): self
+    {
+        $this->edited = $edited;
 
         return $this;
     }

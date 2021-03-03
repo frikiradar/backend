@@ -18,6 +18,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -74,6 +75,12 @@ class ChatController extends AbstractController
             $chat->setText($text);
             $chat->setTimeCreation();
             $chat->setConversationId($conversationId);
+
+            $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
+            if ($replyToChat) {
+                $chat->setReplyTo($replyToChat);
+            }
+            $chat->setEdited(0);
             $this->em->persist($chat);
             $fromUser->setLastLogin();
             $this->em->persist($fromUser);
@@ -89,7 +96,7 @@ class ChatController extends AbstractController
 
             $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
-            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         } else {
             throw new HttpException(400, "Error al marcar como leido - Error");
         }
@@ -143,7 +150,7 @@ class ChatController extends AbstractController
                     $this->em->flush();
                 }
 
-                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
@@ -159,7 +166,7 @@ class ChatController extends AbstractController
 
                 $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
-                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
                 throw new HttpException(400, "Error al marcar como leido - Error");
             }
@@ -222,7 +229,7 @@ class ChatController extends AbstractController
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
 
-                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
             }
         }
@@ -253,7 +260,7 @@ class ChatController extends AbstractController
             }
         }
 
-        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
+        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
     }
 
 
@@ -270,10 +277,10 @@ class ChatController extends AbstractController
             $this->em->persist($chat);
             $this->em->flush();
 
-            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             $publisher($update);
 
-            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             /*} else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
             }*/
