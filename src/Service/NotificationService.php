@@ -40,7 +40,12 @@ class NotificationService
                 'url' => $url,
                 'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
                 'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
-                'topic' => $type
+                'topic' => $type,
+                // 'notification_foreground' => "true",
+                'notification_body' => $text,
+                'notification_title' => $title,
+                'notification_image' => $fromUser->getAvatar(),
+                'notification_android_icon' => 'https://api.frikiradar.com/images/notification/logo_icon.png'
             ];
 
             $androidConfig = AndroidConfig::fromArray([
@@ -104,6 +109,7 @@ class NotificationService
             'url' => $url,
             'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
             'topic' => $topic,
+            // 'notification_foreground' => "true"
         ];
 
         $androidConfig = AndroidConfig::fromArray([
