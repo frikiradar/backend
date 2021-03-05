@@ -273,21 +273,49 @@ class ChatController extends AbstractController
     {
         try {
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            // if ($chat->getTouser()->getId() == $this->getUser()->getId()) {
-            $conversationId = $chat->getConversationId();
-            $chat->setTimeRead(new \DateTime);
-            $this->em->persist($chat);
-            $this->em->flush();
+            if ($chat->getToUser()->getId() == $this->getUser()->getId()) {
+                $conversationId = $chat->getConversationId();
+                $chat->setTimeRead(new \DateTime);
+                $this->em->persist($chat);
+                $this->em->flush();
 
-            $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-            $publisher($update);
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
 
-            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-            /*} else {
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            } else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
-            }*/
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/update-message", name="update_message", methods={"PUT"})
+     */
+    public function updateMessageAction(Request $request, PublisherInterface $publisher)
+    {
+        try {
+            $id = $this->request->get($request, "id");
+            $text = $this->request->get($request, "text");
+            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            if ($chat->getFromUser()->getId() == $this->getUser()->getId()) {
+                $conversationId = $chat->getConversationId();
+                $chat->setText($text);
+                $chat->setEdited(1);
+                $this->em->persist($chat);
+                $this->em->flush();
+
+                $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            } else {
+                throw new HttpException(401, "No se puede editar el mensaje de otro usuario.");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al editar el mensaje - Error: {$ex->getMessage()}");
         }
     }
 
