@@ -78,7 +78,7 @@ class Chat
     private $reply_to;
 
     /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @ORM\Column(type="boolean", nullable=true, options={"default" : 0})
      * @Groups({"message"})
      */
     private $edited;
@@ -211,9 +211,9 @@ class Chat
         return $this->edited;
     }
 
-    public function setEdited(bool $edited): self
+    public function setEdited(?bool $edited): self
     {
-        $this->edited = $edited;
+        $this->edited = $edited ?: 0;
 
         return $this;
     }
