@@ -83,6 +83,16 @@ class Chat
      */
     private $edited;
 
+    /**
+     * @Groups({"message"})
+     */
+    private $deleted = false;
+
+    /**
+     * @Groups({"message"})
+     */
+    private $writing = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -204,6 +214,30 @@ class Chat
     public function setEdited(bool $edited): self
     {
         $this->edited = $edited;
+
+        return $this;
+    }
+
+    public function getDeleted(): ?bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(bool $deleted): self
+    {
+        $this->deleted = $deleted;
+
+        return $this;
+    }
+
+    public function getWriting(): ?bool
+    {
+        return $this->writing;
+    }
+
+    public function setWriting(bool $writing): self
+    {
+        $this->writing = $writing;
 
         return $this;
     }

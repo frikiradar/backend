@@ -574,7 +574,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function getBanUsers()
     {
         $fromUser = $this->findOneBy(array('id' => 1));
-        $dql = "SELECT u.id, u.name, u.avatar, u.ban_reason, u.ban_end            
+        $dql = "SELECT u.id, u.name, u.thumbnail, u.ban_reason, u.ban_end            
             FROM App:User u WHERE u.banned = 1";
         $users = $this->getEntityManager()->createQuery($dql)->getResult();
         foreach ($users as $key => $user) {

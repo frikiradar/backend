@@ -292,6 +292,30 @@ class ChatController extends AbstractController
     }
 
     /**
+     * @Route("/v1/writing-chat", name="writing_chat", methods={"PUT"})
+     */
+    public function writingAction(Request $request, PublisherInterface $publisher)
+    {
+        $fromuser = $this->request->get($request, "touser");
+        $touser = $this->request->get($request, "touser");
+
+        $chat = [];
+        $min = min($fromuser, $touser);
+        $max = max($fromuser, $touser);
+
+        $conversationId = $min . "_" . $max;
+
+        $chat['fromuser']['id'] = $fromuser;
+        $chat['conversation_id'] = $conversationId;
+        $chat['writing'] = true;
+
+        $update = new Update($conversationId, json_encode($chat));
+        $publisher($update);
+
+        return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
+    }
+
+    /**
      * @Route("/v1/update-message", name="update_message", methods={"PUT"})
      */
     public function updateMessageAction(Request $request, PublisherInterface $publisher)
@@ -323,7 +347,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat-message/{id}", name="delete_message", methods={"DELETE"})
      */
-    public function deleteMessageAction(int $id)
+    public function deleteMessageAction(int $id, PublisherInterface $publisher)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
@@ -341,6 +365,10 @@ class ChatController extends AbstractController
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
                     unlink($file);
                 }
+
+                $message->setDeleted(1);
+                $update = new Update($conversationId, $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
 
                 $this->em->remove($message);
                 $this->em->flush();
