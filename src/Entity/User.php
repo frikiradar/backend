@@ -308,6 +308,11 @@ class User implements UserInterface, EquatableInterface
      */
     private $ban_end;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Rooms::class, mappedBy="creator")
+     */
+    private $rooms;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -318,6 +323,7 @@ class User implements UserInterface, EquatableInterface
         $this->blockUsers = new ArrayCollection();
         $this->hideUsers = new ArrayCollection();
         $this->viewUsers = new ArrayCollection();
+        $this->rooms = new ArrayCollection();
     }
 
     public function setId(int $id): self
@@ -1143,6 +1149,36 @@ class User implements UserInterface, EquatableInterface
     public function setThumbnail(?string $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Rooms[]
+     */
+    public function getRooms(): Collection
+    {
+        return $this->rooms;
+    }
+
+    public function addRoom(Rooms $room): self
+    {
+        if (!$this->rooms->contains($room)) {
+            $this->rooms[] = $room;
+            $room->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoom(Rooms $room): self
+    {
+        if ($this->rooms->removeElement($room)) {
+            // set the owning side to null (unless already changed)
+            if ($room->getCreator() === $this) {
+                $room->setCreator(null);
+            }
+        }
 
         return $this;
     }
