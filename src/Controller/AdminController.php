@@ -266,19 +266,16 @@ class AdminController extends AbstractController
     {
         try {
             /**
-             * @var User
+             * @var Room
              */
-            $user = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+            $room = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
 
-            $user->setBanned(0);
-            $user->setBanReason(null);
-            $user->setBanEnd(null);
-            $this->em->persist($user);
+            $this->em->remove($room);
             $this->em->flush();
 
-            $users = $this->em->getRepository('App:User')->getBanUsers();
+            $rooms = $this->em->getRepository('App:Room')->findAll();
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new Response($this->serializer->serialize($rooms, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
         }
