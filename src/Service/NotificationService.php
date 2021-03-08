@@ -71,21 +71,23 @@ class NotificationService
             try {
                 $messaging = (new Factory())->createMessaging();
                 $report = $messaging->sendMulticast($message, $tokens);
-                // TODO: Token caducado o erróneo, desactivar. Si la cuenta no tiene tokens activos entonces no aparecer en resultados de radar.
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
                 // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
-
+                $today = new \DateTime;
                 if ($report->hasFailures()) {
                     foreach ($report->failures()->getItems() as $failure) {
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
 
-                    $today = new \DateTime;
                     if ($report->failures()->count() >= count($tokens) && $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                         $toUser->setActive(0);
                         $this->em->persist($toUser);
                         $this->em->flush();
                     }
+                } elseif ($today->diff($toUser->getLastLogin())->format('%a') >= 30) {
+                    $toUser->setActive(0);
+                    $this->em->persist($toUser);
+                    $this->em->flush();
                 }
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
