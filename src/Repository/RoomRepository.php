@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\Rooms;
+use App\Entity\Room;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Rooms|null find($id, $lockMode = null, $lockVersion = null)
- * @method Rooms|null findOneBy(array $criteria, array $orderBy = null)
- * @method Rooms[]    findAll()
- * @method Rooms[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Room|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Room|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Room[]    findAll()
+ * @method Room[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RoomsRepository extends ServiceEntityRepository
+class RoomRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Rooms::class);
+        parent::__construct($registry, Room::class);
     }
 
     // /**
-    //  * @return Rooms[] Returns an array of Rooms objects
+    //  * @return Room[] Returns an array of Room objects
     //  */
     /*
     public function findByExampleField($value)
@@ -37,7 +37,7 @@ class RoomsRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?Rooms
+    public function findOneBySomeField($value): ?Room
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.exampleField = :val')

@@ -309,7 +309,7 @@ class User implements UserInterface, EquatableInterface
     private $ban_end;
 
     /**
-     * @ORM\OneToMany(targetEntity=Rooms::class, mappedBy="creator")
+     * @ORM\OneToMany(targetEntity=Room::class, mappedBy="creator")
      */
     private $rooms;
 
@@ -1154,14 +1154,14 @@ class User implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Collection|Rooms[]
+     * @return Collection|Room[]
      */
     public function getRooms(): Collection
     {
         return $this->rooms;
     }
 
-    public function addRoom(Rooms $room): self
+    public function addRoom(Room $room): self
     {
         if (!$this->rooms->contains($room)) {
             $this->rooms[] = $room;
@@ -1171,7 +1171,7 @@ class User implements UserInterface, EquatableInterface
         return $this;
     }
 
-    public function removeRoom(Rooms $room): self
+    public function removeRoom(Room $room): self
     {
         if ($this->rooms->removeElement($room)) {
             // set the owning side to null (unless already changed)

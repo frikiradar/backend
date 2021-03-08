@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
+use App\Entity\Room;
+use App\Service\FileUploaderService;
 use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Mercure\PublisherInterface;
 
 /**
  * Class AdminController
@@ -203,6 +206,81 @@ class AdminController extends AbstractController
             return new Response($this->serializer->serialize("Aviso enviado correctamente", "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el aviso de moderación - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/room", name="create_rom", methods={"POST"})
+     */
+    public function createRoomAction(Request $request, PublisherInterface $publisher)
+    {
+        $name = $request->request->get("name");
+        $description = $request->request->get("description");
+        $permissions = [$request->request->get("permissions")];
+        $visible = $request->request->get("visible") == 'true' ? true : false;
+        $imageFile = $request->files->get('image');
+        $creator = $this->getUser();
+
+        try {
+            /**
+             * @var Room
+             */
+            $room = new Room();
+            $room->setName($name);
+            $room->setDescription($description);
+            $room->setPermissions($permissions);
+            $room->setVisible($visible);
+            $room->setCreator($creator);
+
+            if (!empty($imageFile)) {
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
+                $server = "https://app.frikiradar.com";
+                $uploader = new FileUploaderService($absolutePath, $name);
+                $image = $uploader->upload($imageFile, true, 70);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $room->setImage($src);
+            }
+
+            $this->em->persist($room);
+            $this->em->flush();
+            // TODO: Estaría guay que cuando se cree una nueva sala llegue una notificación invitando a los usuarios o algo así
+            return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al crear la sala - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/admin-rooms", name="get_rooms", methods={"GET"})
+     */
+    public function getRoomsAction()
+    {
+        $rooms = $this->em->getRepository('App:Room')->findAll();
+        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
+    }
+
+    /**
+     * @Route("/v1/room/{id}", name="remove_room", methods={"DELETE"})
+     */
+    public function removeRoomAction(int $id)
+    {
+        try {
+            /**
+             * @var User
+             */
+            $user = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+
+            $user->setBanned(0);
+            $user->setBanReason(null);
+            $user->setBanEnd(null);
+            $this->em->persist($user);
+            $this->em->flush();
+
+            $users = $this->em->getRepository('App:User')->getBanUsers();
+
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
         }
     }
 }

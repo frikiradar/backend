@@ -3,50 +3,58 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\RoomsRepository;
+use App\Repository\RoomRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource()
- * @ORM\Entity(repositoryClass=RoomsRepository::class)
+ * @ORM\Entity(repositoryClass=RoomRepository::class)
  */
-class Rooms
+class Room
 {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"default"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"default"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="rooms")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="room")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"default"})
      */
     private $creator;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $image;
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"default"})
      */
     private $visible;
 
     /**
      * @ORM\Column(type="json_array", nullable=true)
+     * @Groups({"default"})
      */
     private $permissions = [];
 
