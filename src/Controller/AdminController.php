@@ -260,6 +260,51 @@ class AdminController extends AbstractController
     }
 
     /**
+     * @Route("/v1/edit-room", name="edit_room", methods={"POST"})
+     */
+    public function editRoomAction(Request $request, PublisherInterface $publisher)
+    {
+        $id = +$request->request->get("id");
+        $name = $request->request->get("name");
+        $description = $request->request->get("description");
+        $permissions = [$request->request->get("permissions")];
+        $visible = $request->request->get("visible") == 'true' ? true : false;
+        $imageFile = $request->files->get('image');
+
+        try {
+            /**
+             * @var Room
+             */
+            $room = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+            $room->setName($name);
+            $room->setDescription($description);
+            $room->setPermissions($permissions);
+            $room->setVisible($visible);
+
+            if (!empty($imageFile)) {
+                $image = $room->getImage();
+                if ($image) {
+                    $name = $room->getName();
+                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/" . $name . '.jpg';
+                    unlink($file);
+                }
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
+                $server = "https://app.frikiradar.com";
+                $uploader = new FileUploaderService($absolutePath, $name);
+                $image = $uploader->upload($imageFile, true, 70);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $room->setImage($src);
+            }
+
+            $this->em->persist($room);
+            $this->em->flush();
+            return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al editar la sala - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/room/{id}", name="remove_room", methods={"DELETE"})
      */
     public function removeRoomAction(int $id)
@@ -269,6 +314,12 @@ class AdminController extends AbstractController
              * @var Room
              */
             $room = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+            $image = $room->getImage();
+            if ($image) {
+                $name = $room->getName();
+                $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/" . $name . '.jpg';
+                unlink($file);
+            }
 
             $this->em->remove($room);
             $this->em->flush();
