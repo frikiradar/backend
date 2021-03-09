@@ -227,6 +227,8 @@ class AdminController extends AbstractController
              */
             $room = new Room();
             $room->setName($name);
+            $slug = str_replace(' ', '-', strtolower($name));
+            $room->setSlug($slug);
             $room->setDescription($description);
             $room->setPermissions($permissions);
             $room->setVisible($visible);
@@ -251,7 +253,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/v1/admin-rooms", name="get_rooms", methods={"GET"})
+     * @Route("/v1/admin-rooms", name="admin_rooms", methods={"GET"})
      */
     public function getRoomsAction()
     {

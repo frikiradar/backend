@@ -59,6 +59,7 @@ class Room
 
     /**
      * @ORM\Column(type="string", length=70)
+     * @Groups({"default"})
      */
     private $slug;
 
