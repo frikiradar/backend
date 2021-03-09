@@ -44,4 +44,13 @@ class RoomsController extends AbstractController
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
     }
+
+    /**
+     * @Route("/v1/rooms", name="get_rooms", methods={"GET"})
+     */
+    public function getRoomsAction()
+    {
+        $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
+        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
+    }
 }

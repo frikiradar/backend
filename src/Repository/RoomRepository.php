@@ -47,4 +47,13 @@ class RoomRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findVisibleRooms()
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.visible = TRUE')
+            ->orderBy('r.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

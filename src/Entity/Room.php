@@ -36,7 +36,6 @@ class Room
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="room")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"default"})
      */
     private $creator;
 
@@ -57,6 +56,11 @@ class Room
      * @Groups({"default"})
      */
     private $permissions = [];
+
+    /**
+     * @ORM\Column(type="string", length=70)
+     */
+    private $slug;
 
     public function getId(): ?int
     {
@@ -131,6 +135,18 @@ class Room
     public function setPermissions(?array $permissions): self
     {
         $this->permissions = $permissions;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
 
         return $this;
     }
