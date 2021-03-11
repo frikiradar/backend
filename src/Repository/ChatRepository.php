@@ -76,6 +76,21 @@ class ChatRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function getRoomChat(string $slug, $page = 1)
+    {
+        $limit = 15;
+        $offset = ($page - 1) * $limit;
+
+        return $this->createQueryBuilder('c')
+            ->where('c.conversationId = :slug')
+            ->orderBy('c.id', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function isChat(User $fromUser, User $toUser)
     {
         return $this->createQueryBuilder('c')
@@ -90,7 +105,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
-        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
+        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation, c.time_read time_read FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         $chats = $query->getResult();
@@ -106,26 +121,27 @@ class ChatRepository extends ServiceEntityRepository
             $dql = "SELECT u FROM App:User u WHERE u.id = :id";
             $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $userId);
             $user = $query->getOneOrNullResult();
-            $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
-            $active = $user->getActive();
-            $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
+            if ($user) {
+                $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
+                $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
 
-            if (!$blocked) {
-                $chats[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => $user->getUsername(),
-                    'name' => $user->getName(),
-                    'avatar' =>  $user->getAvatar() ?: null,
-                    'thumbnail' => $user->getThumbnail() ?: null
-                ];
-            } else {
-                $chats[$key]['user'] = [
-                    'id' => $userId,
-                    'username' => 'Usuario desconocido',
-                    'name' => 'Usuario desconocido',
-                    'avatar' => null,
-                    'thumbnail' => null
-                ];
+                if (!$blocked) {
+                    $chats[$key]['user'] = [
+                        'id' => $userId,
+                        'username' => $user->getUsername(),
+                        'name' => $user->getName(),
+                        'avatar' =>  $user->getAvatar() ?: null,
+                        'thumbnail' => $user->getThumbnail() ?: null
+                    ];
+                } else {
+                    $chats[$key]['user'] = [
+                        'id' => $userId,
+                        'username' => 'Usuario desconocido',
+                        'name' => 'Usuario desconocido',
+                        'avatar' => null,
+                        'thumbnail' => null
+                    ];
+                }
             }
         }
 

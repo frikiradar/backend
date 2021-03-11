@@ -53,4 +53,146 @@ class RoomsController extends AbstractController
         $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
         return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
     }
+
+    /**
+     * @Route("/v1/room/{slug}", name="get_room", methods={"GET"})
+     */
+    public function getRoomAction(string $slug, Request $request)
+    {
+        $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
+
+        return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+    }
+
+    /**
+     * @Route("/v1/room-messages/{slug}", name="get_room_messages", methods={"GET"})
+     */
+    public function getRoomMessagesAction(string $slug, Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $page = $this->request->get($request, "page");
+        $chats = $this->em->getRepository('App:Chat')->getRoomChat($slug, $page);
+
+        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+    }
+
+    /**
+     * @Route("/v1/room-message", name="put_room_message", methods={"PUT"})
+     */
+    public function putMessageAction(Request $request, PublisherInterface $publisher)
+    {
+        $user = $this->getUser();
+        $slug = $this->request->get($request, "slug");
+        $this->accessChecker->checkAccess($user);
+
+        $chat = new Chat();
+        $chat->setTouser(null);
+        $chat->setFromuser($user);
+
+        $text = $this->request->get($request, "text", false);
+
+        $chat->setText($text);
+        $chat->setTimeCreation();
+        $chat->setConversationId($slug);
+
+        $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
+        if ($replyToChat) {
+            $chat->setReplyTo($replyToChat);
+        }
+        $this->em->persist($chat);
+        $this->em->flush();
+
+        $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+        $publisher($update);
+
+        /*$title = $fromUser->getUsername();
+        $url = "/chat/" . $chat->getFromuser()->getId();
+
+        $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");*/
+
+        return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+    }
+
+    /**
+     * @Route("/v1/room-upload", name="put_room_upload", methods={"POST"})
+     */
+    public function upload(Request $request, PublisherInterface $publisher)
+    {
+        $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
+        try {
+            $chat = new Chat();
+            $slug = $request->request->get("slug");
+
+            $chat->setTouser(null);
+            $chat->setFromuser($fromUser);
+
+            $imageFile = $request->files->get('image');
+            $text = $request->request->get("text");
+
+            $filename = microtime(true);
+            if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                $absolutePath = 'images/chat/';
+                $server = "https://$_SERVER[HTTP_HOST]";
+                $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
+                $image = $uploader->upload($imageFile, false, 70);
+                $chat->setImage($image);
+                $chat->setText($text);
+                $chat->setTimeCreation();
+                $chat->setConversationId($slug);
+            } else {
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                $server = "https://app.frikiradar.com";
+                $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
+                $image = $uploader->upload($imageFile, false, 50);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $chat->setImage($src);
+                $chat->setText($text);
+                $chat->setTimeCreation();
+                $chat->setConversationId($slug);
+                $this->em->persist($chat);
+                $fromUser->setLastLogin();
+                $this->em->persist($fromUser);
+                $this->em->flush();
+            }
+
+            $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            $publisher($update);
+
+            /*$title = $fromUser->getUsername();
+            $url = "/chat/" . $chat->getFromuser()->getId();
+
+            if (empty($text) && !empty($image)) {
+                $text = '📷 ' . $fromUser->getName() . ' te ha enviado una imagen.';
+            } elseif (!empty($image)) {
+                $text = '📷 ' . $text;
+            }
+
+            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");*/
+
+            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/writing-room", name="writing_room", methods={"PUT"})
+     */
+    public function writingAction(Request $request, PublisherInterface $publisher)
+    {
+        $name = $this->request->get($request, "name");
+        $slug = $this->request->get($request, "slug");
+
+        $chat = [];
+        $chat['fromuser']['name'] = $name;
+        $chat['conversation_id'] = $slug;
+        $chat['writing'] = true;
+
+        $update = new Update($slug, json_encode($chat));
+        $publisher($update);
+
+        return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
+    }
 }

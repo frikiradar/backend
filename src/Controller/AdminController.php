@@ -307,7 +307,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/v1/room/{id}", name="remove_room", methods={"DELETE"})
+     * @Route("/v1/delete-room/{id}", name="remove_room", methods={"DELETE"})
      */
     public function removeRoomAction(int $id)
     {
