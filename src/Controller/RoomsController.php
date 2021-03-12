@@ -50,7 +50,15 @@ class RoomsController extends AbstractController
      */
     public function getRoomsAction()
     {
-        $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
+        $cache = new FilesystemAdapter();
+        $roomsCache = $cache->getItem('rooms.list.visible');
+        if (!$roomsCache->isHit()) {
+            $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
+            $roomsCache->set($rooms);
+            $cache->save($roomsCache);
+        } else {
+            $rooms = $roomsCache->get();
+        }
         return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
     }
 
@@ -59,7 +67,15 @@ class RoomsController extends AbstractController
      */
     public function getRoomAction(string $slug, Request $request)
     {
-        $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
+        $cache = new FilesystemAdapter();
+        $roomCache = $cache->getItem('room.' . $slug);
+        if (!$roomCache->isHit()) {
+            $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
+            $roomCache->set($room);
+            $cache->save($roomCache);
+        } else {
+            $room = $roomCache->get();
+        }
 
         return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
     }

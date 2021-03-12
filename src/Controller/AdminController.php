@@ -16,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Mercure\PublisherInterface;
 
 /**
@@ -214,6 +215,10 @@ class AdminController extends AbstractController
      */
     public function createRoomAction(Request $request, PublisherInterface $publisher)
     {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('rooms.list.admin');
+        $cache->deleteItem('rooms.list.visible');
+
         $name = $request->request->get("name");
         $description = $request->request->get("description");
         $permissions = [$request->request->get("permissions")];
@@ -227,7 +232,7 @@ class AdminController extends AbstractController
              */
             $room = new Room();
             $room->setName($name);
-            $slug = str_replace(' ', '-', strtolower($name));
+            $slug = transliterator_transliterate('Any-Latin; Latin-ASCII;', str_replace(' ', '-', strtolower($name)));
             $room->setSlug($slug);
             $room->setDescription($description);
             $room->setPermissions($permissions);
@@ -257,7 +262,15 @@ class AdminController extends AbstractController
      */
     public function getRoomsAction()
     {
-        $rooms = $this->em->getRepository('App:Room')->findAll();
+        $cache = new FilesystemAdapter();
+        $roomsCache = $cache->getItem('rooms.list.admin');
+        if (!$roomsCache->isHit()) {
+            $rooms = $this->em->getRepository('App:Room')->findAll();
+            $roomsCache->set($rooms);
+            $cache->save($roomsCache);
+        } else {
+            $rooms = $roomsCache->get();
+        }
         return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
     }
 
@@ -266,6 +279,10 @@ class AdminController extends AbstractController
      */
     public function editRoomAction(Request $request, PublisherInterface $publisher)
     {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('rooms.list.admin');
+        $cache->deleteItem('rooms.list.visible');
+
         $id = +$request->request->get("id");
         $name = $request->request->get("name");
         $description = $request->request->get("description");
@@ -278,6 +295,7 @@ class AdminController extends AbstractController
              * @var Room
              */
             $room = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+            $cache->deleteItem('room.' . $room->getSlug());
             $room->setName($name);
             $room->setDescription($description);
             $room->setPermissions($permissions);
@@ -311,11 +329,16 @@ class AdminController extends AbstractController
      */
     public function removeRoomAction(int $id)
     {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('rooms.list.admin');
+        $cache->deleteItem('rooms.list.visible');
+
         try {
             /**
              * @var Room
              */
             $room = $this->em->getRepository('App:Room')->findOneBy(array('id' => $id));
+            $cache->deleteItem('room.' . $room->getSlug());
             $image = $room->getImage();
             if ($image) {
                 $name = $room->getName();
