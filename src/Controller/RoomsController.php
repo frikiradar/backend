@@ -59,6 +59,20 @@ class RoomsController extends AbstractController
         } else {
             $rooms = $roomsCache->get();
         }
+
+        foreach ($rooms as $room) {
+            $slugs[] = $room['slug'];
+        }
+
+        $messages = $this->em->getRepository('App:Room')->getLastMessages($slugs);
+        foreach ($rooms as $key => $room) {
+            foreach ($messages as $message) {
+                if ($message['conversationId'] == $room['slug']) {
+                    $rooms[$key]['last_message'] = +$message['last_message'];
+                }
+            }
+        }
+
         return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
     }
 
@@ -100,6 +114,8 @@ class RoomsController extends AbstractController
     {
         $user = $this->getUser();
         $slug = $this->request->get($request, "slug");
+        $name = $this->request->get($request, "name");
+
         $this->accessChecker->checkAccess($user);
 
         $chat = new Chat();
@@ -122,10 +138,10 @@ class RoomsController extends AbstractController
         $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
         $publisher($update);
 
-        /*$title = $fromUser->getUsername();
-        $url = "/chat/" . $chat->getFromuser()->getId();
+        $title = $user->getUsername() . ' en ' . $slug;
+        $url = "/room/" . $slug;
 
-        $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");*/
+        $this->notification->pushTopic($user, $slug, $title, $text, $url);
 
         return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
     }

@@ -28,7 +28,10 @@ class AccessCheckerService extends AbstractController
             }
         }
 
-        if (preg_match("/tengo\s(\d+)\saños/", strtolower($user->getDescription()), $matches)) {
+        if (
+            strpos(strtolower($user->getDescription()), 'parece') !== false &&
+            preg_match("/tengo\s(\d+)\saños/", strtolower($user->getDescription()), $matches)
+        ) {
             if ($user->getBanned() === false && $matches[1] < 18) {
                 try {
                     $age = $matches[1];

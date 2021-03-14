@@ -54,6 +54,13 @@ class RoomRepository extends ServiceEntityRepository
             ->andWhere('r.visible = TRUE')
             ->orderBy('r.id', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getArrayResult();
+    }
+
+    public function getLastMessages($slugs)
+    {
+        $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) GROUP BY c.conversationId";
+        $query = $this->getEntityManager()->createQuery($dql)->setParameter('slugs', $slugs);
+        return $query->getResult();
     }
 }
