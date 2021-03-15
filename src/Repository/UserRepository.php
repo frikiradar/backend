@@ -588,4 +588,18 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         return $users;
     }
+
+    public function searchUsernames($query)
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.username')
+            ->where('u.username LIKE :query')
+            ->andWhere('u.active = 1')
+            ->andWhere('u.banned = 0')
+            ->orderBy('u.last_login', 'DESC')
+            ->setMaxResults(3)
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

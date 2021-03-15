@@ -149,11 +149,18 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/user/{id}", name="get_user_id", methods={"GET"})
      */
-    public function getUserAction(int $id)
+    public function getUserAction($id)
     {
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         $cache = new FilesystemAdapter();
+
+        if (!is_numeric($id)) {
+            $username = $id;
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
+            $id = $user->getId();
+        }
+
         try {
             $userCache = $cache->getItem('users.get.' . $fromUser->getId() . '.' . $id);
             if (!$userCache->isHit()) {
@@ -485,6 +492,19 @@ class UsersController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/v1/search-usernames/{query}", name="search_usernames", methods={"GET"})
+     */
+    public function searchUsernames($query)
+    {
+        try {
+            $usernames = $this->em->getRepository('App:User')->searchUsernames($query);
+
+            return new Response($this->serializer->serialize($usernames, "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al buscar nombres de usuario - Error: {$ex->getMessage()}");
+        }
+    }
 
     /**
      * @Route("/v1/activation", name="activation-email", methods={"GET"})

@@ -105,47 +105,53 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
-        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation, c.time_read time_read FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
+        $dql = "SELECT IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation, c.time_read time_read, c.conversationId conversation_id FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
         $chats = $query->getResult();
 
         foreach ($chats as $key => $chat) {
-            if ($chat["fromuser"] == $fromUser->getId()) {
-                $userId = $chat["touser"];
-            } elseif (!is_null($chat["fromuser"])) {
-                $userId = $chat["fromuser"];
-            } else {
-                $userId = $chat["touser"];
-            }
-            $dql = "SELECT u FROM App:User u WHERE u.id = :id";
-            $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $userId);
-            $user = $query->getOneOrNullResult();
-            if ($user) {
-                $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
-                $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
-
-                if (!$blocked) {
-                    $chats[$key]['user'] = [
-                        'id' => $userId,
-                        'username' => $user->getUsername(),
-                        'name' => $user->getName(),
-                        'avatar' =>  $user->getAvatar() ?: null,
-                        'thumbnail' => $user->getThumbnail() ?: null
-                    ];
+            if (strpos($chat["conversation_id"], '_') !== false) {
+                if ($chat["fromuser"] == $fromUser->getId()) {
+                    $userId = $chat["touser"];
+                } elseif (!is_null($chat["fromuser"])) {
+                    $userId = $chat["fromuser"];
                 } else {
-                    $chats[$key]['user'] = [
-                        'id' => $userId,
-                        'username' => 'Usuario desconocido',
-                        'name' => 'Usuario desconocido',
-                        'avatar' => null,
-                        'thumbnail' => null
-                    ];
+                    $userId = $chat["touser"];
                 }
+                $dql = "SELECT u FROM App:User u WHERE u.id = :id";
+                $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $userId);
+                $user = $query->getOneOrNullResult();
+                if ($user) {
+                    $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
+                    $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
+
+                    if (!$blocked) {
+                        $chats[$key]['user'] = [
+                            'id' => $userId,
+                            'username' => $user->getUsername(),
+                            'name' => $user->getName(),
+                            'avatar' =>  $user->getAvatar() ?: null,
+                            'thumbnail' => $user->getThumbnail() ?: null
+                        ];
+                    } else {
+                        $chats[$key]['user'] = [
+                            'id' => $userId,
+                            'username' => 'Usuario desconocido',
+                            'name' => 'Usuario desconocido',
+                            'avatar' => null,
+                            'thumbnail' => null
+                        ];
+                    }
+                }
+            } else {
+                unset($chats[$key]);
             }
         }
 
-        return $chats;
+
+
+        return array_values($chats);
     }
 
     public function countUnread(User $toUser)
