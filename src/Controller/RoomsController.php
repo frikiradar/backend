@@ -112,15 +112,15 @@ class RoomsController extends AbstractController
      */
     public function putMessageAction(Request $request, PublisherInterface $publisher)
     {
-        $user = $this->getUser();
+        $fromUser = $this->getUser();
         $slug = $this->request->get($request, "slug");
         $name = $this->request->get($request, "name");
 
-        $this->accessChecker->checkAccess($user);
+        $this->accessChecker->checkAccess($fromUser);
 
         $chat = new Chat();
         $chat->setTouser(null);
-        $chat->setFromuser($user);
+        $chat->setFromuser($fromUser);
 
         $text = $this->request->get($request, "text", false);
 
@@ -138,10 +138,19 @@ class RoomsController extends AbstractController
         $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
         $publisher($update);
 
-        $title = $user->getUsername() . ' en ' . $slug;
         $url = "/room/" . $slug;
 
-        $this->notification->pushTopic($user, $slug, $title, $text, $url);
+        preg_match_all("(\@(?P<names>[a-zA-Z0-9\.\-\_]+))", $text, $mentions);
+        if (count($mentions['names']) > 0) {
+            foreach ($mentions['names'] as $mention) {
+                $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
+                $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+            }
+        } else {
+            $title = $fromUser->getUsername() . ' en ' . $name;
+            $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
+        }
 
         return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
     }
