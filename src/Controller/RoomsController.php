@@ -128,7 +128,7 @@ class RoomsController extends AbstractController
         $chat->setTimeCreation();
         $chat->setConversationId($slug);
 
-        $mentions = $this->request->get($request, "mentions", false);
+        $mentions = json_decode($this->request->get($request, "mentions"), true);
         if ($mentions) {
             $chat->setMentions($mentions);
         }
