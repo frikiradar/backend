@@ -128,6 +128,11 @@ class RoomsController extends AbstractController
         $chat->setTimeCreation();
         $chat->setConversationId($slug);
 
+        $mentions = $this->request->get($request, "mentions", false);
+        if ($mentions) {
+            $chat->setMentions($mentions);
+        }
+
         $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
         if ($replyToChat) {
             $chat->setReplyTo($replyToChat);
@@ -140,9 +145,8 @@ class RoomsController extends AbstractController
 
         $url = "/room/" . $slug;
 
-        preg_match_all("(\@(?P<names>[a-zA-Z0-9\.\-\_]+))", $text, $mentions);
-        if (count($mentions['names']) > 0) {
-            foreach ($mentions['names'] as $mention) {
+        if (count((array) $mentions) > 0) {
+            foreach ($mentions as $mention) {
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                 $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
                 $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
@@ -165,12 +169,18 @@ class RoomsController extends AbstractController
         try {
             $chat = new Chat();
             $slug = $request->request->get("slug");
+            $name = $request->request->get("name");
 
             $chat->setTouser(null);
             $chat->setFromuser($fromUser);
 
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
+
+            $mentions = $this->request->get($request, "mentions", false);
+            if ($mentions) {
+                $chat->setMentions($mentions);
+            }
 
             $filename = microtime(true);
             if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
@@ -201,16 +211,18 @@ class RoomsController extends AbstractController
             $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             $publisher($update);
 
-            /*$title = $fromUser->getUsername();
-            $url = "/chat/" . $chat->getFromuser()->getId();
+            $url = "/room/" . $slug;
 
-            if (empty($text) && !empty($image)) {
-                $text = '📷 ' . $fromUser->getName() . ' te ha enviado una imagen.';
-            } elseif (!empty($image)) {
-                $text = '📷 ' . $text;
+            if (count((array) $mentions) > 0) {
+                foreach ($mentions as $mention) {
+                    $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                    $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
+                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                }
+            } else {
+                $title = $fromUser->getUsername() . ' en ' . $name;
+                $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
             }
-
-            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");*/
 
             return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         } catch (Exception $ex) {

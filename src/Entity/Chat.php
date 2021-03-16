@@ -93,6 +93,12 @@ class Chat
      */
     private $writing = false;
 
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     * @Groups({"message"})
+     */
+    private $mentions = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -238,6 +244,18 @@ class Chat
     public function setWriting(bool $writing): self
     {
         $this->writing = $writing;
+
+        return $this;
+    }
+
+    public function getMentions(): ?array
+    {
+        return $this->mentions;
+    }
+
+    public function setMentions(?array $mentions): self
+    {
+        $this->mentions = $mentions;
 
         return $this;
     }
