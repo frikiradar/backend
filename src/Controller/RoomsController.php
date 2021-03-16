@@ -128,7 +128,7 @@ class RoomsController extends AbstractController
         $chat->setTimeCreation();
         $chat->setConversationId($slug);
 
-        $mentions = json_decode($this->request->get($request, "mentions"), true);
+        $mentions = $this->request->get($request, "mentions", false);
         if ($mentions) {
             $chat->setMentions($mentions);
         }
@@ -177,7 +177,7 @@ class RoomsController extends AbstractController
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
 
-            $mentions = $this->request->get($request, "mentions", false);
+            $mentions = json_decode($request->request->get("mentions"), true);
             if ($mentions) {
                 $chat->setMentions($mentions);
             }
