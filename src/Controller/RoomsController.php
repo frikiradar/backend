@@ -63,8 +63,8 @@ class RoomsController extends AbstractController
         foreach ($rooms as $room) {
             $slugs[] = $room['slug'];
         }
-
-        $messages = $this->em->getRepository('App:Room')->getLastMessages($slugs);
+        $fromUser = $this->getUser();
+        $messages = $this->em->getRepository('App:Room')->getLastMessages($slugs, $fromUser);
         foreach ($rooms as $key => $room) {
             foreach ($messages as $message) {
                 if ($message['conversationId'] == $room['slug']) {

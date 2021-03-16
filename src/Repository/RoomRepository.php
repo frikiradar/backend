@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Room;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -57,10 +58,13 @@ class RoomRepository extends ServiceEntityRepository
             ->getArrayResult();
     }
 
-    public function getLastMessages($slugs)
+    public function getLastMessages($slugs, User $fromUser)
     {
-        $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) GROUP BY c.conversationId";
-        $query = $this->getEntityManager()->createQuery($dql)->setParameter('slugs', $slugs);
+        $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) AND c.fromuser <> :id GROUP BY c.conversationId";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('slugs', $slugs)
+            ->setParameter('id', $fromUser->getId());
         return $query->getResult();
     }
 }

@@ -111,7 +111,7 @@ class ChatRepository extends ServiceEntityRepository
         $chats = $query->getResult();
 
         foreach ($chats as $key => $chat) {
-            if (strpos($chat["conversation_id"], '_') !== false) {
+            if (strpos($chat["conversation_id"], '_') !== false || $chat["fromuser"] == 1) {
                 if ($chat["fromuser"] == $fromUser->getId()) {
                     $userId = $chat["touser"];
                 } elseif (!is_null($chat["fromuser"])) {
@@ -160,6 +160,7 @@ class ChatRepository extends ServiceEntityRepository
             ->select('count(c.id)')
             ->where('c.touser = :toUser')
             ->andWhere('c.time_read IS NULL')
+            ->andWhere("c.conversationId LIKE '%_%'")
             ->setParameter('toUser', $toUser->getId())
             ->getQuery()
             ->getSingleScalarResult();
