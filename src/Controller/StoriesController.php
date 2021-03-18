@@ -44,7 +44,7 @@ class StoriesController extends AbstractController
         $this->accessChecker->checkAccess($user);
         $rooms = $this->em->getRepository('App:Story')->getStories($user);
 
-        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
+        return new Response($this->serializer->serialize($rooms, "json"));
     }
 
 
@@ -74,7 +74,7 @@ class StoriesController extends AbstractController
             $this->em->persist($story);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($story, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            return new Response($this->serializer->serialize($story, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
         }
