@@ -313,6 +313,21 @@ class User implements UserInterface, EquatableInterface
      */
     private $rooms;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Story::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $stories;
+
+    /**
+     * @ORM\OneToMany(targetEntity=LikeStory::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $likeStories;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ViewStory::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $viewStories;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -324,6 +339,9 @@ class User implements UserInterface, EquatableInterface
         $this->hideUsers = new ArrayCollection();
         $this->viewUsers = new ArrayCollection();
         $this->rooms = new ArrayCollection();
+        $this->stories = new ArrayCollection();
+        $this->likeStories = new ArrayCollection();
+        $this->viewStories = new ArrayCollection();
     }
 
     public function setId(int $id): self
@@ -1177,6 +1195,96 @@ class User implements UserInterface, EquatableInterface
             // set the owning side to null (unless already changed)
             if ($room->getCreator() === $this) {
                 $room->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Story[]
+     */
+    public function getStories(): Collection
+    {
+        return $this->stories;
+    }
+
+    public function addStory(Story $story): self
+    {
+        if (!$this->stories->contains($story)) {
+            $this->stories[] = $story;
+            $story->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStory(Story $story): self
+    {
+        if ($this->stories->removeElement($story)) {
+            // set the owning side to null (unless already changed)
+            if ($story->getUser() === $this) {
+                $story->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|LikeStory[]
+     */
+    public function getLikeStories(): Collection
+    {
+        return $this->likeStories;
+    }
+
+    public function addLikeStory(LikeStory $likeStory): self
+    {
+        if (!$this->likeStories->contains($likeStory)) {
+            $this->likeStories[] = $likeStory;
+            $likeStory->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLikeStory(LikeStory $likeStory): self
+    {
+        if ($this->likeStories->removeElement($likeStory)) {
+            // set the owning side to null (unless already changed)
+            if ($likeStory->getUser() === $this) {
+                $likeStory->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ViewStory[]
+     */
+    public function getViewStories(): Collection
+    {
+        return $this->viewStories;
+    }
+
+    public function addViewStory(ViewStory $viewStory): self
+    {
+        if (!$this->viewStories->contains($viewStory)) {
+            $this->viewStories[] = $viewStory;
+            $viewStory->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeViewStory(ViewStory $viewStory): self
+    {
+        if ($this->viewStories->removeElement($viewStory)) {
+            // set the owning side to null (unless already changed)
+            if ($viewStory->getUser() === $this) {
+                $viewStory->setUser(null);
             }
         }
 

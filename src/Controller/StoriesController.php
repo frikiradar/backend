@@ -1,0 +1,83 @@
+<?php
+// src/Controller/StoriesController.php
+namespace App\Controller;
+
+use App\Entity\Story;
+use App\Service\AccessCheckerService;
+use App\Service\FileUploaderService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Service\RequestService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
+
+/**
+ * Class StoriesController
+ *
+ * @Route(path="/api")
+ */
+class StoriesController extends AbstractController
+{
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer,
+        RequestService $request,
+        AccessCheckerService $accessChecker
+    ) {
+        $this->em = $entityManager;
+        $this->serializer = $serializer;
+        $this->request = $request;
+        $this->accessChecker = $accessChecker;
+    }
+
+    /**
+     * @Route("/v1/stories", name="get_stories", methods={"GET"})
+     */
+    public function getStoriesAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $rooms = $this->em->getRepository('App:Story')->getStories($user);
+
+        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
+    }
+
+
+    /**
+     * @Route("/v1/story-upload", name="story_upload", methods={"POST"})
+     */
+    public function upload(Request $request)
+    {
+        $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
+        try {
+            $story = new Story();
+            $imageFile = $request->files->get('image');
+            $text = $request->request->get("text");
+
+            $story->setText($text);
+            $story->setUser($fromUser);
+
+            $filename = microtime(true);
+
+            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
+            $server = "https://app.frikiradar.com";
+            $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
+            $image = $uploader->upload($imageFile, false, 50);
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+            $story->setImage($src);
+            $story->setTimeCreation();
+            $this->em->persist($story);
+            $this->em->flush();
+
+            return new Response($this->serializer->serialize($story, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
+        }
+    }
+}
