@@ -64,11 +64,10 @@ class StoriesController extends AbstractController
             $story->setUser($fromUser);
 
             $filename = microtime(true);
-
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
             $server = "https://app.frikiradar.com";
             $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
-            $image = $uploader->upload($imageFile, false, 50);
+            $image = $uploader->upload($imageFile, true, 50);
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             $story->setImage($src);
             $story->setTimeCreation();
