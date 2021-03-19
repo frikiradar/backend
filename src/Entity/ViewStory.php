@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ViewStoryRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -16,6 +17,7 @@ class ViewStory
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"story"})
      */
     private $id;
 
@@ -28,11 +30,13 @@ class ViewStory
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="viewStories")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"story"})
      */
     private $user;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"story"})
      */
     private $date;
 

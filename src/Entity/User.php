@@ -24,7 +24,7 @@ class User implements UserInterface, EquatableInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"default", "message", "like"})
+     * @Groups({"default", "message", "like", "story"})
      */
     private $id;
 
@@ -36,7 +36,7 @@ class User implements UserInterface, EquatableInterface
      *     message="Solo se permiten caracteres alfanuméricos, puntos y/o guiones; ni letras con tildes, ni caracteres especiales",
      *     payload = {"severity" = "error"}
      * )
-     * @Groups({"default", "message"})
+     * @Groups({"default", "message", "story"})
      */
     private $username;
 
@@ -166,13 +166,13 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message"})
+     * @Groups({"default", "message", "story"})
      */
     private $avatar;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message"})
+     * @Groups({"default", "message", "story"})
      */
     private $thumbnail;
 
@@ -271,7 +271,7 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message"})
+     * @Groups({"default", "message", "story"})
      */
     private ?string $name;
 

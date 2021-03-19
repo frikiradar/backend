@@ -44,7 +44,7 @@ class StoriesController extends AbstractController
         $this->accessChecker->checkAccess($user);
         $rooms = $this->em->getRepository('App:Story')->getStories($user);
 
-        return new Response($this->serializer->serialize($rooms, "json"));
+        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['story']]));
     }
 
 
