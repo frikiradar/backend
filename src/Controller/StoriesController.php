@@ -89,15 +89,18 @@ class StoriesController extends AbstractController
         try {
             $user = $this->getUser();
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            if ($story->getUser()->getId() !== $user->getId()) {
+                $view = new ViewStory();
+                $view->setDate(new \DateTime);
+                $view->setStory($story);
+                $view->setUser($user);
+                $this->em->persist($view);
+                $this->em->flush();
 
-            $view = new ViewStory();
-            $view->setDate(new \DateTime);
-            $view->setStory($story);
-            $view->setUser($user);
-            $this->em->persist($view);
-            $this->em->flush();
-
-            return new Response($this->serializer->serialize("Historia vista correctamente", "json"));
+                return new Response($this->serializer->serialize("Historia vista correctamente", "json"));
+            } else {
+                throw new HttpException(400, "No puedes marcar como vista tu propia historia.");
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ver la historia - Error: {$ex->getMessage()}");
         }
