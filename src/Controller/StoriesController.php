@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Story;
+use App\Entity\ViewStory;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use Symfony\Component\HttpFoundation\Request;
@@ -77,6 +78,28 @@ class StoriesController extends AbstractController
             return new Response($this->serializer->serialize($story, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/view-story", name="view_story", methods={"PUT"})
+     */
+    public function putViewAction(Request $request)
+    {
+        try {
+            $user = $this->getUser();
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+
+            $view = new ViewStory();
+            $view->setDate(new \DateTime);
+            $view->setStory($story);
+            $view->setUser($user);
+            $this->em->persist($view);
+            $this->em->flush();
+
+            return new Response($this->serializer->serialize("Historia vista correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al ver la historia - Error: {$ex->getMessage()}");
         }
     }
 }
