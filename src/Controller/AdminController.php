@@ -353,7 +353,7 @@ class AdminController extends AbstractController
 
             return new Response($this->serializer->serialize($rooms, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al borrar la sala - Error: {$ex->getMessage()}");
         }
     }
 }

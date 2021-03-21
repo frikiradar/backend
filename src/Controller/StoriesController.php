@@ -88,8 +88,17 @@ class StoriesController extends AbstractController
     {
         try {
             $user = $this->getUser();
+            /**
+             * @var Story
+             */
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
-            if ($story->getUser()->getId() !== $user->getId()) {
+            $viewed = false;
+            foreach ($story->getViewStories() as $view) {
+                if ($view->getUser()->getId() == $user->getId()) {
+                    $viewed = true;
+                }
+            }
+            if (!$viewed && $story->getUser()->getId() !== $user->getId()) {
                 $view = new ViewStory();
                 $view->setDate(new \DateTime);
                 $view->setStory($story);
@@ -99,10 +108,39 @@ class StoriesController extends AbstractController
 
                 return new Response($this->serializer->serialize("Historia vista correctamente", "json"));
             } else {
-                throw new HttpException(400, "No puedes marcar como vista tu propia historia.");
+                throw new HttpException(401, "No puedes marcar como vista tu propia historia o ver la misma historia dos veces.");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ver la historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/delete-story/{id}", name="delete_story", methods={"DELETE"})
+     */
+    public function removeRoomAction(int $id)
+    {
+        try {
+            /**
+             * @var Story
+             */
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            if ($story->getUser()->getId() === $this->getUser()->getId()) {
+                $image = $story->getImage();
+                if ($image) {
+                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/" . $image;
+                    unlink($file);
+                }
+
+                $this->em->remove($story);
+                $this->em->flush();
+
+                return new Response("Historia eliminada correctamente");
+            } else {
+                throw new HttpException(401, "No se puede eliminar la historia de otro usuario.");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al eliminar la historia - Error: {$ex->getMessage()}");
         }
     }
 }

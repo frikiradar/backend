@@ -17,7 +17,6 @@ class ViewStory
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"story"})
      */
     private $id;
 

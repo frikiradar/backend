@@ -43,7 +43,7 @@ class User implements UserInterface, EquatableInterface
     /**
      * @var array
      * @ORM\Column(type="json")
-     * @Groups({"default", "message"})
+     * @Groups({"default", "message", "story"})
      */
     private $roles = [];
 
