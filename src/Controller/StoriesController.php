@@ -2,6 +2,7 @@
 // src/Controller/StoriesController.php
 namespace App\Controller;
 
+use App\Entity\LikeStory;
 use App\Entity\Story;
 use App\Entity\ViewStory;
 use App\Service\AccessCheckerService;
@@ -141,6 +142,63 @@ class StoriesController extends AbstractController
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar la historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/like-story", name="like_story", methods={"PUT"})
+     */
+    public function putLikeAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $like = $this->em->getRepository('App:LikeStory')->findOneBy(array('story' => $story, 'user' => $user));
+
+            if (empty($like)) {
+                $newLike = new LikeStory();
+                $newLike->setUser($user);
+                $newLike->setStory($story);
+                $newLike->setDate();
+                $this->em->persist($newLike);
+                $this->em->flush();
+
+                $title = $this->getUser()->getUsername();
+                $text = "Le ha gustado tu historia ❤️.";
+                $url = "/tabs/community";
+
+                $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
+            }
+
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+
+            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al entregar kokoro a una historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+
+    /**
+     * @Route("/v1/like-story/{id}", name="unlike_story", methods={"DELETE"})
+     */
+    public function removeLikeAction(int $id)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $like = $this->em->getRepository('App:LikeStory')->findOneBy(array('story' => $story, 'user' => $user));
+            $this->em->remove($like);
+            $this->em->flush();
+
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+
+            return new Response($this->serializer->serialize($user, "json", ['groups' => 'story']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
         }
     }
 }

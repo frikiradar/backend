@@ -73,9 +73,9 @@ class ViewStory
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(): self
     {
-        $this->date = $date;
+        $this->date = new \DateTime;
 
         return $this;
     }
