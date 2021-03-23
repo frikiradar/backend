@@ -145,11 +145,19 @@ class RoomsController extends AbstractController
 
         $url = "/room/" . $slug;
 
-        if (count((array) $mentions) > 0) {
+        if (count((array) $mentions) > 0 || $replyToChat) {
             foreach ($mentions as $mention) {
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                 $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
                 $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+            }
+
+            if ($replyToChat) {
+                $toUser = $replyToChat->getFromuser();
+                if ($toUser->getId() !== $fromUser->getId()) {
+                    $title = $fromUser->getUsername() . ' ha respondido a tu mensaje en ' . $name;
+                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                }
             }
         } else {
             $title = $fromUser->getUsername() . ' en ' . $name;
