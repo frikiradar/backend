@@ -214,8 +214,10 @@ class StoriesController extends AbstractController
         try {
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
             $like = $this->em->getRepository('App:LikeStory')->findOneBy(array('story' => $story, 'user' => $user));
-            $this->em->remove($like);
-            $this->em->flush();
+            if (!empty($like)) {
+                $this->em->remove($like);
+                $this->em->flush();
+            }
 
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
 
@@ -303,11 +305,13 @@ class StoriesController extends AbstractController
                 $this->em->persist($comment);
                 $this->em->flush();
 
-                $title = $user->getName();
-                $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
-                $url = "/tabs/community/story/" . $comment->getStory()->getId();
+                if ($user->getId() !== $comment->getUser()->getId()) {
+                    $title = $user->getName();
+                    $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
+                    $url = "/tabs/community/story/" . $comment->getStory()->getId();
 
-                $this->notification->push($user, $comment->getUser(), $title, $text, $url, "story");
+                    $this->notification->push($user, $comment->getUser(), $title, $text, $url, "story");
+                }
             }
 
             return new Response($this->serializer->serialize($comment->getStory(), "json", ['groups' => 'story']));
