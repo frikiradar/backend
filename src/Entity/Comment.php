@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CommentRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,27 +19,32 @@ class Comment
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"story"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"story"})
      */
     private $text;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"story"})
      */
     private $time_creation;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"story"})
      */
     private $user;
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class)
+     * @Groups({"story"})
      */
     private $likes;
 
@@ -46,6 +52,12 @@ class Comment
      * @ORM\ManyToOne(targetEntity=Story::class, inversedBy="comments")
      */
     private $story;
+
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     * @Groups({"story"})
+     */
+    private $mentions = [];
 
     public function __construct()
     {
@@ -74,9 +86,9 @@ class Comment
         return $this->time_creation;
     }
 
-    public function setTimeCreation(\DateTimeInterface $time_creation): self
+    public function setTimeCreation(): self
     {
-        $this->time_creation = $time_creation;
+        $this->time_creation = new \DateTime;
 
         return $this;
     }
@@ -125,6 +137,18 @@ class Comment
     public function setStory(?Story $story): self
     {
         $this->story = $story;
+
+        return $this;
+    }
+
+    public function getMentions(): ?array
+    {
+        return $this->mentions;
+    }
+
+    public function setMentions(?array $mentions): self
+    {
+        $this->mentions = $mentions;
 
         return $this;
     }

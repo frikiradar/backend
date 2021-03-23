@@ -592,7 +592,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function searchUsernames($query)
     {
         return $this->createQueryBuilder('u')
-            ->select('u.username')
+            ->select('u.username, u.thumbnail')
             ->where('u.username LIKE :query')
             ->andWhere('u.active = 1')
             ->andWhere('u.banned = 0')

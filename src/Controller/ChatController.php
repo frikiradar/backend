@@ -90,7 +90,7 @@ class ChatController extends AbstractController
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-            $title = $fromUser->getUsername();
+            $title = $fromUser->getName();
             $url = "/chat/" . $chat->getFromuser()->getId();
 
             $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
@@ -154,7 +154,7 @@ class ChatController extends AbstractController
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-                $title = $fromUser->getUsername();
+                $title = $fromUser->getName();
                 $url = "/chat/" . $chat->getFromuser()->getId();
 
                 if (empty($text) && !empty($image)) {

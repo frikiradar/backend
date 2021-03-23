@@ -2,11 +2,13 @@
 // src/Controller/StoriesController.php
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\LikeStory;
 use App\Entity\Story;
 use App\Entity\ViewStory;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
+use App\Service\NotificationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,12 +31,14 @@ class StoriesController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         RequestService $request,
-        AccessCheckerService $accessChecker
+        AccessCheckerService $accessChecker,
+        NotificationService $notification
     ) {
         $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
         $this->accessChecker = $accessChecker;
+        $this->notification = $notification;
     }
 
     /**
@@ -44,9 +48,28 @@ class StoriesController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        $rooms = $this->em->getRepository('App:Story')->getStories($user);
+        $stories = $this->em->getRepository('App:Story')->getStories($user);
 
-        return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['story']]));
+        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+    }
+
+    /**
+     * @Route("/v1/story/{id}", name="get_story", methods={"GET"})
+     */
+    public function getStoryAction(int $id)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            if (!is_null($story)) {
+                return new Response($this->serializer->serialize($story, "json", ['groups' => ['story']]));
+            } else {
+                throw new HttpException(400, "Historia no encontrada");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Historia no encontrada - Error: {$ex->getMessage()}");
+        }
     }
 
 
@@ -119,7 +142,7 @@ class StoriesController extends AbstractController
     /**
      * @Route("/v1/delete-story/{id}", name="delete_story", methods={"DELETE"})
      */
-    public function removeRoomAction(int $id)
+    public function removeStoryAction(int $id)
     {
         try {
             /**
@@ -164,8 +187,8 @@ class StoriesController extends AbstractController
                 $this->em->persist($newLike);
                 $this->em->flush();
 
-                $title = $this->getUser()->getUsername();
-                $text = "Le ha gustado tu historia ❤️.";
+                $title = $user->getName();
+                $text = "A " . $user->getName() . " le ha gustado tu historia ❤️.";
                 $url = "/tabs/community";
 
                 $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
@@ -196,9 +219,158 @@ class StoriesController extends AbstractController
 
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'story']));
+            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/comment-story", name="comment_story", methods={"PUT"})
+     */
+    public function putCommentAction(Request $request)
+    {
+        $user = $this->getUser();
+
+        $this->accessChecker->checkAccess($user);
+        try {
+            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+
+            $comment = new Comment();
+
+            if (empty($this->em->getRepository('App:BlockUser')->isBlocked($user, $story->getUser()))) {
+                $comment->setStory($story);
+                $comment->setUser($user);
+
+                $text = $this->request->get($request, "text", false);
+
+                $comment->setText($text);
+                $comment->setTimeCreation();
+
+                $mentions = array_unique($this->request->get($request, "mentions", false));
+                if ($mentions) {
+                    $comment->setMentions($mentions);
+                }
+
+                $this->em->persist($comment);
+                $this->em->flush();
+
+                $url = "/tabs/community";
+                if (count((array) $mentions) > 0) {
+                    foreach ($mentions as $mention) {
+                        $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                        $title = $user->getUsername() . ' te ha mencionado en una historia.';
+                        $this->notification->push($user, $toUser, $title, $text, $url, 'chat');
+                    }
+                } else {
+                    $title = $user->getName() . ' ha comentado tu historia.';
+                    $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
+                }
+
+                $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+
+                return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            } else {
+                throw new HttpException(400, "No se puede comentar a este usuario, estás bloqueado - Error");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al comentar la historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/like-comment", name="like_comment", methods={"PUT"})
+     */
+    public function putLikeCommentAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
+            /**
+             * @var Comment
+             */
+            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $this->request->get($request, 'comment')));
+            $likes = $comment->getLikes();
+            $liked = false;
+            foreach ($likes as $like) {
+                if ($like->getId() === $user->getId()) {
+                    $liked = true;
+                }
+            }
+
+            if (!$liked) {
+                $comment->addLike($user);
+                $this->em->persist($comment);
+                $this->em->flush();
+
+                $title = $user->getName();
+                $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
+                $url = "/tabs/community";
+
+                $this->notification->push($user, $comment->getUser(), $title, $text, $url, "story");
+            }
+
+            return new Response($this->serializer->serialize($comment->getStory(), "json", ['groups' => 'story']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al entregar kokoro a una historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+
+    /**
+     * @Route("/v1/like-comment/{id}", name="unlike_comment", methods={"DELETE"})
+     */
+    public function removeLikeCommentAction(int $id)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            /**
+             * @var Comment
+             */
+            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $id));
+            $likes = $comment->getLikes();
+            $liked = false;
+            foreach ($likes as $like) {
+                if ($like->getId() === $user->getId()) {
+                    $liked = true;
+                }
+            }
+
+            if ($liked) {
+                $comment->removeLike($user);
+                $this->em->persist($comment);
+                $this->em->flush();
+            }
+
+            return new Response($this->serializer->serialize($comment->getStory(), "json", ['groups' => 'story']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/delete-comment/{id}", name="delete_comment", methods={"DELETE"})
+     */
+    public function removeCommentAction(int $id)
+    {
+        try {
+            /**
+             * @var Comment
+             */
+            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $id));
+            if ($comment->getUser()->getId() === $this->getUser()->getId()) {
+                $story = $comment->getStory();
+                $this->em->remove($comment);
+                $this->em->flush();
+
+                return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            } else {
+                throw new HttpException(401, "No se puede eliminar el comentario de otro usuario.");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al eliminar el comentario - Error: {$ex->getMessage()}");
         }
     }
 }
