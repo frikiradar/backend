@@ -189,7 +189,7 @@ class StoriesController extends AbstractController
 
                 $title = $user->getName();
                 $text = "A " . $user->getName() . " le ha gustado tu historia ❤️.";
-                $url = "/tabs/community";
+                $url = "/tabs/community/story/" . $story->getId();
 
                 $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
             }
@@ -255,7 +255,7 @@ class StoriesController extends AbstractController
                 $this->em->persist($comment);
                 $this->em->flush();
 
-                $url = "/tabs/community";
+                $url = "/tabs/community/story/" . $story->getId();
                 if (count((array) $mentions) > 0) {
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
@@ -305,7 +305,7 @@ class StoriesController extends AbstractController
 
                 $title = $user->getName();
                 $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
-                $url = "/tabs/community";
+                $url = "/tabs/community/story/" . $comment->getStory()->getId();
 
                 $this->notification->push($user, $comment->getUser(), $title, $text, $url, "story");
             }
