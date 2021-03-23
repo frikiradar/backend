@@ -22,13 +22,13 @@ class ViewStory
 
     /**
      * @ORM\ManyToOne(targetEntity=Story::class, inversedBy="viewStories")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id", onDelete="CASCADE")
      */
     private $story;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="viewStories")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id", onDelete="CASCADE")
      * @Groups({"story"})
      */
     private $user;

@@ -36,8 +36,8 @@ class Comment
     private $time_creation;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @Groups({"story"})
      */
     private $user;
@@ -50,6 +50,7 @@ class Comment
 
     /**
      * @ORM\ManyToOne(targetEntity=Story::class, inversedBy="comments")
+     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="CASCADE")
      */
     private $story;
 

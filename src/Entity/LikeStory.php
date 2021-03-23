@@ -22,13 +22,13 @@ class LikeStory
 
     /**
      * @ORM\ManyToOne(targetEntity=Story::class, inversedBy="likeStories")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id", onDelete="CASCADE")
      */
     private $story;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="likeStories")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="id", onDelete="CASCADE")
      * @Groups({"story"})
      */
     private $user;
