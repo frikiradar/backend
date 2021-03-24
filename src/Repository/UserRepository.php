@@ -148,6 +148,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
             $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             $user['tags'] = $toUser->getTags();
+            $user['stories'] = $toUser->getStories();
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([

@@ -53,6 +53,7 @@ class RoomsController extends AbstractController
         $cache = new FilesystemAdapter();
         $roomsCache = $cache->getItem('rooms.list.visible');
         if (!$roomsCache->isHit()) {
+            $roomsCache->expiresAfter(3600 * 24);
             $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
             $roomsCache->set($rooms);
             $cache->save($roomsCache);

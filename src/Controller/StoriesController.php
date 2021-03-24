@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -54,6 +54,29 @@ class StoriesController extends AbstractController
     }
 
     /**
+     * @Route("/v1/user-stories/{id}", name="get_user_stories", methods={"GET"})
+     */
+    public function getUserStoriesAction(int $id)
+    {
+        $cache = new FilesystemAdapter();
+        try {
+            $storiesCache = $cache->getItem('stories.get.' . $id);
+            if (!$storiesCache->isHit()) {
+                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+                $stories = $user->getStories();
+                $stories = $this->serializer->serialize($stories, "json", ['groups' => ['story']]);
+                $storiesCache->set($stories);
+                $cache->save($storiesCache);
+            } else {
+                $stories = $storiesCache->get();
+            }
+            return new Response($stories);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener las historias del usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/story/{id}", name="get_story", methods={"GET"})
      */
     public function getStoryAction(int $id)
@@ -81,6 +104,8 @@ class StoriesController extends AbstractController
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         try {
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $fromUser->getId());
             $story = new Story();
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
@@ -116,6 +141,9 @@ class StoriesController extends AbstractController
              * @var Story
              */
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
+
             $viewed = false;
             foreach ($story->getViewStories() as $view) {
                 if ($view->getUser()->getId() == $user->getId()) {
@@ -149,6 +177,9 @@ class StoriesController extends AbstractController
              * @var Story
              */
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
+
             if ($story->getUser()->getId() === $this->getUser()->getId()) {
                 $image = $story->getImage();
                 if ($image) {
@@ -195,6 +226,8 @@ class StoriesController extends AbstractController
             }
 
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
             return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
         } catch (Exception $ex) {
@@ -220,6 +253,8 @@ class StoriesController extends AbstractController
             }
 
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
             return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
         } catch (Exception $ex) {
@@ -270,6 +305,8 @@ class StoriesController extends AbstractController
                 }
 
                 $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
                 return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
             } else {
@@ -314,7 +351,11 @@ class StoriesController extends AbstractController
                 }
             }
 
-            return new Response($this->serializer->serialize($comment->getStory(), "json", ['groups' => 'story']));
+            $story = $comment->getStory();
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
+
+            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al entregar kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -348,7 +389,11 @@ class StoriesController extends AbstractController
                 $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize($comment->getStory(), "json", ['groups' => 'story']));
+            $story = $comment->getStory();
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('stories.get.' . $story->getUser()->getId());
+
+            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -368,6 +413,9 @@ class StoriesController extends AbstractController
                 $story = $comment->getStory();
                 $this->em->remove($comment);
                 $this->em->flush();
+
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
                 return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
             } else {
