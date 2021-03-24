@@ -50,17 +50,17 @@ class RoomsController extends AbstractController
      */
     public function getRoomsAction()
     {
-        /* $cache = new FilesystemAdapter();
+        $cache = new FilesystemAdapter();
         $roomsCache = $cache->getItem('rooms.list.visible');
-        if (!$roomsCache->isHit()) {*/
-        $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
-        /*    $roomsCache->set($rooms);
-              $cache->save($roomsCache);
+        if (!$roomsCache->isHit()) {
+            $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
+            $roomsCache->set($rooms);
+            $cache->save($roomsCache);
         } else {
             $rooms = $roomsCache->get();
-        }*/
+        }
 
-        foreach ($rooms as $room) {
+        /*foreach ($rooms as $room) {
             $slugs[] = $room['slug'];
         }
         $fromUser = $this->getUser();
@@ -71,7 +71,7 @@ class RoomsController extends AbstractController
                     $rooms[$key]['last_message'] = +$message['last_message'];
                 }
             }
-        }
+        }*/
 
         return new Response($this->serializer->serialize($rooms, "json", ['groups' => ['default']]));
     }
