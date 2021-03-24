@@ -50,15 +50,15 @@ class RoomsController extends AbstractController
      */
     public function getRoomsAction()
     {
-        $cache = new FilesystemAdapter();
+        /*$cache = new FilesystemAdapter();
         $roomsCache = $cache->getItem('rooms.list.visible');
-        if (!$roomsCache->isHit()) {
-            $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
-            $roomsCache->set($rooms);
+        if (!$roomsCache->isHit()) {*/
+        $rooms = $this->em->getRepository('App:Room')->findVisibleRooms();
+        /*$roomsCache->set($rooms);
             $cache->save($roomsCache);
         } else {
             $rooms = $roomsCache->get();
-        }
+        }*/
 
         /*foreach ($rooms as $room) {
             $slugs[] = $room['slug'];
