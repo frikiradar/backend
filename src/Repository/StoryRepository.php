@@ -67,7 +67,6 @@ class StoryRepository extends ServiceEntityRepository
         $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday ORDER BY s.time_creation DESC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
-            ->setParameter('id', $user->getId())
             ->setParameter('yesterday', $yesterday);
         return $query->getResult();
     }
