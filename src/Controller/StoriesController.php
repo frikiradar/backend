@@ -55,6 +55,18 @@ class StoriesController extends AbstractController
     }
 
     /**
+     * @Route("/v1/all-stories", name="get_all_stories", methods={"GET"})
+     */
+    public function getAllStoriesAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $stories = $this->em->getRepository('App:Story')->getAllStories($user);
+
+        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+    }
+
+    /**
      * @Route("/v1/user-stories/{id}", name="get_user_stories", methods={"GET"})
      */
     public function getUserStoriesAction(int $id)
