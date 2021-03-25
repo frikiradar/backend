@@ -259,6 +259,7 @@ class RoomsController extends AbstractController
 
         $chat = [];
         $chat['fromuser']['name'] = $name;
+        $chat['fromuser']['username'] = $name;
         $chat['conversation_id'] = $slug;
         $chat['writing'] = true;
 
