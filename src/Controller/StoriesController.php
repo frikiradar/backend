@@ -192,7 +192,7 @@ class StoriesController extends AbstractController
 
                 return new Response("Historia eliminada correctamente");
             } else {
-                throw new HttpException(401, "No se puede eliminar la historia de otro usuario.");
+                throw new HttpException(404, "No se puede eliminar la historia de otro usuario.");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar la historia - Error: {$ex->getMessage()}");
@@ -419,7 +419,7 @@ class StoriesController extends AbstractController
 
                 return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
             } else {
-                throw new HttpException(401, "No se puede eliminar el comentario de otro usuario.");
+                throw new HttpException(404, "No se puede eliminar el comentario de otro usuario.");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el comentario - Error: {$ex->getMessage()}");
