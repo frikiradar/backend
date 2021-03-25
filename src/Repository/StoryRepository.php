@@ -61,7 +61,7 @@ class StoryRepository extends ServiceEntityRepository
     }
 
 
-    public function getAllStories(User $user)
+    public function getAllStories()
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
         $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday ORDER BY s.time_creation DESC";
