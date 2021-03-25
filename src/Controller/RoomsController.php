@@ -118,54 +118,60 @@ class RoomsController extends AbstractController
         $name = $this->request->get($request, "name");
 
         $this->accessChecker->checkAccess($fromUser);
+        $text = trim($this->request->get($request, "text", false));
 
-        $chat = new Chat();
-        $chat->setTouser(null);
-        $chat->setFromuser($fromUser);
+        try {
+            if (!empty($text)) {
+                $chat = new Chat();
+                $chat->setTouser(null);
+                $chat->setFromuser($fromUser);
+                $chat->setText($text);
+                $chat->setTimeCreation();
+                $chat->setConversationId($slug);
 
-        $text = $this->request->get($request, "text", false);
-
-        $chat->setText($text);
-        $chat->setTimeCreation();
-        $chat->setConversationId($slug);
-
-        $mentions = array_unique($this->request->get($request, "mentions", false));
-        if ($mentions) {
-            $chat->setMentions($mentions);
-        }
-
-        $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
-        if ($replyToChat) {
-            $chat->setReplyTo($replyToChat);
-        }
-        $this->em->persist($chat);
-        $this->em->flush();
-
-        $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-        $publisher($update);
-
-        $url = "/room/" . $slug;
-
-        if (count((array) $mentions) > 0 || $replyToChat) {
-            foreach ($mentions as $mention) {
-                $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
-                $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
-                $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
-            }
-
-            if ($replyToChat) {
-                $toUser = $replyToChat->getFromuser();
-                if ($toUser->getId() !== $fromUser->getId()) {
-                    $title = $fromUser->getUsername() . ' ha respondido a tu mensaje en ' . $name;
-                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                $mentions = array_unique($this->request->get($request, "mentions", false));
+                if ($mentions) {
+                    $chat->setMentions($mentions);
                 }
-            }
-        } else {
-            $title = $fromUser->getUsername() . ' en ' . $name;
-            $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
-        }
 
-        return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
+                if ($replyToChat) {
+                    $chat->setReplyTo($replyToChat);
+                }
+                $this->em->persist($chat);
+                $this->em->flush();
+
+                $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                $publisher($update);
+
+                $url = "/room/" . $slug;
+
+                if (count((array) $mentions) > 0 || $replyToChat) {
+                    foreach ($mentions as $mention) {
+                        $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                        $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
+                        $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                    }
+
+                    if ($replyToChat) {
+                        $toUser = $replyToChat->getFromuser();
+                        if ($toUser->getId() !== $fromUser->getId()) {
+                            $title = $fromUser->getUsername() . ' ha respondido a tu mensaje en ' . $name;
+                            $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                        }
+                    }
+                } else {
+                    $title = $fromUser->getUsername() . ' en ' . $name;
+                    $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
+                }
+
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            } else {
+                throw new HttpException(400, "El texto no puede estar vacío");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al publicar el mensaje - Error: {$ex->getMessage()}");
+        }
     }
 
     /**
@@ -176,64 +182,68 @@ class RoomsController extends AbstractController
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         try {
-            $chat = new Chat();
-            $slug = $request->request->get("slug");
-            $name = $request->request->get("name");
-
-            $chat->setTouser(null);
-            $chat->setFromuser($fromUser);
-
             $imageFile = $request->files->get('image');
-            $text = $request->request->get("text");
+            $text = trim($request->request->get("text"));
 
-            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
-            if ($mentions) {
-                $chat->setMentions($mentions);
-            }
+            if (!empty($imageFile)) {
+                $chat = new Chat();
+                $slug = $request->request->get("slug");
+                $name = $request->request->get("name");
 
-            $filename = microtime(true);
-            if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
-                $absolutePath = 'images/chat/';
-                $server = "https://$_SERVER[HTTP_HOST]";
-                $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
-                $image = $uploader->upload($imageFile, false, 70);
-                $chat->setImage($image);
-                $chat->setText($text);
-                $chat->setTimeCreation();
-                $chat->setConversationId($slug);
-            } else {
-                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
-                $server = "https://app.frikiradar.com";
-                $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
-                $image = $uploader->upload($imageFile, false, 50);
-                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-                $chat->setImage($src);
-                $chat->setText($text);
-                $chat->setTimeCreation();
-                $chat->setConversationId($slug);
-                $this->em->persist($chat);
-                $fromUser->setLastLogin();
-                $this->em->persist($fromUser);
-                $this->em->flush();
-            }
+                $chat->setTouser(null);
+                $chat->setFromuser($fromUser);
 
-            $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-            $publisher($update);
-
-            $url = "/room/" . $slug;
-
-            if (count((array) $mentions) > 0) {
-                foreach ($mentions as $mention) {
-                    $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
-                    $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
-                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                $mentions = array_unique(json_decode($request->request->get("mentions"), true));
+                if ($mentions) {
+                    $chat->setMentions($mentions);
                 }
-            } else {
-                $title = $fromUser->getUsername() . ' en ' . $name;
-                $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
-            }
 
-            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $filename = microtime(true);
+                if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                    $absolutePath = 'images/chat/';
+                    $server = "https://$_SERVER[HTTP_HOST]";
+                    $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
+                    $image = $uploader->upload($imageFile, false, 70);
+                    $chat->setImage($image);
+                    $chat->setText($text);
+                    $chat->setTimeCreation();
+                    $chat->setConversationId($slug);
+                } else {
+                    $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                    $server = "https://app.frikiradar.com";
+                    $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
+                    $image = $uploader->upload($imageFile, false, 50);
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                    $chat->setImage($src);
+                    $chat->setText($text);
+                    $chat->setTimeCreation();
+                    $chat->setConversationId($slug);
+                    $this->em->persist($chat);
+                    $fromUser->setLastLogin();
+                    $this->em->persist($fromUser);
+                    $this->em->flush();
+                }
+
+                $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+
+                $url = "/room/" . $slug;
+
+                if (count((array) $mentions) > 0) {
+                    foreach ($mentions as $mention) {
+                        $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                        $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
+                        $this->notification->push($fromUser, $toUser, $title, $text, $url, 'chat');
+                    }
+                } else {
+                    $title = $fromUser->getUsername() . ' en ' . $name;
+                    $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
+                }
+
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            } else {
+                throw new HttpException(400, "La imagen subida está vacía.");
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
         }
