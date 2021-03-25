@@ -315,6 +315,7 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Story::class, mappedBy="user", orphanRemoval=true)
+     * @ORM\OrderBy({"time_creation" = "DESC"})
      */
     private $stories;
 
