@@ -18,6 +18,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -112,6 +113,10 @@ class StoriesController extends AbstractController
 
             $story->setText($text);
             $story->setUser($fromUser);
+            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
+            if ($mentions) {
+                $story->setMentions($mentions);
+            }
 
             $filename = microtime(true);
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
@@ -123,6 +128,15 @@ class StoriesController extends AbstractController
             $story->setTimeCreation();
             $this->em->persist($story);
             $this->em->flush();
+
+            if (count((array) $mentions) > 0) {
+                $url = "/tabs/community/story/" . $story->getId();
+                foreach ($mentions as $mention) {
+                    $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                    $title = $fromUser->getName() . ' te ha mencionado en una historia.';
+                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'story');
+                }
+            }
 
             return new Response($this->serializer->serialize($story, "json"));
         } catch (Exception $ex) {
@@ -190,7 +204,11 @@ class StoriesController extends AbstractController
                 $this->em->remove($story);
                 $this->em->flush();
 
-                return new Response("Historia eliminada correctamente");
+                $data = [
+                    'code' => 200,
+                    'message' => "Historia eliminada correctamente",
+                ];
+                return new JsonResponse($data, 200);
             } else {
                 throw new HttpException(404, "No se puede eliminar la historia de otro usuario.");
             }
@@ -297,7 +315,7 @@ class StoriesController extends AbstractController
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                         $title = $user->getUsername() . ' te ha mencionado en una historia.';
-                        $this->notification->push($user, $toUser, $title, $text, $url, 'chat');
+                        $this->notification->push($user, $toUser, $title, $text, $url, 'story');
                     }
                 } else {
                     $title = $user->getName() . ' ha comentado tu historia.';

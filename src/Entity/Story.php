@@ -66,6 +66,12 @@ class Story
      */
     private $viewStories;
 
+    /**
+     * @ORM\Column(type="json_array", nullable=true)
+     * @Groups({"story"})
+     */
+    private $mentions = [];
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -213,6 +219,18 @@ class Story
                 $viewStory->setStory(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getMentions(): ?array
+    {
+        return $this->mentions;
+    }
+
+    public function setMentions(?array $mentions): self
+    {
+        $this->mentions = $mentions;
 
         return $this;
     }
