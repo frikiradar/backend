@@ -52,7 +52,18 @@ class StoryRepository extends ServiceEntityRepository
     public function getStories(User $user)
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE (s.user IN(SELECT IDENTITY(l.to_user) FROM App:LikeUser l WHERE IDENTITY(l.from_user) = :id) OR s.user = 1 OR s.user = :id) AND s.time_creation > :yesterday ORDER BY s.time_creation DESC";
+        $dql = "SELECT s FROM App:Story s WHERE (s.user IN(SELECT IDENTITY(l.to_user) FROM App:LikeUser l WHERE IDENTITY(l.from_user) = :id) OR s.user = 1 OR s.user = :id) AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('id', $user->getId())
+            ->setParameter('yesterday', $yesterday);
+        return $query->getResult();
+    }
+
+    public function getUserStories(User $user)
+    {
+        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+        $dql = "SELECT s FROM App:Story s WHERE s.user = :id AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
@@ -64,7 +75,7 @@ class StoryRepository extends ServiceEntityRepository
     public function getAllStories()
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday ORDER BY s.time_creation DESC";
+        $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('yesterday', $yesterday);

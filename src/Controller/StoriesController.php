@@ -76,7 +76,7 @@ class StoriesController extends AbstractController
             $storiesCache = $cache->getItem('stories.get.' . $id);
             if (!$storiesCache->isHit()) {
                 $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $stories = $user->getStories();
+                $stories = $this->em->getRepository('App:Story')->getUserStories($user);
                 $stories = $this->serializer->serialize($stories, "json", ['groups' => ['story']]);
                 $storiesCache->set($stories);
                 $cache->save($storiesCache);
