@@ -21,12 +21,13 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification, \Swift_Mailer $mailer)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
         $this->em = $entityManager;
         $this->notification = $notification;
+        $this->mailer = $mailer;
     }
 
     // /**
@@ -570,6 +571,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $this->em->flush();
 
         $this->notification->push($fromUser, $toUser, $title, $text, $url, "ban");
+
+        // Enviamos email avisando
+        $message = (new \Swift_Message('Nuevo usuario baneado'))
+            ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
+            ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+            ->setBody("El usuario <a href='mailto:" . $toUser->getEmail() . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text, 'text/html');
+
+        if (0 === $this->mailer->send($message)) {
+            // throw new HttpException(400, "Error al enviar el email avisando el bug");
+        }
     }
 
     public function getBanUsers()

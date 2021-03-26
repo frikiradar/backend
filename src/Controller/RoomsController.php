@@ -21,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * Class RoomsController
@@ -35,7 +36,8 @@ class RoomsController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         NotificationService $notification,
-        AccessCheckerService $accessChecker
+        AccessCheckerService $accessChecker,
+        AuthorizationCheckerInterface $security
     ) {
         $this->chatRepository = $chatRepository;
         $this->em = $entityManager;
@@ -43,6 +45,7 @@ class RoomsController extends AbstractController
         $this->request = $request;
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
+        $this->security = $security;
     }
 
     /**
@@ -111,7 +114,7 @@ class RoomsController extends AbstractController
     /**
      * @Route("/v1/room-message", name="put_room_message", methods={"PUT"})
      */
-    public function putMessageAction(Request $request, PublisherInterface $publisher)
+    public function putMessageAction(Request $request, PublisherInterface $publisher, \Swift_Mailer $mailer)
     {
         $fromUser = $this->getUser();
         $slug = $this->request->get($request, "slug");
@@ -163,6 +166,18 @@ class RoomsController extends AbstractController
                 } else {
                     $title = $fromUser->getUsername() . ' en ' . $name;
                     $this->notification->pushTopic($fromUser, $slug, $title, $text, $url);
+                }
+
+                if ($slug == 'frikiradar-bugs' && !$this->security->isGranted('ROLE_MASTER')) {
+                    // Enviamos email avisando
+                    $message = (new \Swift_Message('Nuevo mensaje de bug'))
+                        ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
+                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                        ->setBody("El usuario " . $fromUser->getUsername() . " ha notificado un bug: " . $text, 'text/html');
+
+                    if (0 === $mailer->send($message)) {
+                        // throw new HttpException(400, "Error al enviar el email avisando el bug");
+                    }
                 }
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));

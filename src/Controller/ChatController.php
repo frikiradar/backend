@@ -47,7 +47,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat", name="put_chat", methods={"PUT"})
      */
-    public function put(Request $request, PublisherInterface $publisher)
+    public function put(Request $request, PublisherInterface $publisher, \Swift_Mailer $mailer)
     {
         $fromUser = $this->getUser();
         $id = $this->request->get($request, "touser");
@@ -94,6 +94,18 @@ class ChatController extends AbstractController
             $url = "/chat/" . $chat->getFromuser()->getId();
 
             $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+
+            if ($fromUser->getBanned() && $id == 1) {
+                // Enviamos email avisando
+                $message = (new \Swift_Message('Mensaje de usuario baneado'))
+                    ->setFrom([$fromUser->getEmail() => $fromUser->getName()])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setBody("El usuario baneado " . $fromUser->getName() . " ha escrito un mensaje: " . $text, 'text/html');
+
+                if (0 === $mailer->send($message)) {
+                    // throw new HttpException(400, "Error al enviar el email avisando el bug");
+                }
+            }
 
             return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         } else {
