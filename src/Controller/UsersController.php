@@ -224,6 +224,8 @@ class UsersController extends AbstractController
         $this->accessChecker->checkAccess($user);
         try {
             if ($this->request->get($request, 'id') == $this->getUser()->getId()) {
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
                 $user->setName($this->request->get($request, 'name') ?: $this->request->get($request, 'username'));
                 $user->setDescription($this->request->get($request, 'description'));
                 $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
@@ -326,6 +328,9 @@ class UsersController extends AbstractController
         $avatar = $request->files->get('avatar');
 
         $id = $user->getId();
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('users.get.' . $id . '.' . $id);
+
         $filename = date('YmdHis');
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
         $image = $uploader->upload($avatar);
@@ -381,6 +386,9 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+
             $server = "https://app.frikiradar.com";
             $src = $this->request->get($request, 'avatar');
 
@@ -411,6 +419,9 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+
             $src = $this->request->get($request, 'avatar');
 
             $filename = basename($src);
