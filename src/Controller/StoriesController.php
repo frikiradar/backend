@@ -75,6 +75,7 @@ class StoriesController extends AbstractController
         try {
             $storiesCache = $cache->getItem('stories.get.' . $id);
             if (!$storiesCache->isHit()) {
+                $storiesCache->expiresAfter(3600 * 24);
                 $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
                 $stories = $this->em->getRepository('App:Story')->getUserStories($user);
                 $stories = $this->serializer->serialize($stories, "json", ['groups' => ['story']]);
