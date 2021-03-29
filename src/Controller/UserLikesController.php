@@ -62,7 +62,7 @@ class UserLikesController extends AbstractController
                 $this->notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             }
 
-            $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+            $user = $this->em->getRepository('App:User')->findOneUser($this->getUser(), $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -82,7 +82,7 @@ class UserLikesController extends AbstractController
             $this->em->remove($like);
             $this->em->flush();
 
-            $user = $this->em->getRepository('App:User')->findeOneUser($this->getUser(), $toUser);
+            $user = $this->em->getRepository('App:User')->findOneUser($this->getUser(), $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {

@@ -166,7 +166,7 @@ class UsersController extends AbstractController
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $user = $this->em->getRepository('App:User')->findeOneUser($fromUser, $toUser);
+                $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
                 if ($user['active']) {
                     $user['images'] = $toUser->getImages();
                 }
@@ -181,6 +181,41 @@ class UsersController extends AbstractController
                 $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 $userCache->set($user);
                 $cache->save($userCache);
+            } else {
+                $user = $userCache->get();
+            }
+
+            return new Response($user);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/public-user/{id}", name="get_public_user", methods={"GET"})
+     */
+    public function getPublicUserAction($id)
+    {
+        $cache = new FilesystemAdapter();
+
+        if (!is_numeric($id)) {
+            $username = $id;
+            $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
+            $id = $user->getId();
+        }
+
+        try {
+            $userCache = $cache->getItem('users.get.' . $id);
+            if (!$userCache->isHit()) {
+                $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+                if (!is_null($toUser)) {
+                    $user = $this->em->getRepository('App:User')->findPublicUser($toUser);
+                    $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+                    $userCache->set($user);
+                    $cache->save($userCache);
+                } else {
+                    throw new HttpException(400, "Usuario no encontrado");
+                }
             } else {
                 $user = $userCache->get();
             }
@@ -226,6 +261,7 @@ class UsersController extends AbstractController
             if ($this->request->get($request, 'id') == $this->getUser()->getId()) {
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+                $cache->deleteItem('users.get.' . $user->getId());
                 $user->setName($this->request->get($request, 'name') ?: $this->request->get($request, 'username'));
                 $user->setDescription($this->request->get($request, 'description'));
                 $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
@@ -330,6 +366,7 @@ class UsersController extends AbstractController
         $id = $user->getId();
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.get.' . $id . '.' . $id);
+        $cache->deleteItem('users.get.' . $id);
 
         $filename = date('YmdHis');
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
@@ -388,6 +425,7 @@ class UsersController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+            $cache->deleteItem('users.get.' . $user->getId());
 
             $server = "https://app.frikiradar.com";
             $src = $this->request->get($request, 'avatar');
@@ -421,6 +459,7 @@ class UsersController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+            $cache->deleteItem('users.get.' . $user->getId());
 
             $src = $this->request->get($request, 'avatar');
 

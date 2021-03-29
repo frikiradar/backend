@@ -79,7 +79,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getOneOrNullResult();
     }
 
-    public function findeOneUser(User $fromUser, User $toUser)
+    public function findOneUser(User $fromUser, User $toUser)
     {
         $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
         $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
@@ -168,6 +168,40 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             } else {
                 throw new Exception('Usuario bloqueado');
             }
+        } else {
+            throw new Exception('Usuario no encontrado');
+        }
+    }
+
+    public function findPublicUser(User $toUser)
+    {
+        $dql = $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.description',
+                'u.active',
+                'u.verified',
+                'u.banned',
+                'u.avatar',
+                'u.thumbnail',
+                'u.roles'
+            ))
+            ->andWhere('u.id = :id')
+            ->andWhere('u.active = 1')
+            ->andWhere('u.banned <> 1');
+
+        $user = $dql->setParameters(array(
+            'id' => $toUser->getId()
+        ))->getQuery()
+            ->getOneOrNullResult();
+
+        if (!is_null($user)) {
+            $user['tags'] = $toUser->getTags();
+            $user['avatar'] = $toUser->getAvatar() ?: null;
+
+            return $user;
         } else {
             throw new Exception('Usuario no encontrado');
         }

@@ -329,6 +329,12 @@ class User implements UserInterface, EquatableInterface
      */
     private $viewStories;
 
+    /**
+     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @Groups({"default"})
+     */
+    private $public;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1288,6 +1294,18 @@ class User implements UserInterface, EquatableInterface
                 $viewStory->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPublic(): ?bool
+    {
+        return $this->public;
+    }
+
+    public function setPublic(bool $public): self
+    {
+        $this->public = $public;
 
         return $this;
     }
