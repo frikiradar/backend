@@ -349,7 +349,7 @@ class UsersController extends AbstractController
                 $this->em->flush();
             }*/
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new Response($this->serializer->serialize($coords, "json"));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
         }

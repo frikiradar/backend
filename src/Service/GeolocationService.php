@@ -2,8 +2,8 @@
 // src/Service/GeolocationService.php
 namespace App\Service;
 
-use Geocoder\Query\ReverseQuery;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
+use ipinfo\ipinfo\IPinfo;
 
 class GeolocationService
 {
@@ -21,24 +21,25 @@ class GeolocationService
             ->setLatitude($latitude)
             ->setLongitude($longitude);
 
-        /*if ($latitude && $longitude) {
+        if ($latitude && $longitude) {
             $coords
                 ->setLatitude($latitude)
                 ->setLongitude($longitude);
         } else {
-            $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($this->httpClient);
-            $geocoder = new \Geocoder\StatefulGeocoder($provider, 'es');
-            $ipResult = $geocoder->geocode($ip);
-            if (!is_null($ipResult->first()->getCoordinates())) {
+            $access_token = 'fa54c07e390886';
+            $client = new IPinfo($access_token);
+            $details = $client->getDetails($ip);
+
+            if (!is_null($details->latitude)) {
                 $coords
-                    ->setLatitude($ipResult->first()->getCoordinates()->getLatitude())
-                    ->setLongitude($ipResult->first()->getCoordinates()->getLongitude());
+                    ->setLatitude($details->latitude)
+                    ->setLongitude($details->longitude);
             }
-        }*/
+        }
         return $coords;
     }
 
-    public function getLocationName($latitude, $longitude): array
+    /*public function getLocationName($latitude, $longitude): array
     {
         try {
             $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($this->httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
@@ -52,5 +53,5 @@ class GeolocationService
         } catch (Exception $ex) {
             // throw new HttpException(400, "No se ha podido obtener la localidad - Error: {$ex->getMessage()}");
         }
-    }
+    }*/
 }
