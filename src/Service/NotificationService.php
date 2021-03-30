@@ -65,19 +65,17 @@ class NotificationService
             ]);
 
             $apnsConfig = ApnsConfig::fromArray([
-                'headers' => [
-                    'apns-priority' => '10',
-                ],
                 'payload' => [
                     'aps' => [
                         'alert' => [
                             'title' => $title,
                             'body' => $text,
-                        ],
-                        'sound' => 'default',
-                        // 'badge' => 42,
+                        ]
                     ],
                 ],
+                'fcm_options' => [
+                    'image' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                ]
             ]);
 
             $message = CloudMessage::new()
