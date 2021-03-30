@@ -330,7 +330,7 @@ class User implements UserInterface, EquatableInterface
     private $viewStories;
 
     /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
+     * @ORM\Column(type="boolean", options={"default" : 1})
      * @Groups({"default"})
      */
     private $public;
