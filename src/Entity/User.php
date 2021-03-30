@@ -148,7 +148,7 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\Column(type="point", nullable=true)
-     * @Groups({"coords"})
+     * @Ignore()
      */
     private $coordinates;
 
