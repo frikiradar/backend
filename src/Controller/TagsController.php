@@ -2,13 +2,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Category;
+use App\Entity\Tag;
 use App\Repository\TagRepository;
+use App\Service\AccessCheckerService;
 use App\Service\RequestService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Class TagsController
@@ -17,11 +24,18 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class TagsController extends AbstractController
 {
-    public function __construct(TagRepository $tagRepository, SerializerInterface $serializer, RequestService $request)
-    {
+    public function __construct(
+        TagRepository $tagRepository,
+        SerializerInterface $serializer,
+        RequestService $request,
+        AccessCheckerService $accessChecker,
+        EntityManagerInterface $entityManager
+    ) {
         $this->tagRepository = $tagRepository;
         $this->request = $request;
         $this->serializer = $serializer;
+        $this->accessChecker = $accessChecker;
+        $this->em = $entityManager;
     }
 
 
@@ -33,5 +47,69 @@ class TagsController extends AbstractController
         $tags = $this->tagRepository->searchTags($this->request->get($request, 'tag'), $this->request->get($request, 'category'));
 
         return new Response($this->serializer->serialize($tags, "json"));
+    }
+
+    /**
+     * @Route("/v1/add-tag", name="add_tag", methods={"PUT"})
+     */
+    public function addTag(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
+            $name = $this->request->get($request, 'name');
+            $categoryName = $this->request->get($request, 'category');
+            $category = $this->em->getRepository('App:Category')->findOneBy(array('name' => $categoryName));
+            $oldTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+
+            if (empty($oldTag)) {
+                $tag = new Tag();
+                $tag->setUser($user);
+                $tag->setName($name);
+
+                if (!empty($category)) {
+                    $tag->setCategory($category);
+                } else {
+                    $newCategory = new Category();
+                    $newCategory->setName($categoryName);
+                    $tag->setCategory($newCategory);
+                    $this->em->persist($newCategory);
+                }
+
+                $this->em->persist($tag);
+                $this->em->flush();
+            }
+
+            return new Response($this->serializer->serialize($tag, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir tag - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/tag/{id}", name="remove_tag", methods={"DELETE"})
+     */
+    public function removeTag(int $id)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
+            $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $id));
+
+            if ($tag->getUser()->getId() == $user->getId()) {
+                $this->em->remove($tag);
+                $this->em->flush();
+
+                $data = [
+                    'code' => 200,
+                    'message' => "Tag eliminada correctamente",
+                ];
+                return new JsonResponse($data, 200);
+            } else {
+                throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir tag - Error: {$ex->getMessage()}");
+        }
     }
 }
