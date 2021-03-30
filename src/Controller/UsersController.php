@@ -83,6 +83,7 @@ class UsersController extends AbstractController
             $user->setRegisterIp();
             $user->setActive(false);
             $user->setBanned(false);
+            $user->setPublic(true);
             $user->setTwoStep(false);
             $user->setVerified(false);
             $user->setMeet($this->request->get($request, 'meet') ?: null);
