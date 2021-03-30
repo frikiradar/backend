@@ -190,6 +190,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ))
             ->andWhere('u.id = :id')
             ->andWhere('u.active = 1')
+            ->andWhere('u.public = 1')
             ->andWhere('u.banned <> 1');
 
         $user = $dql->setParameters(array(
