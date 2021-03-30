@@ -7,6 +7,7 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
+use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
 
 class NotificationService
@@ -63,9 +64,26 @@ class NotificationService
                 'collapse_key' => $tag
             ]);
 
+            $apnsConfig = ApnsConfig::fromArray([
+                'headers' => [
+                    'apns-priority' => '10',
+                ],
+                'payload' => [
+                    'aps' => [
+                        'alert' => [
+                            'title' => $title,
+                            'body' => $text,
+                        ],
+                        'sound' => 'default',
+                        // 'badge' => 42,
+                    ],
+                ],
+            ]);
+
             $message = CloudMessage::new()
                 ->withAndroidConfig($androidConfig)
                 ->withNotification($notification)
+                ->withApnsConfig($apnsConfig)
                 ->withData($data);
 
             try {
