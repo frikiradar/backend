@@ -53,7 +53,7 @@ class RoomRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.visible = TRUE')
-            ->orderBy('r.id', 'ASC')
+            ->orderBy('r.position', 'ASC')
             ->getQuery()
             ->getArrayResult();
     }
