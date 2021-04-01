@@ -160,16 +160,15 @@ class PagesController extends AbstractController
 
                 $server = "https://app.frikiradar.com";
                 if (isset($game['cover'])) {
-                    // Obtenemos cover y la subimos tal cual está
+                    $contents = file_get_contents('https:' . $game['cover']['url']);
                     $file = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/cover.jpg';
-                    if (file_put_contents($file, file_get_contents('https:' . $game['cover']['url']))) {
+                    if (file_put_contents($file, $contents)) {
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
                         $page->setCover($src);
                     }
                 }
 
                 if (isset($game['artworks'][0])) {
-                    // Obtenemos cover y la subimos tal cual está
                     $file = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/artwork.jpg';
                     if (file_put_contents($file, file_get_contents('https:' . $game['artworks'][0]['url']))) {
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
