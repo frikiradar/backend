@@ -67,7 +67,6 @@ class PagesController extends AbstractController
             $name = $tag->getName();
             $search = trim(str_replace('Saga', '', $name));
             $search = str_replace(': ', ' ', $search);
-            // $this->o->writeln($search);
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
             $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
@@ -104,7 +103,6 @@ class PagesController extends AbstractController
             foreach ($games as $game) {
                 similar_text(strtolower($game['name']), strtolower($search), $percent);
                 if ($percent >= 98) {
-                    $this->o->writeln($percent);
                     $gameFound = $game;
                     break;
                 }
