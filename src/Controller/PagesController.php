@@ -62,7 +62,9 @@ class PagesController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $this->request->get($request, 'slug')));
+            $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
+            $name = $tag->getName();
+            $page = $this->em->getRepository('App:Tag')->createPage($name);
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");
