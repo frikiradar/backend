@@ -85,7 +85,6 @@ class PagesController extends AbstractController
             // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ "' . $search . '" & version_parent = null; limit 500;';
             // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ *"' . $search . '"* & version_parent = null; limit 500;';
             $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . str_replace([':', ' '], '-', strtolower($search)) . '"* & version_parent = null; limit 500;';
-            // $this->o->writeln($body);
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -150,7 +149,11 @@ class PagesController extends AbstractController
                 $page->setDescription($game['summary']);
                 $page->setSlug($game['slug']);
                 $page->setRating($game['rating']);
-                $page->setReleaseDate(new \DateTime($game['first_release_date']));
+                if (isset($game['first_release_date'])) {
+                    $date = new \DateTime();
+                    $date->setTimestamp($game['first_release_date']);
+                    $page->setReleaseDate($date);
+                }
                 $page->setTimeCreation();
                 $page->setLastUpdate();
                 $page->setGameMode($game['game_mode']);
