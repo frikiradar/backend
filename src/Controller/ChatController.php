@@ -18,6 +18,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -34,7 +35,8 @@ class ChatController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         NotificationService $notification,
-        AccessCheckerService $accessChecker
+        AccessCheckerService $accessChecker,
+        AuthorizationCheckerInterface $security
     ) {
         $this->chatRepository = $chatRepository;
         $this->em = $entityManager;
@@ -42,6 +44,7 @@ class ChatController extends AbstractController
         $this->request = $request;
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
+        $this->security = $security;
     }
 
     /**
@@ -59,7 +62,7 @@ class ChatController extends AbstractController
         $chat = new Chat();
         $toUser = $this->em->getRepository('App:User')->find($id);
         if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
-            if (!$fromUser->getBanned() && $id == 1) {
+            if (!$fromUser->getBanned() && $id == 1 && !$this->security->isGranted('ROLE_DEMO')) {
                 throw new HttpException(400, "No se puede escribir al usuario frikiradar sin estar baneado - Error");
             }
             $chat->setTouser($toUser);

@@ -50,6 +50,9 @@ class LabCommand extends Command
             case 'thumbnails':
                 $this->labService->thumbnails();
                 break;
+            case 'test':
+                $this->labService->testLab();
+                break;
             default:
                 $o->writeln("<bg=yellow;fg=black>Undefined process, use help to see list </> <fg=red;options=bold>Exiting</>");
         }

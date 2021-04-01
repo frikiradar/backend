@@ -42,6 +42,12 @@ class Tag
      */
     private $category;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
+     */
+    private $slug;
+
     /*public function __construct($name, $user, $category)
     {
         $this->name = $name;
@@ -92,6 +98,18 @@ class Tag
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): self
+    {
+        $this->slug = $slug;
 
         return $this;
     }
