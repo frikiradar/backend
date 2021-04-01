@@ -10,6 +10,7 @@ use App\Entity\User;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class LabCommandService
@@ -242,6 +243,21 @@ class LabCommandService
                 if ($gameMode['slug'] === 'massively-multiplayer-online-mmo' && !isset($game['multiplayer_modes'][0]['onlinecoop'])) {
                     $game['multiplayer_modes'][0]['onlinecoop'] = 1;
                 }
+            }
+        }
+
+        if (isset($game['cover'])) {
+            $fs = new Filesystem();
+            $contents = file_get_contents('https:' . $game['cover']['url']);
+            // $this->o->writeln($contents);
+            $path = 'public/images/pages/';
+            $file = $path . $game['slug'] . '/cover.jpg';
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            if ($fs->appendToFile($file, $contents)) {
+                $this->o->writeln($file);
             }
         }
 

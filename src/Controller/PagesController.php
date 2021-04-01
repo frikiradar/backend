@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -159,18 +160,27 @@ class PagesController extends AbstractController
                 $page->setGameMode($game['game_mode']);
 
                 $server = "https://app.frikiradar.com";
+                $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
+                $fs = new Filesystem();
                 if (isset($game['cover'])) {
-                    $contents = file_get_contents('https:' . $game['cover']['url']);
-                    $file = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/cover.jpg';
-                    if (file_put_contents($file, $contents)) {
+                    $file =  'cover.jpg';
+                    if (!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+
+                    if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']))) {
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
                         $page->setCover($src);
                     }
                 }
 
                 if (isset($game['artworks'][0])) {
-                    $file = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/artwork.jpg';
-                    if (file_put_contents($file, file_get_contents('https:' . $game['artworks'][0]['url']))) {
+                    $file = 'artwork.jpg';
+                    if (!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+
+                    if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']))) {
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
                         $page->setArtwork($src);
                     }
