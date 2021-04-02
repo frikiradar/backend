@@ -201,7 +201,7 @@ class PagesController extends AbstractController
                 $this->em->persist($page);
                 $this->em->flush();
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
+                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $search);
             }
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
