@@ -84,6 +84,9 @@ class PagesController extends AbstractController
             if ($search == 'lol') {
                 $search = 'league of legends';
             }
+            if ($search == 'wow') {
+                $search = 'world of warcraft';
+            }
 
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
