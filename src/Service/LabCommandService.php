@@ -175,7 +175,7 @@ class LabCommandService
 
     public function testLab()
     {
-        $name = "Breath of the Wild";
+        $name = "Super Mario Odyssey";
         $search = strtolower($name);
         $this->o->writeln($search);
         $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';

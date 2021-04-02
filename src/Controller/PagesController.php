@@ -81,6 +81,9 @@ class PagesController extends AbstractController
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $name = $tag->getName();
             $search = strtolower($name);
+            if ($search == 'lol') {
+                $search = 'league of legends';
+            }
 
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
