@@ -71,6 +71,11 @@ class TagsController extends AbstractController
                 $tag->setUser($user);
                 $tag->setName($name);
 
+                $otherTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $name, 'category' => $category->getId()));
+                if ($otherTag->getSlug()) {
+                    $tag->setSlug($otherTag->getSlug());
+                }
+
                 if (!empty($category)) {
                     $tag->setCategory($category);
                 } else {
