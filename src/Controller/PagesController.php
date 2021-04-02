@@ -187,6 +187,8 @@ class PagesController extends AbstractController
                     }
 
                     $this->em->persist($page);
+                    $tag->setSlug($game['slug']);
+                    $this->em->persist($tag);
                     $this->em->flush();
                     return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
                 } else {
