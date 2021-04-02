@@ -175,12 +175,14 @@ class LabCommandService
 
     public function testLab()
     {
-        // $search = "The Legend of Zelda: Ocarina of Time";
-        $search = "The Walking Dead Saints & Sinners";
+        $search = "The Legend of Zelda: Breath of the Wild";
         $search = trim(str_replace('Saga', '', $search));
         $search = str_replace('&', 'and', $search);
         $search = str_replace(': ', ' ', $search);
-        // $this->o->writeln($search);
+        $search = str_replace([':', ' '], '-', strtolower($search));
+        $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+
+        $this->o->writeln($search);
         $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
         $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
         $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
@@ -199,8 +201,8 @@ class LabCommandService
         // $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where version_parent = null; limit 500;';
         // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ "' . $search . '" & version_parent = null; limit 500;';
         // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ *"' . $search . '"* & version_parent = null; limit 500;';
-        $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . str_replace([':', ' '], '-', strtolower($search)) . '"* & version_parent = null; limit 500;';
-        // $this->o->writeln($body);
+        $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+        $this->o->writeln($body);
         $ch = curl_init($url . $endpoint); // Initialise cURL
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -217,11 +219,16 @@ class LabCommandService
         if (!empty($games)) {
             $gameFound = [];
             foreach ($games as $game) {
-                similar_text(strtolower($game['name']), strtolower($search), $percent);
-                if ($percent >= 98) {
-                    $this->o->writeln($percent);
+                if ($game['slug'] === $search) {
                     $gameFound = $game;
                     break;
+                } else {
+                    similar_text(strtolower($game['name']), strtolower($search), $percent);
+                    if ($percent >= 98) {
+                        $this->o->writeln($percent);
+                        $gameFound = $game;
+                        break;
+                    }
                 }
             }
 

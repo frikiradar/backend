@@ -121,10 +121,15 @@ class PagesController extends AbstractController
                 $gameFound = [];
 
                 foreach ($games as $game) {
-                    similar_text(strtolower($game['name']), strtolower($search), $percent);
-                    if ($percent >= 98) {
+                    if ($game['slug'] === $search) {
                         $gameFound = $game;
                         break;
+                    } else {
+                        similar_text(strtolower($game['name']), strtolower($search), $percent);
+                        if ($percent >= 98) {
+                            $gameFound = $game;
+                            break;
+                        }
                     }
                 }
 
