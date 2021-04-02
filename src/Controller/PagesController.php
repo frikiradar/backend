@@ -80,11 +80,7 @@ class PagesController extends AbstractController
         try {
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $name = $tag->getName();
-            $search = trim(str_replace('Saga', '', $name));
-            $search = str_replace('&', 'and', $search);
-            $search = str_replace(': ', ' ', $search);
-            $search = str_replace([':', ' '], '-', strtolower($search));
-            $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+            $search = strtolower($name);
 
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
@@ -113,11 +109,32 @@ class PagesController extends AbstractController
             curl_close($ch); // Close the cURL connection
             $games = json_decode($output, true); // Return the received data
 
+            if (empty($games)) {
+                $search = trim(str_replace(['saga', '(', ')'], '', $search));
+                $search = str_replace('bros.', 'bros', $search);
+                $search = str_replace('.', '-dot-', $search);
+                $search = str_replace('&', 'and', $search);
+                $search = str_replace(': ', ' ', $search);
+                $search = str_replace([':', "'", ' '], '-', $search);
+                $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+
+                $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+                $ch = curl_init($url . $endpoint); // Initialise cURL
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
+                $output = curl_exec($ch); // Execute the cURL statement
+                curl_close($ch); // Close the cURL connection
+                $games = json_decode($output, true); // Return the received data
+            }
+
+            usort($games, function ($a, $b) {
+                return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
+            });
+            // print_r($games);
+
             if (!empty($games)) {
-                usort($games, function ($a, $b) {
-                    return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
-                });
-                // print_r($games);
                 $gameFound = [];
 
                 foreach ($games as $game) {
