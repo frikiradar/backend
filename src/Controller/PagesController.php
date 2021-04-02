@@ -171,6 +171,7 @@ class PagesController extends AbstractController
                 $page->setDescription($game['summary']);
                 $page->setSlug($game['slug']);
                 $page->setRating($game['rating']);
+                $page->setCategory($tag->getCategory()->getName());
                 if (isset($game['first_release_date'])) {
                     $date = new \DateTime();
                     $date->setTimestamp($game['first_release_date']);
@@ -214,6 +215,7 @@ class PagesController extends AbstractController
                 $page->setSlug($search);
                 $page->setTimeCreation();
                 $page->setLastUpdate();
+                $page->setCategory($tag->getCategory()->getName());
                 $this->em->persist($page);
                 $this->em->flush();
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria

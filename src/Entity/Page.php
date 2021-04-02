@@ -78,6 +78,12 @@ class Page
      */
     private $release_date;
 
+    /**
+     * @ORM\Column(type="string", length=70)
+     * @Groups({"default"})
+     */
+    private $category;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -199,6 +205,18 @@ class Page
     public function setReleaseDate(?\DateTimeInterface $release_date): self
     {
         $this->release_date = $release_date;
+
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): self
+    {
+        $this->category = $category;
 
         return $this;
     }
