@@ -39,6 +39,22 @@ class PagesController extends AbstractController
 
 
     /**
+     * @Route("/v1/pages", name="pages", methods={"GET"})
+     */
+    public function getPages()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $pages = $this->em->getRepository('App:Page')->findAll();
+            return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/page/{slug}", name="page", methods={"GET"})
      */
     public function getPage(string $slug)
