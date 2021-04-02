@@ -47,7 +47,7 @@ class PagesController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $pages = $this->em->getRepository('App:Page')->findAll();
+            $pages = $this->em->getRepository('App:Page')->findPages($user);
             return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
