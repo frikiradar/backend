@@ -187,9 +187,10 @@ class PagesController extends AbstractController
                     }
 
                     $this->em->persist($page);
-                    $tag->setSlug($game['slug']);
-                    $this->em->persist($tag);
                     $this->em->flush();
+                    // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+                    $this->tagRepository->setTagSlug($tag, $game['slug']);
+
                     return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
                 } else {
                     throw new HttpException(400, "Error al crear la página");
