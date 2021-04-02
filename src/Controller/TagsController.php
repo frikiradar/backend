@@ -89,12 +89,17 @@ class TagsController extends AbstractController
     /**
      * @Route("/v1/tag/{id}", name="remove_tag", methods={"DELETE"})
      */
-    public function removeTag(int $id)
+    public function removeTag($id)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $id));
+            if (!is_numeric($id)) {
+                $username = $id;
+                $tag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $username, 'user' => $user));
+            } else {
+                $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $id));
+            }
 
             if ($tag->getUser()->getId() == $user->getId()) {
                 $this->em->remove($tag);
