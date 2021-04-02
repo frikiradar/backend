@@ -169,7 +169,7 @@ class PagesController extends AbstractController
                     }
 
                     if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']))) {
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
                         $page->setCover($src);
                     }
                 }
@@ -181,7 +181,7 @@ class PagesController extends AbstractController
                     }
 
                     if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']))) {
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $file);
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
                         $page->setArtwork($src);
                     }
                 }

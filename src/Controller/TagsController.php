@@ -94,7 +94,7 @@ class TagsController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            if (!is_numeric($id)) {
+            if (!is_numeric($id)) { // TODO: Eliminar medida provisional
                 $username = $id;
                 $tag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $username, 'user' => $user));
             } else {
