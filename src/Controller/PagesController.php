@@ -61,7 +61,10 @@ class PagesController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-
+        /**
+         * @var Page
+         */
+        $page = new Page();
         try {
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $name = $tag->getName();
@@ -146,10 +149,6 @@ class PagesController extends AbstractController
                 }
 
                 if (isset($game)) {
-                    /**
-                     * @var Page
-                     */
-                    $page = new Page();
                     $page->setName($game['name']);
                     $page->setDescription($game['summary']);
                     $page->setSlug($game['slug']);
@@ -195,13 +194,13 @@ class PagesController extends AbstractController
 
                     return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
                 } else {
-                    throw new HttpException(400, "Error al crear la página");
+                    throw new HttpException(400, "No se han obtenido resultados");
                 }
             } else {
                 throw new HttpException(400, "No se han obtenido resultados");
             }
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");
+            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         }
     }
 }
