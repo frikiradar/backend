@@ -103,7 +103,7 @@ class PagesController extends AbstractController
             // $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where version_parent = null; limit 500;';
             // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ "' . $search . '" & version_parent = null; limit 500;';
             // $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where name ~ *"' . $search . '"* & version_parent = null; limit 500;';
-            $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+            $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -178,7 +178,7 @@ class PagesController extends AbstractController
                     $page->setName($game['name']);
                     $page->setDescription($game['summary']);
                     $page->setSlug($game['slug']);
-                    $page->setRating($game['rating']);
+                    $page->setRating($game['aggregated_rating']);
                     $page->setCategory($tag->getCategory()->getName());
                     if (isset($game['first_release_date'])) {
                         $date = new \DateTime();
