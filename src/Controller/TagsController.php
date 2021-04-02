@@ -70,11 +70,7 @@ class TagsController extends AbstractController
                 $tag = new Tag();
                 $tag->setUser($user);
                 $tag->setName($name);
-
-                $otherTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $name, 'category' => $category->getId()));
-                if ($otherTag->getSlug()) {
-                    $tag->setSlug($otherTag->getSlug());
-                }
+                $tag->setSlug($this->request->get($request, 'slug', false));
 
                 if (!empty($category)) {
                     $tag->setCategory($category);
@@ -87,9 +83,15 @@ class TagsController extends AbstractController
 
                 $this->em->persist($tag);
                 $this->em->flush();
+                return new Response($this->serializer->serialize($tag, "json", ['groups' => 'default']));
+            } else {
+                if (!$oldTag->getSlug()) {
+                    $oldTag->setSlug($this->request->get($request, 'slug', false));
+                    $this->em->persist($oldTag);
+                    $this->em->flush();
+                }
+                throw new HttpException(400, "Error al añadir tag. Ya estaba añadida.");
             }
-
-            return new Response($this->serializer->serialize($tag, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir tag - Error: {$ex->getMessage()}");
         }
