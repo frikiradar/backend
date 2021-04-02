@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -56,6 +57,9 @@ class TagsController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+        $cache->deleteItem('users.get.' . $user->getId());
         try {
             $name = $this->request->get($request, 'name');
             $categoryName = $this->request->get($request, 'category');
@@ -93,6 +97,9 @@ class TagsController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
+        $cache->deleteItem('users.get.' . $user->getId());
         try {
             if (!is_numeric($id)) { // TODO: Eliminar medida provisional
                 $username = $id;
