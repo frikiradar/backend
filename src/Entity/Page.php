@@ -67,7 +67,7 @@ class Page
     private $game_mode;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      * @Groups({"default"})
      */
     private $slug;
