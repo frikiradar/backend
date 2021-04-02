@@ -74,6 +74,7 @@ class Page
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"default"})
      */
     private $release_date;
 
