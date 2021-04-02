@@ -68,6 +68,9 @@ class PagesController extends AbstractController
             $search = trim(str_replace('Saga', '', $name));
             $search = str_replace('&', 'and', $search);
             $search = str_replace(': ', ' ', $search);
+            $search = str_replace(':', ' ', $search);
+            $search = transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
             $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
