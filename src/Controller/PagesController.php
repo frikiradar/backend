@@ -100,6 +100,7 @@ class PagesController extends AbstractController
             $output = curl_exec($ch); // Execute the cURL statement
             curl_close($ch); // Close the cURL connection
             $games = json_decode($output, true); // Return the received data
+
             if (!empty($games)) {
                 usort($games, function ($a, $b) {
                     return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
@@ -120,7 +121,9 @@ class PagesController extends AbstractController
                 } else {
                     $game = $games[0];
                 }
+            }
 
+            if (isset($game)) {
                 if (isset($game['artworks'][0]['url'])) {
                     $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['artworks'][0]['url']);
                 }
@@ -148,59 +151,61 @@ class PagesController extends AbstractController
                     $game['game_mode'] = 'offline';
                 }
 
-                if (isset($game)) {
-                    $page->setName($game['name']);
-                    $page->setDescription($game['summary']);
-                    $page->setSlug($game['slug']);
-                    $page->setRating($game['rating']);
-                    if (isset($game['first_release_date'])) {
-                        $date = new \DateTime();
-                        $date->setTimestamp($game['first_release_date']);
-                        $page->setReleaseDate($date);
-                    }
-                    $page->setTimeCreation();
-                    $page->setLastUpdate();
-                    $page->setGameMode($game['game_mode']);
-
-                    $server = "https://app.frikiradar.com";
-                    $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
-                    $fs = new Filesystem();
-                    if (isset($game['cover'])) {
-                        $file =  'cover.jpg';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-
-                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setCover($src);
-                    }
-
-                    if (isset($game['artworks'][0])) {
-                        $file = 'artwork.jpg';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-
-                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setArtwork($src);
-                    }
-
-                    $this->em->persist($page);
-                    $this->em->flush();
-                    // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                    $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
-
-                    return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
-                } else {
-                    throw new HttpException(400, "No se han obtenido resultados");
+                $page->setName($game['name']);
+                $page->setDescription($game['summary']);
+                $page->setSlug($game['slug']);
+                $page->setRating($game['rating']);
+                if (isset($game['first_release_date'])) {
+                    $date = new \DateTime();
+                    $date->setTimestamp($game['first_release_date']);
+                    $page->setReleaseDate($date);
                 }
+                $page->setTimeCreation();
+                $page->setLastUpdate();
+                $page->setGameMode($game['game_mode']);
+
+                $server = "https://app.frikiradar.com";
+                $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
+                $fs = new Filesystem();
+                if (isset($game['cover'])) {
+                    $file =  'cover.jpg';
+                    if (!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+
+                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                    $page->setCover($src);
+                }
+
+                if (isset($game['artworks'][0])) {
+                    $file = 'artwork.jpg';
+                    if (!file_exists($path)) {
+                        mkdir($path, 0777, true);
+                    }
+
+                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                    $page->setArtwork($src);
+                }
+
+                $this->em->persist($page);
+                $this->em->flush();
+                // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
             } else {
-                throw new HttpException(400, "No se han obtenido resultados");
+                $page->setName($name);
+                $page->setSlug($search);
+                $page->setTimeCreation();
+                $page->setLastUpdate();
+                $this->em->persist($page);
+                $this->em->flush();
+                // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
             }
-        } catch (Exception $ex) {
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");
         }
     }
 }
