@@ -232,7 +232,7 @@ class AdminController extends AbstractController
              */
             $room = new Room();
             $room->setName($name);
-            $slug = transliterator_transliterate('Any-Latin; Latin-ASCII;', str_replace(' ', '-', strtolower($name)));
+            $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', str_replace(' ', '-', strtolower($name)));
             $room->setSlug($slug);
             $room->setDescription($description);
             $room->setPermissions($permissions);

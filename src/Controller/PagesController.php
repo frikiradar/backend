@@ -72,7 +72,7 @@ class PagesController extends AbstractController
             $search = str_replace('&', 'and', $search);
             $search = str_replace(': ', ' ', $search);
             $search = str_replace(':', ' ', $search);
-            $search = transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+            $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
 
             $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
             $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
