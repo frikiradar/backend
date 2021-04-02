@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Entity\Page;
 use App\Entity\Tag;
-use App\Repository\TagRepository;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,7 +26,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class PagesController extends AbstractController
 {
     public function __construct(
-        TagRepository $tagRepository,
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
@@ -37,7 +35,6 @@ class PagesController extends AbstractController
         $this->serializer = $serializer;
         $this->accessChecker = $accessChecker;
         $this->em = $entityManager;
-        $this->tagRepository = $tagRepository;
     }
 
 
@@ -191,7 +188,7 @@ class PagesController extends AbstractController
                     $this->em->persist($page);
                     $this->em->flush();
                     // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                    $this->tagRepository->setTagSlug($tag, $game['slug']);
+                    $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
 
                     return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
                 } else {
