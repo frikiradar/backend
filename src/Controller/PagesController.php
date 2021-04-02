@@ -168,10 +168,9 @@ class PagesController extends AbstractController
                         mkdir($path, 0777, true);
                     }
 
-                    if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']))) {
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setCover($src);
-                    }
+                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                    $page->setCover($src);
                 }
 
                 if (isset($game['artworks'][0])) {
@@ -180,10 +179,9 @@ class PagesController extends AbstractController
                         mkdir($path, 0777, true);
                     }
 
-                    if ($fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']))) {
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setArtwork($src);
-                    }
+                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                    $page->setArtwork($src);
                 }
 
                 $this->em->persist($page);
