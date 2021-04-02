@@ -27,6 +27,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class PagesController extends AbstractController
 {
     public function __construct(
+        TagRepository $tagRepository,
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
@@ -36,6 +37,7 @@ class PagesController extends AbstractController
         $this->serializer = $serializer;
         $this->accessChecker = $accessChecker;
         $this->em = $entityManager;
+        $this->tagRepository = $tagRepository;
     }
 
 
@@ -189,7 +191,7 @@ class PagesController extends AbstractController
                     $this->em->persist($page);
                     $this->em->flush();
                     // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                    $this->em->getRepository('App:Tag')->setTagSlug($tag, $game['slug']);
+                    $this->tagRepository->setTagSlug($tag, $game['slug']);
 
                     return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
                 } else {
