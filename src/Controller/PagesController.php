@@ -77,10 +77,6 @@ class PagesController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        /**
-         * @var Page
-         */
-        $page = new Page();
         try {
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $name = $tag->getName();
@@ -167,57 +163,73 @@ class PagesController extends AbstractController
                     $game['game_mode'] = 'offline';
                 }
 
-                $page->setName($game['name']);
-                $page->setDescription($game['summary']);
-                $page->setSlug($game['slug']);
-                $page->setRating($game['rating']);
-                $page->setCategory($tag->getCategory()->getName());
-                if (isset($game['first_release_date'])) {
-                    $date = new \DateTime();
-                    $date->setTimestamp($game['first_release_date']);
-                    $page->setReleaseDate($date);
-                }
-                $page->setTimeCreation();
-                $page->setLastUpdate();
-                $page->setGameMode($game['game_mode']);
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $game['slug']));
 
-                $server = "https://app.frikiradar.com";
-                $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
-                $fs = new Filesystem();
-                if (isset($game['cover'])) {
-                    $file =  'cover.jpg';
-                    if (!file_exists($path)) {
-                        mkdir($path, 0777, true);
+                if (empty($page)) {
+                    /**
+                     * @var Page
+                     */
+                    $page = new Page();
+                    $page->setName($game['name']);
+                    $page->setDescription($game['summary']);
+                    $page->setSlug($game['slug']);
+                    $page->setRating($game['rating']);
+                    $page->setCategory($tag->getCategory()->getName());
+                    if (isset($game['first_release_date'])) {
+                        $date = new \DateTime();
+                        $date->setTimestamp($game['first_release_date']);
+                        $page->setReleaseDate($date);
+                    }
+                    $page->setTimeCreation();
+                    $page->setLastUpdate();
+                    $page->setGameMode($game['game_mode']);
+
+                    $server = "https://app.frikiradar.com";
+                    $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
+                    $fs = new Filesystem();
+                    if (isset($game['cover'])) {
+                        $file =  'cover.jpg';
+                        if (!file_exists($path)) {
+                            mkdir($path, 0777, true);
+                        }
+
+                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                        $page->setCover($src);
                     }
 
-                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
-                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                    $page->setCover($src);
-                }
+                    if (isset($game['artworks'][0])) {
+                        $file = 'artwork.jpg';
+                        if (!file_exists($path)) {
+                            mkdir($path, 0777, true);
+                        }
 
-                if (isset($game['artworks'][0])) {
-                    $file = 'artwork.jpg';
-                    if (!file_exists($path)) {
-                        mkdir($path, 0777, true);
+                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                        $page->setArtwork($src);
                     }
 
-                    $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
-                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                    $page->setArtwork($src);
+                    $this->em->persist($page);
+                    $this->em->flush();
                 }
-
-                $this->em->persist($page);
-                $this->em->flush();
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria
                 $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
             } else {
-                $page->setName($name);
-                $page->setSlug($search);
-                $page->setTimeCreation();
-                $page->setLastUpdate();
-                $page->setCategory($tag->getCategory()->getName());
-                $this->em->persist($page);
-                $this->em->flush();
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $search));
+
+                if (empty($page)) {
+                    /**
+                     * @var Page
+                     */
+                    $page = new Page();
+                    $page->setName($name);
+                    $page->setSlug($search);
+                    $page->setTimeCreation();
+                    $page->setLastUpdate();
+                    $page->setCategory($tag->getCategory()->getName());
+                    $this->em->persist($page);
+                    $this->em->flush();
+                }
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria
                 $this->em->getRepository('App:Tag')->setTagsSlug($tag, $search);
             }
