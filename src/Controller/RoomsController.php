@@ -99,6 +99,7 @@ class RoomsController extends AbstractController
                         $room->setSlug($page->getSlug());
                         $room->setPermissions(['ROLE_USER']);
                         $room->setVisible(false);
+                        $room->setImage($page->getCover());
                     }
                 }
                 $roomCache->set($room);
