@@ -87,15 +87,30 @@ class RoomsController extends AbstractController
     {
         $cache = new FilesystemAdapter();
         $roomCache = $cache->getItem('room.' . $slug);
-        if (!$roomCache->isHit()) {
-            $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
-            $roomCache->set($room);
-            $cache->save($roomCache);
-        } else {
-            $room = $roomCache->get();
-        }
+        try {
+            if (!$roomCache->isHit()) {
+                $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
+                if (empty($room)) {
+                    $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+                    if (!empty($page)) {
+                        $room = new Room();
+                        $room->setName($page->getName());
+                        $room->setDescription($page->getDescription());
+                        $room->setSlug($page->getSlug());
+                        $room->setPermissions(['ROLE_USER']);
+                        $room->setVisible(false);
+                    }
+                }
+                $roomCache->set($room);
+                $cache->save($roomCache);
+            } else {
+                $room = $roomCache->get();
+            }
 
-        return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+            return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Sala de chat no encontrada - Error: {$ex->getMessage()}");
+        }
     }
 
     /**
