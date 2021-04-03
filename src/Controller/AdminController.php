@@ -238,6 +238,8 @@ class AdminController extends AbstractController
             $room->setPermissions($permissions);
             $room->setVisible($visible);
             $room->setCreator($creator);
+            $rooms = $this->em->getRepository('App:Room')->findAll();
+            $room->setPosition(count($rooms) + 1);
 
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
