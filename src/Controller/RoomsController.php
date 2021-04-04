@@ -100,6 +100,8 @@ class RoomsController extends AbstractController
                         $room->setPermissions(['ROLE_USER']);
                         $room->setVisible(false);
                         $room->setImage($page->getCover());
+                    } else {
+                        throw new HttpException(404, "Sala de chat no encontrada");
                     }
                 }
                 $roomCache->set($room);
@@ -110,7 +112,7 @@ class RoomsController extends AbstractController
 
             return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Sala de chat no encontrada - Error: {$ex->getMessage()}");
+            throw new HttpException(404, "Sala de chat no encontrada - Error: {$ex->getMessage()}");
         }
     }
 
