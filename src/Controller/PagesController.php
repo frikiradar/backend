@@ -64,7 +64,11 @@ class PagesController extends AbstractController
 
         try {
             $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
-            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']));
+            if (!empty($page)) {
+                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']));
+            } else {
+                throw new HttpException(404, "Página no encontrada");
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener la página - Error: {$ex->getMessage()}");
         }
