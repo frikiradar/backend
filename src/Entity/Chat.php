@@ -66,6 +66,7 @@ class Chat
 
     /**
      * @ORM\Column(type="string")
+     * @Groups({"message"})
      */
     private $conversationId;
 

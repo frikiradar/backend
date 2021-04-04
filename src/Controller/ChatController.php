@@ -90,6 +90,12 @@ class ChatController extends AbstractController
 
             $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
             $publisher($update);
+            $update = new Update('chats-' . $fromUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            $publisher($update);
+            if ($fromUser->getId() !== $toUser->getId()) {
+                $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+            }
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
@@ -166,6 +172,12 @@ class ChatController extends AbstractController
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
+                $update = new Update('chats-' . $fromUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                if ($fromUser->getId() !== $toUser->getId()) {
+                    $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                }
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
 
@@ -245,6 +257,12 @@ class ChatController extends AbstractController
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
+                $update = new Update('chats-' . $fromUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                if ($fromUser->getId() !== $toUser->getId()) {
+                    $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                }
             }
         }
 
@@ -293,6 +311,12 @@ class ChatController extends AbstractController
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
+                $update = new Update('chats-' . $chat->getToUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                if ($chat->getToUser()->getId() !== $chat->getFromUser()->getId()) {
+                    $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                }
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
@@ -318,11 +342,17 @@ class ChatController extends AbstractController
         $conversationId = $min . "_" . $max;
 
         $chat['fromuser']['id'] = $fromuser;
-        $chat['conversation_id'] = $conversationId;
+        $chat['conversationId'] = $conversationId;
         $chat['writing'] = true;
 
         $update = new Update($conversationId, json_encode($chat));
         $publisher($update);
+        $update = new Update('chats-' . $fromuser, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+        $publisher($update);
+        if ($fromuser !== $touser) {
+            $update = new Update('chats-' . $touser, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            $publisher($update);
+        }
 
         return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
     }
@@ -345,6 +375,12 @@ class ChatController extends AbstractController
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
+                $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                if ($chat->getToUser()->getId() !== $chat->getFromUser()->getId()) {
+                    $update = new Update('chats-' . $chat->getToUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                }
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
@@ -381,6 +417,12 @@ class ChatController extends AbstractController
                 $message->setDeleted(1);
                 $update = new Update($conversationId, $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
+                $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                if ($message->getToUser()->getId() !== $message->getFromUser()->getId()) {
+                    $update = new Update('chats-' . $message->getToUser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                }
 
                 $this->em->remove($message);
                 $this->em->flush();
