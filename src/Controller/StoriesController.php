@@ -55,6 +55,18 @@ class StoriesController extends AbstractController
     }
 
     /**
+     * @Route("/v1/stories-slug/{slug}", name="get_stories_slug", methods={"GET"})
+     */
+    public function getStoriesSlugAction(string $slug)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $stories = $this->em->getRepository('App:Story')->getStoriesBySlug($slug);
+
+        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+    }
+
+    /**
      * @Route("/v1/all-stories", name="get_all_stories", methods={"GET"})
      */
     public function getAllStoriesAction()

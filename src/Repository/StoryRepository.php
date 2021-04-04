@@ -60,6 +60,17 @@ class StoryRepository extends ServiceEntityRepository
         return $query->getResult();
     }
 
+    public function getStoriesBySlug(string $slug)
+    {
+        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+        $dql = "SELECT s FROM App:Story s WHERE s.text LIKE :slug AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('slug', '%' . $slug . '%')
+            ->setParameter('yesterday', $yesterday);
+        return $query->getResult();
+    }
+
     public function getUserStories(User $user)
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
