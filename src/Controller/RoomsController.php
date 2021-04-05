@@ -170,6 +170,8 @@ class RoomsController extends AbstractController
 
                 $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
+                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                $publisher($update);
 
                 $url = "/room/" . $slug;
 
@@ -264,6 +266,8 @@ class RoomsController extends AbstractController
                 }
 
                 $update = new Update($slug, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $publisher($update);
+                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
 
                 $url = "/room/" . $slug;
