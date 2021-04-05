@@ -84,6 +84,11 @@ class Page
      */
     private $category;
 
+    /**
+     * @Groups({"default"})
+     */
+    private $last_message;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -217,6 +222,18 @@ class Page
     public function setCategory(string $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getLastMessage(): ?int
+    {
+        return $this->last_message;
+    }
+
+    public function setLastMessage(?int $last_message): self
+    {
+        $this->last_message = $last_message;
 
         return $this;
     }

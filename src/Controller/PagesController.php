@@ -64,6 +64,10 @@ class PagesController extends AbstractController
 
         try {
             $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+            if (isset($messages[0])) {
+                $page->setLastMessage($messages[0]['last_message']);
+            }
             if (!empty($page)) {
                 return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']));
             } else {
