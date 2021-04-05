@@ -411,7 +411,7 @@ class ChatController extends AbstractController
                 }
 
                 if ($message->getFromuser()->getId() != $user->getId() && $this->security->isGranted('ROLE_MASTER')) {
-                    $message->setText("<em>Mensaje eliminado por un moderador (@" . $user->getUsername() . ")</em>");
+                    $message->setText("<em>Mensaje eliminado por un moderador</em>");
                     $this->em->persist($message);
                     $this->em->flush();
                 } else {
