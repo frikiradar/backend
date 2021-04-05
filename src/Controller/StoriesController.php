@@ -221,6 +221,9 @@ class StoriesController extends AbstractController
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
+            if ($this->security->isGranted('ROLE_MASTER')) {
+                $cache->deleteItem('stories.get.' . $this->getUser()->getId());
+            }
 
             if ($story->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $image = $story->getImage();
