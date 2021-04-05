@@ -20,6 +20,7 @@
         "geocoder-php/google-maps-provider": "^4.6",
         "guzzlehttp/psr7": "^1.7",
         "imagine/imagine": "^1.2",
+        "ipinfo/ipinfo": "^2.1",
         "kreait/firebase-bundle": "^2.3",
         "kreait/firebase-php": "^5.14",
         "lexik/jwt-authentication-bundle": "^2.10",
