@@ -225,7 +225,9 @@ class StoriesController extends AbstractController
             if ($story->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $image = $story->getImage();
                 if ($image) {
-                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/" . $image;
+                    $f = explode("/", $image);
+                    $filename = $f[count($f) - 1];
+                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $filename;
                     unlink($file);
                 }
 
