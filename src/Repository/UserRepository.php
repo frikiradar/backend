@@ -111,6 +111,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.avatar',
                 'u.thumbnail',
                 'u.roles',
+                'u.public',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
