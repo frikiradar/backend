@@ -332,7 +332,7 @@ class ChatController extends AbstractController
      */
     public function writingAction(Request $request, PublisherInterface $publisher)
     {
-        $fromuser = $this->request->get($request, "touser");
+        $fromuser = $this->request->get($request, "fromuser");
         $touser = $this->request->get($request, "touser");
 
         $chat = [];
@@ -410,18 +410,18 @@ class ChatController extends AbstractController
                     unlink($file);
                 }
 
+                $this->em->remove($message);
+                $this->em->flush();
+
                 $message->setDeleted(1);
                 $update = new Update($conversationId, $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
                 $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
-                if ($message->getToUser()->getId() !== $message->getFromUser()->getId()) {
+                if (!empty($message->getToUser()) && $message->getToUser()->getId() !== $message->getFromUser()->getId()) {
                     $update = new Update('chats-' . $message->getToUser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
                 }
-
-                $this->em->remove($message);
-                $this->em->flush();
                 return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
             } else {
                 throw new HttpException(400, "Error al eliminar el mensaje. - Error: usuario no permitido.");
