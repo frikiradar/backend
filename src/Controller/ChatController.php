@@ -400,7 +400,7 @@ class ChatController extends AbstractController
             $cache->deleteItem('users.chat.' . $user->getId());
 
             $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($message->getFromuser()->getId() == $user->getId()) {
+            if ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
                 if ($image) {
@@ -410,10 +410,16 @@ class ChatController extends AbstractController
                     unlink($file);
                 }
 
-                $this->em->remove($message);
-                $this->em->flush();
+                if ($message->getFromuser()->getId() != $user->getId() && $this->security->isGranted('ROLE_MASTER')) {
+                    $message->setText("<em>Mensaje eliminado por un moderador</em>");
+                    $this->em->persist($message);
+                    $this->em->flush();
+                } else {
+                    $this->em->remove($message);
+                    $this->em->flush();
+                    $message->setDeleted(1);
+                }
 
-                $message->setDeleted(1);
                 $update = new Update($conversationId, $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
                 $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
