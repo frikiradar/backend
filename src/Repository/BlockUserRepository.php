@@ -51,7 +51,7 @@ class BlockUserRepository extends ServiceEntityRepository
 
     public function getBlockUsers(User $user)
     {
-        $dql = "SELECT u.id, u.name, u.avatar            
+        $dql = "SELECT u.id, u.name, u.avatar, u.thumbnail            
             FROM App:User u WHERE u.id IN
             (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :fromUser)";
         $query = $this->getEntityManager()->createQuery($dql)->setParameter("fromUser", $user);
