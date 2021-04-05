@@ -227,7 +227,7 @@ class StoriesController extends AbstractController
                 if ($image) {
                     $f = explode("/", $image);
                     $filename = $f[count($f) - 1];
-                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $filename;
+                    $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $story->getUser()->getId() . '/' . $filename;
                     unlink($file);
                 }
 
