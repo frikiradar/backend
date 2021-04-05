@@ -757,7 +757,7 @@ class UsersController extends AbstractController
             $newBlock->setDate(new \DateTime);
             $newBlock->setFromUser($this->getUser());
             $newBlock->setBlockUser($blockUser);
-            $newBlock->setNote($this->request->get($request, 'note'));
+            $newBlock->setNote($this->request->get($request, 'note', false));
             $this->em->persist($newBlock);
             $this->em->flush();
 
@@ -766,7 +766,7 @@ class UsersController extends AbstractController
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='mailto:" . $blockUser->getEmail() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href=https://frikiradar.app/" . $blockUser->getUsername() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
@@ -809,6 +809,33 @@ class UsersController extends AbstractController
         $users = $this->em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
         return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+    }
+
+    /**
+     * @Route("/v1/report", name="report", methods={"PUT"})
+     */
+    public function putReportAction(Request $request, \Swift_Mailer $mailer)
+    {
+        try {
+            $reportUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $note = $this->request->get($request, 'note', false);
+
+            if (!empty($note)) {
+                // Enviar email al administrador informando del motivo
+                $message = (new \Swift_Message('Nuevo usuario reportado'))
+                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
+                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado al usuario <a href='https://frikiradar.app/" . $reportUser->getUsername() . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
+
+                if (0 === $mailer->send($message)) {
+                    throw new HttpException(400, "Error al enviar el email con motivo del reporte");
+                }
+            }
+
+            return new Response($this->serializer->serialize("Usuario reportado correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al reportar usuario - Error: {$ex->getMessage()}");
+        }
     }
 
 
