@@ -2,13 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\RoomRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource()
  * @ORM\Entity(repositoryClass=RoomRepository::class)
  */
 class Room
@@ -67,6 +65,16 @@ class Room
      * @ORM\Column(type="integer", nullable=true)
      */
     private $position;
+
+    /**
+     * @Groups({"default"})
+     */
+    private $last_message;
+
+    /**
+     * @Groups({"default"})
+     */
+    private $page;
 
     public function getId(): ?int
     {
@@ -165,6 +173,30 @@ class Room
     public function setPosition(?int $position): self
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getLastMessage(): ?int
+    {
+        return $this->last_message;
+    }
+
+    public function setLastMessage(?int $last_message): self
+    {
+        $this->last_message = $last_message;
+
+        return $this;
+    }
+
+    public function getPage(): ?Page
+    {
+        return $this->page;
+    }
+
+    public function setPage(?Page $page): self
+    {
+        $this->page = $page;
 
         return $this;
     }

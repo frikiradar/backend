@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Category;
 use App\Entity\Page;
+use App\Entity\Room;
 use App\Entity\Tag;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
@@ -17,6 +18,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 /**
  * Class PagesController
@@ -64,12 +66,23 @@ class PagesController extends AbstractController
 
         try {
             $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
-            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
-            if (isset($messages[0])) {
-                $page->setLastMessage($messages[0]['last_message']);
+            $room = new Room();
+
+            if (isset($page)) {
+                $room->setName($page->getName());
+                $room->setDescription($page->getDescription());
+                $room->setImage($page->getCover());
+                $room->setSlug($slug);
+                $room->setVisible(false);
+                $room->setPermissions(['ROLE_USER']);
+                $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+                if (isset($messages[0])) {
+                    $room->setLastMessage($messages[0]['last_message']);
+                }
+                $page->setRoom($room);
             }
             if (!empty($page)) {
-                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']));
+                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
             } else {
                 throw new HttpException(404, "Página no encontrada");
             }

@@ -87,7 +87,7 @@ class Page
     /**
      * @Groups({"default"})
      */
-    private $last_message;
+    private $room;
 
     public function getId(): ?int
     {
@@ -226,14 +226,14 @@ class Page
         return $this;
     }
 
-    public function getLastMessage(): ?int
+    public function getRoom(): ?Room
     {
-        return $this->last_message;
+        return $this->room;
     }
 
-    public function setLastMessage(?int $last_message): self
+    public function setRoom(?Room $room): self
     {
-        $this->last_message = $last_message;
+        $this->room = $room;
 
         return $this;
     }

@@ -85,6 +85,7 @@ class RoomsController extends AbstractController
      */
     public function getRoomAction(string $slug, Request $request)
     {
+        $user = $this->getUser();
         $cache = new FilesystemAdapter();
         $roomCache = $cache->getItem('room.' . $slug);
         try {
@@ -94,12 +95,17 @@ class RoomsController extends AbstractController
                     $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
                     if (!empty($page)) {
                         $room = new Room();
+                        $room->setPage($page);
                         $room->setName($page->getName());
                         $room->setDescription($page->getDescription());
                         $room->setSlug($page->getSlug());
                         $room->setPermissions(['ROLE_USER']);
                         $room->setVisible(false);
                         $room->setImage($page->getCover());
+                        $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+                        if (isset($messages[0])) {
+                            $room->setLastMessage($messages[0]['last_message']);
+                        }
                     } else {
                         throw new HttpException(404, "Sala de chat no encontrada");
                     }
