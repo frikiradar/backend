@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -33,13 +34,15 @@ class StoriesController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
-        NotificationService $notification
+        NotificationService $notification,
+        AuthorizationCheckerInterface $security
     ) {
         $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
         $this->accessChecker = $accessChecker;
         $this->notification = $notification;
+        $this->security = $security;
     }
 
     /**
@@ -219,7 +222,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            if ($story->getUser()->getId() === $this->getUser()->getId()) {
+            if ($story->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $image = $story->getImage();
                 if ($image) {
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/" . $image;
