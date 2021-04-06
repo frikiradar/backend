@@ -80,7 +80,7 @@ class ChatController extends AbstractController
             $chat->setConversationId($conversationId);
 
             $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
-            if ($replyToChat) {
+            if ($replyToChat && !$replyToChat->getModded()) {
                 $chat->setReplyTo($replyToChat);
             }
             $this->em->persist($chat);
@@ -362,7 +362,7 @@ class ChatController extends AbstractController
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($chat->getFromUser()->getId() == $this->getUser()->getId()) {
+            if ($chat->getFromUser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
                 $conversationId = $chat->getConversationId();
                 $chat->setText($text);
                 $chat->setEdited(1);
@@ -400,7 +400,7 @@ class ChatController extends AbstractController
             $cache->deleteItem('users.chat.' . $user->getId());
 
             $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER')) {
+            if (!$message->getModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
                 if ($image) {
@@ -431,7 +431,7 @@ class ChatController extends AbstractController
                 }
                 return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
             } else {
-                throw new HttpException(400, "Error al eliminar el mensaje. - Error: usuario no permitido.");
+                throw new HttpException(400, "Error al eliminar el mensaje. - Error: acción no permitida.");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
