@@ -100,6 +100,12 @@ class Chat
      */
     private $mentions = [];
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"message"})
+     */
+    private $modded;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -257,6 +263,18 @@ class Chat
     public function setMentions(?array $mentions): self
     {
         $this->mentions = $mentions;
+
+        return $this;
+    }
+
+    public function getModded(): ?bool
+    {
+        return $this->modded;
+    }
+
+    public function setModded(?bool $modded): self
+    {
+        $this->modded = $modded;
 
         return $this;
     }
