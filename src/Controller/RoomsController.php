@@ -132,7 +132,7 @@ class RoomsController extends AbstractController
         $page = $this->request->get($request, "page");
         $chats = $this->em->getRepository('App:Chat')->getRoomChat($slug, $page);
         foreach ($chats as $key => $chat) {
-            if ($chat->getFromuser->getBanned() || !$chat->getFromuser->getActive()) {
+            if ($chat->getFromuser()->getBanned() || !$chat->getFromuser()->getActive()) {
                 unset($chats[$key]);
             }
         }
