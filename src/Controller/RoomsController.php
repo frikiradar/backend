@@ -136,6 +136,7 @@ class RoomsController extends AbstractController
                 unset($chats[$key]);
             }
         }
+        $chats = array_values($chats);
 
         return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
     }
