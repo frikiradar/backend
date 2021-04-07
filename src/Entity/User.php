@@ -292,7 +292,7 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\Column(type="boolean", options={"default" : 0})
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $banned;
 
