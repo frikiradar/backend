@@ -221,7 +221,7 @@ class PagesController extends AbstractController
 
                 if (isset($game['summary'])) {
                     $trans = new GoogleTranslate();
-                    $game['summary'] = $trans->translate('en', 'en', $game['summary']);
+                    $game['summary'] = $trans->translate('en', 'es', $game['summary']);
                 }
 
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $game['slug']));
