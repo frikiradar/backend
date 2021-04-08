@@ -236,6 +236,7 @@ class PagesController extends AbstractController
                     $page->setSlug($game['slug']);
                     $page->setRating($game['aggregated_rating']);
                     $page->setCategory($tag->getCategory()->getName());
+                    $page->setDeveloper($game['developer']);
                     if (isset($game['first_release_date'])) {
                         $date = new \DateTime();
                         $date->setTimestamp($game['first_release_date']);
