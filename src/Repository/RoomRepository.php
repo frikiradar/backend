@@ -58,6 +58,15 @@ class RoomRepository extends ServiceEntityRepository
             ->getArrayResult();
     }
 
+    public function findPageRooms(User $user)
+    {
+        $dql = "SELECT c.conversationId FROM App:Chat c WHERE c.conversationId IN (SELECT p.slug FROM App:Page p) AND c.fromuser = :user GROUP BY c.conversationId";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('user', $user->getId());
+        return $query->getResult();
+    }
+
     public function getLastMessages($slugs, User $fromUser)
     {
         $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) AND c.fromuser <> :id GROUP BY c.conversationId";

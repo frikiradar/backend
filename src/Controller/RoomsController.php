@@ -53,6 +53,7 @@ class RoomsController extends AbstractController
      */
     public function getRoomsAction()
     {
+        $fromUser = $this->getUser();
         $cache = new FilesystemAdapter();
         $roomsCache = $cache->getItem('rooms.list.visible');
         if (!$roomsCache->isHit()) {
@@ -64,10 +65,35 @@ class RoomsController extends AbstractController
             $rooms = $roomsCache->get();
         }
 
+        $roomsSlugs = [];
+        foreach ($rooms as $room) {
+            $roomsSlugs[] = $room['slug'];
+        }
+
+        // Añadimos a las rooms de frikiradar las salas de páginas que el user haya hablado
+        $pagesSlugs = $this->em->getRepository('App:Room')->findPageRooms($fromUser);
+        $pageRooms = [];
+        foreach ($pagesSlugs as $slug) {
+            if (!in_array($slug['conversationId'], $roomsSlugs)) {
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug['conversationId']));
+                if (!empty($page)) {
+                    $room = [];
+                    $room['name'] = $page->getName();
+                    $room['description'] = '#' . $slug['conversationId'];
+                    $room['slug'] = $slug['conversationId'];
+                    $room['permissions'] = ['ROLE_USER'];
+                    $room['visible'] = false;
+                    $room['image'] = $page->getCover();
+                    $pageRooms[] = $room;
+                }
+            }
+        }
+
+        $rooms = [...$rooms, ...$pageRooms];
+
         foreach ($rooms as $room) {
             $slugs[] = $room['slug'];
         }
-        $fromUser = $this->getUser();
         $messages = $this->em->getRepository('App:Room')->getLastMessages($slugs, $fromUser);
         foreach ($rooms as $key => $room) {
             foreach ($messages as $message) {
