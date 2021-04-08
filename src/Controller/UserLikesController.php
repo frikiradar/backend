@@ -107,34 +107,38 @@ class UserLikesController extends AbstractController
                 $user = $this->getUser();
             }
 
-            $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
-            if (!$likesCache->isHit()) {
-                $likesCache->expiresAfter(5 * 60);
-                $likes = $this->em->getRepository('App:LikeUser')->getLikeUsers($user, $param, $page);
+            if ($user->getId() === $this->getUser()->getId() || !$user->getHideLikes()) {
+                $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
+                if (!$likesCache->isHit()) {
+                    $likesCache->expiresAfter(5 * 60);
+                    $likes = $this->em->getRepository('App:LikeUser')->getLikeUsers($user, $param, $page);
 
-                foreach ($likes as $key => $like) {
-                    $userId = $like["fromuser"];
-                    $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
-                    if ($user->getActive()) {
-                        $likes[$key]['user'] = [
-                            'id' => $userId,
-                            'username' => $user->getUsername(),
-                            'name' => $user->getName(),
-                            'description' => $user->getDescription(),
-                            'avatar' =>  $user->getAvatar() ?: null,
-                            'thumbnail' => $user->getThumbnail() ?: null
-                        ];
-                    } else {
-                        unset($likes[$key]);
+                    foreach ($likes as $key => $like) {
+                        $userId = $like["fromuser"];
+                        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                        if ($user->getActive()) {
+                            $likes[$key]['user'] = [
+                                'id' => $userId,
+                                'username' => $user->getUsername(),
+                                'name' => $user->getName(),
+                                'description' => $user->getDescription(),
+                                'avatar' =>  $user->getAvatar() ?: null,
+                                'thumbnail' => $user->getThumbnail() ?: null
+                            ];
+                        } else {
+                            unset($likes[$key]);
+                        }
                     }
+                    $likes = array_values($likes);
+                    $likesCache->set($likes);
+                    $cache->save($likesCache);
+                } else {
+                    $likes = $likesCache->get();
                 }
-                $likes = array_values($likes);
-                $likesCache->set($likes);
-                $cache->save($likesCache);
+                return new Response($this->serializer->serialize($likes, "json", ['groups' => 'default']));
             } else {
-                $likes = $likesCache->get();
+                throw new HttpException(400, "El usuario no permite ver sus kokoros");
             }
-            return new Response($this->serializer->serialize($likes, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los likes - Error: {$ex->getMessage()}");
         }

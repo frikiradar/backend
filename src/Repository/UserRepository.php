@@ -101,6 +101,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.connection',
                 'u.location',
                 'u.hide_location',
+                'u.hide_likes',
                 'u.block_messages',
                 'u.last_login',
                 'u.hide_connection',

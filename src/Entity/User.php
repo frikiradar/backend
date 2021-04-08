@@ -335,6 +335,12 @@ class User implements UserInterface, EquatableInterface
      */
     private $public;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"default"})
+     */
+    private $hide_likes;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1306,6 +1312,18 @@ class User implements UserInterface, EquatableInterface
     public function setPublic(bool $public): self
     {
         $this->public = $public;
+
+        return $this;
+    }
+
+    public function getHideLikes(): ?bool
+    {
+        return $this->hide_likes;
+    }
+
+    public function setHideLikes(?bool $hide_likes): self
+    {
+        $this->hide_likes = $hide_likes;
 
         return $this;
     }
