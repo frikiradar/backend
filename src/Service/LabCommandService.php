@@ -12,6 +12,7 @@ use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use \Statickidz\GoogleTranslate;
 
 class LabCommandService
 {
@@ -193,7 +194,7 @@ class LabCommandService
         $endpoint = '/games';
         $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
         $client_id = "Client-ID: " . $clientId;
-        $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where version_parent = null; limit 500;';
+        $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
         $this->o->writeln($body);
         $ch = curl_init($url . $endpoint); // Initialise cURL
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -213,7 +214,7 @@ class LabCommandService
             $search = str_replace([':', "'", ' '], '-', $search);
             $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
 
-            $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+            $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
             $this->o->writeln($body);
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -267,6 +268,21 @@ class LabCommandService
                         $game['multiplayer_modes'][0]['onlinecoop'] = 1;
                     }
                 }
+            }
+            if (isset($game['involved_companies'])) {
+                foreach ($game['involved_companies'] as $company) {
+                    if ($company['developer']) {
+                        $game['developer'] = $company['company']['name'];
+                    }
+                }
+            }
+
+            if (isset($game['summary'])) {
+                $source = 'en';
+                $target = 'es';
+                $trans = new GoogleTranslate();
+                $text = 'Explora lugares increíbles lejos del Reino Champiñón mientras te unes a Mario y su nuevo aliado Cappy en una enorme aventura trotamundos en 3D. ¡Usa asombrosas habilidades nuevas, como el poder de capturar y controlar objetos, animales y enemigos para recolectar Power Moons para que puedas encender la aeronave Odyssey y salvar a la Princesa Peach de los planes de boda de Bowser!';
+                $game['summary'] = $trans->translate($source, $target, $text);
             }
 
             print_r($game);

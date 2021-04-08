@@ -87,6 +87,12 @@ class Page
      */
     private $room;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
+     */
+    private $developer;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -232,6 +238,18 @@ class Page
     public function setRoom(?Room $room): self
     {
         $this->room = $room;
+
+        return $this;
+    }
+
+    public function getDeveloper(): ?string
+    {
+        return $this->developer;
+    }
+
+    public function setDeveloper(?string $developer): self
+    {
+        $this->developer = $developer;
 
         return $this;
     }

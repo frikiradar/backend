@@ -9,6 +9,7 @@ use App\Entity\Tag;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
+use Statickidz\GoogleTranslate;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -123,7 +124,7 @@ class PagesController extends AbstractController
             $endpoint = '/games';
             $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
             $client_id = "Client-ID: " . $clientId;
-            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where version_parent = null; limit 500;';
+            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
 
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -143,7 +144,7 @@ class PagesController extends AbstractController
                 $search = str_replace([':', "'", ' '], '-', $search);
                 $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
 
-                $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+                $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
                 $ch = curl_init($url . $endpoint); // Initialise cURL
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -208,6 +209,19 @@ class PagesController extends AbstractController
 
                 if (!isset($game['game_mode'])) {
                     $game['game_mode'] = 'offline';
+                }
+
+                if (isset($game['involved_companies'])) {
+                    foreach ($game['involved_companies'] as $company) {
+                        if ($company['developer']) {
+                            $game['developer'] = $company['company']['name'];
+                        }
+                    }
+                }
+
+                if (isset($game['summary'])) {
+                    $trans = new GoogleTranslate();
+                    $game['summary'] = $trans->translate('en', 'en', $game['summary']);
                 }
 
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $game['slug']));
