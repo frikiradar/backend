@@ -185,27 +185,43 @@ class LabCommandService
         foreach ($pages as $page) {
             $name = $page->getName();
             $search = strtolower($name);
-            if (strpos($search, 'age of conan') !== false) {
-                $yeah = true;
-            }
-            if ($yeah) {
-                $this->o->writeln($search);
-                $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
-                $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
-                $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
-                $ch = curl_init($url); // Initialise cURL
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
-                $output = curl_exec($ch); // Execute the cURL statement
-                curl_close($ch); // Close the cURL connection
-                $info = json_decode($output, true); // Return the received data
-                // print_r($info);
+            $this->o->writeln($search);
+            $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
+            $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
+            $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
+            $ch = curl_init($url); // Initialise cURL
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
+            $output = curl_exec($ch); // Execute the cURL statement
+            curl_close($ch); // Close the cURL connection
+            $info = json_decode($output, true); // Return the received data
+            // print_r($info);
 
-                $url = 'https://api.igdb.com/v4';
-                $endpoint = '/games';
-                $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
-                $client_id = "Client-ID: " . $clientId;
-                $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
+            $url = 'https://api.igdb.com/v4';
+            $endpoint = '/games';
+            $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
+            $client_id = "Client-ID: " . $clientId;
+            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
+            $this->o->writeln($body);
+            $ch = curl_init($url . $endpoint); // Initialise cURL
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
+            $output = curl_exec($ch); // Execute the cURL statement
+            curl_close($ch); // Close the cURL connection
+            $games = json_decode($output, true); // Return the received data
+
+            if (empty($games)) {
+                $search = trim(str_replace(['saga', '(', ')'], '', $search));
+                $search = str_replace('bros.', 'bros', $search);
+                $search = str_replace('.', '-dot-', $search);
+                $search = str_replace('&', 'and', $search);
+                $search = str_replace(': ', ' ', $search);
+                $search = str_replace([':', "'", ' '], '-', $search);
+                $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+
+                $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
                 $this->o->writeln($body);
                 $ch = curl_init($url . $endpoint); // Initialise cURL
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -215,103 +231,82 @@ class LabCommandService
                 $output = curl_exec($ch); // Execute the cURL statement
                 curl_close($ch); // Close the cURL connection
                 $games = json_decode($output, true); // Return the received data
+            }
 
-                if (empty($games)) {
-                    $search = trim(str_replace(['saga', '(', ')'], '', $search));
-                    $search = str_replace('bros.', 'bros', $search);
-                    $search = str_replace('.', '-dot-', $search);
-                    $search = str_replace('&', 'and', $search);
-                    $search = str_replace(': ', ' ', $search);
-                    $search = str_replace([':', "'", ' '], '-', $search);
-                    $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
+            usort($games, function ($a, $b) {
+                return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
+            });
+            // print_r($games);
 
-                    $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
-                    $this->o->writeln($body);
-                    $ch = curl_init($url . $endpoint); // Initialise cURL
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
-                    $output = curl_exec($ch); // Execute the cURL statement
-                    curl_close($ch); // Close the cURL connection
-                    $games = json_decode($output, true); // Return the received data
-                }
-
-                usort($games, function ($a, $b) {
-                    return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
-                });
-                // print_r($games);
-
-                if (!empty($games)) {
-                    $gameFound = [];
-                    foreach ($games as $game) {
-                        if ($game['slug'] === $search) {
+            if (!empty($games)) {
+                $gameFound = [];
+                foreach ($games as $game) {
+                    if ($game['slug'] === $search) {
+                        $gameFound = $game;
+                        break;
+                    } else {
+                        similar_text(strtolower($game['name']), strtolower($search), $percent);
+                        if ($percent >= 98) {
+                            $this->o->writeln($percent);
                             $gameFound = $game;
                             break;
-                        } else {
-                            similar_text(strtolower($game['name']), strtolower($search), $percent);
-                            if ($percent >= 98) {
-                                $this->o->writeln($percent);
-                                $gameFound = $game;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!empty($gameFound)) {
-                        $game = $gameFound;
-                    } else {
-                        $game = $games[0];
-                    }
-
-                    if (isset($game['artworks'][0]['url'])) {
-                        $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['artworks'][0]['url']);
-                    }
-                    if (isset($game['cover']['url']) && !isset($game['artworks'][0]['url'])) {
-                        $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['cover']['url']);
-                    }
-                    if (isset($game['cover']['url'])) {
-                        $game['cover']['url'] = str_replace('t_thumb', 't_cover_big', $game['cover']['url']);
-                    }
-                    if (isset($game['game_modes'])) {
-                        foreach ($game['game_modes'] as $gameMode) {
-                            if ($gameMode['slug'] === 'massively-multiplayer-online-mmo' && !isset($game['multiplayer_modes'][0]['onlinecoop'])) {
-                                $game['multiplayer_modes'][0]['onlinecoop'] = 1;
-                            }
-                        }
-                    }
-                    if (isset($game['involved_companies'])) {
-                        foreach ($game['involved_companies'] as $company) {
-                            if ($company['developer']) {
-                                $game['developer'] = $company['company']['name'];
-                            }
-                        }
-                    }
-
-                    if (isset($game['summary'])) {
-                        $source = 'en';
-                        $target = 'es';
-                        $trans = new GoogleTranslate();
-                        $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
-                        try {
-                            $game['summary'] = $trans->translate($source, $target, $text);
-                        } catch (Exception $ex) {
-                            $this->o->writeln("Error google translate: {$ex->getMessage()}");
                         }
                     }
                 }
 
-                if (isset($game)) {
-                    if (isset($game['summary'])) {
-                        $page->setDescription($game['summary']);
-                        $this->o->writeln($game['summary']);
-                    }
-                    if (isset($game['developer'])) {
-                        $page->setDeveloper($game['developer']);
-                    }
-                    $this->em->persist($page);
-                    $this->em->flush();
+                if (!empty($gameFound)) {
+                    $game = $gameFound;
+                } else {
+                    $game = $games[0];
                 }
+
+                if (isset($game['artworks'][0]['url'])) {
+                    $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['artworks'][0]['url']);
+                }
+                if (isset($game['cover']['url']) && !isset($game['artworks'][0]['url'])) {
+                    $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['cover']['url']);
+                }
+                if (isset($game['cover']['url'])) {
+                    $game['cover']['url'] = str_replace('t_thumb', 't_cover_big', $game['cover']['url']);
+                }
+                if (isset($game['game_modes'])) {
+                    foreach ($game['game_modes'] as $gameMode) {
+                        if ($gameMode['slug'] === 'massively-multiplayer-online-mmo' && !isset($game['multiplayer_modes'][0]['onlinecoop'])) {
+                            $game['multiplayer_modes'][0]['onlinecoop'] = 1;
+                        }
+                    }
+                }
+                if (isset($game['involved_companies'])) {
+                    foreach ($game['involved_companies'] as $company) {
+                        if ($company['developer']) {
+                            $game['developer'] = $company['company']['name'];
+                        }
+                    }
+                }
+
+                if (isset($game['summary'])) {
+                    $source = 'en';
+                    $target = 'es';
+                    $trans = new GoogleTranslate();
+                    $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
+                    try {
+                        $game['summary'] = $trans->translate($source, $target, $text);
+                    } catch (Exception $ex) {
+                        $this->o->writeln("Error google translate: {$ex->getMessage()}");
+                    }
+                }
+            }
+
+            if (isset($game)) {
+                if (isset($game['summary'])) {
+                    $page->setDescription($game['summary']);
+                    $this->o->writeln($game['summary']);
+                }
+                if (isset($game['developer'])) {
+                    $page->setDeveloper($game['developer']);
+                }
+                $this->em->persist($page);
+                $this->em->flush();
             }
         }
     }
