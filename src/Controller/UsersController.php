@@ -280,6 +280,7 @@ class UsersController extends AbstractController
                 $user->setBlockMessages($this->request->get($request, 'block_messages'));
                 $user->setTwoStep($this->request->get($request, 'two_step'));
                 $user->setHideConnection($this->request->get($request, 'hide_connection'));
+                $user->setHideLikes($this->request->get($request, 'hide_likes'));
                 $user->setPublic($this->request->get($request, 'public'));
 
                 $user->setMailing($this->request->get($request, 'mailing'));
