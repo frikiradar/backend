@@ -170,7 +170,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['block'] = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
             $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
             if ($this->security->isGranted('ROLE_MASTER')) {
-                $user['ip'] = $fromUser->getLastIp();
+                $user['ip'] = $toUser->getLastIp();
             }
             if (!$user['block']) {
                 return $user;
