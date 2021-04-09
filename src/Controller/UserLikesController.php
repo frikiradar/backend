@@ -14,6 +14,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -28,13 +29,15 @@ class UserLikesController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         RequestService $request,
-        NotificationService $notification
+        NotificationService $notification,
+        AuthorizationCheckerInterface $security
     ) {
         $this->serializer = $serializer;
         $this->userRepository = $userRepository;
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
+        $this->security = $security;
     }
 
 
@@ -107,7 +110,7 @@ class UserLikesController extends AbstractController
                 $user = $this->getUser();
             }
 
-            if ($user->getId() === $this->getUser()->getId() || !$user->getHideLikes()) {
+            if ($user->getId() === $this->getUser()->getId() || !$user->getHideLikes() || !$this->security->isGranted('ROLE_MASTER')) {
                 $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
                 if (!$likesCache->isHit()) {
                     $likesCache->expiresAfter(5 * 60);
