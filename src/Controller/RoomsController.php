@@ -354,7 +354,7 @@ class RoomsController extends AbstractController
     {
         $user = $this->getUser();
         $config = $user->getConfig();
-        $roomsConfig = $this->request->get($request, "rooms");
+        $roomsConfig = $this->request->get($request, "rooms_config");
         $config['rooms'] = $roomsConfig;
         $user->setConfig($config);
         $this->em->persist($user);
