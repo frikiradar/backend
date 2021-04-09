@@ -59,7 +59,7 @@ class LikeUserRepository extends ServiceEntityRepository
             ->createQuery($dql)
             ->setParameter('id', $user->getId());
         if (!is_null($page)) {
-            $limit = 15;
+            $limit = 30;
             $offset = ($page - 1) * $limit;
             $query->setFirstResult($offset)
                 ->setMaxResults($limit);
