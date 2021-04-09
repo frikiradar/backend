@@ -341,6 +341,12 @@ class User implements UserInterface, EquatableInterface
      */
     private $hide_likes;
 
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     * @Groups({"default"})
+     */
+    private $config = [];
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1324,6 +1330,18 @@ class User implements UserInterface, EquatableInterface
     public function setHideLikes(?bool $hide_likes): self
     {
         $this->hide_likes = $hide_likes;
+
+        return $this;
+    }
+
+    public function getConfig(): ?array
+    {
+        return $this->config;
+    }
+
+    public function setConfig(?array $config): self
+    {
+        $this->config = $config;
 
         return $this;
     }

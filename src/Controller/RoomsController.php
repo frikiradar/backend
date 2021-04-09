@@ -128,12 +128,6 @@ class RoomsController extends AbstractController
                         $room->setPermissions(['ROLE_USER']);
                         $room->setVisible(false);
                         $room->setImage($page->getCover());
-                        $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
-                        if (isset($messages[0])) {
-                            $room->setLastMessage($messages[0]['last_message']);
-                        }
-                    } else {
-                        throw new HttpException(404, "Sala de chat no encontrada");
                     }
                 }
                 $roomCache->set($room);
@@ -142,7 +136,16 @@ class RoomsController extends AbstractController
                 $room = $roomCache->get();
             }
 
-            return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+            if (isset($messages[0])) {
+                $room->setLastMessage($messages[0]['last_message']);
+            }
+
+            if (!empty($room)) {
+                return new Response($this->serializer->serialize($room, "json", ['groups' => 'default']));
+            } else {
+                throw new HttpException(404, "Sala de chat no encontrada");
+            }
         } catch (Exception $ex) {
             throw new HttpException(404, "Sala de chat no encontrada - Error: {$ex->getMessage()}");
         }
@@ -342,5 +345,21 @@ class RoomsController extends AbstractController
         $publisher($update);
 
         return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
+    }
+
+    /**
+     * @Route("/v1/rooms-config", name="rooms_config", methods={"PUT"})
+     */
+    public function roomsConfigAction(Request $request)
+    {
+        $user = $this->getUser();
+        $config = $user->getConfig();
+        $roomsConfig = $this->request->get($request, "rooms_config");
+        $config['rooms_config'] = $roomsConfig;
+        $user->setConfig($config);
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
     }
 }
