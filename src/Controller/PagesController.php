@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Filesystem\Filesystem;
@@ -64,24 +65,33 @@ class PagesController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-
+        $cache = new FilesystemAdapter();
         try {
-            $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
-            $room = new Room();
+            $pageCache = $cache->getItem('page.get.' . $slug);
+            if (!$pageCache->isHit()) {
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
 
-            if (isset($page)) {
-                $room->setName($page->getName());
-                $room->setDescription($page->getDescription());
-                $room->setImage($page->getCover());
-                $room->setSlug($slug);
-                $room->setVisible(false);
-                $room->setPermissions(['ROLE_USER']);
-                $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
-                if (isset($messages[0])) {
-                    $room->setLastMessage($messages[0]['last_message']);
+                if (isset($page)) {
+                    $room = new Room();
+                    $room->setName($page->getName());
+                    $room->setDescription($page->getDescription());
+                    $room->setImage($page->getCover());
+                    $room->setSlug($slug);
+                    $room->setVisible(false);
+                    $room->setPermissions(['ROLE_USER']);
                 }
                 $page->setRoom($room);
+                $pageCache->set($page);
+                $cache->save($pageCache);
+            } else {
+                $page = $pageCache->get();
             }
+
+            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+            if (isset($messages[0])) {
+                $page->getRoom()->setLastMessage($messages[0]['last_message']);
+            }
+
             if (!empty($page)) {
                 return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
             } else {
