@@ -336,7 +336,7 @@ class User implements UserInterface, EquatableInterface
     private $public;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="boolean", options={"default" : 1})
      * @Groups({"default"})
      */
     private $hide_likes;
