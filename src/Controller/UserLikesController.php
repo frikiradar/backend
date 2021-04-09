@@ -110,7 +110,7 @@ class UserLikesController extends AbstractController
                 $user = $this->getUser();
             }
 
-            if ($user->getId() === $this->getUser()->getId() || !$user->getHideLikes() || !$this->security->isGranted('ROLE_MASTER')) {
+            if ($user->getId() === $this->getUser()->getId() || !$user->getHideLikes() || $this->security->isGranted('ROLE_MASTER')) {
                 $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
                 if (!$likesCache->isHit()) {
                     $likesCache->expiresAfter(5 * 60);
