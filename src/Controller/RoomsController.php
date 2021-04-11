@@ -160,11 +160,11 @@ class RoomsController extends AbstractController
         $this->accessChecker->checkAccess($user);
         $page = $this->request->get($request, "page");
         $chats = $this->em->getRepository('App:Chat')->getRoomChat($slug, $page);
-        foreach ($chats as $key => $chat) {
+        /*foreach ($chats as $key => $chat) {
             if ($chat->getFromuser()->getBanned() || !$chat->getFromuser()->getActive()) {
                 unset($chats[$key]);
             }
-        }
+        }*/
         $chats = array_values($chats);
 
         return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));

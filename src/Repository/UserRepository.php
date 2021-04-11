@@ -283,7 +283,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
                     // 'connection' => $user->getConnection()
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1,
+                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1,
                     // 'lastlogin' => $lastLogin
                 ));
         } else {
@@ -377,7 +377,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $dql->setParameter('minage', $user->getMinage() ?: 18)
                     ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
                     ->setParameter('lovegender', $user->getLovegender() ?: 1)
-                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation()) : 1);
+                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
             }
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
@@ -529,19 +529,23 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return array_values(array_unique($commonTags));
     }
 
-    private function orientation2Genre($orientation)
+    private function orientation2Genre($orientation, $connection)
     {
-        switch ($orientation) {
-            case "Heterosexual":
-                return ["Heterosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
-                break;
+        if (in_array('Amistad', $connection)) {
+            return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+        } else {
+            switch ($orientation) {
+                case "Heterosexual":
+                    return ["Heterosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+                    break;
 
-            case "Homosexual":
-                return ["Homosexual", "Bisexual", "Pansexual"];
-                break;
+                case "Homosexual":
+                    return ["Homosexual", "Bisexual", "Pansexual"];
+                    break;
 
-            default:
-                return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+                default:
+                    return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+            }
         }
     }
 

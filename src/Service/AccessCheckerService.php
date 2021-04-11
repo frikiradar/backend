@@ -28,6 +28,10 @@ class AccessCheckerService extends AbstractController
             }
         }
 
+        if (!empty($user) && !$user->getActive()) {
+            throw new HttpException(401, "Disabled account.");
+        }
+
         if (
             strpos(strtolower($user->getDescription()), 'parece') !== false &&
             preg_match("/tengo\s(\d+)\saños/", strtolower($user->getDescription()), $matches)
