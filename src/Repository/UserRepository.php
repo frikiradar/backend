@@ -254,11 +254,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            // $lastLogin = 14;
+            $lastLogin = 14;
 
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND u.lovegender LIKE '%" . $user->getGender() . "%'" : 'u.gender <> :lovegender OR u.gender IS NULL')
                 ->andWhere(
                     in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
                         "u.connection NOT LIKE '%Amistad%'"
@@ -277,7 +277,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                // ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setParameters(array(
@@ -285,9 +285,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
-                    // 'connection' => $user->getConnection(),
                     'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1,
-                    // 'lastlogin' => $lastLogin
+                    'lastlogin' => $lastLogin
                 ));
         } else {
             $dql
@@ -367,8 +366,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                                 'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                     )
                     ->andWhere('u.avatar IS NOT NULL')
-                    ->andWhere('u.banned <> 1')
-                    ->andWhere('u.active = 1');
+                    ->andWhere('u.banned <> 1');
             }
             $dql->andWhere('u.id <> :id')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")

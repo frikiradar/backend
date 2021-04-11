@@ -286,37 +286,7 @@ class UsersController extends AbstractController
 
                 $user->setMailing($this->request->get($request, 'mailing'));
 
-                foreach ($user->getTags() as $tag) {
-                    $this->em->remove($tag);
-                }
-
                 $this->em->persist($user);
-
-                $tags = $this->request->get($request, 'tags');
-                foreach ($tags as $tag) {
-                    $category = $this->em->getRepository('App:Category')->findOneBy(array('name' => $tag['category']['name']));
-                    $oldTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $tag['name'], 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
-
-                    if (empty($oldTag)) {
-                        $newTag = new Tag();
-                        $newTag->setUser($user);
-                        $newTag->setName($tag['name']);
-
-                        if (!empty($category)) {
-                            $newTag->setCategory($category);
-                        } else {
-                            $newCategory = new Category();
-                            $newCategory->setName($category->getName());
-                            $newTag->setCategory($newCategory);
-
-                            $this->em->persist($newCategory);
-                        }
-
-                        $user->addTag($newTag);
-                    }
-                    $this->em->persist($user);
-                }
-
                 $this->em->flush();
 
                 return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
