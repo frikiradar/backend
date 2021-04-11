@@ -377,8 +377,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $dql->setParameter('minage', $user->getMinage() ?: 18)
                     ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
                     ->setParameter('lovegender', $user->getLovegender() ?: 1)
-                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
-                    // ->setParameter('connection', in_array('Amistad', $user->getConnection()) ? 1 : $user->getConnection());
+                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
+                // ->setParameter('connection', in_array('Amistad', $user->getConnection()) ? 1 : $user->getConnection());
             }
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
