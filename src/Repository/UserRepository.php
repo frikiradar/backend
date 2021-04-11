@@ -259,9 +259,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
                 ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                // ->andWhere('u.connection IN (:connection)')
                 ->andWhere(
-                    $user->getOrientation() == "Homosexual" ?
+                    in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                        "u.connection NOT LIKE '%Amistad%'"
+                )
+                ->andWhere(
+                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
                         'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                             'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                 )
@@ -282,7 +285,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
                     'id' => $user->getId(),
                     'lovegender' => $user->getLovegender() ?: 1,
-                    // 'connection' => in_array('Amistad', $user->getConnection()) ? 1 : $user->getConnection(),
+                    // 'connection' => $user->getConnection(),
                     'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1,
                     // 'lastlogin' => $lastLogin
                 ));
@@ -354,9 +357,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $dql
                     ->andHaving('age BETWEEN :minage AND :maxage')
                     ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                    // ->andWhere('u.connection IN (:connection)')
                     ->andWhere(
-                        $user->getOrientation() == "Homosexual" ?
+                        in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                            "u.connection NOT LIKE '%Amistad%'"
+                    )
+                    ->andWhere(
+                        $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
                             'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                                 'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                     )
@@ -378,7 +384,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
                     ->setParameter('lovegender', $user->getLovegender() ?: 1)
                     ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
-                // ->setParameter('connection', in_array('Amistad', $user->getConnection()) ? 1 : $user->getConnection());
             }
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
