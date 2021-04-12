@@ -114,7 +114,6 @@ class RoomsController extends AbstractController
         $user = $this->getUser();
         $cache = new FilesystemAdapter();
         $roomCache = $cache->getItem('room.' . $slug);
-        $cache->deleteItem('room.' . $slug);
         try {
             if (!$roomCache->isHit()) {
                 $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
