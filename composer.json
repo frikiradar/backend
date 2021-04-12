@@ -25,6 +25,7 @@
         "kreait/firebase-php": "^5.14",
         "lexik/jwt-authentication-bundle": "^2.10",
         "nelmio/cors-bundle": "^2.1",
+        "php-ffmpeg/php-ffmpeg": "^0.18.0",
         "php-http/guzzle6-adapter": "^1.1",
         "phpdocumentor/reflection-docblock": "^5.2",
         "sensio/framework-extra-bundle": "^5.6",
