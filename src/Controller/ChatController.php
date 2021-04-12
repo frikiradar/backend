@@ -150,7 +150,7 @@ class ChatController extends AbstractController
                 }
 
                 $filename = date('YmdHis');
-                if ($imageFile) {
+                if (!empty($imageFile)) {
                     if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
                         $absolutePath = 'images/chat/';
                         $server = "https://$_SERVER[HTTP_HOST]";
@@ -176,7 +176,7 @@ class ChatController extends AbstractController
                     }
                 }
 
-                if ($audioFile) {
+                if (!empty($audioFile)) {
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
                     $server = "https://app.frikiradar.com";
                     $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
