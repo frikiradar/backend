@@ -67,7 +67,12 @@ class FileUploaderService
             if (!file_exists($this->getTargetDirectory())) {
                 mkdir($this->getTargetDirectory(), 0777, true);
             }
-            $ffmpeg = \FFMpeg\FFMpeg::create();
+            $ffmpeg = \FFMpeg\FFMpeg::create([
+                'ffmpeg.binaries'  => '../../lib/ffmpeg-4.4-amd64-static/ffmpeg',
+                'ffprobe.binaries' => '../../lib/ffmpeg-4.4-amd64-static/ffprobe',
+                'timeout'          => 3600,
+                'ffmpeg.threads'   => 12,
+            ]);
             $audio = $ffmpeg->open($file->getRealPath());
             $audio = $audio->save(new \FFMpeg\Format\Audio\Mp3(), $targetSrc);
             if ($audio) {
