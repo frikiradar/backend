@@ -352,23 +352,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ));
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            if (!$this->security->isGranted('ROLE_MASTER')) {
-                $dql
-                    ->andHaving('age BETWEEN :minage AND :maxage')
-                    ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                    ->andWhere(
-                        in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
-                            "u.connection NOT LIKE '%Amistad%'"
-                    )
-                    ->andWhere(
-                        $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
-                            'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                                'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-                    )
-                    ->andWhere('u.avatar IS NOT NULL')
-                    ->andWhere('u.banned <> 1');
-            }
-            $dql->andWhere('u.id <> :id')
+            $dql
+                ->andHaving('age BETWEEN :minage AND :maxage')
+                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->andWhere(
+                    in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                        "u.connection NOT LIKE '%Amistad%'"
+                )
+                ->andWhere(
+                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
+                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                )
+                ->andWhere('u.avatar IS NOT NULL')
+                ->andWhere('u.active = 1')
+                ->andWhere('u.banned <> 1')
+                ->andWhere('u.id <> :id')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
@@ -376,13 +375,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search . "%') OR u.name LIKE '%$search%' OR u.username LIKE '%$search%'")
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
-                ->setParameter('id', $user->getId());
-            if (!$this->security->isGranted('ROLE_MASTER')) {
-                $dql->setParameter('minage', $user->getMinage() ?: 18)
-                    ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
-                    ->setParameter('lovegender', $user->getLovegender() ?: 1)
-                    ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
-            }
+                ->setParameter('id', $user->getId())
+                ->setParameter('minage', $user->getMinage() ?: 18)
+                ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
+                ->setParameter('lovegender', $user->getLovegender() ?: 1)
+                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
         }
