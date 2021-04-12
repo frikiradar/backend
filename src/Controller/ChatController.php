@@ -142,26 +142,47 @@ class ChatController extends AbstractController
 
                 $conversationId = $min . "_" . $max;
 
-                $imageFile = $request->files->get('image');
-                $text = $request->request->get("text");
+                if ($request->files->get('image')) {
+                    $imageFile = $request->files->get('image');
+                    $text = $request->request->get("text");
+                } elseif ($request->files->get('audio')) {
+                    $audioFile = $request->files->get('audio');
+                }
 
                 $filename = date('YmdHis');
-                if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
-                    $absolutePath = 'images/chat/';
-                    $server = "https://$_SERVER[HTTP_HOST]";
-                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
-                    $image = $uploader->upload($imageFile, false, 70);
-                    $chat->setImage($image);
-                    $chat->setTimeCreation();
-                    $chat->setConversationId($conversationId);
-                } else {
+                if ($imageFile) {
+                    if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                        $absolutePath = 'images/chat/';
+                        $server = "https://$_SERVER[HTTP_HOST]";
+                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                        $image = $uploader->uploadImage($imageFile, false, 70);
+                        $chat->setImage($image);
+                        $chat->setTimeCreation();
+                        $chat->setConversationId($conversationId);
+                    } else {
+                        $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                        $server = "https://app.frikiradar.com";
+                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                        $image = $uploader->uploadImage($imageFile, false, 50);
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                        $chat->setImage($src);
+                        $chat->setText($text);
+                        $chat->setTimeCreation();
+                        $chat->setConversationId($conversationId);
+                        $this->em->persist($chat);
+                        $fromUser->setLastLogin();
+                        $this->em->persist($fromUser);
+                        $this->em->flush();
+                    }
+                }
+
+                if ($audioFile) {
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
                     $server = "https://app.frikiradar.com";
                     $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
-                    $image = $uploader->upload($imageFile, false, 50);
-                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-                    $chat->setImage($src);
-                    $chat->setText($text);
+                    $audio = $uploader->uploadAudio($audioFile);
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $audio);
+                    $chat->setAudio($src);
                     $chat->setTimeCreation();
                     $chat->setConversationId($conversationId);
                     $this->em->persist($chat);
@@ -188,6 +209,8 @@ class ChatController extends AbstractController
                     $text = '📷 ' . $fromUser->getName() . ' te ha enviado una imagen.';
                 } elseif (!empty($image)) {
                     $text = '📷 ' . $text;
+                } elseif (!empty($audio)) {
+                    $text = '🎤 ' . $fromUser->getName() . ' te ha enviado un audio.';
                 }
 
                 $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");

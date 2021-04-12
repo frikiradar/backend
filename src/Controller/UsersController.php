@@ -344,10 +344,10 @@ class UsersController extends AbstractController
 
         $filename = date('YmdHis');
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename);
-        $image = $uploader->upload($avatar);
+        $image = $uploader->uploadImage($avatar);
 
         $uploader = new FileUploaderService("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/", $filename . '-128px');
-        $thumbnail = $uploader->upload($avatar, true, 70, 128);
+        $thumbnail = $uploader->uploadImage($avatar, true, 70, 128);
 
         if (isset($thumbnail) && isset($image)) {
             // $server = "https://$_SERVER[HTTP_HOST]";

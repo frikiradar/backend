@@ -19,7 +19,7 @@ class FileUploaderService
         $this->targetFilename = $targetFilename;
     }
 
-    public function upload(UploadedFile $file, $square = true, $quality = 90, $size = 512)
+    public function uploadImage(UploadedFile $file, $square = true, $quality = 90, $size = 512)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
@@ -51,6 +51,26 @@ class FileUploaderService
             }
             $image = $image->save($targetSrc, $options);
             if ($image) {
+                return $targetSrc;
+            }
+        } catch (FileException $e) {
+            // ... handle exception if something happens during file upload
+            print_r($e);
+        }
+    }
+
+    public function uploadAudio(UploadedFile $file)
+    {
+        try {
+            $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.mp3';
+
+            if (!file_exists($this->getTargetDirectory())) {
+                mkdir($this->getTargetDirectory(), 0777, true);
+            }
+            $ffmpeg = \FFMpeg\FFMpeg::create();
+            $audio = $ffmpeg->open($file->getRealPath());
+            $audio = $audio->save(new \FFMpeg\Format\Audio\Mp3(), $targetSrc);
+            if ($audio) {
                 return $targetSrc;
             }
         } catch (FileException $e) {

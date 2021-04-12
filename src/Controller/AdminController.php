@@ -245,7 +245,7 @@ class AdminController extends AbstractController
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
                 $server = "https://app.frikiradar.com";
                 $uploader = new FileUploaderService($absolutePath, $name);
-                $image = $uploader->upload($imageFile, true, 70);
+                $image = $uploader->uploadImage($imageFile, true, 70);
                 $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 $room->setImage($src);
             }
@@ -313,7 +313,7 @@ class AdminController extends AbstractController
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
                 $server = "https://app.frikiradar.com";
                 $uploader = new FileUploaderService($absolutePath, $name);
-                $image = $uploader->upload($imageFile, true, 70);
+                $image = $uploader->uploadImage($imageFile, true, 70);
                 $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 $room->setImage($src);
             }
