@@ -426,7 +426,7 @@ class ChatController extends AbstractController
             if (!$message->getModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
-                if ($image) {
+                if (!empty($image)) {
                     $f = explode("/", $image);
                     $filename = $f[count($f) - 1];
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
@@ -434,7 +434,7 @@ class ChatController extends AbstractController
                 }
 
                 $audio = $message->getImage();
-                if ($audio) {
+                if (!empty($audio)) {
                     $f = explode("/", $audio);
                     $filename = $f[count($f) - 1];
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
