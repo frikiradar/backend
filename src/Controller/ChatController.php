@@ -147,6 +147,7 @@ class ChatController extends AbstractController
                     $text = $request->request->get("text");
                 } elseif ($request->files->get('audio')) {
                     $audioFile = $request->files->get('audio');
+                    $text = "";
                 }
 
                 $filename = date('YmdHis');
@@ -203,11 +204,11 @@ class ChatController extends AbstractController
                 $title = $fromUser->getName();
                 $url = "/chat/" . $chat->getFromuser()->getId();
 
-                if (empty($text) && !empty($image)) {
+                if (empty($text) && isset($image)) {
                     $text = '📷 ' . $fromUser->getName() . ' te ha enviado una imagen.';
-                } elseif (!empty($image)) {
+                } elseif (isset($image)) {
                     $text = '📷 ' . $text;
-                } elseif (!empty($audio)) {
+                } elseif (isset($audio)) {
                     $text = '🎤 ' . $fromUser->getName() . ' te ha enviado un audio.';
                 }
 
