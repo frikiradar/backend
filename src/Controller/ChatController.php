@@ -146,6 +146,8 @@ class ChatController extends AbstractController
                 $text = $request->request->get("text");
                 $audioFile = $request->files->get('audio');
 
+                return new Response($this->serializer->serialize($audioFile, 'json'));
+
                 $filename = date('YmdHis');
                 if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
                     $absolutePath = 'images/chat/';
