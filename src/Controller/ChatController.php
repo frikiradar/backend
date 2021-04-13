@@ -142,62 +142,45 @@ class ChatController extends AbstractController
 
                 $conversationId = $min . "_" . $max;
 
-                $text = "";
-                if ($request->files->get('image')) {
-                    $imageFile = $request->files->get('image');
-                    $text = $request->request->get("text");
-                } elseif ($request->files->get('audio')) {
-                    $audioFile = $request->files->get('audio');
-                }
+                $imageFile = $request->files->get('image');
+                $text = $request->request->get("text");
+                $audioFile = $request->files->get('audio');
 
                 $filename = date('YmdHis');
-                if (isset($imageFile)) {
-                    if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
-                        $absolutePath = 'images/chat/';
-                        $server = "https://$_SERVER[HTTP_HOST]";
-                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                    $absolutePath = 'images/chat/';
+                    $server = "https://$_SERVER[HTTP_HOST]";
+                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                    if ($imageFile) {
                         $image = $uploader->uploadImage($imageFile, false, 70);
                         $chat->setImage($image);
-                        $chat->setTimeCreation();
-                        $chat->setConversationId($conversationId);
                     } else {
-                        $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
-                        $server = "https://app.frikiradar.com";
-                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                        $audio = $uploader->uploadAudio($audioFile);
+                        $chat->setAudio($audio);
+                    }
+                    $chat->setTimeCreation();
+                    $chat->setConversationId($conversationId);
+                } else {
+                    $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                    $server = "https://app.frikiradar.com";
+                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                    if ($imageFile) {
                         $image = $uploader->uploadImage($imageFile, false, 50);
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                         $chat->setImage($src);
                         $chat->setText($text);
-                        $chat->setTimeCreation();
-                        $chat->setConversationId($conversationId);
-                        $this->em->persist($chat);
-                        $fromUser->setLastLogin();
-                        $this->em->persist($fromUser);
-                        $this->em->flush();
-                    }
-                } elseif (isset($audioFile)) {
-                    if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
-                        $absolutePath = 'images/chat/';
-                        $server = "https://$_SERVER[HTTP_HOST]";
-                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
-                        $audio = $uploader->uploadAudio($audioFile);
-                        $chat->setAudio($audio);
-                        $chat->setTimeCreation();
-                        $chat->setConversationId($conversationId);
                     } else {
-                        $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
-                        $server = "https://app.frikiradar.com";
-                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
                         $audio = $uploader->uploadAudio($audioFile);
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $audio);
                         $chat->setAudio($src);
-                        $chat->setTimeCreation();
-                        $chat->setConversationId($conversationId);
-                        $this->em->persist($chat);
-                        $fromUser->setLastLogin();
-                        $this->em->persist($fromUser);
-                        $this->em->flush();
                     }
+
+                    $chat->setTimeCreation();
+                    $chat->setConversationId($conversationId);
+                    $this->em->persist($chat);
+                    $fromUser->setLastLogin();
+                    $this->em->persist($fromUser);
+                    $this->em->flush();
                 }
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
