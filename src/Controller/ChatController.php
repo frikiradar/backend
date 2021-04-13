@@ -142,12 +142,12 @@ class ChatController extends AbstractController
 
                 $conversationId = $min . "_" . $max;
 
+                $text = "";
                 if ($request->files->get('image')) {
                     $imageFile = $request->files->get('image');
                     $text = $request->request->get("text");
                 } elseif ($request->files->get('audio')) {
                     $audioFile = $request->files->get('audio');
-                    $text = "";
                 }
 
                 $filename = date('YmdHis');
