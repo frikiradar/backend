@@ -156,7 +156,8 @@ class ChatController extends AbstractController
                     if ($imageFile) {
                         $image = $uploader->uploadImage($imageFile, false, 70);
                         $chat->setImage($image);
-                    } else {
+                    }
+                    if ($audioFile) {
                         $audio = $uploader->uploadAudio($audioFile);
                         $chat->setAudio($audio);
                     }
@@ -171,7 +172,8 @@ class ChatController extends AbstractController
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                         $chat->setImage($src);
                         $chat->setText($text);
-                    } else {
+                    }
+                    if ($audioFile) {
                         $audio = $uploader->uploadAudio($audioFile);
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $audio);
                         $chat->setAudio($src);
