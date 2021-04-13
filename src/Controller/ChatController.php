@@ -430,7 +430,11 @@ class ChatController extends AbstractController
                     $f = explode("/", $image);
                     $filename = $f[count($f) - 1];
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
-                    unlink($file);
+                    try {
+                        unlink($file);
+                    } catch (Exception $ex) {
+                        // "No se ha podido borrar el archivo"
+                    }
                 }
 
                 $audio = $message->getImage();
@@ -438,7 +442,11 @@ class ChatController extends AbstractController
                     $f = explode("/", $audio);
                     $filename = $f[count($f) - 1];
                     $file = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/" . $filename;
-                    unlink($file);
+                    try {
+                        unlink($file);
+                    } catch (Exception $ex) {
+                        // "No se ha podido borrar el archivo"
+                    }
                 }
 
                 if ($message->getFromuser()->getId() != $user->getId() && $this->security->isGranted('ROLE_MASTER')) {
