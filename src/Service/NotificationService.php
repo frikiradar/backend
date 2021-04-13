@@ -90,7 +90,7 @@ class NotificationService
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
                 // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
                 $today = new \DateTime;
-                if ($report->hasFailures()) {
+                /*if ($report->hasFailures()) {
                     foreach ($report->failures()->getItems() as $failure) {
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
@@ -104,7 +104,7 @@ class NotificationService
                     $toUser->setActive(0);
                     $this->em->persist($toUser);
                     $this->em->flush();
-                }
+                }*/
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
             }
