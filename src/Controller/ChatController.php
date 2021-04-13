@@ -176,18 +176,28 @@ class ChatController extends AbstractController
                         $this->em->flush();
                     }
                 } elseif (isset($audioFile)) {
-                    $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
-                    $server = "https://app.frikiradar.com";
-                    $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
-                    $audio = $uploader->uploadAudio($audioFile);
-                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $audio);
-                    $chat->setAudio($src);
-                    $chat->setTimeCreation();
-                    $chat->setConversationId($conversationId);
-                    $this->em->persist($chat);
-                    $fromUser->setLastLogin();
-                    $this->em->persist($fromUser);
-                    $this->em->flush();
+                    if ($_SERVER['HTTP_HOST'] == 'localhost:8000') {
+                        $absolutePath = 'images/chat/';
+                        $server = "https://$_SERVER[HTTP_HOST]";
+                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                        $audio = $uploader->uploadAudio($audioFile);
+                        $chat->setAudio($audio);
+                        $chat->setTimeCreation();
+                        $chat->setConversationId($conversationId);
+                    } else {
+                        $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
+                        $server = "https://app.frikiradar.com";
+                        $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
+                        $audio = $uploader->uploadAudio($audioFile);
+                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $audio);
+                        $chat->setAudio($src);
+                        $chat->setTimeCreation();
+                        $chat->setConversationId($conversationId);
+                        $this->em->persist($chat);
+                        $fromUser->setLastLogin();
+                        $this->em->persist($fromUser);
+                        $this->em->flush();
+                    }
                 }
 
                 $update = new Update($conversationId, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));

@@ -68,8 +68,8 @@ class FileUploaderService
                 mkdir($this->getTargetDirectory(), 0777, true);
             }
             $ffmpeg = \FFMpeg\FFMpeg::create([
-                'ffmpeg.binaries'  => '/var/www/vhosts/frikiradar.com/api.frikiradar.com/lib/ffmpeg-4.4-amd64-static/ffmpeg',
-                'ffprobe.binaries' => '/var/www/vhosts/frikiradar.com/api.frikiradar.com/lib/ffmpeg-4.4-amd64-static/ffprobe',
+                'ffmpeg.binaries'  => '../lib/ffmpeg-4.4-amd64-static/ffmpeg',
+                'ffprobe.binaries' => '../lib/ffmpeg-4.4-amd64-static/ffprobe',
                 'timeout'          => 3600,
                 'ffmpeg.threads'   => 12,
             ]);
