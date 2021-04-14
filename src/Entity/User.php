@@ -636,7 +636,12 @@ class User implements UserInterface, EquatableInterface
 
     public function getConnection()
     {
-        return $this->connection;
+        $connection = $this->connection;
+
+        // guarantee every user at least has Amistad
+        $connection[] = 'Amistad';
+
+        return array_unique($connection);
     }
 
     public function setConnection($connection): self
