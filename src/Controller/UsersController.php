@@ -1001,4 +1001,59 @@ class UsersController extends AbstractController
             throw new HttpException(400, "La contraseña no es correcta");
         }
     }
+
+    /**
+     * @Route("/v1/remove-account", name="remove_account", methods={"PUT"})
+     */
+    public function removeAccountAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
+    {
+        $user = $this->getUser();
+
+        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "password"))) {
+            try {
+                // borramos chats y sus archivos
+                $this->em->getRepository('App:Chat')->deleteChatsUser($user);
+
+                // borramos archivos de historias
+                $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";
+                foreach (glob($folder . "*.*") as $file) {
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                }
+                rmdir($folder);
+
+                // borramos carpeta del usuario imagenes y thumbnails
+                $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
+                foreach (glob($folder . "*.*") as $file) {
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                }
+                rmdir($folder);
+
+                // Eliminamos usuario
+                $this->em->remove($user);
+                $this->em->flush();
+
+                if (!empty($this->request->get($request, 'note'))) {
+                    // Enviar email al administrador informando del motivo
+                    $message = (new \Swift_Message($user->getUsername() . ' ha eliminado su cuenta.'))
+                        ->setFrom([$user->getEmail() => $user->getUsername()])
+                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                        ->setBody("El usuario " . $user->getUsername() . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
+
+                    if (0 === $mailer->send($message)) {
+                        // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
+                    }
+                }
+
+                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            } catch (Exception $ex) {
+                throw new HttpException(400, "Error al eliminar la cuenta - Error: {$ex->getMessage()}");
+            }
+        } else {
+            throw new HttpException(400, "La contraseña no es correcta");
+        }
+    }
 }

@@ -181,12 +181,63 @@ class ChatRepository extends ServiceEntityRepository
 
     public function deleteChatUser(User $toUser, User $fromUser)
     {
+        $chat = $this->createQueryBuilder('c')
+            ->where('c.touser = :toUser AND c.fromuser = :fromUser')
+            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
+            ->setParameter('toUser', $toUser->getId())
+            ->setParameter('fromUser', $fromUser->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $conversationId = $chat->getConversationId();
+        $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $conversationId . "/";
+        foreach (glob($folder . "*.*") as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
+        rmdir($folder);
+
         return $this->createQueryBuilder('c')
             ->delete()
             ->where('c.touser = :toUser AND c.fromuser = :fromUser')
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
             ->setParameter('toUser', $toUser->getId())
             ->setParameter('fromUser', $fromUser->getId())
+            ->getQuery()
+            ->execute();
+    }
+
+    public function deleteChatsUser(User $user)
+    {
+        $chats = $this->createQueryBuilder('c')
+            ->where('c.touser = :user OR c.fromuser = :user')
+            ->andWhere('c.image IS NOT NULL OR c.audio IS NOT NULL')
+            ->setParameter('user', $user->getId())
+            ->getQuery()
+            ->getResult();
+
+        $ids = [];
+        foreach ($chats as $chat) {
+            if (!in_array($chat->getConversationId(), $ids)) {
+                $ids[] = $chat->getConversationId();
+            }
+        }
+
+        foreach ($ids as $id) {
+            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $id . "/";
+            foreach (glob($folder . "*.*") as $file) {
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+            rmdir($folder);
+        }
+
+        return $this->createQueryBuilder('c')
+            ->delete()
+            ->where('c.touser = :user OR c.fromuser = :user')
+            ->setParameter('user', $user->getId())
             ->getQuery()
             ->execute();
     }
