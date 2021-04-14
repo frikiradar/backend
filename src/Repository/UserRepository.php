@@ -255,16 +255,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $lastLogin = 14;
-
+            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
                 ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND u.lovegender LIKE '%" . $user->getGender() . "%'" : 'u.gender <> :lovegender OR u.gender IS NULL')
                 ->andWhere(
-                    in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                    in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
                         "u.connection NOT LIKE '%Amistad%'"
                 )
                 ->andWhere(
-                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
+                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
                         'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                             'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                 )
@@ -352,15 +352,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ));
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
+            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
+
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
                 ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
                 ->andWhere(
-                    in_array('Amistad', $user->getConnection()) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                    in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
                         "u.connection NOT LIKE '%Amistad%'"
                 )
                 ->andWhere(
-                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $user->getConnection()) ?
+                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
                         'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                             'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
                 )
