@@ -2,6 +2,8 @@
 // src/Service/FileUploaderService.php
 namespace App\Service;
 
+use FFMpeg\Filters\Audio\CustomFilter;
+use FFMpeg\Filters\Video\ExtractMultipleFramesFilter;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Imagine\Imagick\Imagine;
@@ -74,6 +76,10 @@ class FileUploaderService
                 'ffmpeg.threads'   => 12,
             ]);
             $audio = $ffmpeg->open($file->getRealPath());
+            // $audio->filters()->custom('arnndn=m=' . '/home/albertoi/FrikiRadar/backend/lib/ffmpeg-4.4-amd64-static/model/rnnoise-models-master/beguiling-drafter-2018-08-30/bd.rnnn');
+            $audio->filters()->custom('arnndn=m=' . '/var/www/vhosts/frikiradar.com/api.frikiradar.com/lib/ffmpeg-4.4-amd64-static/model/rnnoise-models-master/beguiling-drafter-2018-08-30/bd.rnnn');
+            // $audio->filters()->custom('afftdn=nf=-25');
+            // $audio->filters()->custom('highpass=f=200, lowpass=f=3000');
             $audio = $audio->save(new \FFMpeg\Format\Audio\Mp3(), $targetSrc);
             if ($audio) {
                 return $targetSrc;
