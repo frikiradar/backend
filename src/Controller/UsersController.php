@@ -26,7 +26,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class UsersController
@@ -1032,23 +1032,28 @@ class UsersController extends AbstractController
                 }
                 rmdir($folder);
 
+                $username = $user->getUsername();
                 // Eliminamos usuario
                 $this->em->remove($user);
                 $this->em->flush();
 
                 if (!empty($this->request->get($request, 'note'))) {
                     // Enviar email al administrador informando del motivo
-                    $message = (new \Swift_Message($user->getUsername() . ' ha eliminado su cuenta.'))
-                        ->setFrom([$user->getEmail() => $user->getUsername()])
+                    $message = (new \Swift_Message($username . ' ha eliminado su cuenta.'))
+                        ->setFrom([$user->getEmail() => $username])
                         ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                        ->setBody("El usuario " . $user->getUsername() . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
+                        ->setBody("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
 
                     if (0 === $mailer->send($message)) {
                         // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
                     }
                 }
 
-                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+                $data = [
+                    'code' => 200,
+                    'message' => "Usuario eliminado correctamente",
+                ];
+                return new JsonResponse($data, 200);
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al eliminar la cuenta - Error: {$ex->getMessage()}");
             }
