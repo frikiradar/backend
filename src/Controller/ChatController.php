@@ -392,7 +392,7 @@ class ChatController extends AbstractController
                 $publisher($update);
                 $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
-                if ($chat->getToUser()->getId() !== $chat->getFromUser()->getId()) {
+                if (null !== ($chat->getToUser()) && $chat->getToUser()->getId() !== $chat->getFromUser()->getId()) {
                     $update = new Update('chats-' . $chat->getToUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
                 }
