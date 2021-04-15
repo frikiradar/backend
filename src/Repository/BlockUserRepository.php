@@ -68,6 +68,7 @@ class BlockUserRepository extends ServiceEntityRepository
                 'fromUser' => $fromUser,
                 'blockUser' => $blockUser
             ])
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
