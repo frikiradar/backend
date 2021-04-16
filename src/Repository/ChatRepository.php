@@ -196,7 +196,9 @@ class ChatRepository extends ServiceEntityRepository
                 unlink($file);
             }
         }
-        rmdir($folder);
+        if (file_exists($folder)) {
+            rmdir($folder);
+        }
 
         return $this->createQueryBuilder('c')
             ->delete()
@@ -231,7 +233,9 @@ class ChatRepository extends ServiceEntityRepository
                     unlink($file);
                 }
             }
-            rmdir($folder);
+            if (file_exists($folder)) {
+                rmdir($folder);
+            }
         }
 
         return $this->createQueryBuilder('c')

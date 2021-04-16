@@ -1021,7 +1021,9 @@ class UsersController extends AbstractController
                         unlink($file);
                     }
                 }
-                rmdir($folder);
+                if (file_exists($folder)) {
+                    rmdir($folder);
+                }
 
                 // borramos carpeta del usuario imagenes y thumbnails
                 $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
@@ -1030,7 +1032,9 @@ class UsersController extends AbstractController
                         unlink($file);
                     }
                 }
-                rmdir($folder);
+                if (file_exists($folder)) {
+                    rmdir($folder);
+                }
 
                 $username = $user->getUsername();
                 // Eliminamos usuario
