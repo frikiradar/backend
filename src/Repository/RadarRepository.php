@@ -57,6 +57,7 @@ class RadarRepository extends ServiceEntityRepository
             ->andWhere('r.time_read IS NULL')
             ->setParameter('fromUser', $fromUser)
             ->setParameter('toUser', $toUser)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

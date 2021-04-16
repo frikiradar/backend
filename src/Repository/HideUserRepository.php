@@ -67,6 +67,7 @@ class HideUserRepository extends ServiceEntityRepository
                 'fromUser' => $fromUser,
                 'hideUser' => $hideUser
             ])
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

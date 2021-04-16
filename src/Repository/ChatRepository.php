@@ -186,6 +186,7 @@ class ChatRepository extends ServiceEntityRepository
             ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
             ->setParameter('toUser', $toUser->getId())
             ->setParameter('fromUser', $fromUser->getId())
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 
