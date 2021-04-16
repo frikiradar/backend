@@ -238,11 +238,8 @@ class ChatRepository extends ServiceEntityRepository
             }
         }
 
-        return $this->createQueryBuilder('c')
-            ->delete()
-            ->where('c.touser = :user OR c.fromuser = :user')
+        return $this->em->createQuery('DELETE from App:Chat c WHERE c.touser = :user OR c.fromuser = :user')
             ->setParameter('user', $user->getId())
-            ->getQuery()
             ->execute();
     }
 }
