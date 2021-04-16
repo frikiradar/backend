@@ -226,20 +226,27 @@ class ChatRepository extends ServiceEntityRepository
             }
         }
 
-        foreach ($ids as $id) {
-            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $id . "/";
-            foreach (glob($folder . "*.*") as $file) {
-                if (file_exists($file)) {
-                    unlink($file);
+        if (!empty($ids)) {
+            foreach ($ids as $id) {
+                $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $id . "/";
+                foreach (glob($folder . "*.*") as $file) {
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                }
+                if (file_exists($folder)) {
+                    rmdir($folder);
                 }
             }
-            if (file_exists($folder)) {
-                rmdir($folder);
-            }
-        }
 
-        return $this->em->createQuery('DELETE from App:Chat c WHERE c.touser = :user OR c.fromuser = :user')
-            ->setParameter('user', $user->getId())
-            ->execute();
+            return $this->createQueryBuilder('c')
+                ->delete()
+                ->where('c.touser = :user OR c.fromuser = :user')
+                ->setParameter('user', $user->getId())
+                ->getQuery()
+                ->execute();
+        } else {
+            return false;
+        }
     }
 }
