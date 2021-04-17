@@ -214,7 +214,7 @@ class ChatRepository extends ServiceEntityRepository
     public function deleteChatsUser(User $user)
     {
         $chats = $this->createQueryBuilder('c')
-            ->where('c.touser = :user OR c.fromuser = :user')
+            ->where('c.touser = :user OR (c.fromuser = :user AND c.touser IS NOT NULL)')
             ->andWhere('c.image IS NOT NULL OR c.audio IS NOT NULL')
             ->setParameter('user', $user->getId())
             ->getQuery()
