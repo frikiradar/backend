@@ -51,7 +51,7 @@ class LabCommand extends Command
                 $this->labService->thumbnails();
                 break;
             case 'remove-account':
-                $this->labService->removeAccount($i->getOption('username'));
+                $this->labService->removeAccount($i->getOption('fromuser'));
                 break;
             case 'test':
                 $this->labService->testLab();
