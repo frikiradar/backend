@@ -175,6 +175,51 @@ class LabCommandService
         }
     }
 
+    public function removeAccount($username)
+    {
+        $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
+
+        try {
+            // borramos chats y sus archivos
+            $this->em->getRepository('App:Chat')->deleteChatsUser($user);
+
+            // borramos archivos de historias
+            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";
+            foreach (glob($folder . "*.*") as $file) {
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+            if (file_exists($folder)) {
+                rmdir($folder);
+            }
+
+            // borramos carpeta del usuario imagenes y thumbnails
+            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
+            foreach (glob($folder . "*.*") as $file) {
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+            if (file_exists($folder)) {
+                rmdir($folder);
+            }
+
+            $username = $user->getUsername();
+            // Eliminamos usuario
+            $this->em->remove($user);
+            $this->em->flush();
+
+            $data = [
+                'code' => 200,
+                'message' => "Usuario eliminado correctamente",
+            ];
+            $this->o->writeln("Eliminado correctamente");
+        } catch (Exception $ex) {
+            $this->o->writeln("Error al eliminar: ${$ex}");
+        }
+    }
+
     public function testLab()
     {
         $ffmpeg = \FFMpeg\FFMpeg::create([
