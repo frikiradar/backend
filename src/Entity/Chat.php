@@ -21,14 +21,16 @@ class Chat
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      * @MaxDepth(1)
      * @Groups({"message"})
      */
     private $fromuser;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      * @MaxDepth(1)
      * @Groups({"message"})
      */
