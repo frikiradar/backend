@@ -299,13 +299,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             // $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id)');
-
+            $dql->orderBy(RAND());
             $users = $dql->getQuery()
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
                 ->getResult();
 
             $users = $this->enhanceUsers($users, $user);
+            shuffle($users);
             return array_slice($users, 0);
         } else {
             $users = $dql->getQuery()
