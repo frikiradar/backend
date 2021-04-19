@@ -22,7 +22,7 @@ class Chat
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      * @MaxDepth(1)
      * @Groups({"message"})
      */
@@ -30,7 +30,7 @@ class Chat
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
-     * @ORM\JoinColumn(onDelete="CASCADE")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      * @MaxDepth(1)
      * @Groups({"message"})
      */
