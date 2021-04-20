@@ -223,15 +223,26 @@ class LabCommandService
 
     public function testLab()
     {
+        /**
+         * @var User[]
+         */
         $users = $this->em->getRepository('App:User')->findAll();
 
         foreach ($users as $user) {
-            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
-            $creation = filectime($folder);
-            $date = date('Y-m-d H:i:s', $creation);
-            $this->o->writeln($user->getUsername() . "-" . $date);
-            if ($user->getId() > 3) {
-                break;
+            if ($user->getNumLogins() == 1) {
+                $date = $user->getLastLogin();
+                $this->o->writeln($user->getUsername());
+                $user->setTimeRegister($date);
+                $this->em->persist($user);
+                $this->em->flush();
+            } else {
+                /*$folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
+                $creation = filectime($folder);
+                $date = date('Y-m-d H:i:s', $creation);
+                $this->o->writeln($user->getUsername() . "-" . $date);
+                if ($user->getId() > 3) {
+                    break;
+                }*/
             }
         }
     }
