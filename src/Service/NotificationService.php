@@ -36,7 +36,7 @@ class NotificationService
         $this->em->flush();
 
         $cache = new FilesystemAdapter();
-        $cache->getItem('users.notifications.' . $toUser->getId());
+        $cache->deleteItem('users.notifications.' . $toUser->getId());
 
         $this->push($fromUser, $toUser, $title, $text, $url, $type);
     }
