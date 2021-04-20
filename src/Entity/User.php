@@ -10,12 +10,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 
 
 /**
- * @ApiResource()
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface, EquatableInterface
