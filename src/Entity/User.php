@@ -118,6 +118,12 @@ class User implements UserInterface, EquatableInterface
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"default"})
+     */
+    private $time_register;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default", "message"})
      */
     private $last_login;
@@ -502,6 +508,18 @@ class User implements UserInterface, EquatableInterface
     public function setLastIp(): self
     {
         $this->last_ip = $this->getIP();
+
+        return $this;
+    }
+
+    public function getTimeRegister(): ?\DateTimeInterface
+    {
+        return $this->time_register;
+    }
+
+    public function setTimeRegister(): self
+    {
+        $this->time_register = new \DateTime;
 
         return $this;
     }

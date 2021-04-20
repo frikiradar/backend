@@ -92,6 +92,7 @@ class UsersController extends AbstractController
             $user->setMailing($this->request->get($request, 'mailing', false) ?: true);
             $user->setVerificationCode();
             $user->setRoles(['ROLE_USER']);
+            $user->setTimeRegister();
             try {
 
                 $this->em->persist($user);
