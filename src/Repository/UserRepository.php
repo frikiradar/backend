@@ -308,7 +308,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->getResult();
 
             $users = $this->enhanceUsers($users, $user);
-            // shuffle($users);
+            shuffle($users);
             return array_slice($users, 0);
         } else {
             $users = $dql->getQuery()
