@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Service\GeolocationService;
 use App\Service\NotificationService;
 use App\Entity\User;
+use DateTime;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
@@ -227,7 +228,8 @@ class LabCommandService
         foreach ($users as $user) {
             $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
             $creation = filectime($folder);
-            $this->o->writeln($creation);
+            $date = new DateTime($creation);
+            print_r($date);
             break;
         }
     }
