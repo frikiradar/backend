@@ -62,17 +62,6 @@ class RadarRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function countUnread(User $toUser)
-    {
-        return $this->createQueryBuilder('r')
-            ->select('count(r.id)')
-            ->where('r.toUser = :toUser')
-            ->andWhere('r.time_read IS NULL')
-            ->setParameter('toUser', $toUser->getId())
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
     public function findById($fromId, $toId)
     {
         $dql = "SELECT r FROM App:Radar r WHERE r.fromUser = :from_id AND r.toUser = :to_id";

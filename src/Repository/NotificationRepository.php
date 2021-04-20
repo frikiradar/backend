@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Notification;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,4 +48,15 @@ class NotificationRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function countUnread(User $toUser)
+    {
+        return $this->createQueryBuilder('n')
+            ->select('count(n.id)')
+            ->where('r.user = :toUser')
+            ->andWhere('r.time_read IS NULL')
+            ->setParameter('toUser', $toUser->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
