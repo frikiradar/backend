@@ -70,9 +70,9 @@ class Notification
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(): self
     {
-        $this->date = $date;
+        $this->date = new \DateTime;
 
         return $this;
     }
@@ -106,9 +106,9 @@ class Notification
         return $this->time_read;
     }
 
-    public function setTimeRead(?\DateTimeInterface $time_read): self
+    public function setTimeRead(): self
     {
-        $this->time_read = $time_read;
+        $this->time_read = new \DateTime;
 
         return $this;
     }

@@ -2,6 +2,7 @@
 // src/Service/NotificationService.php
 namespace App\Service;
 
+use App\Entity\Notification as EntityNotification;
 use App\Entity\User;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -15,6 +16,22 @@ class NotificationService
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
+    }
+
+    public function set(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
+    {
+        /**
+         * @var EntityNotification
+         */
+        $notification = new EntityNotification();
+        $notification->setUser($toUser);
+        $notification->setTitle($title);
+        $notification->setBody($text);
+        $notification->setUrl($url);
+        $notification->setDate();
+        $this->em->persist($notification);
+        $this->em->flush();
+        $this->push($fromUser, $toUser, $title, $text, $url, $type);
     }
 
     public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)

@@ -78,7 +78,7 @@ class LabCommandService
         $title = "Notificación de prueba";
         $text = "test";
         $url = "/profile/" . $fromId;
-        $this->notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+        $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
     }
 
     public function email($toId)

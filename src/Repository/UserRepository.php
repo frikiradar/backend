@@ -441,7 +441,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
-                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 90) {
+                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75) {
                     if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);
@@ -453,7 +453,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         $title = $fromUser->getUsername();
                         $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
                         $url = "/profile/" . $fromUser->getId();
-                        $this->notification->push($fromUser, $toUser, $title, $text, $url, "radar");
+                        $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
                     }
                 }
             }
@@ -629,7 +629,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $this->em->persist($chat);
         $this->em->flush();
 
-        $this->notification->push($fromUser, $toUser, $title, $text, $url, "ban");
+        $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
 
         // Enviamos email avisando
         $message = (new \Swift_Message('Nuevo usuario baneado'))

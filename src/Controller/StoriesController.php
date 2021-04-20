@@ -162,7 +162,7 @@ class StoriesController extends AbstractController
                 foreach ($mentions as $mention) {
                     $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
-                    $this->notification->push($fromUser, $toUser, $title, $text, $url, 'story');
+                    $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
             }
 
@@ -273,7 +273,7 @@ class StoriesController extends AbstractController
                 $text = "A " . $user->getName() . " le ha gustado tu historia ❤️.";
                 $url = "/tabs/community/story/" . $story->getId();
 
-                $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
+                $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
             }
 
             $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
@@ -348,11 +348,11 @@ class StoriesController extends AbstractController
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                         $title = $user->getUsername() . ' te ha mencionado en una historia.';
-                        $this->notification->push($user, $toUser, $title, $text, $url, 'story');
+                        $this->notification->set($user, $toUser, $title, $text, $url, 'story');
                     }
                 } else {
                     $title = $user->getName() . ' ha comentado tu historia.';
-                    $this->notification->push($user, $story->getUser(), $title, $text, $url, "story");
+                    $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
                 }
 
                 $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
@@ -398,7 +398,7 @@ class StoriesController extends AbstractController
                     $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
                     $url = "/tabs/community/story/" . $comment->getStory()->getId();
 
-                    $this->notification->push($user, $comment->getUser(), $title, $text, $url, "story");
+                    $this->notification->set($user, $comment->getUser(), $title, $text, $url, "story");
                 }
             }
 

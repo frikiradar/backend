@@ -62,7 +62,7 @@ class UserLikesController extends AbstractController
                 $text = "Te ha entregado su kokoro ❤️, ya puedes comenzar a chatear.";
                 $url = "/profile/" . $newLike->getFromUser()->getId();
 
-                $this->notification->push($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+                $this->notification->set($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             }
 
             $user = $this->em->getRepository('App:User')->findOneUser($this->getUser(), $toUser);
