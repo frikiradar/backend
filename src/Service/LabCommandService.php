@@ -222,13 +222,13 @@ class LabCommandService
 
     public function testLab()
     {
-        $ffmpeg = \FFMpeg\FFMpeg::create([
-            'ffmpeg.binaries'  => './lib/ffmpeg-4.4-amd64-static/ffmpeg',
-            'ffprobe.binaries' => './lib/ffmpeg-4.4-amd64-static/ffprobe',
-            'timeout'          => 3600,
-            'ffmpeg.threads'   => 12,
-        ]);
-        $audio = $ffmpeg->open('https://app.frikiradar.com/images/chat/2_3/20210414000152.mp3');
-        print_r($audio->filters());
+        $users = $this->em->getRepository('App:User')->findAll();
+
+        foreach ($users as $user) {
+            $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
+            $creation = filectime($folder);
+            $this->o->writeln($creation);
+            break;
+        }
     }
 }
