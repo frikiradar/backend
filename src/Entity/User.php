@@ -346,6 +346,16 @@ class User implements UserInterface, EquatableInterface
      */
     private $config = [];
 
+    /**
+     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $notifications;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Event::class, mappedBy="creator", orphanRemoval=true)
+     */
+    private $created_events;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -360,6 +370,8 @@ class User implements UserInterface, EquatableInterface
         $this->stories = new ArrayCollection();
         $this->likeStories = new ArrayCollection();
         $this->viewStories = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function setId(int $id): self
@@ -1341,6 +1353,66 @@ class User implements UserInterface, EquatableInterface
     public function setConfig(?array $config): self
     {
         $this->config = $config;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Notification[]
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): self
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getUser() === $this) {
+                $notification->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Event[]
+     */
+    public function getCreatedEvents(): Collection
+    {
+        return $this->created_events;
+    }
+
+    public function createEvent(Event $event): self
+    {
+        if (!$this->created_events->contains($event)) {
+            $this->created_events[] = $event;
+            $event->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getCreator() === $this) {
+                $event->setCreator(null);
+            }
+        }
 
         return $this;
     }
