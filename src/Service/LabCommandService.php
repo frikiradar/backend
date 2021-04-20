@@ -229,8 +229,10 @@ class LabCommandService
             $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
             $creation = filectime($folder);
             $date = date('Y-m-d H:i:s', $creation);
-            print_r($date);
-            break;
+            $this->o->writeln($user->getUsername() . "-" . $date);
+            if ($user->getId() > 3) {
+                break;
+            }
         }
     }
 }
