@@ -426,7 +426,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             } else {
                 unset($users[$key]['distance']);
             }
-            $users[$key]['last_login'] = (!$u['hide_connection'] && $today->diff($u['last_login'])->format('%a') <= 7) ? $u['last_login'] : null;
+
+            if (!$this->security->isGranted('ROLE_MASTER') && $u['id'] != $fromUser->getId()) {
+                $users[$key]['last_login'] = (!$u['hide_connection'] && $today->diff($u['last_login'])->format('%a') <= 7) ? $u['last_login'] : null;
+            }
             // echo $toTags[$u['id']];
             if (isset($toTags[$u['id']])) {
                 $users[$key]['match'] = $this->getMatchIndex($fromTags, $toTags[$u['id']]);
