@@ -517,9 +517,13 @@ class User implements UserInterface, EquatableInterface
         return $this->time_register;
     }
 
-    public function setTimeRegister(): self
+    public function setTimeRegister($time_register = false): self
     {
-        $this->time_register = new \DateTime;
+        if ($time_register === false) {
+            $this->time_register = new \DateTime;
+        } else {
+            $this->time_register = $time_register;
+        }
 
         return $this;
     }
