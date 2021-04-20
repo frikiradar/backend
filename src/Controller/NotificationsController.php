@@ -42,11 +42,11 @@ class NotificationsController extends AbstractController
             $notificationsCache = $cache->getItem('users.notifications.' . $user->getId());
             if (!$notificationsCache->isHit()) {
                 $notificationsCache->expiresAfter(60);
-                $countRadar = $this->em->getRepository('App:Radar')->countUnread($user);
-                $countChats = $this->em->getRepository('App:Chat')->countUnread($user);
-                $countLikes = $this->em->getRepository('App:LikeUser')->countUnread($user);
 
-                $notifications = ["radar" => (int) $countRadar, "chats" => (int) $countChats, "likes" => (int) $countLikes];
+                $countGeneral = $this->em->getRepository('App:Notification')->countUnread($user);
+                $countChats = $this->em->getRepository('App:Chat')->countUnread($user);
+                $notifications = ["notifications" => (int) $countGeneral, "chats" => (int) $countChats];
+
                 $notificationsCache->set($notifications);
                 $cache->save($notificationsCache);
 

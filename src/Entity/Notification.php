@@ -48,6 +48,17 @@ class Notification
      */
     private $url;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     */
+    private $fromuser;
+
+    /**
+     * @ORM\Column(type="string", length=70)
+     */
+    private $type;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -121,6 +132,30 @@ class Notification
     public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getFromuser(): ?User
+    {
+        return $this->fromuser;
+    }
+
+    public function setFromuser(?User $fromuser): self
+    {
+        $this->fromuser = $fromuser;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }

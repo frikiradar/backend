@@ -10,6 +10,7 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class NotificationService
 {
@@ -29,8 +30,14 @@ class NotificationService
         $notification->setBody($text);
         $notification->setUrl($url);
         $notification->setDate();
+        $notification->setFromuser($fromUser);
+        $notification->setType($type);
         $this->em->persist($notification);
         $this->em->flush();
+
+        $cache = new FilesystemAdapter();
+        $cache->getItem('users.notifications.' . $toUser->getId());
+
         $this->push($fromUser, $toUser, $title, $text, $url, $type);
     }
 
