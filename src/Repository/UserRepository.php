@@ -153,7 +153,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             } else {
                 unset($user['distance']);
             }
-            if (!$this->security->isGranted('ROLE_MASTER') || $toUser->getId() != $fromUser->getId()) {
+            if (!$this->security->isGranted('ROLE_MASTER') && $toUser->getId() != $fromUser->getId()) {
                 $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             }
             $user['tags'] = $toUser->getTags();
