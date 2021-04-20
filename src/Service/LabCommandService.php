@@ -228,7 +228,7 @@ class LabCommandService
         foreach ($users as $user) {
             $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
             $creation = filectime($folder);
-            $date = new DateTime($creation);
+            $date = date('Y-m-d H:i:s', $creation);
             print_r($date);
             break;
         }
