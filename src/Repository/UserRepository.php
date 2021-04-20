@@ -282,7 +282,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->addOrderBy('u.last_login', 'DESC')
-                // ->orderBy('distance', 'ASC')
+                ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'minage' => $user->getMinage() ?: 18,
                     'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
