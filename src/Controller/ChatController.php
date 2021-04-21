@@ -102,7 +102,7 @@ class ChatController extends AbstractController
             $title = $fromUser->getName();
             $url = "/chat/" . $chat->getFromuser()->getId();
 
-            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+            $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
             if ($fromUser->getBanned() && $id == 1) {
                 // Enviamos email avisando
@@ -209,7 +209,7 @@ class ChatController extends AbstractController
                     $text = '🎤 ' . $fromUser->getName() . ' te ha enviado un audio.';
                 }
 
-                $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+                $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {

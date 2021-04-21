@@ -121,7 +121,7 @@ class AdminController extends AbstractController
         $title = $fromUser->getUsername();
         $url = "/login/banned-account";
 
-        $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+        $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
         return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
     }
@@ -202,7 +202,7 @@ class AdminController extends AbstractController
             $this->em->persist($chat);
             $this->em->flush();
 
-            $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+            $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
             return new Response($this->serializer->serialize("Aviso enviado correctamente", "json"));
         } catch (Exception $ex) {

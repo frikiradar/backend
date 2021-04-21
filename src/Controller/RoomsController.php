@@ -214,14 +214,14 @@ class RoomsController extends AbstractController
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                         $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
-                        $this->notification->set($fromUser, $toUser, $title, $text, $url, 'chat');
+                        $this->notification->set($fromUser, $toUser, $title, $text, $url, 'room');
                     }
 
                     if ($replyToChat) {
                         $toUser = $replyToChat->getFromuser();
                         if ($toUser->getId() !== $fromUser->getId()) {
                             $title = $fromUser->getUsername() . ' ha respondido a tu mensaje en ' . $name;
-                            $this->notification->set($fromUser, $toUser, $title, $text, $url, 'chat');
+                            $this->notification->set($fromUser, $toUser, $title, $text, $url, 'room');
                         }
                     }
                 } else {
@@ -311,7 +311,7 @@ class RoomsController extends AbstractController
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                         $title = $fromUser->getUsername() . ' te ha mencionado en ' . $name;
-                        $this->notification->set($fromUser, $toUser, $title, $text, $url, 'chat');
+                        $this->notification->set($fromUser, $toUser, $title, $text, $url, 'room');
                     }
                 } else {
                     $title = $fromUser->getUsername() . ' en ' . $name;

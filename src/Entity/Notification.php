@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=NotificationRepository::class)
@@ -14,48 +15,57 @@ class Notification
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"notification"})
      */
     private $id;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="notifications", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @Groups({"notification"})
      */
     private $user;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"notification"})
      */
     private $date;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"notification"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"notification"})
      */
     private $body;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"notification"})
      */
     private $time_read;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"notification"})
      */
     private $url;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
      * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     * @Groups({"notification"})
      */
     private $fromuser;
 
     /**
      * @ORM\Column(type="string", length=70)
+     * @Groups({"notification"})
      */
     private $type;
 
@@ -117,9 +127,9 @@ class Notification
         return $this->time_read;
     }
 
-    public function setTimeRead(): self
+    public function setTimeRead(?\DateTimeInterface $time_read): self
     {
-        $this->time_read = new \DateTime;
+        $this->time_read = $time_read;
 
         return $this;
     }

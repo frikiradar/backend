@@ -629,7 +629,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $this->em->persist($chat);
         $this->em->flush();
 
-        $this->notification->push($fromUser, $toUser, $title, $text, $url, "chat");
+        $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
         // Enviamos email avisando
         $message = (new \Swift_Message('Nuevo usuario baneado'))

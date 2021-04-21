@@ -21,22 +21,25 @@ class NotificationService
 
     public function set(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
     {
-        /**
-         * @var EntityNotification
-         */
-        $notification = new EntityNotification();
-        $notification->setUser($toUser);
-        $notification->setTitle($title);
-        $notification->setBody($text);
-        $notification->setUrl($url);
-        $notification->setDate();
-        $notification->setFromuser($fromUser);
-        $notification->setType($type);
-        $this->em->persist($notification);
-        $this->em->flush();
+        if ($type !== 'chat') {
+            /**
+             * @var EntityNotification
+             */
+            $notification = new EntityNotification();
+            $notification->setUser($toUser);
+            $notification->setTitle($title);
+            $notification->setBody($text);
+            $notification->setUrl($url);
+            $notification->setDate();
+            $notification->setFromuser($fromUser);
+            $notification->setType($type);
+            $this->em->persist($notification);
+            $this->em->flush();
+        }
 
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.notifications.' . $toUser->getId());
+        $cache->deleteItem('users.notifications-list.' . $toUser->getId());
 
         $this->push($fromUser, $toUser, $title, $text, $url, $type);
     }
