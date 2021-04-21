@@ -285,6 +285,9 @@ class ChatController extends AbstractController
             }
         }
 
+        // Borrar cachés de notificaciones de chat
+        $cache->deleteItem('users.notifications.' . $fromUser->getId());
+
         $fromUser->setLastLogin();
         $this->em->persist($fromUser);
         $this->em->flush();
@@ -321,8 +324,9 @@ class ChatController extends AbstractController
     public function markAsReadAction(int $id, PublisherInterface $publisher)
     {
         try {
+            $toUser = $this->getUser();
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($chat->getToUser()->getId() == $this->getUser()->getId()) {
+            if ($chat->getToUser()->getId() == $toUser->getId()) {
                 $conversationId = $chat->getConversationId();
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
@@ -336,6 +340,10 @@ class ChatController extends AbstractController
                     $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
                 }
+
+                // Borrar cachés de notificaciones de chat
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem('users.notifications.' . $toUser->getId());
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
