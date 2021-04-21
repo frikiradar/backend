@@ -211,7 +211,7 @@ class ChatRepository extends ServiceEntityRepository
             ->execute();
     }
 
-    public function deleteChatsUser(User $user)
+    public function deleteChatsFiles(User $user)
     {
         $chats = $this->createQueryBuilder('c')
             ->where('c.touser = :user OR (c.fromuser = :user AND c.touser IS NOT NULL)')
@@ -239,13 +239,6 @@ class ChatRepository extends ServiceEntityRepository
                     rmdir($folder);
                 }
             }
-
-            return $this->createQueryBuilder('c')
-                ->delete()
-                ->where('c.touser = :user OR c.fromuser = :user')
-                ->setParameter('user', $user->getId())
-                ->getQuery()
-                ->execute();
         } else {
             return false;
         }

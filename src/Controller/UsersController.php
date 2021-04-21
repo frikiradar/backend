@@ -1011,8 +1011,8 @@ class UsersController extends AbstractController
 
         if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "password"))) {
             try {
-                // borramos chats y sus archivos
-                $this->em->getRepository('App:Chat')->deleteChatsUser($user);
+                // borramos archivos de chat
+                $this->em->getRepository('App:Chat')->deleteChatsFiles($user);
 
                 // borramos archivos de historias
                 $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";

@@ -182,7 +182,7 @@ class LabCommandService
 
         try {
             // borramos chats y sus archivos
-            $this->em->getRepository('App:Chat')->deleteChatsUser($user);
+            $this->em->getRepository('App:Chat')->deleteChatsFiles($user);
 
             // borramos archivos de historias
             $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";
