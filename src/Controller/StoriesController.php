@@ -165,7 +165,11 @@ class StoriesController extends AbstractController
                 }
             }
 
-            return new Response($this->serializer->serialize($story, "json"));
+            $data = [
+                'code' => 200,
+                'message' => "Historia publicada correctamente",
+            ];
+            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
         }
