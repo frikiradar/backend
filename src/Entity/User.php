@@ -10,13 +10,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
-use Symfony\Component\Security\Core\User\EquatableInterface;
 
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User implements UserInterface, EquatableInterface
+class User implements UserInterface
 {
     /**
      * @ORM\Id()
@@ -1162,31 +1161,6 @@ class User implements UserInterface, EquatableInterface
         return $this;
     }
 
-    public function isEqualTo(UserInterface $user)
-    {
-        if (!$user instanceof User) {
-            return false;
-        }
-
-        if ($this->password !== $user->getPassword()) {
-            return false;
-        }
-
-        if ($this->username !== $user->getUsername()) {
-            return false;
-        }
-
-        if ($this->roles !== $user->getRoles()) {
-            return false;
-        }
-
-        if ($this->banned !== $user->getBanned()) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getThumbnail(): ?string
     {
         return $this->thumbnail ?: $this->getAvatar();
@@ -1358,7 +1332,7 @@ class User implements UserInterface, EquatableInterface
     /**
      * @return Collection|Notification[]
      */
-    public function getNotifications(): Collection
+    public function getNotifications(): ?Collection
     {
         return $this->notifications;
     }
@@ -1388,7 +1362,7 @@ class User implements UserInterface, EquatableInterface
     /**
      * @return Collection|Event[]
      */
-    public function getCreatedEvents(): Collection
+    public function getCreatedEvents(): ?Collection
     {
         return $this->created_events;
     }
