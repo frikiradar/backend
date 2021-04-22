@@ -354,7 +354,7 @@ class PageRepository extends ServiceEntityRepository
                     mkdir($path, 0777, true);
                 }
 
-                $fs->appendToFile($path . $file, file_get_contents('https://image.tmdb.org/t/p/w400/' . isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']));
+                $fs->appendToFile($path . $file, file_get_contents('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path'])));
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
