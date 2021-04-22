@@ -359,8 +359,7 @@ class PageRepository extends ServiceEntityRepository
             }
 
             if (isset($film['release_date'])) {
-                $date = new \DateTime();
-                $date->setTimestamp($film['release_date']);
+                $date = \DateTime::createFromFormat('Y-m-d', $film['release_date']);
                 $releaseDate = $date;
             }
 
