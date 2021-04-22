@@ -124,14 +124,14 @@ class PagesController extends AbstractController
             if ($result) {
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
 
-                if (empty($page)) {
+                if (empty($page) || $page->getCategory() !== $category) {
                     /**
                      * @var Page
                      */
                     $page = new Page();
                     $page->setName($result['name']);
                     $page->setDescription($result['description']);
-                    $page->setSlug($result['slug']);
+                    $page->setSlug($result['slug'] . ($page->getCategory() !== $category ? '-' . $category : ''));
                     $page->setRating($result['rating']);
                     $page->setCategory($category);
                     if (isset($result['developer'])) {
