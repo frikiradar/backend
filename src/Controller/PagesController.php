@@ -134,11 +134,15 @@ class PagesController extends AbstractController
                     $page->setSlug($result['slug']);
                     $page->setRating($result['rating']);
                     $page->setCategory($category);
-                    $page->setDeveloper($result['developer'] ?: null);
+                    if (isset($result['developer'])) {
+                        $page->setDeveloper($result['developer']);
+                    }
                     $page->setReleaseDate($result['release_date']);
                     $page->setTimeCreation();
                     $page->setLastUpdate();
-                    $page->setGameMode($result['game_mode'] ?: null);
+                    if (isset($result['game_mode'])) {
+                        $page->setGameMode($result['game_mode']);
+                    }
                     $page->setCover($result['cover']);
                     $page->setArtwork($result['artwork']);
 
