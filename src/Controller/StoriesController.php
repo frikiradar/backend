@@ -149,7 +149,7 @@ class StoriesController extends AbstractController
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
             $server = "https://app.frikiradar.com";
             $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
-            $image = $uploader->uploadImage($imageFile, true, 80);
+            $image = $uploader->uploadImage($imageFile, false, 80);
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             $story->setImage($src);
             $story->setTimeCreation();
