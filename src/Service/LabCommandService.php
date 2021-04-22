@@ -223,27 +223,84 @@ class LabCommandService
 
     public function testLab()
     {
-        /**
-         * @var User[]
-         */
-        $users = $this->em->getRepository('App:User')->findAll();
+        $name = "avatar El último maestro del aire";
+        $search = urlencode($name);
+        $token = '777a37ca29cf54c4e246266509b0901b';
+        $api = 'https://api.themoviedb.org/3';
+        $page = 0;
+        $films = [];
+        do {
+            $page++;
+            $endpoint = '/search/multi?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $api . $endpoint);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $output = curl_exec($ch);
+            curl_close($ch);
+            $info = json_decode($output, true);
+            $films = [...$films, ...$info['results']];
+        } while (count($info['results']) == 20);
 
-        foreach ($users as $user) {
-            if ($user->getNumLogins() == 1) {
-                $date = $user->getLastLogin();
-                $this->o->writeln($user->getUsername());
-                $user->setTimeRegister($date);
-                $this->em->persist($user);
-                $this->em->flush();
-            } else {
-                /*$folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/";
-                $creation = filectime($folder);
-                $date = date('Y-m-d H:i:s', $creation);
-                $this->o->writeln($user->getUsername() . "-" . $date);
-                if ($user->getId() > 3) {
-                    break;
-                }*/
+        usort($films, function ($a, $b) {
+            return ((isset($b['popularity']) ? $b['popularity'] : 0) <=> (isset($a['popularity']) ? $a['popularity'] : 0));
+        });
+
+        if (!empty($films)) {
+            $filmFound = [];
+
+            foreach ($films as $key => $film) {
+                if (isset($film['original_title']) || isset($film['original_name']) && isset($film['poster_path'])) {
+                    if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
+                        $films[$key]['name'] = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
+                    } else {
+                        $films[$key]['name'] = isset($film['title']) ? $film['title'] : $film['name'];
+                    }
+                    $title = isset($film['title']) ? $film['title'] : $film['name'];
+
+                    $percent = 0;
+                    if (strtolower($films[$key]['name']) == strtolower($name) || strtolower($title) == strtolower($name)) {
+                        $percent = 100;
+                    } else {
+                        similar_text(strtolower($films[$key]['name']), strtolower($name), $percent);
+                    }
+
+                    if ($percent >= 90) {
+                        $filmFound = $film;
+                        break;
+                    }
+                } else {
+                    unset($films[$key]);
+                }
             }
+
+            if (!empty($filmFound)) {
+                $film = $filmFound;
+            } else {
+                $film = $films[0];
+            }
+        }
+
+        // print_r($films);
+
+        if (isset($film)) {
+            if (in_array($film['original_language'], ['en', 'es'])) {
+                $name = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
+            } else {
+                $name = isset($film['title']) ? $film['title'] : $film['name'];
+            }
+            $film['name'] = $name;
+            $slug = trim(strtolower($name));
+            $slug = str_replace('bros.', 'bros', $slug);
+            $slug = str_replace('mr.', 'mr', $slug);
+            $slug = str_replace('.', '-dot-', $slug);
+            $slug = str_replace('&', 'and', $slug);
+            $slug = str_replace(': ', ' ', $slug);
+            $slug = str_replace([':', "'", ' '], '-', $slug);
+            $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $slug);
+            $film['slug'] = $slug;
+            $image = 'https://image.tmdb.org/t/p/w200/' . $film['poster_path'];
+            $description = $film['overview'];
+            print_r($film);
         }
     }
 }

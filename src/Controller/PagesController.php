@@ -9,7 +9,6 @@ use App\Entity\Tag;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
-use Statickidz\GoogleTranslate;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,8 +16,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -113,197 +110,53 @@ class PagesController extends AbstractController
         try {
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $name = $tag->getName();
-            $search = strtolower($name);
-            if ($search == 'lol') {
-                $search = 'league of legends';
-            }
-            if ($search == 'wow') {
-                $search = 'world of warcraft';
-            }
+            $category = $tag->getCategory()->getName();
+            switch ($category) {
+                case 'games':
+                    $result = $this->em->getRepository('App:Page')->getGamesApi($name);
+                    break;
 
-            $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
-            $clientSecret = 'niozz7jpskr27vr9c5v1go801q3wsz';
-            $url = 'https://id.twitch.tv/oauth2/token?client_id=' . $clientId . '&client_secret=' . $clientSecret . '&grant_type=client_credentials';
-            $ch = curl_init($url); // Initialise cURL
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
-            $output = curl_exec($ch); // Execute the cURL statement
-            curl_close($ch); // Close the cURL connection
-            $info = json_decode($output, true); // Return the received data
-
-            $url = 'https://api.igdb.com/v4';
-            $endpoint = '/games';
-            $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
-            $client_id = "Client-ID: " . $clientId;
-            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
-
-            $ch = curl_init($url . $endpoint); // Initialise cURL
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
-            $output = curl_exec($ch); // Execute the cURL statement
-            curl_close($ch); // Close the cURL connection
-            $games = json_decode($output, true); // Return the received data
-
-            if (empty($games)) {
-                $search = trim(str_replace(['saga', '(', ')'], '', $search));
-                $search = str_replace('bros.', 'bros', $search);
-                $search = str_replace('.', '-dot-', $search);
-                $search = str_replace('&', 'and', $search);
-                $search = str_replace(': ', ' ', $search);
-                $search = str_replace([':', "'", ' '], '-', $search);
-                $search = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $search);
-
-                $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
-                $ch = curl_init($url . $endpoint); // Initialise cURL
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, 1); // Specify the request method as POST
-                $output = curl_exec($ch); // Execute the cURL statement
-                curl_close($ch); // Close the cURL connection
-                $games = json_decode($output, true); // Return the received data
+                case 'films':
+                    $result = $this->em->getRepository('App:Page')->getFilmsApi($name);
+                    break;
             }
 
-            usort($games, function ($a, $b) {
-                return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
-            });
-            // print_r($games);
-
-            if (!empty($games)) {
-                $gameFound = [];
-
-                foreach ($games as $game) {
-                    if ($game['slug'] === $search) {
-                        $gameFound = $game;
-                        break;
-                    } else {
-                        similar_text(strtolower($game['name']), strtolower($search), $percent);
-                        if ($percent >= 98) {
-                            $gameFound = $game;
-                            break;
-                        }
-                    }
-                }
-
-                if (!empty($gameFound)) {
-                    $game = $gameFound;
-                } else {
-                    $game = $games[0];
-                }
-            }
-
-            if (isset($game)) {
-                if (isset($game['artworks'][0]['url'])) {
-                    $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['artworks'][0]['url']);
-                }
-                if (isset($game['cover']['url']) && !isset($game['artworks'][0]['url'])) {
-                    $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['cover']['url']);
-                }
-                if (isset($game['cover']['url'])) {
-                    $game['cover']['url'] = str_replace('t_thumb', 't_cover_big', $game['cover']['url']);
-                }
-
-                if (isset($game['multiplayer_modes'][0]['onlinecoop']) && $game['multiplayer_modes'][0]['onlinecoop'] == 1) {
-                    $game['game_mode'] = 'online';
-                }
-
-                if (isset($game['game_modes'])) {
-                    foreach ($game['game_modes'] as $gameMode) {
-                        if ($gameMode['slug'] === 'massively-multiplayer-online-mmo') {
-                            $game['game_mode'] = 'online';
-                            break;
-                        }
-                    }
-                }
-
-                if (!isset($game['game_mode'])) {
-                    $game['game_mode'] = 'offline';
-                }
-
-                if (isset($game['involved_companies'])) {
-                    foreach ($game['involved_companies'] as $company) {
-                        if ($company['developer']) {
-                            $game['developer'] = $company['company']['name'];
-                        }
-                    }
-                }
-
-                if (isset($game['summary'])) {
-                    $trans = new GoogleTranslate();
-                    $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
-                    try {
-                        $game['summary'] = $trans->translate('en', 'es', $text);
-                    } catch (Exception $ex) {
-                        // Omitimos traducción si falla, lo metemos en inglés
-                    }
-                }
-
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $game['slug']));
+            if ($result) {
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
 
                 if (empty($page)) {
                     /**
                      * @var Page
                      */
                     $page = new Page();
-                    $page->setName($game['name']);
-                    $page->setDescription($game['summary']);
-                    $page->setSlug($game['slug']);
-                    $page->setRating($game['aggregated_rating']);
-                    $page->setCategory($tag->getCategory()->getName());
-                    if (isset($game['developer'])) {
-                        $page->setDeveloper($game['developer']);
-                    }
-                    if (isset($game['first_release_date'])) {
-                        $date = new \DateTime();
-                        $date->setTimestamp($game['first_release_date']);
-                        $page->setReleaseDate($date);
-                    }
+                    $page->setName($result['name']);
+                    $page->setDescription($result['description']);
+                    $page->setSlug($result['slug']);
+                    $page->setRating($result['rating']);
+                    $page->setCategory($category);
+                    $page->setDeveloper($result['developer'] ?: null);
+                    $page->setReleaseDate($result['release_date']);
                     $page->setTimeCreation();
                     $page->setLastUpdate();
-                    $page->setGameMode($game['game_mode']);
-
-                    $server = "https://app.frikiradar.com";
-                    $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/' . $game['slug'] . '/';
-                    $fs = new Filesystem();
-                    if (isset($game['cover'])) {
-                        $file =  'cover.jpg';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-
-                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setCover($src);
-                    }
-
-                    if (isset($game['artworks'][0])) {
-                        $file = 'artwork.jpg';
-                        if (!file_exists($path)) {
-                            mkdir($path, 0777, true);
-                        }
-
-                        $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
-                        $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
-                        $page->setArtwork($src);
-                    }
+                    $page->setGameMode($result['game_mode'] ?: null);
+                    $page->setCover($result['cover']);
+                    $page->setArtwork($result['artwork']);
 
                     $this->em->persist($page);
                     $this->em->flush();
                 }
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $game['slug']);
+                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $result['slug']);
             } else {
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $search));
-
+                $slug = $this->em->getRepository('App:Page')->nameToSlug($name);
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
                 if (empty($page)) {
                     /**
                      * @var Page
                      */
                     $page = new Page();
                     $page->setName($name);
-                    $page->setSlug($search);
+                    $page->setSlug($slug);
                     $page->setTimeCreation();
                     $page->setLastUpdate();
                     $page->setCategory($tag->getCategory()->getName());
@@ -311,7 +164,7 @@ class PagesController extends AbstractController
                     $this->em->flush();
                 }
                 // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $search);
+                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
             }
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
