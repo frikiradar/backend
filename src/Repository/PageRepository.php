@@ -348,7 +348,7 @@ class PageRepository extends ServiceEntityRepository
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
-            if (isset($game['artworks'][0])) {
+            if (isset($film['backdrop_path']) || isset($film['poster_path'])) {
                 $file = 'artwork.jpg';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
