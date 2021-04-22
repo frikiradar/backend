@@ -156,6 +156,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             if (!$this->security->isGranted('ROLE_MASTER') && $toUser->getId() != $fromUser->getId()) {
                 $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             }
+            if (empty($toUser->getConnection())) {
+                $user['connection'] = 'Amistad';
+            }
             $user['tags'] = $toUser->getTags();
             $user['stories'] = $toUser->getStories();
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
