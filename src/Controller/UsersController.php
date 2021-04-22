@@ -447,6 +447,10 @@ class UsersController extends AbstractController
             $thumbnail = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $user->getId() . "/" . $thumbnail;
             unlink($thumbnail);
 
+            if (strpos($user->getAvatar(), $filename) !== false) {
+                $user->setAvatar(null);
+                $user->setThumbnail(null);
+            }
             $user->setImages($user->getImages());
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
