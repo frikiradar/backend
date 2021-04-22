@@ -309,7 +309,7 @@ class PageRepository extends ServiceEntityRepository
                         similar_text(strtolower($films[$key]['name']), strtolower($name), $percent);
                     }
 
-                    if ($percent >= 90) {
+                    if ($percent >= 95) {
                         $filmFound = $film;
                         break;
                     }
@@ -358,8 +358,8 @@ class PageRepository extends ServiceEntityRepository
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
-            if (isset($film['release_date'])) {
-                $date = \DateTime::createFromFormat('Y-m-d', $film['release_date']);
+            if (isset($film['release_date']) || isset($film['first_air_date'])) {
+                $date = \DateTime::createFromFormat('Y-m-d', isset($film['release_date']) ? $film['release_date'] : $film['first_air_date']);
                 $releaseDate = $date;
             }
 

@@ -223,7 +223,7 @@ class LabCommandService
 
     public function testLab()
     {
-        $name = "avatar El último maestro del aire";
+        $name = "madoka magica";
         $search = urlencode($name);
         $token = '777a37ca29cf54c4e246266509b0901b';
         $api = 'https://api.themoviedb.org/3';
@@ -264,7 +264,7 @@ class LabCommandService
                         similar_text(strtolower($films[$key]['name']), strtolower($name), $percent);
                     }
 
-                    if ($percent >= 90) {
+                    if ($percent >= 95) {
                         $filmFound = $film;
                         break;
                     }
@@ -280,7 +280,7 @@ class LabCommandService
             }
         }
 
-        // print_r($films);
+        print_r($films);
 
         if (isset($film)) {
             if (in_array($film['original_language'], ['en', 'es'])) {
