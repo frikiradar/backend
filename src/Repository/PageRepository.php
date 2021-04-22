@@ -358,6 +358,12 @@ class PageRepository extends ServiceEntityRepository
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
+            if (isset($film['release_date'])) {
+                $date = new \DateTime();
+                $date->setTimestamp($film['release_date']);
+                $releaseDate = $date;
+            }
+
             $result = [
                 'name' => $film['name'],
                 'description' => $film['overview'] ?: null,
@@ -365,7 +371,7 @@ class PageRepository extends ServiceEntityRepository
                 'artwork' => $artwork,
                 'slug' => $film['slug'],
                 'rating' => $film['vote_average'] * 100,
-                'release_date' => $film['release_date']
+                'release_date' => $releaseDate
             ];
 
             return $result;
