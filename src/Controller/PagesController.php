@@ -130,7 +130,7 @@ class PagesController extends AbstractController
                     $page = new Page();
                     $page->setName($result['name']);
                     $page->setDescription($result['description']);
-                    $page->setSlug($result['slug'] . ($oldPage->getCategory() !== $category ? '-' . $category : ''));
+                    $page->setSlug($result['slug'] . (null !== $oldPage && $oldPage->getCategory() !== $category ? '-' . $category : ''));
                     $page->setRating($result['rating']);
                     $page->setCategory($category);
                     if (isset($result['developer'])) {
