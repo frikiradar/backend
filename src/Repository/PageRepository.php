@@ -294,7 +294,7 @@ class PageRepository extends ServiceEntityRepository
             $filmFound = [];
 
             foreach ($films as $key => $film) {
-                if (isset($film['original_title']) || isset($film['original_name']) && isset($film['poster_path'])) {
+                if ((isset($film['original_title']) || isset($film['original_name'])) && isset($film['poster_path'])) {
                     if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
                         $films[$key]['name'] = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
                     } else {

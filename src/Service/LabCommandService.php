@@ -223,7 +223,7 @@ class LabCommandService
 
     public function testLab()
     {
-        $name = "madoka magica";
+        $name = "saint seiya";
         $search = urlencode($name);
         $token = '777a37ca29cf54c4e246266509b0901b';
         $api = 'https://api.themoviedb.org/3';
@@ -249,7 +249,7 @@ class LabCommandService
             $filmFound = [];
 
             foreach ($films as $key => $film) {
-                if (isset($film['original_title']) || isset($film['original_name']) && isset($film['poster_path'])) {
+                if ((isset($film['original_title']) || isset($film['original_name'])) && isset($film['poster_path'])) {
                     if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
                         $films[$key]['name'] = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
                     } else {
