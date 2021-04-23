@@ -77,10 +77,13 @@ class PagesController extends AbstractController
                     $room->setSlug($slug);
                     $room->setVisible(false);
                     $room->setPermissions(['ROLE_USER']);
+
+                    $page->setRoom($room);
+                    $pageCache->set($page);
+                    $cache->save($pageCache);
+                } else {
+                    throw new HttpException(404, "Página no encontrada");
                 }
-                $page->setRoom($room);
-                $pageCache->set($page);
-                $cache->save($pageCache);
             } else {
                 $page = $pageCache->get();
             }
@@ -90,11 +93,7 @@ class PagesController extends AbstractController
                 $page->getRoom()->setLastMessage($messages[0]['last_message']);
             }
 
-            if (!empty($page)) {
-                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
-            } else {
-                throw new HttpException(404, "Página no encontrada");
-            }
+            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener la página - Error: {$ex->getMessage()}");
         }
