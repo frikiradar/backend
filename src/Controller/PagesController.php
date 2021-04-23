@@ -121,7 +121,8 @@ class PagesController extends AbstractController
             }
 
             if ($result) {
-                $oldPage = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
+                $oldPage = $page;
 
                 if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
                     /**
