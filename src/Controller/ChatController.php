@@ -18,6 +18,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -377,7 +378,11 @@ class ChatController extends AbstractController
         $update = new Update('chats-' . $touser, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         $publisher($update);
 
-        return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
+        $data = [
+            'code' => 200,
+            'message' => "Escribiendo en chat",
+        ];
+        return new JsonResponse($data, 200);
     }
 
     /**
