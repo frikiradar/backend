@@ -123,7 +123,7 @@ class PagesController extends AbstractController
             if ($result) {
                 $oldPage = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
 
-                if (empty($oldPage) || $oldPage->getCategory() !== $category) {
+                if (empty($oldPage) || (!empty($oldPage) && $oldPage->getCategory() !== $category)) {
                     /**
                      * @var Page
                      */
