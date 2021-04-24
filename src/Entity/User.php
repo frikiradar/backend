@@ -1177,7 +1177,7 @@ class User implements UserInterface
         $thumbnail = $this->thumbnail;
         if (!$thumbnail) {
             $letter = strtoupper($this->getUsername()[0]);
-            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
+            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/thumbnail/" . $letter . ".png")) {
                 $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
             } else {
                 $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/?.png";
