@@ -148,6 +148,12 @@ class Page
 
     public function getCover(): ?string
     {
+        $cover = $this->cover;
+        if (!$cover) {
+            $cover = "https://api.frikiradar.com/images/pages/" . $this->getCategory() . ".jpg";
+        }
+        $this->cover = $cover;
+
         return $this->cover;
     }
 
@@ -160,6 +166,12 @@ class Page
 
     public function getArtwork(): ?string
     {
+        $artwork = $this->artwork;
+        if (!$artwork) {
+            $artwork = "https://api.frikiradar.com/images/pages/" . $this->getCategory() . ".jpg";
+        }
+        $this->artwork = $artwork;
+
         return $this->artwork;
     }
 
