@@ -285,8 +285,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->addOrderBy('u.last_login', 'DESC')
-                ->orderBy('distance', 'ASC')
                 ->setParameters(array(
                     'minage' => $user->getMinage() ?: 18,
                     'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
@@ -306,8 +304,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :yesterday');
-            $users = $dql->getQuery()
+            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :yesterday')
+                ->orderBy('distance', 'ASC')
+                ->addOrderBy('u.last_login', 'DESC')
+                ->getQuery()
                 ->setParameter('yesterday', $yesterday)
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
@@ -317,7 +317,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             // shuffle($users);
             return array_slice($users, 0);
         } else {
-            $users = $dql->getQuery()
+            $users = $dql->addOrderBy('u.last_login', 'DESC')
+                ->orderBy('distance', 'ASC')
+                ->getQuery()
                 ->getResult();
 
             $users = $this->enhanceUsers($users, $user);
