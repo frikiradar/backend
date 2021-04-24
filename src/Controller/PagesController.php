@@ -65,7 +65,6 @@ class PagesController extends AbstractController
         $cache = new FilesystemAdapter();
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);
-            // $cache->deleteItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
 
@@ -77,8 +76,8 @@ class PagesController extends AbstractController
                     $room->setSlug($slug);
                     $room->setVisible(false);
                     $room->setPermissions(['ROLE_USER']);
-
                     $page->setRoom($room);
+                    $pageCache->expiresAfter(3600 * 24);
                     $pageCache->set($page);
                     $cache->save($pageCache);
                 } else {
@@ -121,6 +120,7 @@ class PagesController extends AbstractController
             }
 
             if ($result) {
+                $slug = $result['slug'];
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
                 $oldPage = $page;
 
@@ -149,8 +149,6 @@ class PagesController extends AbstractController
                     $this->em->persist($page);
                     $this->em->flush();
                 }
-                // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $result['slug']);
             } else {
                 $slug = $this->em->getRepository('App:Page')->nameToSlug($name);
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
@@ -167,9 +165,14 @@ class PagesController extends AbstractController
                     $this->em->persist($page);
                     $this->em->flush();
                 }
-                // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-                $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
             }
+
+            // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+            $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
+
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('page.get.' . $slug);
+
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");

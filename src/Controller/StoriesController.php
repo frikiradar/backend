@@ -273,7 +273,7 @@ class StoriesController extends AbstractController
                 $this->em->flush();
 
                 $title = $user->getName();
-                $text = "A " . $user->getName() . " le ha gustado tu historia ❤️.";
+                $text = "A " . $user->getName() . " le ha gustado tu historia.";
                 $url = "/tabs/community/story/" . $story->getId();
 
                 $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
@@ -398,7 +398,7 @@ class StoriesController extends AbstractController
 
                 if ($user->getId() !== $comment->getUser()->getId()) {
                     $title = $user->getName();
-                    $text = "A " . $user->getName() . " le ha gustado tu comentario ❤️.";
+                    $text = "A " . $user->getName() . " le ha gustado tu comentario.";
                     $url = "/tabs/community/story/" . $comment->getStory()->getId();
 
                     $this->notification->set($user, $comment->getUser(), $title, $text, $url, "story");
