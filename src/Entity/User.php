@@ -729,7 +729,18 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-        return $this->avatar ?: "https://app.frikiradar.com/images/layout/default.jpg";
+        $avatar = $this->avatar;
+        if (!$avatar) {
+            $letter = strtoupper($this->getUsername()[0]);
+            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
+                $avatar = "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
+            } else {
+                $avatar = "https://api.frikiradar.com/images/avatar/?.png";
+            }
+        }
+        $this->avatar = $avatar;
+
+        return $this->avatar;
     }
 
     public function setAvatar(?string $avatar): self
@@ -1163,7 +1174,18 @@ class User implements UserInterface
 
     public function getThumbnail(): ?string
     {
-        return $this->thumbnail ?: $this->getAvatar();
+        $thumbnail = $this->thumbnail;
+        if (!$thumbnail) {
+            $letter = strtoupper($this->getUsername()[0]);
+            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
+                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
+            } else {
+                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/?.png";
+            }
+        }
+        $this->thumbnail = $thumbnail;
+
+        return $this->thumbnail;
     }
 
     public function setThumbnail(?string $thumbnail): self
