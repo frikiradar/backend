@@ -78,7 +78,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getRoomChat(string $slug, $page = 1)
     {
-        $limit = 15;
+        $limit = 50;
         $offset = ($page - 1) * $limit;
 
         return $this->createQueryBuilder('c')
