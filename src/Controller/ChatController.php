@@ -505,4 +505,20 @@ class ChatController extends AbstractController
             throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
         }
     }
+
+    /**
+     * @Route("/v1/chats-config", name="chats_config", methods={"PUT"})
+     */
+    public function chatsConfigAction(Request $request)
+    {
+        $user = $this->getUser();
+        $config = $user->getConfig();
+        $chatsConfig = $this->request->get($request, "chats_config");
+        $config['chats'] = $chatsConfig;
+        $user->setConfig($config);
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
+    }
 }
