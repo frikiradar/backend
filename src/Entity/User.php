@@ -730,7 +730,11 @@ class User implements UserInterface
     public function getAvatar()
     {
         $avatar = $this->avatar;
-        if (!$avatar) {
+
+        $server = "https://app.frikiradar.com";
+        $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $avatar);
+
+        if (!$avatar || !file_exists($image)) {
             $letter = strtoupper($this->getUsername()[0]);
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
                 $avatar = "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
