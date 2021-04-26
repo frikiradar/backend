@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\LikeUser;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -15,9 +16,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class LikeUserRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, LikeUser::class);
+        $this->em = $entityManager;
     }
 
     // /**
