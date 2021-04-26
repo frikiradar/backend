@@ -730,7 +730,7 @@ class User implements UserInterface
     public function getAvatar()
     {
         $avatar = $this->avatar;
-        if (!$avatar || !file_exists($avatar)) {
+        if (!$avatar) {
             $letter = strtoupper($this->getUsername()[0]);
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
                 $avatar = "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
@@ -1175,7 +1175,7 @@ class User implements UserInterface
     public function getThumbnail(): ?string
     {
         $thumbnail = $this->thumbnail;
-        if (!$thumbnail || !file_exists($thumbnail)) {
+        if (!$thumbnail) {
             $letter = strtoupper($this->getUsername()[0]);
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/thumbnail/" . $letter . ".png")) {
                 $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
