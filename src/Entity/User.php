@@ -1179,7 +1179,11 @@ class User implements UserInterface
     public function getThumbnail(): ?string
     {
         $thumbnail = $this->thumbnail;
-        if (!$thumbnail) {
+
+        $server = "https://app.frikiradar.com";
+        $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $thumbnail);
+
+        if (!$thumbnail || !file_exists($image)) {
             $letter = strtoupper($this->getUsername()[0]);
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/thumbnail/" . $letter . ".png")) {
                 $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
