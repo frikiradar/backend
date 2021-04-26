@@ -49,7 +49,7 @@ class LikeUserRepository extends ServiceEntityRepository
     }
     */
 
-    public function getLikeUsers(User $user, $param, $page = null)
+    public function getLikeUsers(User $fromUser, $param, $page = null)
     {
         $dql = "SELECT IDENTITY(" . ($param == "delivered" ? "l.to_user)" : "l.from_user)") . " fromuser, l.date" . ($param == "delivered" ? " " : ", l.time_read ") .
             "FROM App:LikeUser l
@@ -57,13 +57,34 @@ class LikeUserRepository extends ServiceEntityRepository
 
         $query = $this->getEntityManager()
             ->createQuery($dql)
-            ->setParameter('id', $user->getId());
+            ->setParameter('id', $fromUser->getId());
         /*if (!is_null($page)) {
             $limit = 30;
             $offset = ($page - 1) * $limit;
             $query->setFirstResult($offset)
                 ->setMaxResults($limit);
         }*/
-        return $query->getResult();
+        $likes = $query->getResult();
+        foreach ($likes as $key => $like) {
+            $userId = $like["fromuser"];
+            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+            $blocked = $this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser) ? true : false;
+
+            if ($toUser->getActive() && !$blocked) {
+                $likes[$key]['user'] = [
+                    'id' => $userId,
+                    'username' => $toUser->getUsername(),
+                    'name' => $toUser->getName(),
+                    'description' => $toUser->getDescription(),
+                    'avatar' =>  $toUser->getAvatar() ?: null,
+                    'thumbnail' => $toUser->getThumbnail() ?: null
+                ];
+            } else {
+                unset($likes[$key]);
+            }
+        }
+        $likes = array_values($likes);
+
+        return $likes;
     }
 }
