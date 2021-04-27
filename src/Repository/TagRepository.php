@@ -80,4 +80,25 @@ class TagRepository extends ServiceEntityRepository
             ->setParameter('category', $tag->getCategory()->getId())
             ->execute();
     }
+
+    public function countTag(string $name, string $category)
+    {
+        $em = $this->getEntityManager();
+
+        return $this->createQueryBuilder('t')
+            ->select(array(
+                'COUNT(t) total'
+            ))
+            ->where('t.name = :name')
+            ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)')
+            ->groupBy('t.name')
+            ->orderBy('total', 'DESC')
+            ->setMaxResults(1)
+            ->setParameters(array(
+                'name' => $name,
+                'category' => $category
+            ))
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

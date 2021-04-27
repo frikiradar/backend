@@ -88,6 +88,11 @@ class Page
     private $room;
 
     /**
+     * @Groups({"default"})
+     */
+    private $likes;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"default"})
      */
@@ -262,6 +267,18 @@ class Page
     public function setDeveloper(?string $developer): self
     {
         $this->developer = $developer;
+
+        return $this;
+    }
+
+    public function getLikes(): ?int
+    {
+        return $this->likes;
+    }
+
+    public function setLikes(?int $likes): self
+    {
+        $this->likes = $likes;
 
         return $this;
     }

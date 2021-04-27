@@ -77,6 +77,9 @@ class PagesController extends AbstractController
                     $room->setVisible(false);
                     $room->setPermissions(['ROLE_USER']);
                     $page->setRoom($room);
+
+                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
+                    $page->setLikes($likes['total']);
                     $pageCache->expiresAfter(3600 * 24);
                     $pageCache->set($page);
                     $cache->save($pageCache);

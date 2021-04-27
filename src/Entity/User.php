@@ -739,7 +739,7 @@ class User implements UserInterface
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
                 $avatar = "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
             } else {
-                $avatar = "https://api.frikiradar.com/images/avatar/?.png";
+                $avatar = "https://api.frikiradar.com/images/avatar/default.png";
             }
         }
         $this->avatar = $avatar;
@@ -1188,7 +1188,7 @@ class User implements UserInterface
             if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/thumbnail/" . $letter . ".png")) {
                 $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
             } else {
-                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/?.png";
+                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/default.png";
             }
         }
         $this->thumbnail = $thumbnail;
