@@ -304,11 +304,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :today')
+            $recent = date('Y-m-d H:i:s', strtotime('3 hours', strtotime(date("Y-m-d H:i:s"))));
+            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :recent')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->getQuery()
-                ->setParameter('today', $today)
+                ->setParameter('recent', $recent)
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
                 ->getResult();
