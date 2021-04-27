@@ -64,6 +64,7 @@ class PagesController extends AbstractController
         $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
         try {
+            $cache->deleteItem('page.get.' . $slug);
             $pageCache = $cache->getItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
