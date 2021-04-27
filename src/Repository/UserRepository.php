@@ -303,12 +303,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         if ($ratio === -1) {
-            $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :yesterday')
+            $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :today')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->getQuery()
-                ->setParameter('yesterday', $yesterday)
+                ->setParameter('today', $today)
                 ->setFirstResult($offset)
                 ->setMaxResults($limit)
                 ->getResult();
