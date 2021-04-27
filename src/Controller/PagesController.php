@@ -102,6 +102,45 @@ class PagesController extends AbstractController
     }
 
     /**
+     * @Route("/page/{slug}", name="public_page", methods={"GET"})
+     */
+    public function getPublicPage(string $slug)
+    {
+        $cache = new FilesystemAdapter();
+        try {
+            $pageCache = $cache->getItem('page.get.' . $slug);
+            if (!$pageCache->isHit()) {
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+
+                if (isset($page)) {
+                    $room = new Room();
+                    $room->setName($page->getName());
+                    $room->setDescription($page->getDescription());
+                    $room->setImage($page->getCover());
+                    $room->setSlug($slug);
+                    $room->setVisible(false);
+                    $room->setPermissions(['ROLE_USER']);
+                    $page->setRoom($room);
+
+                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
+                    $page->setLikes($likes['total']);
+                    $pageCache->expiresAfter(3600 * 24);
+                    $pageCache->set($page);
+                    $cache->save($pageCache);
+                } else {
+                    throw new HttpException(404, "Página no encontrada");
+                }
+            } else {
+                $page = $pageCache->get();
+            }
+
+            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener la página - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/page", name="set_page", methods={"POST"})
      */
     public function setPage(Request $request)
