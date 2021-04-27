@@ -269,6 +269,10 @@ class PageRepository extends ServiceEntityRepository
 
     public function getFilmsApi($name)
     {
+        if (strtolower($name) == 'sao') {
+            $name = 'sword art online';
+        }
+
         $search = urlencode($name);
         $token = '777a37ca29cf54c4e246266509b0901b';
         $api = 'https://api.themoviedb.org/3';
