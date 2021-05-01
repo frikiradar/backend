@@ -729,7 +729,9 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-        $avatar = $this->avatar;
+
+        return $this->avatar ?: "https://app.frikiradar.com/images/layout/default.jpg";
+        /*$avatar = $this->avatar;
 
         $server = "https://app.frikiradar.com";
         $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $avatar);
@@ -744,7 +746,7 @@ class User implements UserInterface
         }
         $this->avatar = $avatar;
 
-        return $this->avatar;
+        return $this->avatar;*/
     }
 
     public function setAvatar(?string $avatar): self
@@ -1178,7 +1180,8 @@ class User implements UserInterface
 
     public function getThumbnail(): ?string
     {
-        $thumbnail = $this->thumbnail;
+        return $this->thumbnail ?: $this->getAvatar();
+        /*$thumbnail = $this->thumbnail;
 
         $server = "https://app.frikiradar.com";
         $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $thumbnail);
@@ -1193,7 +1196,7 @@ class User implements UserInterface
         }
         $this->thumbnail = $thumbnail;
 
-        return $this->thumbnail;
+        return $this->thumbnail;*/
     }
 
     public function setThumbnail(?string $thumbnail): self

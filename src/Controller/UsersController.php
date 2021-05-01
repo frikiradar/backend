@@ -892,7 +892,11 @@ class UsersController extends AbstractController
                 $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize("Usuario visto correctamente", "json"));
+            $data = [
+                'code' => 200,
+                'message' => "Usuario visto correctamente",
+            ];
+            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ver usuario - Error: {$ex->getMessage()}");
         }
