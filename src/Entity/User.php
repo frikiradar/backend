@@ -729,24 +729,18 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-
-        return $this->avatar ?: "https://app.frikiradar.com/images/layout/default.jpg";
-        /*$avatar = $this->avatar;
-
-        $server = "https://app.frikiradar.com";
-        $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $avatar);
-
-        if (!$avatar || !file_exists($image)) {
+        return $this->avatar;
+        if ($this->avatar) {
+            return $this->avatar;
+        } else {
+            $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
             $letter = strtoupper($this->getUsername()[0]);
-            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/" . $letter . ".png")) {
-                $avatar = "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
+            if (in_array($letter, $letters)) {
+                return "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
             } else {
-                $avatar = "https://api.frikiradar.com/images/avatar/default.png";
+                return "https://api.frikiradar.com/images/avatar/default.png";
             }
         }
-        $this->avatar = $avatar;
-
-        return $this->avatar;*/
     }
 
     public function setAvatar(?string $avatar): self
@@ -1180,23 +1174,17 @@ class User implements UserInterface
 
     public function getThumbnail(): ?string
     {
-        return $this->thumbnail ?: $this->getAvatar();
-        /*$thumbnail = $this->thumbnail;
-
-        $server = "https://app.frikiradar.com";
-        $image = str_replace($server, "/var/www/vhosts/frikiradar.com/app.frikiradar.com", $thumbnail);
-
-        if (!$thumbnail || !file_exists($image)) {
+        if ($this->thumbnail) {
+            return $this->thumbnail;
+        } else {
+            $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
             $letter = strtoupper($this->getUsername()[0]);
-            if (file_exists("/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/images/avatar/thumbnail/" . $letter . ".png")) {
-                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
+            if (in_array($letter, $letters)) {
+                return "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
             } else {
-                $thumbnail = "https://api.frikiradar.com/images/avatar/thumbnail/default.png";
+                return "https://api.frikiradar.com/images/avatar/thumbnail/default.png";
             }
         }
-        $this->thumbnail = $thumbnail;
-
-        return $this->thumbnail;*/
     }
 
     public function setThumbnail(?string $thumbnail): self
