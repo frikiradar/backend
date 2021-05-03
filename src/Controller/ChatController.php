@@ -315,7 +315,7 @@ class ChatController extends AbstractController
             }
         }
 
-        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
     }
 
 
