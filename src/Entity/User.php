@@ -729,7 +729,6 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-        return $this->avatar;
         if ($this->avatar) {
             return $this->avatar;
         } else {
