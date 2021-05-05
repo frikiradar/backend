@@ -1024,16 +1024,17 @@ class UsersController extends AbstractController
      */
     public function patreonWebhookReceiver(Request $request)
     {
-        $webhook = $this->request->get($request, "webhook", false);
+        $patreonBody = $request->getContent();
+        $webhookSecret = 'zmOmHvgQYKqb3hlgAS90QZIjsAFdjNYnL2Pb6FfOYj5f_WgMNjMKdsdguUjkwgZ6';
         $config = new Config();
         $config->setName('webhook');
-        $config->setValue(json_encode($webhook));
+        $config->setValue(json_encode($patreonBody));
         $this->em->persist($config);
         $this->em->flush();
 
         $data = [
             'code' => 200,
-            'message' => json_encode($webhook),
+            'message' => json_encode($patreonBody),
         ];
         return new JsonResponse($data, 200);
     }
