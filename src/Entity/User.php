@@ -412,6 +412,7 @@ class User implements UserInterface
         $roles = $this->roles;
         if (in_array('ROLE_ADMIN', $roles)) {
             $roles[] = 'ROLE_MASTER';
+            $roles[] = 'ROLE_PATREON';
         }
 
         // guarantee every user at least has ROLE_USER
@@ -423,6 +424,30 @@ class User implements UserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function addRol(string $rol): self
+    {
+        $roles = $this->roles;
+        if (!in_array($rol, $roles)) {
+            $roles[] = $rol;
+        }
+
+        $this->roles = array_unique($roles);
+
+        return $this;
+    }
+
+    public function removeRol(string $rol): self
+    {
+        $roles = $this->roles;
+        if (in_array($rol, $roles)) {
+            $roles = array_diff($roles, [$rol]);
+        }
+
+        $this->roles = array_unique($roles);
 
         return $this;
     }

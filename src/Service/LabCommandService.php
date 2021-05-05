@@ -225,37 +225,7 @@ class LabCommandService
 
     public function testLab()
     {
-
-        $client_id = 'T6KMsWw673-ffH__MVNHOkzEMMavJ6IP_TMv1UHmNqv96PHC-_DsDmiYOyOvwloj';      // Replace with your data
-        $client_secret = '_dyBkMG-HQB4uPIZD4mYdFNOBMPGCnqMIDvmvJkJxTYpFxdz_qYSf1ZEPiooZO7Q';  // Replace with your data
-        $access_token = 'HfcCk_aHq_NnMVh_zRIKZGXSSf-ipkuBpoFpJd3eFM0';
-        $redirect_uri = 'https://frikiradar.app/patreon';
-        $href = 'https://www.patreon.com/oauth2/authorize?response_type=code&client_id=' . $client_id . '&redirect_uri=' . urlencode($redirect_uri);
-
-        $api_client = new API($access_token);
-        $response = $api_client->fetch_campaigns();
-        print_r($response);
-
-        /*$oauth_client = new OAuth($client_id, $client_secret);
-        $tokens = $oauth_client->get_tokens('8UQsswhDI9Iq0guW79GUsolvKnFBUs', $redirect_uri);
-        print_r($tokens);
-        $access_token = $tokens['access_token'];
-        // $refresh_token = $tokens['refresh_token'];
-
-        $api_client = new API($access_token);
-        $response = $api_client->fetch_user();
-        print_r($response);*/
-
-        /*$campaigns = $api_client->fetch_campaigns();
-        foreach ($campaigns['data'] as $campaign) {
-            $members = $api_client->fetch_page_of_members_from_campaign($campaign['id'], 1000);
-            foreach ($members['data'] as $member) {
-                // print_r($member['id']);
-                if ($member['id'] == '05e623ee-a0fd-4fdd-89ce-e2c411455dc1') {
-                    $detail = $api_client->fetch_member_details($member['id']);
-                    print_r($detail);
-                }
-            }
-        }*/
+        $webhook = $this->em->getRepository('App:User')->patreonWebhook();
+        print_r($webhook);
     }
 }

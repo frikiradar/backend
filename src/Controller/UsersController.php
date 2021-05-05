@@ -982,7 +982,11 @@ class UsersController extends AbstractController
             if ($oauthCode) {
                 $tokens = $this->em->getRepository('App:User')->getPatreonTokens($oauthCode);
                 $user->setPatreon($tokens);
+
                 // Ahora queda averiguar si es miembro del patreon de frikiradar
+                if ($this->em->getRepository('App:User')->checkPatreonMembership($tokens['access_token'])) {
+                    $user->addRol('ROLE_PATREON');
+                }
 
                 $this->em->persist($user);
                 $this->em->flush();
@@ -998,6 +1002,13 @@ class UsersController extends AbstractController
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al vincular cuenta con patreon - Error: {$ex->getMessage()}");
         }
+    }
+
+    /**
+     * @Route("/patreon-webhook", name="patreon_webhook", methods={"POST"})
+     */
+    public function patreonWebhook(Request $request)
+    {
     }
 
 

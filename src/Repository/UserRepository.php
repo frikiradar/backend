@@ -12,6 +12,7 @@ use App\Service\NotificationService;
 use App\Entity\Radar;
 use Doctrine\ORM\EntityManagerInterface;
 use Patreon\OAuth as PatreonOAuth;
+use Patreon\API as PatreonAPI;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -697,5 +698,50 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         } else {
             throw new Exception("El código Oauth ya ha sido usado");
         }
+    }
+
+    public function checkPatreonMembership(string $access_token)
+    {
+        $api_client = new PatreonAPI($access_token);
+        $user = $api_client->fetch_user();
+        if ($user['included'][0]['attributes']['patron_status'] == 'active_patron') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function patreonWebhook()
+    {
+        $api_client = new PatreonAPI('YKA58RbVuNREWo7lCuN17sbmQ_oYe9rSLBtK4xnO6wo');
+        $campaigns = $api_client->fetch_campaigns();
+        $campaign = $campaigns['data']['0']['id'];
+        $api_client->api_request_method = 'POST';
+
+        $api_client->curl_postfields = array(
+            'data' => array(
+                'type' => 'webhook',
+                'attributes' => array(
+                    'triggers' => array(
+                        'members:create',
+                        'members:update',
+                        'members:delete',
+                    ),
+                    'uri' => 'https://api.frikiradar.com/api/patreon-webhook', // Replace https://yourdomain.com/webhook_receiver with the url at your site/app thats going to receive webhook requests. Note that your url must start with https://
+                ),
+                'relationships' => array(
+                    'campaign' => array(
+                        'data' => array(
+                            'type' => 'campaign',
+                            'id' => $campaign, // Notice how your campaign id has to be inserted here
+                        ),
+                    ),
+                ),
+            ),
+        );
+
+        $api_client->curl_postfields = json_encode($api_client->curl_postfields);
+        $webhook_response = $api_client->get_data('webhooks');
+        return $webhook_response;
     }
 }
