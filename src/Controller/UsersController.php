@@ -1009,6 +1009,12 @@ class UsersController extends AbstractController
      */
     public function patreonWebhook(Request $request)
     {
+        $webhook = $this->em->getRepository('App:User')->patreonWebhook();
+        $data = [
+            'code' => 200,
+            'message' => json_encode($webhook),
+        ];
+        return new JsonResponse($data, 200);
     }
 
 
