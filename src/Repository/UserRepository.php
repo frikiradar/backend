@@ -692,6 +692,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $oauth_client = new PatreonOAuth($client_id, $client_secret);
         $tokens = $oauth_client->get_tokens($oauthCode, $redirect_uri);
 
-        return $tokens;
+        if (!isset($tokens['error'])) {
+            return $tokens;
+        } else {
+            throw new Exception("El código Oauth ya ha sido usado");
+        }
     }
 }
