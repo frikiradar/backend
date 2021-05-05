@@ -1020,27 +1020,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/patreon-webhook-receiver", name="patreon_webhook_receiver", methods={"POST"})
-     */
-    public function patreonWebhookReceiver(Request $request)
-    {
-        $patreonBody = $request->getContent();
-        $webhookSecret = 'zmOmHvgQYKqb3hlgAS90QZIjsAFdjNYnL2Pb6FfOYj5f_WgMNjMKdsdguUjkwgZ6';
-        $config = new Config();
-        $config->setName('webhook');
-        $config->setValue(json_encode($patreonBody));
-        $this->em->persist($config);
-        $this->em->flush();
-
-        $data = [
-            'code' => 200,
-            'message' => json_encode($patreonBody),
-        ];
-        return new JsonResponse($data, 200);
-    }
-
-
-    /**
      * @Route("/v1/disable", name="disable", methods={"PUT"})
      */
     public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)

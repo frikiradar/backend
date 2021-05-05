@@ -727,7 +727,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         'members:update',
                         'members:delete',
                     ),
-                    'uri' => 'https://api.frikiradar.com/api/patreon-webhook-receiver', // Replace https://yourdomain.com/webhook_receiver with the url at your site/app thats going to receive webhook requests. Note that your url must start with https://
+                    'uri' => 'https://api.frikiradar.com/api/patreon-webhook', // Replace https://yourdomain.com/webhook_receiver with the url at your site/app thats going to receive webhook requests. Note that your url must start with https://
                 ),
                 'relationships' => array(
                     'campaign' => array(
