@@ -1013,7 +1013,7 @@ class UsersController extends AbstractController
         $webhook = $this->em->getRepository('App:User')->patreonWebhook();
         $config = new Config();
         $config->setName('webhook');
-        $config->setValue($webhook);
+        $config->setValue(json_encode($webhook));
         $this->em->persist($config);
         $this->em->flush();
 
