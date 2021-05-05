@@ -1014,16 +1014,19 @@ class UsersController extends AbstractController
         // $webhook = $this->em->getRepository('App:User')->patreonWebhook();
 
         $body = $request->headers->get('X-Patreon-Event');
+
+        $config = new Config();
+        $config->setName('webhook');
+        $config->setValue($body);
+        $this->em->persist($config);
+        $this->em->flush();
+
         $signature = $request->headers->get('X-Patreon-Signature');
         $secret = 'UG8-TpoBRHoEtFaOQjIYV744v5Rr3WOqWxdH83sXdY404vsnqxC986moWUtnkaLw';
         $hash = hash_hmac('md5', $body, $secret);
 
         if (strtolower($hash) == strtolower($signature)) {
-            $config = new Config();
-            $config->setName('webhook');
-            $config->setValue(json_encode($body));
-            $this->em->persist($config);
-            $this->em->flush();
+
 
             $data = [
                 'code' => 200,
