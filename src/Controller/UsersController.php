@@ -1020,7 +1020,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/patreon-webhook-receiver", name="patreon_webhook", methods={"POST"})
+     * @Route("/patreon-webhook-receiver", name="patreon_webhook_receiver", methods={"POST"})
      */
     public function patreonWebhookReceiver(Request $request)
     {
