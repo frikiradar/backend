@@ -12,6 +12,8 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
+use Patreon\API;
+use Patreon\OAuth;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use \Statickidz\GoogleTranslate;
@@ -223,84 +225,37 @@ class LabCommandService
 
     public function testLab()
     {
-        $name = "saint seiya";
-        $search = urlencode($name);
-        $token = '777a37ca29cf54c4e246266509b0901b';
-        $api = 'https://api.themoviedb.org/3';
-        $page = 0;
-        $films = [];
-        do {
-            $page++;
-            $endpoint = '/search/multi?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $api . $endpoint);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);
-            curl_close($ch);
-            $info = json_decode($output, true);
-            $films = [...$films, ...$info['results']];
-        } while (count($info['results']) == 20);
 
-        usort($films, function ($a, $b) {
-            return ((isset($b['popularity']) ? $b['popularity'] : 0) <=> (isset($a['popularity']) ? $a['popularity'] : 0));
-        });
+        $client_id = 'T6KMsWw673-ffH__MVNHOkzEMMavJ6IP_TMv1UHmNqv96PHC-_DsDmiYOyOvwloj';      // Replace with your data
+        $client_secret = '_dyBkMG-HQB4uPIZD4mYdFNOBMPGCnqMIDvmvJkJxTYpFxdz_qYSf1ZEPiooZO7Q';  // Replace with your data
+        $access_token = 'HfcCk_aHq_NnMVh_zRIKZGXSSf-ipkuBpoFpJd3eFM0';
+        $redirect_uri = 'https://frikiradar.app/patreon';
+        $href = 'https://www.patreon.com/oauth2/authorize?response_type=code&client_id=' . $client_id . '&redirect_uri=' . urlencode($redirect_uri);
 
-        if (!empty($films)) {
-            $filmFound = [];
+        $api_client = new API($access_token);
+        $response = $api_client->fetch_campaigns();
+        print_r($response);
 
-            foreach ($films as $key => $film) {
-                if ((isset($film['original_title']) || isset($film['original_name'])) && isset($film['poster_path'])) {
-                    if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
-                        $films[$key]['name'] = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
-                    } else {
-                        $films[$key]['name'] = isset($film['title']) ? $film['title'] : $film['name'];
-                    }
-                    $title = isset($film['title']) ? $film['title'] : $film['name'];
+        /*$oauth_client = new OAuth($client_id, $client_secret);
+        $tokens = $oauth_client->get_tokens('8UQsswhDI9Iq0guW79GUsolvKnFBUs', $redirect_uri);
+        print_r($tokens);
+        $access_token = $tokens['access_token'];
+        // $refresh_token = $tokens['refresh_token'];
 
-                    $percent = 0;
-                    if (strtolower($films[$key]['name']) == strtolower($name) || strtolower($title) == strtolower($name)) {
-                        $percent = 100;
-                    } else {
-                        similar_text(strtolower($films[$key]['name']), strtolower($name), $percent);
-                    }
+        $api_client = new API($access_token);
+        $response = $api_client->fetch_user();
+        print_r($response);*/
 
-                    if ($percent >= 95) {
-                        $filmFound = $film;
-                        break;
-                    }
-                } else {
-                    unset($films[$key]);
+        /*$campaigns = $api_client->fetch_campaigns();
+        foreach ($campaigns['data'] as $campaign) {
+            $members = $api_client->fetch_page_of_members_from_campaign($campaign['id'], 1000);
+            foreach ($members['data'] as $member) {
+                // print_r($member['id']);
+                if ($member['id'] == '05e623ee-a0fd-4fdd-89ce-e2c411455dc1') {
+                    $detail = $api_client->fetch_member_details($member['id']);
+                    print_r($detail);
                 }
             }
-
-            if (!empty($filmFound)) {
-                $film = $filmFound;
-            } else {
-                $film = $films[0];
-            }
-        }
-
-        print_r($films);
-
-        if (isset($film)) {
-            if (in_array($film['original_language'], ['en', 'es'])) {
-                $name = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
-            } else {
-                $name = isset($film['title']) ? $film['title'] : $film['name'];
-            }
-            $film['name'] = $name;
-            $slug = trim(strtolower($name));
-            $slug = str_replace('bros.', 'bros', $slug);
-            $slug = str_replace('mr.', 'mr', $slug);
-            $slug = str_replace('.', '-dot-', $slug);
-            $slug = str_replace('&', 'and', $slug);
-            $slug = str_replace(': ', ' ', $slug);
-            $slug = str_replace([':', "'", ' '], '-', $slug);
-            $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $slug);
-            $film['slug'] = $slug;
-            $image = 'https://image.tmdb.org/t/p/w200/' . $film['poster_path'];
-            $description = $film['overview'];
-            print_r($film);
-        }
+        }*/
     }
 }

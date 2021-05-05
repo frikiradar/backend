@@ -971,6 +971,35 @@ class UsersController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/v1/link-patreon", name="link_patreon", methods={"PUT"})
+     */
+    public function linkToPatreon(Request $request)
+    {
+        $oauthCode = $this->request->get($request, "oauth_code", false);
+        $user = $this->getUser();
+        try {
+            if ($oauthCode) {
+                $tokens = $this->em->getRepository('App:User')->getPatreonTokens($oauthCode);
+                $user->setPatreon($tokens);
+                // Ahora queda averiguar si es miembro del patreon de frikiradar
+
+                $this->em->persist($user);
+                $this->em->flush();
+
+                $data = [
+                    'code' => 200,
+                    'message' => "Cuenta vinculada con patreon correctamente",
+                ];
+                return new JsonResponse($data, 200);
+            } else {
+                throw new HttpException(400, "Error al recibir el oauth_code de patreon.");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al vincular cuenta con patreon - Error: {$ex->getMessage()}");
+        }
+    }
+
 
     /**
      * @Route("/v1/disable", name="disable", methods={"PUT"})

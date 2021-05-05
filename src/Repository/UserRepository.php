@@ -11,6 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
 use App\Entity\Radar;
 use Doctrine\ORM\EntityManagerInterface;
+use Patreon\OAuth as PatreonOAuth;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -681,5 +682,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setParameter('query', '%' . $query . '%')
             ->getQuery()
             ->getArrayResult();
+    }
+
+    public function getPatreonTokens(string $oauthCode)
+    {
+        $client_id = 'T6KMsWw673-ffH__MVNHOkzEMMavJ6IP_TMv1UHmNqv96PHC-_DsDmiYOyOvwloj';
+        $client_secret = '_dyBkMG-HQB4uPIZD4mYdFNOBMPGCnqMIDvmvJkJxTYpFxdz_qYSf1ZEPiooZO7Q';
+        $redirect_uri = 'https://frikiradar.app/patreon';
+        $oauth_client = new PatreonOAuth($client_id, $client_secret);
+        $tokens = $oauth_client->get_tokens($oauthCode, $redirect_uri);
+
+        return $tokens;
     }
 }

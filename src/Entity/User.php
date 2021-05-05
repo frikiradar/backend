@@ -353,6 +353,11 @@ class User implements UserInterface
      */
     private $created_events;
 
+    /**
+     * @ORM\Column(type="json", length=255, nullable=true)
+     */
+    private $patreon;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1405,6 +1410,18 @@ class User implements UserInterface
                 $event->setCreator(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPatreon(): ?string
+    {
+        return $this->patreon;
+    }
+
+    public function setPatreon(?string $patreon): self
+    {
+        $this->patreon = $patreon;
 
         return $this;
     }

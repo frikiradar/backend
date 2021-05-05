@@ -48,7 +48,7 @@ class Event
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $recursion;
+    private $repeat;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -69,6 +69,16 @@ class Event
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $location;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $date_end;
+
+    /**
+     * @ORM\Column(type="time", nullable=true)
+     */
+    private $time_end;
 
     public function __construct()
     {
@@ -139,14 +149,14 @@ class Event
         return $this;
     }
 
-    public function getRecursion(): ?string
+    public function getRepeat(): ?string
     {
-        return $this->recursion;
+        return $this->repeat;
     }
 
-    public function setRecursion(?string $recursion): self
+    public function setRepeat(?string $repeat): self
     {
-        $this->recursion = $recursion;
+        $this->repeat = $repeat;
 
         return $this;
     }
@@ -195,6 +205,30 @@ class Event
     public function setLocation(?string $location): self
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getDateEnd(): ?\DateTimeInterface
+    {
+        return $this->date_end;
+    }
+
+    public function setDateEnd(?\DateTimeInterface $date_end): self
+    {
+        $this->date_end = $date_end;
+
+        return $this;
+    }
+
+    public function getTimeEnd(): ?\DateTimeInterface
+    {
+        return $this->time_end;
+    }
+
+    public function setTimeEnd(?\DateTimeInterface $time_end): self
+    {
+        $this->time_end = $time_end;
 
         return $this;
     }
