@@ -1012,8 +1012,8 @@ class UsersController extends AbstractController
     public function patreonWebhook(Request $request)
     {
         // $webhook = $this->em->getRepository('App:User')->patreonWebhook();
-
-        $body = $request->headers->get('X-Patreon-Event');
+        $event = $request->headers->get('X-Patreon-Event');
+        $body = $request->getContent();
 
         $config = new Config();
         $config->setName('webhook');
