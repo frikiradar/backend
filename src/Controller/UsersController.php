@@ -1008,7 +1008,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/patreon-webhook", name="patreon_webhook", methods={"POST"})
      */
-    public function patreonWebhook(Request $request)
+    public function patreonWebhook()
     {
         $webhook = $this->em->getRepository('App:User')->patreonWebhook();
         $config = new Config();
