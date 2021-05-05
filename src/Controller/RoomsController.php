@@ -295,7 +295,6 @@ class RoomsController extends AbstractController
                     $chat->setTimeCreation();
                     $chat->setConversationId($slug);
                     $this->em->persist($chat);
-                    $fromUser->setLastLogin();
                     $this->em->persist($fromUser);
                     $this->em->flush();
                 }

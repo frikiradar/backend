@@ -237,7 +237,6 @@ class ChatController extends AbstractController
             $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
             /*$chatsCache->set($chats);
                 $cache->save($chatsCache);*/
-            $fromUser->setLastLogin();
             $this->em->persist($fromUser);
             $this->em->flush();
             /*} else {
@@ -288,8 +287,6 @@ class ChatController extends AbstractController
 
         // Borrar cachés de notificaciones de chat
         $cache->deleteItem('users.notifications.' . $fromUser->getId());
-
-        $fromUser->setLastLogin();
         $this->em->persist($fromUser);
         $this->em->flush();
 

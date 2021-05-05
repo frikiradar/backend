@@ -50,7 +50,6 @@ class NotificationsController extends AbstractController
                 $cache->save($notificationsCache);
 
                 $user = $this->getUser();
-                $user->setLastLogin();
                 $this->em->persist($user);
                 $this->em->flush();
             } else {
