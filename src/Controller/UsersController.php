@@ -987,6 +987,7 @@ class UsersController extends AbstractController
                 // Ahora queda averiguar si es miembro del patreon de frikiradar
                 if ($this->em->getRepository('App:User')->checkPatreonMembership($tokens['access_token'])) {
                     $user->addRol('ROLE_PATREON');
+                    $user->setVerified(true);
                 }
 
                 $this->em->persist($user);
