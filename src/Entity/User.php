@@ -1414,12 +1414,12 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getPatreon(): ?string
+    public function getPatreon(): ?array
     {
         return $this->patreon;
     }
 
-    public function setPatreon(?string $patreon): self
+    public function setPatreon(?array $patreon): self
     {
         $this->patreon = $patreon;
 
