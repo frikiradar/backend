@@ -9,6 +9,7 @@ use App\Entity\Tag;
 use App\Entity\Category;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
+use App\Entity\Config;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
@@ -1010,6 +1011,12 @@ class UsersController extends AbstractController
     public function patreonWebhook(Request $request)
     {
         $webhook = $this->em->getRepository('App:User')->patreonWebhook();
+        $config = new Config();
+        $config->setName('webhook');
+        $config->setValue($webhook);
+        $this->em->persist($config);
+        $this->em->flush();
+
         $data = [
             'code' => 200,
             'message' => json_encode($webhook),
