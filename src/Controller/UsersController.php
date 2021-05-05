@@ -1024,14 +1024,15 @@ class UsersController extends AbstractController
             $config->setValue(json_encode($body));
             $this->em->persist($config);
             $this->em->flush();
+
+            $data = [
+                'code' => 200,
+                'message' => json_encode($body),
+            ];
+            return new JsonResponse($data, 200);
+        } else {
+            throw new HttpException(400, "El hash generado no es válido");
         }
-
-
-        $data = [
-            'code' => 200,
-            'message' => json_encode($body),
-        ];
-        return new JsonResponse($data, 200);
     }
 
     /**
