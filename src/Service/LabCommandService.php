@@ -225,10 +225,8 @@ class LabCommandService
 
     public function testLab()
     {
-        $user = $this->em->getRepository('App:User')->findOneBy(array('username' => 'albertoi'));
-        $token = $user->getPatreon()['access_token'];
-        $user = $this->em->getRepository('App:User')->checkPatreonMembership($token);
-        $id = $user['data']['id'];
-        print_r($user);
+        $id = "5984278";
+        $user = $this->em->getRepository('App:User')->findUserByPatreonId($id);
+        print_r($user->getId());
     }
 }

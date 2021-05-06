@@ -1020,7 +1020,7 @@ class UsersController extends AbstractController
 
         if (strtolower($hash) == strtolower($signature)) {
             $body = json_decode($body, true);
-            $id = $body['included']['id'];
+            $id = $body['data']['id'] ?: $body['data']['relationships']['user']['data']['id'];
             $user = $this->em->getRepository('App:User')->findUserByPatreonId($id);
             if ($user) {
                 switch ($event) {

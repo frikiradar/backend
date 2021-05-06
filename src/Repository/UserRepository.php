@@ -727,7 +727,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function findUserByPatreonId($id)
     {
         return $this->createQueryBuilder('u')
-            ->where('u.patreon LIKE = :query')
+            ->where('u.patreon LIKE :query')
             ->setParameter('query', '%"id": "' . $id . '"%')
             ->getQuery()
             ->getOneOrNullResult();
