@@ -69,7 +69,7 @@ class RoomRepository extends ServiceEntityRepository
 
     public function getLastMessages($slugs, User $fromUser)
     {
-        $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) AND c.fromuser <> :id GROUP BY c.conversationId";
+        $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) GROUP BY c.conversationId";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('slugs', $slugs)
