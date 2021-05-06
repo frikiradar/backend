@@ -72,7 +72,7 @@ class RoomRepository extends ServiceEntityRepository
         $dql = "SELECT MAX(c.id) last_message, c.conversationId FROM App:Chat c WHERE c.conversationId IN (:slugs) GROUP BY c.conversationId";
         $query = $this->getEntityManager()
             ->createQuery($dql)
-            ->setParameter('slugs', $slugs)
+            ->setParameter('slugs', $slugs);
         return $query->getResult();
     }
 }
