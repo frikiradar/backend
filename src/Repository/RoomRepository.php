@@ -73,7 +73,6 @@ class RoomRepository extends ServiceEntityRepository
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('slugs', $slugs)
-            ->setParameter('id', $fromUser->getId());
         return $query->getResult();
     }
 }
