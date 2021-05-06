@@ -1041,6 +1041,9 @@ class UsersController extends AbstractController
                         $user->removeRol('ROLE_PATREON');
                         break;
                 }
+
+                $this->em->persist($user);
+                $this->em->flush();
             }
 
             $data = [
