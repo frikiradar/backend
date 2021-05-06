@@ -355,6 +355,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="json", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $patreon;
 
