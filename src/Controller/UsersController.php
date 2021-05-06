@@ -981,11 +981,11 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         try {
             if ($oauthCode) {
-                $tokens = $this->em->getRepository('App:User')->getPatreonTokens($oauthCode);
-                $user->setPatreon($tokens);
+                $patreon = $this->em->getRepository('App:User')->getPatreonTokens($oauthCode);
+                $user->setPatreon($patreon);
 
                 // Ahora queda averiguar si es miembro del patreon de frikiradar
-                if ($this->em->getRepository('App:User')->checkPatreonMembership($tokens['access_token'])) {
+                if ($patreon['patron_status'] == 'active_patron') {
                     $user->addRol('ROLE_PATREON');
                     $user->setVerified(true);
                 }
@@ -1014,23 +1014,38 @@ class UsersController extends AbstractController
         // $webhook = $this->em->getRepository('App:User')->patreonWebhook();
         $event = $request->headers->get('X-Patreon-Event');
         $body = $request->getContent();
-
-        $config = new Config();
-        $config->setName('webhook');
-        $config->setValue($body);
-        $this->em->persist($config);
-        $this->em->flush();
-
         $signature = $request->headers->get('X-Patreon-Signature');
         $secret = 'UG8-TpoBRHoEtFaOQjIYV744v5Rr3WOqWxdH83sXdY404vsnqxC986moWUtnkaLw';
         $hash = hash_hmac('md5', $body, $secret);
 
         if (strtolower($hash) == strtolower($signature)) {
+            $body = json_decode($body, true);
+            $id = $body['data']['id'];
+            $user = $this->em->getRepository('App:User')->findUserByPatreonId($id);
+            if ($user) {
+                switch ($event) {
+                    case 'members:create':
+                        // Se ha creado un nuevo miembro, tratamos de vincular automáticamente
+                        $user->addRol('ROLE_PATREON');
+                        $user->setVerified(true);
+                        break;
 
+                    case 'members:update':
+                        // Se ha actualizado un miembro, le añadimos rol patreon por si acaso
+                        $user->addRol('ROLE_PATREON');
+                        $user->setVerified(true);
+                        break;
+
+                    case 'members:delete':
+                        // Buscamos usuario eliminado y le quitamos el rol de patreon
+                        $user->removeRol('ROLE_PATREON');
+                        break;
+                }
+            }
 
             $data = [
                 'code' => 200,
-                'message' => json_encode($body),
+                'message' => 'Patreon webhook ejecutado correctamente',
             ];
             return new JsonResponse($data, 200);
         } else {

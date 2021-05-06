@@ -694,7 +694,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $tokens = $oauth_client->get_tokens($oauthCode, $redirect_uri);
 
         if (!isset($tokens['error'])) {
-            return $tokens;
+            $api_client = new PatreonAPI($tokens['access_token']);
+            $user = $api_client->fetch_user();
+
+            $patreon = [
+                'id' => $user['data']['id'],
+                'email' => isset($user['data']['attributes']['email']) ? $user['data']['attributes']['email'] : null,
+                'full_name' => isset($user['data']['attributes']['full_name']) ? $user['data']['attributes']['full_name'] : null,
+                'access_token' => $tokens['access_token'],
+                'refresh_token' => $tokens['refresh_token'],
+                'patron_status' => isset($user['included'][0]['attributes']['patron_status']) ? $user['included'][0]['attributes']['patron_status'] : false
+            ];
+
+            return $patreon;
         } else {
             throw new Exception("El código Oauth ya ha sido usado");
         }
@@ -704,6 +716,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $api_client = new PatreonAPI($access_token);
         $user = $api_client->fetch_user();
+        return $user;
         if ($user['included'][0]['attributes']['patron_status'] == 'active_patron') {
             return true;
         } else {
@@ -711,37 +724,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function patreonWebhook()
+    public function findUserByPatreonId($id)
     {
-        $api_client = new PatreonAPI('YKA58RbVuNREWo7lCuN17sbmQ_oYe9rSLBtK4xnO6wo');
-        $campaigns = $api_client->fetch_campaigns();
-        $campaign = $campaigns['data']['0']['id'];
-        $api_client->api_request_method = 'POST';
+        return $this->createQueryBuilder('u')
+            ->where('u.patreon LIKE = :query')
+            ->setParameter('query', '%"id": "' . $id . '"%')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
-        $api_client->curl_postfields = array(
-            'data' => array(
-                'type' => 'webhook',
-                'attributes' => array(
-                    'triggers' => array(
-                        'members:create',
-                        'members:update',
-                        'members:delete',
-                    ),
-                    'uri' => 'https://api.frikiradar.com/api/patreon-webhook', // Replace https://yourdomain.com/webhook_receiver with the url at your site/app thats going to receive webhook requests. Note that your url must start with https://
-                ),
-                'relationships' => array(
-                    'campaign' => array(
-                        'data' => array(
-                            'type' => 'campaign',
-                            'id' => $campaign, // Notice how your campaign id has to be inserted here
-                        ),
-                    ),
-                ),
-            ),
-        );
-
-        $api_client->curl_postfields = json_encode($api_client->curl_postfields);
-        $webhook_response = $api_client->get_data('webhooks');
-        return $webhook_response;
+    public function deletePatreonMember($id)
+    {
     }
 }

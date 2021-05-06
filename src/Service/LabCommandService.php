@@ -225,7 +225,10 @@ class LabCommandService
 
     public function testLab()
     {
-        $webhook = $this->em->getRepository('App:User')->patreonWebhook();
-        print_r($webhook);
+        $user = $this->em->getRepository('App:User')->findOneBy(array('username' => 'albertoi'));
+        $token = $user->getPatreon()['access_token'];
+        $user = $this->em->getRepository('App:User')->checkPatreonMembership($token);
+        $id = $user['data']['id'];
+        print_r($user);
     }
 }
