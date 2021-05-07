@@ -646,7 +646,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $message = (new \Swift_Message('Nuevo usuario baneado'))
             ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
             ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-            ->setBody("El usuario <a href='https://frikiradar.app/" . $toUser->getUsername() . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text, 'text/html');
+            ->setBody("El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text, 'text/html');
 
         if (0 === $this->mailer->send($message)) {
             // throw new HttpException(400, "Error al enviar el email avisando el bug");

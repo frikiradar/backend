@@ -743,7 +743,7 @@ class UsersController extends AbstractController
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href=https://frikiradar.app/" . $blockUser->getUsername() . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href=https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
@@ -802,7 +802,7 @@ class UsersController extends AbstractController
                 $message = (new \Swift_Message('Nuevo usuario reportado'))
                     ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado al usuario <a href='https://frikiradar.app/" . $reportUser->getUsername() . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
+                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     throw new HttpException(400, "Error al enviar el email con motivo del reporte");
