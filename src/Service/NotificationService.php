@@ -124,26 +124,6 @@ class NotificationService extends AbstractController
                     }
 
                     if ($report->failures()->count() >= count($tokens)) {
-                        if ($toUser->getMailing()) {
-                            //Enviar email en lugar de notificación
-                            $message = (new \Swift_Message($title))
-                                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                                ->setTo($toUser->getEmail())
-                                ->setBody(
-                                    $this->renderView(
-                                        "emails/notification.html.twig",
-                                        [
-                                            'username' => $toUser->getUsername(),
-                                            'text' => $text,
-                                            'url' => $url
-                                        ]
-                                    ),
-                                    'text/html'
-                                );
-
-                            $this->mailer->send($message);
-                        }
-
                         /*if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                             $toUser->setActive(0);
                             $this->em->persist($toUser);
@@ -158,8 +138,28 @@ class NotificationService extends AbstractController
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
             }
-        } else {
-            // TODO: Cuenta no activa, desactivar.
+        }
+
+        if (count($tokens) === 0 || (isset($report) && $report->failures()->count() >= count($tokens))) {
+            if ($toUser->getMailing()) {
+                //Enviar email en lugar de notificación
+                $message = (new \Swift_Message($title))
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setTo($toUser->getEmail())
+                    ->setBody(
+                        $this->renderView(
+                            "emails/notification.html.twig",
+                            [
+                                'username' => $toUser->getUsername(),
+                                'text' => $text,
+                                'url' => $url
+                            ]
+                        ),
+                        'text/html'
+                    );
+
+                $this->mailer->send($message);
+            }
         }
     }
 
