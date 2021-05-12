@@ -148,6 +148,8 @@ class NotificationService extends AbstractController
                     case 'chat':
                         $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en FrikiRadar';
                         break;
+                    case 'like':
+                        $title = $title . ' te ha entregado su kokoro en FrikiRadar';
                     default:
                         $title = $title . ' en FrikiRadar';
                 }
