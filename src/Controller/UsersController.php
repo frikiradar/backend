@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Entity\Tag;
+use App\Entity\Chat;
 use App\Entity\Category;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
@@ -28,6 +29,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mercure\PublisherInterface;
+use Symfony\Component\Mercure\Update;
 
 /**
  * Class UsersController
@@ -975,7 +978,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/link-patreon", name="link_patreon", methods={"PUT"})
      */
-    public function linkToPatreon(Request $request)
+    public function linkToPatreon(Request $request, PublisherInterface $publisher)
     {
         $oauthCode = $this->request->get($request, "oauth_code", false);
         $user = $this->getUser();
@@ -988,6 +991,30 @@ class UsersController extends AbstractController
                 if ($patreon['patron_status'] == 'active_patron') {
                     $user->addRol('ROLE_PATREON');
                     $user->setVerified(true);
+
+                    // Añadimos mensaje en sala de patreon
+                    $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
+                    $text = 'Muchas gracias por tu suscripción a Patreon @' . $user->getUsername();
+                    $slug = 'patreon';
+                    $chat = new Chat();
+                    $chat->setFromuser($frikiradar);
+                    $chat->setText($text);
+                    $chat->setTimeCreation();
+                    $chat->setConversationId($slug);
+                    $chat->setMentions([$user->getUsername()]);
+                    $this->em->persist($chat);
+                    $this->em->flush();
+
+                    $update = new Update($patreon, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                    $publisher($update);
+                    $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                    $publisher($update);
+
+                    $url = "/room/" . $slug;
+
+                    $title = "¡Te damos la bienvenida a Patreon " . $user->getUsername() . "!";
+                    $text = "Muchas gracias por suscribirte a Patreon. Con tu ayuda podemos seguir añadiendo nuevas funcionalidades y seguir creciendo.";
+                    $this->notification->set($frikiradar, $user, $title, $text, $url, 'room');
                 }
 
                 $this->em->persist($user);
