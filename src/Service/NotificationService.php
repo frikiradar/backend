@@ -151,14 +151,14 @@ class NotificationService extends AbstractController
             if ($toUser->getMailing()) {
                 switch ($type) {
                     case 'chat':
-                        $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en FrikiRadar:';
+                        $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en FrikiRadar';
                         break;
                     case 'like':
-                        $title = 'Nuevo kokoro recibido de ' . $fromUser->getName() . ' en FrikiRadar:';
+                        $title = 'Nuevo kokoro recibido de ' . $fromUser->getName() . ' en FrikiRadar';
                         $text = $fromUser->getName() . ' te ha entregado su kokoro ❤';
                         break;
                     default:
-                        $title = $title . ' en FrikiRadar:';
+                        $title = $title . ' en FrikiRadar';
                 }
 
                 //Enviar email en lugar de notificación
