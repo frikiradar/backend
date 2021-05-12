@@ -143,6 +143,14 @@ class NotificationService extends AbstractController
 
         if (!count($tokens) || (isset($report) && $report->failures()->count() >= count($tokens))) {
             if ($toUser->getMailing()) {
+                switch ($type) {
+                    case 'chat':
+                        $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en FrikiRadar';
+                        break;
+                    default:
+                        $title = $title . ' en FrikiRadar';
+                }
+
                 //Enviar email en lugar de notificación
                 $message = (new \Swift_Message($title))
                     ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
