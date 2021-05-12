@@ -56,6 +56,7 @@ class NotificationService extends AbstractController
             }
         }
 
+        $sendEmail = false;
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
@@ -126,11 +127,12 @@ class NotificationService extends AbstractController
                     }
 
                     if ($report->failures()->count() >= count($tokens)) {
-                        /*if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
-                            $toUser->setActive(0);
-                            $this->em->persist($toUser);
-                            $this->em->flush();
-                        }*/
+                        if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
+                            $sendEmail = true;
+                            // $toUser->setActive(0);
+                            // $this->em->persist($toUser);
+                            // $this->em->flush();
+                        }
                     }
                 } /*elseif ($today->diff($toUser->getLastLogin())->format('%a') >= 30) {
                     $toUser->setActive(0);
@@ -140,9 +142,11 @@ class NotificationService extends AbstractController
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
             }
+        } else {
+            $sendEmail = true;
         }
 
-        if (!count($tokens) || (isset($report) && $report->failures()->count() >= count($tokens))) {
+        if ($sendEmail) {
             if ($toUser->getMailing()) {
                 switch ($type) {
                     case 'chat':
