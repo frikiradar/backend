@@ -163,7 +163,7 @@ class NotificationService extends AbstractController
                                 'username' => $toUser->getUsername(),
                                 'title' => $title,
                                 'text' => $text,
-                                'url' => 'https://frikiradar.app/' . $url
+                                'url' => 'https://frikiradar.app' . $url
                             ]
                         ),
                         'text/html'
