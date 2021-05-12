@@ -267,7 +267,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND u.lovegender LIKE '%" . $user->getGender() . "%'" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
                 ->andWhere(
                     in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
                         "u.connection NOT LIKE '%Amistad%'"
