@@ -15,8 +15,9 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class NotificationService extends AbstractController
 {
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(\Swift_Mailer $mailer, EntityManagerInterface $em)
     {
+        $this->mailer = $mailer;
         $this->em = $em;
     }
 
@@ -140,7 +141,7 @@ class NotificationService extends AbstractController
             }
         }
 
-        if (count($tokens) === 0 || (isset($report) && $report->failures()->count() >= count($tokens))) {
+        if (!count($tokens) || (isset($report) && $report->failures()->count() >= count($tokens))) {
             if ($toUser->getMailing()) {
                 //Enviar email en lugar de notificación
                 $message = (new \Swift_Message($title))
@@ -151,8 +152,9 @@ class NotificationService extends AbstractController
                             "emails/notification.html.twig",
                             [
                                 'username' => $toUser->getUsername(),
+                                'title' => $title,
                                 'text' => $text,
-                                'url' => $url
+                                'url' => 'https://frikiradar.app/' . $url
                             ]
                         ),
                         'text/html'
