@@ -636,7 +636,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         $chat->setText($title . "\r\n\r\n" . $text);
         $chat->setTimeCreation();
-        $chat->setConversationId('frikiradar');
+        $chat->setConversationId('1_' . $toUser->getId());
         $this->em->persist($chat);
         $this->em->flush();
 

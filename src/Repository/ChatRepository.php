@@ -57,8 +57,8 @@ class ChatRepository extends ServiceEntityRepository
         $offset = ($page - 1) * $limit;
 
         $dql = $this->createQueryBuilder('c');
-        if ($toUser->getId() == 1 && !$banned) {
-            $dql->andWhere('c.fromuser = 1 AND c.touser IS NULL');
+        if ($toUser->getId() == 1) {
+            $dql->andWhere("c.conversationId = 'frikiradar' AND c.touser IS NULL");
         } else {
             $dql->andWhere('c.fromuser = :fromUser AND c.touser = :toUser');
         }
@@ -111,7 +111,7 @@ class ChatRepository extends ServiceEntityRepository
         $chats = $query->getResult();
 
         foreach ($chats as $key => $chat) {
-            if (strpos($chat["conversationId"], '_') !== false || $chat["fromuser"] == 1) {
+            if ((strpos($chat["conversationId"], '_') !== false && $chat['fromuser'] != 1) || $chat["conversationId"] == 'frikiradar') {
                 if ($chat["fromuser"] == $fromUser->getId()) {
                     $userId = $chat["touser"];
                 } elseif (!is_null($chat["fromuser"])) {
