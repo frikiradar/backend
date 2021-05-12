@@ -10,12 +10,13 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
+use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class NotificationService extends AbstractController
 {
-    public function __construct(\Swift_Mailer $mailer, EntityManagerInterface $em)
+    public function __construct(Swift_Mailer $mailer, EntityManagerInterface $em)
     {
         $this->mailer = $mailer;
         $this->em = $em;
