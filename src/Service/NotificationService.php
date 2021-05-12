@@ -10,9 +10,10 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
-class NotificationService
+class NotificationService extends AbstractController
 {
     public function __construct(EntityManagerInterface $em)
     {
@@ -117,17 +118,39 @@ class NotificationService
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
                 // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
                 $today = new \DateTime;
-                /*if ($report->hasFailures()) {
+                if ($report->hasFailures()) {
                     foreach ($report->failures()->getItems() as $failure) {
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
 
-                    if ($report->failures()->count() >= count($tokens) && $today->diff($toUser->getLastLogin())->format('%a') >= 14) {
-                        $toUser->setActive(0);
-                        $this->em->persist($toUser);
-                        $this->em->flush();
+                    if ($report->failures()->count() >= count($tokens)) {
+                        if ($toUser->getMailing()) {
+                            //Enviar email en lugar de notificación
+                            $message = (new \Swift_Message($title))
+                                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                                ->setTo($toUser->getEmail())
+                                ->setBody(
+                                    $this->renderView(
+                                        "emails/notification.html.twig",
+                                        [
+                                            'username' => $toUser->getUsername(),
+                                            'text' => $text,
+                                            'url' => $url
+                                        ]
+                                    ),
+                                    'text/html'
+                                );
+
+                            $this->mailer->send($message);
+                        }
+
+                        /*if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
+                            $toUser->setActive(0);
+                            $this->em->persist($toUser);
+                            $this->em->flush();
+                        }*/
                     }
-                } elseif ($today->diff($toUser->getLastLogin())->format('%a') >= 30) {
+                } /*elseif ($today->diff($toUser->getLastLogin())->format('%a') >= 30) {
                     $toUser->setActive(0);
                     $this->em->persist($toUser);
                     $this->em->flush();
@@ -136,7 +159,7 @@ class NotificationService
                 // echo "Error al enviar la notificación";
             }
         } else {
-            // TODO: Cuenta no activa, desactivar. Revisar porque version web no activa tokens
+            // TODO: Cuenta no activa, desactivar.
         }
     }
 
