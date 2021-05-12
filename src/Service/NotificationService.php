@@ -57,6 +57,7 @@ class NotificationService extends AbstractController
         }
 
         $sendEmail = false;
+        $today = new \DateTime;
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
 
@@ -120,19 +121,19 @@ class NotificationService extends AbstractController
                 $report = $messaging->sendMulticast($message, $tokens);
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
                 // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
-                $today = new \DateTime;
+
                 if ($report->hasFailures()) {
                     foreach ($report->failures()->getItems() as $failure) {
                         // echo $failure->error()->getMessage() . PHP_EOL;
                     }
 
                     if ($report->failures()->count() >= count($tokens)) {
-                        if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
-                            $sendEmail = true;
+                        $sendEmail = true;
+                        /*if ($today->diff($toUser->getLastLogin())->format('%a') >= 14) {
                             // $toUser->setActive(0);
                             // $this->em->persist($toUser);
                             // $this->em->flush();
-                        }
+                        }*/
                     }
                 } /*elseif ($today->diff($toUser->getLastLogin())->format('%a') >= 30) {
                     $toUser->setActive(0);
@@ -146,7 +147,7 @@ class NotificationService extends AbstractController
             $sendEmail = true;
         }
 
-        if ($sendEmail) {
+        if ($sendEmail && $today->diff($toUser->getLastLogin())->format('%a') >= 1) {
             if ($toUser->getMailing()) {
                 switch ($type) {
                     case 'chat':
