@@ -163,6 +163,7 @@ class UsersController extends AbstractController
 
         if (!is_numeric($id)) {
             $username = $id;
+            $username = str_replace('+', ' ', $username);
             $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
             $id = $user->getId();
         }
