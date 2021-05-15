@@ -66,7 +66,6 @@ class DeviceRepository extends ServiceEntityRepository
             $device->setUser($user);
         } else {
             $device->setDeviceName($name);
-            $device->setDeviceId($id);
         }
 
         if (!empty($token)) {
