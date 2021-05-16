@@ -375,8 +375,12 @@ class UsersController extends AbstractController
             usort($files, function ($a, $b) {
                 return basename($b) <=> basename($a);
             });
-            foreach ($files as $key => $file) {
-                if ($key > 9) {
+            $count = 0;
+            foreach ($files as $file) {
+                if (!strpos($file, '-128px')) {
+                    $count++;
+                }
+                if ($count > 9) {
                     unlink($file);
                 }
             }
