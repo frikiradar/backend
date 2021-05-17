@@ -263,7 +263,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 14;
+            $lastLogin = 30;
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
