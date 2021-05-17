@@ -116,6 +116,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.thumbnail',
                 'u.roles',
                 'u.public',
+                'u.coordinates',
                 "(GLength(
                         LineStringFromWKB(
                             LineString(
@@ -150,7 +151,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
 
             $user['age'] = (int) $user['age'];
-            if (!$user['hide_location']) {
+            if (!$user['hide_location'] && $user['coordinates']) {
                 $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($user['distance']);
