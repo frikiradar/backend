@@ -46,14 +46,18 @@ class UserLikesController extends AbstractController
      */
     public function putLikeAction(Request $request)
     {
+        $fromUser = $this->getUser();
         try {
             $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
+            $cache->deleteItem('users.get.' . $toUser->getId());
 
             $like = $this->em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
 
             if (empty($like)) {
                 $newLike = new LikeUser();
-                $newLike->setFromUser($this->getUser());
+                $newLike->setFromUser($fromUser);
                 $newLike->setToUser($toUser);
                 $this->em->persist($newLike);
                 $this->em->flush();
@@ -65,7 +69,7 @@ class UserLikesController extends AbstractController
                 $this->notification->set($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             }
 
-            $user = $this->em->getRepository('App:User')->findOneUser($this->getUser(), $toUser);
+            $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -79,13 +83,18 @@ class UserLikesController extends AbstractController
      */
     public function removeLikeAction(int $id)
     {
+        $fromUser = $this->getUser();
         try {
             $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
+            $cache->deleteItem('users.get.' . $toUser->getId());
+
             $like = $this->em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
             $this->em->remove($like);
             $this->em->flush();
 
-            $user = $this->em->getRepository('App:User')->findOneUser($this->getUser(), $toUser);
+            $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
