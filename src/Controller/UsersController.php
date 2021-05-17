@@ -990,40 +990,42 @@ class UsersController extends AbstractController
         try {
             if ($oauthCode) {
                 $patreon = $this->em->getRepository('App:User')->getPatreonTokens($oauthCode);
-                $user->setPatreon($patreon);
+                if (!in_array('ROLE_PATREON', $user->getRoles())) {
+                    $user->setPatreon($patreon);
 
-                // Ahora queda averiguar si es miembro del patreon de frikiradar
-                if ($patreon['patron_status'] == 'active_patron') {
-                    $user->addRol('ROLE_PATREON');
-                    $user->setVerified(true);
+                    // Ahora queda averiguar si es miembro del patreon de frikiradar
+                    if ($patreon['patron_status'] == 'active_patron') {
+                        $user->addRol('ROLE_PATREON');
+                        $user->setVerified(true);
 
-                    // Añadimos mensaje en sala de patreon
-                    $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
-                    $text = 'Muchas gracias por tu suscripción a Patreon @' . $user->getUsername();
-                    $slug = 'patreon';
-                    $chat = new Chat();
-                    $chat->setFromuser($frikiradar);
-                    $chat->setText($text);
-                    $chat->setTimeCreation();
-                    $chat->setConversationId($slug);
-                    $chat->setMentions([$user->getUsername()]);
-                    $this->em->persist($chat);
+                        // Añadimos mensaje en sala de patreon
+                        $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
+                        $text = 'Muchas gracias por tu suscripción a Patreon @' . $user->getUsername();
+                        $slug = 'patreon';
+                        $chat = new Chat();
+                        $chat->setFromuser($frikiradar);
+                        $chat->setText($text);
+                        $chat->setTimeCreation();
+                        $chat->setConversationId($slug);
+                        $chat->setMentions([$user->getUsername()]);
+                        $this->em->persist($chat);
+                        $this->em->flush();
+
+                        $update = new Update($patreon, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                        $publisher($update);
+                        $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                        $publisher($update);
+
+                        $url = "/room/" . $slug;
+
+                        $title = "¡Te damos la bienvenida a Patreon " . $user->getUsername() . "!";
+                        $text = "Muchas gracias por suscribirte a Patreon. Con tu ayuda podemos seguir añadiendo nuevas funcionalidades y seguir creciendo.";
+                        $this->notification->set($frikiradar, $user, $title, $text, $url, 'room');
+                    }
+
+                    $this->em->persist($user);
                     $this->em->flush();
-
-                    $update = new Update($patreon, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                    $publisher($update);
-                    $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                    $publisher($update);
-
-                    $url = "/room/" . $slug;
-
-                    $title = "¡Te damos la bienvenida a Patreon " . $user->getUsername() . "!";
-                    $text = "Muchas gracias por suscribirte a Patreon. Con tu ayuda podemos seguir añadiendo nuevas funcionalidades y seguir creciendo.";
-                    $this->notification->set($frikiradar, $user, $title, $text, $url, 'room');
                 }
-
-                $this->em->persist($user);
-                $this->em->flush();
 
                 $data = [
                     'code' => 200,
