@@ -251,6 +251,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_connection',
                 'u.gender',
                 'u.lovegender',
+                'u.connection',
                 'u.avatar',
                 'u.thumbnail',
                 "(GLength(
