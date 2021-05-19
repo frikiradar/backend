@@ -229,10 +229,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getRadarUsers(User $user, $page, $ratio)
+    public function getRadarUsers(User $user, $page, $ratio, $options)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+
         $limit = 15;
         $offset = ($page - 1) * $limit;
 
@@ -249,6 +250,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.block_messages',
                 'u.hide_connection',
                 'u.gender',
+                'u.lovegender',
                 'u.avatar',
                 'u.thumbnail',
                 "(GLength(
@@ -266,18 +268,27 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $lastLogin = 30;
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
-            $dql
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
-                ->andWhere(
+            if (!$options || ($options && $options['range'] === true)) {
+                $dql
+                    ->andHaving('age BETWEEN :minage AND :maxage')
+                    ->setParameter('minage', $user->getMinage() ?: 18)
+                    ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999);
+            }
+            if (!$options || ($options && $options['identity'] === true)) {
+                $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                    ->setParameter('lovegender', $user->getLovegender() ?: 1);
+            }
+            if (!$options || ($options && $options['connection'] === true)) {
+                $dql->andWhere(
                     in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
                         "u.connection NOT LIKE '%Amistad%'"
-                )
-                ->andWhere(
-                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
-                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-                )
+                );
+            }
+            $dql->andWhere(
+                $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
+                    'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                        'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+            )
                 ->andWhere('u.id <> :id')
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
@@ -289,14 +300,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->setParameters(array(
-                    'minage' => $user->getMinage() ?: 18,
-                    'maxage' => ($user->getMaxage() ?: 150) + 0.9999,
-                    'id' => $user->getId(),
-                    'lovegender' => $user->getLovegender() ?: 1,
-                    'orientation' => $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1,
-                    'lastlogin' => $lastLogin
-                ));
+                ->setParameter('id', $user->getId())
+                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
+                ->setParameter('lastlogin', $lastLogin);
         } else {
             $dql
                 ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
@@ -454,7 +460,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
-                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75) {
+                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
                     if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $radar = new Radar();
                         $radar->setFromUser($fromUser);

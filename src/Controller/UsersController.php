@@ -482,11 +482,12 @@ class UsersController extends AbstractController
 
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
+        $options = $this->request->get($request, 'options', false);
         try {
             /*$usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
             if (!$usersCache->isHit()) {
                 $usersCache->expiresAfter(60 * 5);*/
-            $users = $this->em->getRepository('App:User')->getRadarUsers($user, $page, $ratio);
+            $users = $this->em->getRepository('App:User')->getRadarUsers($user, $page, $ratio, $options);
             /*$usersCache->set($users);
                 $cache->save($usersCache);
             } else {
