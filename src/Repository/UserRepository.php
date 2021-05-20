@@ -274,6 +274,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->andHaving('age BETWEEN :minage AND :maxage')
                     ->setParameter('minage', $user->getMinage() ?: 18)
                     ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999);
+            } else {
+                $dql
+                    ->andHaving('age BETWEEN :minage AND :maxage')
+                    ->setParameter('minage', 18)
+                    ->setParameter('maxage', 150.9999);
             }
             if (!$options || ($options && $options['identity'] === true)) {
                 $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
