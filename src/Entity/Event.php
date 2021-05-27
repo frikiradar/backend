@@ -80,6 +80,11 @@ class Event
      */
     private $time_end;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $minage;
+
     public function __construct()
     {
     }
@@ -229,6 +234,18 @@ class Event
     public function setTimeEnd(?\DateTimeInterface $time_end): self
     {
         $this->time_end = $time_end;
+
+        return $this;
+    }
+
+    public function getMinage(): ?int
+    {
+        return $this->minage;
+    }
+
+    public function setMinage(?int $minage): self
+    {
+        $this->minage = $minage;
 
         return $this;
     }
