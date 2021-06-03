@@ -343,6 +343,9 @@ class RoomsController extends AbstractController
         $update = new Update($slug, json_encode($chat));
         $publisher($update);
 
+        $update = new Update('rooms', json_encode($chat));
+        $publisher($update);
+
         return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
     }
 

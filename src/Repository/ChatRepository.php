@@ -132,7 +132,8 @@ class ChatRepository extends ServiceEntityRepository
                             'username' => $user->getUsername(),
                             'name' => $user->getName(),
                             'avatar' =>  $user->getAvatar() ?: null,
-                            'thumbnail' => $user->getThumbnail() ?: null
+                            'thumbnail' => $user->getThumbnail() ?: null,
+                            'last_login' => $user->getLastLogin() ?: null
                         ];
                     } else {
                         $chats[$key]['user'] = [
