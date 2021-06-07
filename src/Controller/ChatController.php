@@ -270,7 +270,7 @@ class ChatController extends AbstractController
         //marcamos como leidos los antiguos
         $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
         foreach ($unreadChats as $chat) {
-            if (!is_null($chat->getFromUser())) {
+            if (!is_null($chat->getFromuser())) {
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
 
@@ -330,7 +330,7 @@ class ChatController extends AbstractController
         try {
             $toUser = $this->getUser();
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($chat->getToUser()->getId() == $toUser->getId()) {
+            if ($chat->getTouser()->getId() == $toUser->getId()) {
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
                 $this->em->flush();
@@ -339,11 +339,15 @@ class ChatController extends AbstractController
                     $this->message->send($chat, $toUser);
                 }
 
-                $update = new Update('chats-' . $chat->getToUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
-                if ($chat->getToUser()->getId() !== $chat->getFromUser()->getId()) {
-                    $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                if ($chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
+                    $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
+
+                    if ($this->security->isGranted('ROLE_MASTER')) {
+                        $this->message->send($chat, $chat->getFromuser());
+                    }
                 }
 
                 // Borrar cachés de notificaciones de chat
@@ -401,7 +405,7 @@ class ChatController extends AbstractController
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
-            if ($chat->getFromUser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
+            if ($chat->getFromuser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
                 $chat->setText($text);
                 $chat->setEdited(1);
                 $this->em->persist($chat);
@@ -411,9 +415,9 @@ class ChatController extends AbstractController
                     $this->message->send($chat, $chat->getTouser());
                 }
 
-                $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
-                if (null !== ($chat->getToUser()) && $chat->getTouser()->getId() !== $chat->getFromUser()->getId()) {
+                if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
                     $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
 
