@@ -101,7 +101,8 @@ class ChatController extends AbstractController
             $title = $fromUser->getName();
             $url = "/chat/" . $chat->getFromuser()->getId();
 
-            $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
+            $message = $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]);
+            $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat", $message);
 
             if ($fromUser->getBanned() && $id == 1) {
                 // Enviamos email avisando

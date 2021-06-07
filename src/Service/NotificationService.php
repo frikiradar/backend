@@ -2,6 +2,7 @@
 // src/Service/NotificationService.php
 namespace App\Service;
 
+use App\Entity\Chat;
 use App\Entity\Notification as EntityNotification;
 use App\Entity\User;
 use Kreait\Firebase\Factory;
@@ -22,7 +23,7 @@ class NotificationService extends AbstractController
         $this->em = $em;
     }
 
-    public function set(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
+    public function set(User $fromUser, User $toUser, string $title, string $text, string $url, string $type, string $message = '')
     {
         if ($type !== 'chat') {
             /**
@@ -44,10 +45,10 @@ class NotificationService extends AbstractController
         $cache->deleteItem('users.notifications.' . $toUser->getId());
         $cache->deleteItem('users.notifications-list.' . $toUser->getId());
 
-        $this->push($fromUser, $toUser, $title, $text, $url, $type);
+        $this->push($fromUser, $toUser, $title, $text, $url, $type, $message);
     }
 
-    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type)
+    public function push(User $fromUser, User $toUser, string $title, string $text, string $url, string $type, string $message = '')
     {
         $tokens = [];
         foreach ($toUser->getDevices() as $device) {
@@ -78,7 +79,8 @@ class NotificationService extends AbstractController
                 'notification_body' => $text,
                 'notification_title' => $title,
                 'notification_image' => $fromUser->getAvatar(),
-                'notification_android_icon' => 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                'notification_android_icon' => 'https://api.frikiradar.com/images/notification/logo_icon.png',
+                'message' => $message
             ];
 
             $androidConfig = AndroidConfig::fromArray([
