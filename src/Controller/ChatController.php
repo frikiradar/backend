@@ -6,6 +6,7 @@ use App\Entity\Chat;
 use App\Repository\ChatRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
+use App\Service\MessageService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,6 +37,7 @@ class ChatController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         NotificationService $notification,
+        MessageService $message,
         AccessCheckerService $accessChecker,
         AuthorizationCheckerInterface $security
     ) {
@@ -44,6 +46,7 @@ class ChatController extends AbstractController
         $this->serializer = $serializer;
         $this->request = $request;
         $this->notification = $notification;
+        $this->message = $message;
         $this->accessChecker = $accessChecker;
         $this->security = $security;
     }
@@ -98,11 +101,7 @@ class ChatController extends AbstractController
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-            $title = $fromUser->getName();
-            $url = "/chat/" . $chat->getFromuser()->getId();
-
-            $message = $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]);
-            $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat", $message);
+            $this->message->send($chat, true);
 
             if ($fromUser->getBanned() && $id == 1) {
                 // Enviamos email avisando
@@ -196,18 +195,15 @@ class ChatController extends AbstractController
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-                $title = $fromUser->getName();
-                $url = "/chat/" . $chat->getFromuser()->getId();
-
                 if (empty($text) && isset($image)) {
-                    $text = '📷 ' . $fromUser->getName() . ' te ha enviado una imagen.';
+                    $chat->setText('📷 ' . $fromUser->getName() . ' te ha enviado una imagen.');
                 } elseif (isset($image)) {
-                    $text = '📷 ' . $text;
+                    $chat->setText('📷 ' . $text);
                 } elseif (isset($audio)) {
-                    $text = '🎤 ' . $fromUser->getName() . ' te ha enviado un audio.';
+                    $chat->setText('🎤 ' . $fromUser->getName() . ' te ha enviado un audio.');
                 }
 
-                $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
+                $this->message->send($chat, true);
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
@@ -350,21 +346,24 @@ class ChatController extends AbstractController
      */
     public function writingAction(Request $request, PublisherInterface $publisher)
     {
-        $fromuser = $this->request->get($request, "fromuser");
-        $touser = $this->request->get($request, "touser");
+        $fromUser = $this->getUser();
+        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, "touser")));
 
-        $chat = [];
-        $min = min($fromuser, $touser);
-        $max = max($fromuser, $touser);
+        $chat = new Chat();
+        $min = min($fromUser->getId(), $toUser->getId());
+        $max = max($fromUser->getId(), $toUser->getId());
 
         $conversationId = $min . "_" . $max;
 
-        $chat['fromuser']['id'] = $fromuser;
-        $chat['conversationId'] = $conversationId;
-        $chat['writing'] = true;
+        $chat->setTouser($toUser);
+        $chat->setFromuser($fromUser);
+        $chat->setConversationId($conversationId);
+        $chat->setWriting(true);
 
-        $update = new Update('chats-' . $touser, $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+        $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         $publisher($update);
+
+        $this->message->send($chat);
 
         $data = [
             'code' => 200,
