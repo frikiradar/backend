@@ -262,10 +262,11 @@ class ChatController extends AbstractController
         //marcamos como leidos los antiguos
         $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
         foreach ($unreadChats as $chat) {
-            $conversationId = $chat->getConversationId();
             if (!is_null($chat->getFromUser())) {
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
+
+                $this->message->send($chat);
 
                 $update = new Update('chats-' . $fromUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
@@ -316,10 +317,11 @@ class ChatController extends AbstractController
             $toUser = $this->getUser();
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             if ($chat->getToUser()->getId() == $toUser->getId()) {
-                $conversationId = $chat->getConversationId();
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
                 $this->em->flush();
+
+                $this->message->send($chat);
 
                 $update = new Update('chats-' . $chat->getToUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
@@ -384,11 +386,12 @@ class ChatController extends AbstractController
             $text = $this->request->get($request, "text");
             $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
             if ($chat->getFromUser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
-                $conversationId = $chat->getConversationId();
                 $chat->setText($text);
                 $chat->setEdited(1);
                 $this->em->persist($chat);
                 $this->em->flush();
+
+                $this->message->send($chat);
 
                 $update = new Update('chats-' . $chat->getFromUser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
@@ -455,6 +458,8 @@ class ChatController extends AbstractController
                     $this->em->flush();
                     $message->setDeleted(1);
                 }
+
+                $this->message->send($message);
 
                 $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                 $publisher($update);
