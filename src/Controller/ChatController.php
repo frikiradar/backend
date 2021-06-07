@@ -363,7 +363,9 @@ class ChatController extends AbstractController
         $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
         $publisher($update);
 
-        $this->message->send($chat);
+        if ($this->security->isGranted('ROLE_MASTER')) {
+            $this->message->send($chat);
+        }
 
         $data = [
             'code' => 200,
