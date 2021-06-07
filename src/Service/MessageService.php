@@ -22,10 +22,9 @@ class MessageService extends AbstractController
         $this->notification = $notification;
     }
 
-    public function send(Chat $chat, $sendNotification = false)
+    public function send(Chat $chat, $toUser, $sendNotification = false)
     {
         $message = $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]);
-        $toUser = $chat->getTouser();
 
         if ($sendNotification) {
             $fromUser = $chat->getFromuser();
