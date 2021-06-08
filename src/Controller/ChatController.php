@@ -338,18 +338,18 @@ class ChatController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                if ($this->security->isGranted('ROLE_MASTER')) {
+                if ($this->security->isGranted('ROLE_ADMIN') && in_array('ROLE_ADMIN', $toUser->getRoles())) {
                     $this->message->send($chat, $toUser);
-                }
-
-                $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                $publisher($update);
-                if ($chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
-                    $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    if ($chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
+                        $this->message->send($chat, $chat->getFromuser());
+                    }
+                } else {
+                    $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
                     $publisher($update);
 
-                    if ($this->security->isGranted('ROLE_MASTER')) {
-                        $this->message->send($chat, $chat->getFromuser());
+                    if ($chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
+                        $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                        $publisher($update);
                     }
                 }
 
@@ -385,11 +385,11 @@ class ChatController extends AbstractController
         $chat->setConversationId($conversationId);
         $chat->setWriting(true);
 
-        $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-        $publisher($update);
-
-        if ($this->security->isGranted('ROLE_MASTER')) {
+        if ($this->security->isGranted('ROLE_ADMIN') && in_array('ROLE_ADMIN', $toUser->getRoles())) {
             $this->message->send($chat, $toUser);
+        } else {
+            $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            $publisher($update);
         }
 
         $data = [
@@ -414,18 +414,18 @@ class ChatController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                if ($this->security->isGranted('ROLE_MASTER')) {
+
+                if ($this->security->isGranted('ROLE_ADMIN') && in_array('ROLE_ADMIN', $chat->getTouser()->getRoles())) {
                     $this->message->send($chat, $chat->getTouser());
-                }
-
-                $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                $publisher($update);
-                if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
-                    $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                    $publisher($update);
-
-                    if ($this->security->isGranted('ROLE_MASTER')) {
+                    if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
                         $this->message->send($chat, $chat->getFromuser());
+                    }
+                } else {
+                    $update = new Update('chats-' . $chat->getFromuser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                    if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
+                        $update = new Update('chats-' . $chat->getTouser()->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                        $publisher($update);
                     }
                 }
 
@@ -488,19 +488,20 @@ class ChatController extends AbstractController
                     $message->setDeleted(1);
                 }
 
-                $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                $publisher($update);
-                if ($this->security->isGranted('ROLE_MASTER')) {
+                if ($this->security->isGranted('ROLE_ADMIN') && in_array('ROLE_ADMIN', $message->getTouser()->getRoles())) {
                     $this->message->send($message, $message->getTouser());
-                }
-                if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
-                    $update = new Update('chats-' . $message->getTouser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                    $publisher($update);
-
-                    if ($this->security->isGranted('ROLE_MASTER')) {
+                    if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
                         $this->message->send($message, $message->getFromuser());
                     }
+                } else {
+                    $update = new Update('chats-' . $message->getFromuser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                    $publisher($update);
+                    if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
+                        $update = new Update('chats-' . $message->getTouser()->getId(), $this->serializer->serialize($message, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                        $publisher($update);
+                    }
                 }
+
                 return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
             } else {
                 throw new HttpException(400, "Error al eliminar el mensaje. - Error: acción no permitida.");
