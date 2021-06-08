@@ -277,18 +277,12 @@ class ChatController extends AbstractController
                     $chat->setTimeRead(new \DateTime);
                     $this->em->persist($chat);
 
-                    if ($this->security->isGranted('ROLE_MASTER')) {
-                        $this->message->send($chat, $toUser);
-                    }
-
-                    $update = new Update('chats-' . $fromUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                    $publisher($update);
                     if ($fromUser->getId() !== $toUser->getId()) {
-                        $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
-                        $publisher($update);
-
-                        if ($this->security->isGranted('ROLE_MASTER')) {
-                            $this->message->send($chat, $fromUser);
+                        if ($this->security->isGranted('ROLE_ADMIN') && in_array('ROLE_ADMIN', $toUser->getRoles())) {
+                            $this->message->send($chat, $toUser);
+                        } else {
+                            $update = new Update('chats-' . $toUser->getId(), $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                            $publisher($update);
                         }
                     }
                 }
