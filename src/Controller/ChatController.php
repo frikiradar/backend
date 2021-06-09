@@ -54,7 +54,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat", name="put_chat", methods={"PUT"})
      */
-    public function put(Request $request, PublisherInterface $publisher, \Swift_Mailer $mailer)
+    public function put(Request $request, \Swift_Mailer $mailer)
     {
         $fromUser = $this->getUser();
         $id = $this->request->get($request, "touser");
@@ -119,7 +119,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat-upload", name="chat_upload", methods={"POST"})
      */
-    public function upload(Request $request, PublisherInterface $publisher)
+    public function upload(Request $request)
     {
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
@@ -235,7 +235,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat/{id}", name="get_chat", methods={"GET"})
      */
-    public function getChatAction(int $id, Request $request, PublisherInterface $publisher)
+    public function getChatAction(int $id, Request $request)
     {
         $fromUser = $this->getUser();
         $cache = new FilesystemAdapter();
@@ -298,7 +298,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/read-chat/{id}", name="read_chat", methods={"GET"})
      */
-    public function markAsReadAction(int $id, PublisherInterface $publisher)
+    public function markAsReadAction(int $id)
     {
         try {
             $toUser = $this->getUser();
@@ -328,7 +328,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/writing-chat", name="writing_chat", methods={"PUT"})
      */
-    public function writingAction(Request $request, PublisherInterface $publisher)
+    public function writingAction(Request $request)
     {
         $fromUser = $this->getUser();
         $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, "touser")));
@@ -356,7 +356,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/update-message", name="update_message", methods={"PUT"})
      */
-    public function updateMessageAction(Request $request, PublisherInterface $publisher)
+    public function updateMessageAction(Request $request)
     {
         try {
             $id = $this->request->get($request, "id");
@@ -386,7 +386,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat-message/{id}", name="delete_message", methods={"DELETE"})
      */
-    public function deleteMessageAction(int $id, PublisherInterface $publisher)
+    public function deleteMessageAction(int $id)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
