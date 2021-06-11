@@ -162,6 +162,7 @@ class ChatRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->select('count(c.id)')
             ->where('c.touser = :toUser')
+            ->andWhere('c.touser <> c.fromuser')
             ->andWhere('c.time_read IS NULL')
             ->andWhere("c.conversationId LIKE '%_%'")
             ->setParameter('toUser', $toUser->getId())
