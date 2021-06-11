@@ -81,7 +81,7 @@ class NotificationService extends AbstractController
                 'notification_image' => $fromUser->getAvatar(),
                 'notification_android_icon' => 'https://api.frikiradar.com/images/notification/logo_icon.png',
                 'message' => $message,
-                'notify' => true
+                'notify' => "true"
             ];
 
             $androidConfig = AndroidConfig::fromArray([
