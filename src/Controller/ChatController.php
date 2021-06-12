@@ -477,4 +477,36 @@ class ChatController extends AbstractController
 
         return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
     }
+
+    /**
+     * @Route("/v1/report-chat", name="report", methods={"PUT"})
+     */
+    public function putReportAction(Request $request, \Swift_Mailer $mailer)
+    {
+        try {
+            /**
+             * @var Chat
+             */
+            $chat = $this->request->get($request, 'message', true);
+            $note = $this->request->get($request, 'note', false);
+
+            $user = $chat->getFromuser();
+            $text = $chat->getText();
+            $room = $chat->getConversationId();
+
+            // Enviar email al administrador informando del motivo
+            $message = (new \Swift_Message('Nuevo mensaje reportado'))
+                ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
+                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($user->getUsername()) . "'>" . $user->getUsername() . "</a> por el siguiente motivo: " . $note . "</br>Contenido del mensaje: " . $text, 'text/html');
+
+            if (0 === $mailer->send($message)) {
+                throw new HttpException(400, "Error al enviar el email con motivo del reporte");
+            }
+
+            return new Response($this->serializer->serialize("Mensaje reportado correctamente", "json"));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al reportar mensaje - Error: {$ex->getMessage()}");
+        }
+    }
 }
