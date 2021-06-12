@@ -479,7 +479,7 @@ class ChatController extends AbstractController
     }
 
     /**
-     * @Route("/v1/report-chat", name="report", methods={"PUT"})
+     * @Route("/v1/report-chat", name="report-chat", methods={"PUT"})
      */
     public function putReportAction(Request $request, \Swift_Mailer $mailer)
     {
