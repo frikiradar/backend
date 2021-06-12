@@ -479,7 +479,7 @@ class ChatController extends AbstractController
     }
 
     /**
-     * @Route("/v1/report-chat", name="report-chat", methods={"PUT"})
+     * @Route("/v1/report-chat", name="report_chat", methods={"PUT"})
      */
     public function putReportAction(Request $request, \Swift_Mailer $mailer)
     {
@@ -490,15 +490,15 @@ class ChatController extends AbstractController
             $chat = $this->request->get($request, 'message', true);
             $note = $this->request->get($request, 'note', false);
 
-            $user = $chat->getFromuser();
-            $text = $chat->getText();
-            $room = $chat->getConversationId();
+            $username = $chat['fromuser']['username'];
+            $text = $chat['text'];
+            $room = $chat['conversationId'];
 
             // Enviar email al administrador informando del motivo
             $message = (new \Swift_Message('Nuevo mensaje reportado'))
                 ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
                 ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($user->getUsername()) . "'>" . $user->getUsername() . "</a> por el siguiente motivo: " . $note . "</br>Contenido del mensaje: " . $text, 'text/html');
+                ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Contenido del mensaje: " . $text, 'text/html');
 
             if (0 === $mailer->send($message)) {
                 throw new HttpException(400, "Error al enviar el email con motivo del reporte");
