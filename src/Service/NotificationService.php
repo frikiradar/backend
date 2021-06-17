@@ -200,6 +200,7 @@ class NotificationService extends AbstractController
             'url' => $url,
             'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
             'topic' => $topic,
+            'notify' => "true"
             // 'notification_foreground' => "true"
         ];
 
