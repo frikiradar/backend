@@ -206,9 +206,8 @@ class RoomsController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                if ($this->security->isGranted('ROLE_MASTER')) {
-                    $this->message->sendTopic($chat, 'rooms', true);
-                }
+                $this->message->sendTopic($chat, 'rooms', false);
+
                 $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
 
@@ -303,6 +302,8 @@ class RoomsController extends AbstractController
                     $this->em->flush();
                 }
 
+                $this->message->sendTopic($chat, 'rooms', false);
+
                 $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
 
@@ -341,6 +342,8 @@ class RoomsController extends AbstractController
         $chat['fromuser']['username'] = $name;
         $chat['conversation_id'] = $slug;
         $chat['writing'] = true;
+
+        $this->message->sendTopic($chat, 'rooms', false);
 
         $update = new Update('rooms', json_encode($chat));
         $publisher($update);
