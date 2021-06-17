@@ -208,10 +208,9 @@ class RoomsController extends AbstractController
 
                 if ($this->security->isGranted('ROLE_MASTER')) {
                     $this->message->sendTopic($chat, $slug, true);
-                } else {
-                    $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                    $publisher($update);
                 }
+                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                $publisher($update);
 
                 $url = "/room/" . $slug;
 
