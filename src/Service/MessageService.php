@@ -75,7 +75,7 @@ class MessageService extends AbstractController
             $title = $fromUser->getName();
             $text = $chat->getText();
             $url = '/room/' . $topic;
-            $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
+            $this->notification->pushTopic($fromUser, $topic, $title, $text, $url, $message);
         } else {
             $data = [
                 'message' => $message,

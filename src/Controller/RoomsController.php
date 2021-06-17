@@ -207,7 +207,7 @@ class RoomsController extends AbstractController
                 $this->em->flush();
 
                 if ($this->security->isGranted('ROLE_MASTER')) {
-                    $this->message->sendTopic($chat, $slug, true);
+                    $this->message->sendTopic($chat, 'rooms', true);
                 }
                 $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
                 $publisher($update);
