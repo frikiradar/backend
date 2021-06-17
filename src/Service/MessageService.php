@@ -44,7 +44,8 @@ class MessageService extends AbstractController
             if (count($tokens) > 0) {
                 $data = [
                     'message' => $message,
-                    'notify' => "false"
+                    'notify' => "false",
+                    'topic' => 'chat'
                 ];
 
                 $message = CloudMessage::new()
@@ -79,7 +80,8 @@ class MessageService extends AbstractController
         } else {
             $data = [
                 'message' => $message,
-                'notify' => "false"
+                'notify' => "false",
+                'topic' => $topic
             ];
 
             $message = CloudMessage::withTarget('topic', $topic)
