@@ -65,4 +65,32 @@ class MessageService extends AbstractController
             }
         }
     }
+
+    public function sendTopic(Chat $chat, string $topic, $notify = false)
+    {
+        $message = $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]);
+
+        if ($notify) {
+            $fromUser = $chat->getFromuser();
+            $title = $fromUser->getName();
+            $text = $chat->getText();
+            $url = '/room/' . $topic;
+            $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
+        } else {
+            $data = [
+                'message' => $message,
+                'notify' => "false"
+            ];
+
+            $message = CloudMessage::withTarget('topic', $topic)
+                ->withData($data);
+
+            try {
+                $messaging = (new Factory())->createMessaging();
+                $messaging->send($message);
+            } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+                // echo "Error al enviar la notificación";
+            }
+        }
+    }
 }

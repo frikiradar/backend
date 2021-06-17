@@ -7,6 +7,7 @@ use App\Entity\Room;
 use App\Repository\ChatRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
+use App\Service\MessageService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,6 +37,7 @@ class RoomsController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         NotificationService $notification,
+        MessageService $message,
         AccessCheckerService $accessChecker,
         AuthorizationCheckerInterface $security
     ) {
@@ -44,6 +46,7 @@ class RoomsController extends AbstractController
         $this->serializer = $serializer;
         $this->request = $request;
         $this->notification = $notification;
+        $this->message = $message;
         $this->accessChecker = $accessChecker;
         $this->security = $security;
     }
@@ -203,8 +206,12 @@ class RoomsController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                $publisher($update);
+                if ($this->security->isGranted('ROLE_MASTER')) {
+                    $this->message->sendTopic($chat, $slug, true);
+                } else {
+                    $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
+                    $publisher($update);
+                }
 
                 $url = "/room/" . $slug;
 

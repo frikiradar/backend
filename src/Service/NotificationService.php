@@ -186,7 +186,7 @@ class NotificationService extends AbstractController
         }
     }
 
-    public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url = '/')
+    public function pushTopic(User $fromUser, string $topic, string $title, string $text, string $url = '/', string $message = '')
     {
         $notification = Notification::fromArray([
             'title' => $title,
@@ -200,6 +200,7 @@ class NotificationService extends AbstractController
             'url' => $url,
             'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
             'topic' => $topic,
+            'message' => $message,
             'notify' => "true"
             // 'notification_foreground' => "true"
         ];

@@ -55,6 +55,17 @@ class Device
      */
     private $device_name;
 
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
+     */
+    private $platform;
+
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $config = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -128,6 +139,30 @@ class Device
     public function setDeviceName(string $device_name): self
     {
         $this->device_name = $device_name;
+
+        return $this;
+    }
+
+    public function getPlatform(): ?string
+    {
+        return $this->platform;
+    }
+
+    public function setPlatform(?string $platform): self
+    {
+        $this->platform = $platform;
+
+        return $this;
+    }
+
+    public function getConfig(): ?array
+    {
+        return $this->config;
+    }
+
+    public function setConfig(?array $config): self
+    {
+        $this->config = $config;
 
         return $this;
     }

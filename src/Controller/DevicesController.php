@@ -12,6 +12,7 @@ use App\Entity\Device;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -21,12 +22,18 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class DevicesController extends AbstractController
 {
-    public function __construct(DeviceRepository $deviceRepository, SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request)
-    {
+    public function __construct(
+        DeviceRepository $deviceRepository,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        RequestService $request,
+        AuthorizationCheckerInterface $security
+    ) {
         $this->deviceRepository = $deviceRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
+        $this->security = $security;
     }
 
     /**
@@ -49,12 +56,36 @@ class DevicesController extends AbstractController
     public function setDeviceAction(Request $request)
     {
         try {
+            $token = $this->request->get($request, "token") ?: "";
+            $platform = $this->request->get($request, "platform", false);
             $this->em->getRepository('App:Device')->set(
                 $this->getUser(),
                 $this->request->get($request, "id"),
                 $this->request->get($request, "name"),
-                $this->request->get($request, "token") ?: ""
+                $token,
+                $platform,
             );
+
+            if ($token && $platform && $this->security->isGranted('ROLE_MASTER')) {
+                $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
+                $headers = array('Authorization: key=' . $key, 'Content-Type: application/json');
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, array());
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/rooms");
+                curl_exec($ch);
+
+                if ($this->security->isGranted('ROLE_MASTER')) {
+                    curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/test");
+                    curl_exec($ch);
+                }
+
+                curl_close($ch);
+            }
 
             return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
         } catch (Exception $ex) {

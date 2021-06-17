@@ -52,7 +52,7 @@ class DeviceRepository extends ServiceEntityRepository
     }
     */
 
-    public function set(User $user, string $id, string $name, string $token = "")
+    public function set(User $user, string $id, string $name, string $token = "", string $platform = null)
     {
         $device = $this->findOneBy(array('token' => $token, 'user' => $user));
 
@@ -71,6 +71,11 @@ class DeviceRepository extends ServiceEntityRepository
         if (!empty($token)) {
             $device->setToken($token);
         }
+
+        if (!empty($platform)) {
+            $device->setPlatform($platform);
+        }
+
         $device->setDeviceId($id);
         $device->setActive(true);
         $device->setLastUpdate(new \DateTime);
