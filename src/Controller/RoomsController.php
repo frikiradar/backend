@@ -334,14 +334,14 @@ class RoomsController extends AbstractController
      */
     public function writingAction(Request $request, PublisherInterface $publisher)
     {
-        $name = $this->request->get($request, "name");
+        $fromUser = $this->getUser();
+
         $slug = $this->request->get($request, "slug");
 
-        $chat = [];
-        $chat['fromuser']['name'] = $name;
-        $chat['fromuser']['username'] = $name;
-        $chat['conversation_id'] = $slug;
-        $chat['writing'] = true;
+        $chat = new Chat();
+        $chat->setFromuser($fromUser);
+        $chat->setConversationId($slug);
+        $chat->setWriting(true);
 
         $this->message->sendTopic($chat, 'rooms', false);
 
