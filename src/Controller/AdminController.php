@@ -17,7 +17,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Mercure\PublisherInterface;
 
 /**
  * Class AdminController
