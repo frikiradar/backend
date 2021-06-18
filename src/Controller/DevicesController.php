@@ -66,7 +66,7 @@ class DevicesController extends AbstractController
                 $platform,
             );
 
-            if ($token && $platform === 'web' && $this->security->isGranted('ROLE_MASTER')) {
+            if ($token && $this->security->isGranted('ROLE_MASTER')) {
                 $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
                 $headers = array('Authorization: key=' . $key, 'Content-Type: application/json');
 
@@ -77,6 +77,9 @@ class DevicesController extends AbstractController
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/rooms");
+                curl_exec($ch);
+
+                curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/frikiradar");
                 curl_exec($ch);
 
                 if ($this->security->isGranted('ROLE_MASTER')) {
