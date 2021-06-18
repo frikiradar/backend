@@ -362,7 +362,7 @@ class ChatController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                if ($chat->getToUser()) {
+                if ($chat->getTouser()) {
                     $this->message->send($chat, $chat->getTouser());
                     if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
                         $this->message->send($chat, $chat->getFromuser());
@@ -430,7 +430,7 @@ class ChatController extends AbstractController
                     $message->setDeleted(1);
                 }
 
-                if ($message->getToUser()) {
+                if ($message->getTouser()) {
                     $this->message->send($message, $message->getTouser());
                     if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
                         $this->message->send($message, $message->getFromuser());
