@@ -11,6 +11,7 @@ use Kreait\Firebase\Messaging\AndroidConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\WebPushConfig;
 use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -113,10 +114,22 @@ class NotificationService extends AbstractController
                 ]
             ]);
 
+            $webConfig = WebPushConfig::fromArray([
+                'notification' => [
+                    'title' => $title,
+                    'body' => $text,
+                    'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                ],
+                'fcm_options' => [
+                    'link' => 'https://frikiradar.app' . $url
+                ]
+            ]);
+
             $message = CloudMessage::new()
                 ->withAndroidConfig($androidConfig)
                 ->withData($data)
                 ->withNotification($notification)
+                ->withWebPushConfig($webConfig)
                 ->withApnsConfig($apnsConfig);
 
             try {
@@ -220,9 +233,21 @@ class NotificationService extends AbstractController
             'collapse_key' => $topic
         ]);
 
+        $webConfig = WebPushConfig::fromArray([
+            'notification' => [
+                'title' => $title,
+                'body' => $text,
+                'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+            ],
+            'fcm_options' => [
+                'link' => 'https://frikiradar.app' . $url
+            ]
+        ]);
+
         $message = CloudMessage::withTarget('topic', $topic)
             ->withAndroidConfig($androidConfig)
             ->withNotification($notification)
+            ->withWebPushConfig($webConfig)
             ->withData($data);
 
         try {
