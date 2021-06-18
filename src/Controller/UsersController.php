@@ -17,6 +17,7 @@ use App\Service\GeolocationService;
 use App\Service\NotificationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
+use App\Service\MessageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,7 +46,8 @@ class UsersController extends AbstractController
         EntityManagerInterface $entityManager,
         RequestService $request,
         NotificationService $notification,
-        AccessCheckerService $accessChecker
+        AccessCheckerService $accessChecker,
+        MessageService $message
     ) {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -53,6 +55,7 @@ class UsersController extends AbstractController
         $this->request = $request;
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
+        $this->message = $message;
     }
 
     // USER URI's
@@ -984,7 +987,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/link-patreon", name="link_patreon", methods={"PUT"})
      */
-    public function linkToPatreon(Request $request, PublisherInterface $publisher)
+    public function linkToPatreon(Request $request)
     {
         $oauthCode = $this->request->get($request, "oauth_code", false);
         $user = $this->getUser();
@@ -1012,10 +1015,7 @@ class UsersController extends AbstractController
                         $this->em->persist($chat);
                         $this->em->flush();
 
-                        $update = new Update($patreon, $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                        $publisher($update);
-                        $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                        $publisher($update);
+                        $this->message->sendTopic($chat, 'rooms', false);
 
                         $url = "/room/" . $slug;
 

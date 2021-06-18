@@ -176,7 +176,7 @@ class RoomsController extends AbstractController
     /**
      * @Route("/v1/room-message", name="put_room_message", methods={"PUT"})
      */
-    public function putMessageAction(Request $request, PublisherInterface $publisher, \Swift_Mailer $mailer)
+    public function putMessageAction(Request $request, \Swift_Mailer $mailer)
     {
         $fromUser = $this->getUser();
         $slug = $this->request->get($request, "slug");
@@ -207,9 +207,6 @@ class RoomsController extends AbstractController
                 $this->em->flush();
 
                 $this->message->sendTopic($chat, 'rooms', false);
-
-                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                $publisher($update);
 
                 $url = "/room/" . $slug;
 
@@ -256,7 +253,7 @@ class RoomsController extends AbstractController
     /**
      * @Route("/v1/room-upload", name="put_room_upload", methods={"POST"})
      */
-    public function upload(Request $request, PublisherInterface $publisher)
+    public function upload(Request $request)
     {
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
@@ -304,9 +301,6 @@ class RoomsController extends AbstractController
 
                 $this->message->sendTopic($chat, 'rooms', false);
 
-                $update = new Update('rooms', $this->serializer->serialize($chat, "json", ['groups' => 'message']));
-                $publisher($update);
-
                 $url = "/room/" . $slug;
 
                 if (count((array) $mentions) > 0) {
@@ -332,7 +326,7 @@ class RoomsController extends AbstractController
     /**
      * @Route("/v1/writing-room", name="writing_room", methods={"PUT"})
      */
-    public function writingAction(Request $request, PublisherInterface $publisher)
+    public function writingAction(Request $request)
     {
         $fromUser = $this->getUser();
 
@@ -344,9 +338,6 @@ class RoomsController extends AbstractController
         $chat->setWriting(true);
 
         $this->message->sendTopic($chat, 'rooms', false);
-
-        $update = new Update('rooms', json_encode($chat));
-        $publisher($update);
 
         return new Response($this->serializer->serialize("Escribiendo en chat", "json"));
     }

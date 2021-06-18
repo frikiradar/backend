@@ -213,7 +213,7 @@ class AdminController extends AbstractController
     /**
      * @Route("/v1/room", name="create_rom", methods={"POST"})
      */
-    public function createRoomAction(Request $request, PublisherInterface $publisher)
+    public function createRoomAction(Request $request)
     {
         $cache = new FilesystemAdapter();
         $cache->deleteItem('rooms.list.admin');
@@ -279,7 +279,7 @@ class AdminController extends AbstractController
     /**
      * @Route("/v1/edit-room", name="edit_room", methods={"POST"})
      */
-    public function editRoomAction(Request $request, PublisherInterface $publisher)
+    public function editRoomAction(Request $request)
     {
         $cache = new FilesystemAdapter();
         $cache->deleteItem('rooms.list.admin');
