@@ -127,12 +127,12 @@ class StoriesController extends AbstractController
     /**
      * @Route("/v1/story-upload", name="story_upload", methods={"POST"})
      */
-    public function upload(Request $request)
+    public function storyUpload(Request $request)
     {
-        $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
+        // $fromUser = $this->getUser();
+        // $this->accessChecker->checkAccess($fromUser);
         try {
-            $cache = new FilesystemAdapter();
+            /*$cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $fromUser->getId());
             $story = new Story();
             $imageFile = $request->files->get('image');
@@ -163,7 +163,7 @@ class StoriesController extends AbstractController
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
                     $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
-            }
+            }*/
 
             $data = [
                 'code' => 200,
