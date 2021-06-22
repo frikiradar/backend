@@ -145,13 +145,12 @@ class StoriesController extends AbstractController
                 $story->setMentions($mentions);
             }
 
-            /*$filename = microtime(true);
+            $filename = microtime(true);
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
             $server = "https://app.frikiradar.com";
             $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
             $image = $uploader->uploadImage($imageFile, false, 80);
-            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);*/
-            $src = '';
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             $story->setImage($src);
             $story->setTimeCreation();
             $this->em->persist($story);
