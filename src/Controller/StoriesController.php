@@ -135,15 +135,15 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $fromUser->getId());
             $story = new Story();
-            $imageFile = $request->files->get('image');
+            // $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
 
             $story->setText($text);
             $story->setUser($fromUser);
-            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
+            /*$mentions = array_unique(json_decode($request->request->get("mentions"), true));
             if ($mentions) {
                 $story->setMentions($mentions);
-            }
+            }*/
 
             // $filename = microtime(true);
             // $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
@@ -156,14 +156,14 @@ class StoriesController extends AbstractController
             $this->em->persist($story);
             $this->em->flush();
 
-            if (count((array) $mentions) > 0) {
+            /*if (count((array) $mentions) > 0) {
                 $url = "/tabs/community/story/" . $story->getId();
                 foreach ($mentions as $mention) {
                     $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
                     $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
-            }
+            }*/
 
             $data = [
                 'code' => 200,
