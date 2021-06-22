@@ -134,29 +134,29 @@ class StoriesController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $fromUser->getId());
-            $story = new Story();
-            // $imageFile = $request->files->get('image');
+            /*$story = new Story();
+            $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
 
             $story->setText($text);
             $story->setUser($fromUser);
-            /*$mentions = array_unique(json_decode($request->request->get("mentions"), true));
+            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
             if ($mentions) {
                 $story->setMentions($mentions);
-            }*/
+            }
 
-            // $filename = microtime(true);
-            // $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
-            // $server = "https://app.frikiradar.com";
-            // $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
-            // $image = $uploader->uploadImage($imageFile, false, 80);
-            // $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-            // $story->setImage($src);
+            $filename = microtime(true);
+            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
+            $server = "https://app.frikiradar.com";
+            $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
+            $image = $uploader->uploadImage($imageFile, false, 80);
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+            $story->setImage($src);
             $story->setTimeCreation();
             $this->em->persist($story);
             $this->em->flush();
 
-            /*if (count((array) $mentions) > 0) {
+            if (count((array) $mentions) > 0) {
                 $url = "/tabs/community/story/" . $story->getId();
                 foreach ($mentions as $mention) {
                     $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
