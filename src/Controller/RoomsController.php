@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use App\Entity\Room;
-use App\Entity\Story;
 use App\Repository\ChatRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
@@ -19,7 +18,6 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -318,77 +316,6 @@ class RoomsController extends AbstractController
             } else {
                 throw new HttpException(400, "La imagen subida está vacía.");
             }
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
-        }
-    }
-
-    /**
-     * @Route("/v1/story/{id}", name="get_story", methods={"GET"})
-     */
-    public function getStoryAction(int $id)
-    {
-        $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
-        try {
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
-            if (!is_null($story)) {
-                return new Response($this->serializer->serialize($story, "json", ['groups' => ['story']]));
-            } else {
-                throw new HttpException(400, "Historia no encontrada");
-            }
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Historia no encontrada - Error: {$ex->getMessage()}");
-        }
-    }
-
-
-    /**
-     * @Route("/v1/story-upload", name="put_story_upload", methods={"POST"})
-     */
-    public function uploadStory(Request $request)
-    {
-        $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
-        try {
-            $cache = new FilesystemAdapter();
-            $cache->deleteItem('stories.get.' . $fromUser->getId());
-            $story = new Story();
-            $imageFile = $request->files->get('image');
-            $text = $request->request->get("text");
-
-            $story->setText($text);
-            $story->setUser($fromUser);
-            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
-            if ($mentions) {
-                $story->setMentions($mentions);
-            }
-
-            $filename = microtime(true);
-            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
-            $server = "https://app.frikiradar.com";
-            $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
-            $image = $uploader->uploadImage($imageFile, false, 80);
-            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-            $story->setImage($src);
-            $story->setTimeCreation();
-            $this->em->persist($story);
-            $this->em->flush();
-
-            if (count((array) $mentions) > 0) {
-                $url = "/tabs/community/story/" . $story->getId();
-                foreach ($mentions as $mention) {
-                    $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
-                    $title = $fromUser->getName() . ' te ha mencionado en una historia.';
-                    $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
-                }
-            }
-
-            $data = [
-                'code' => 200,
-                'message' => "Historia publicada correctamente",
-            ];
-            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al subir el archivo - Error: {$ex->getMessage()}");
         }
