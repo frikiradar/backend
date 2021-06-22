@@ -129,11 +129,11 @@ class StoriesController extends AbstractController
      */
     public function upload(Request $request)
     {
-        // $fromUser = $this->getUser();
+        $fromUser = $this->getUser();
         // $this->accessChecker->checkAccess($fromUser);
         try {
-            /*$cache = new FilesystemAdapter();
-            $cache->deleteItem('stories.get.' . $fromUser->getId());
+            // $cache = new FilesystemAdapter();
+            // $cache->deleteItem('stories.get.' . $fromUser->getId());
             $story = new Story();
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
@@ -156,7 +156,7 @@ class StoriesController extends AbstractController
             $this->em->persist($story);
             $this->em->flush();
 
-            if (count((array) $mentions) > 0) {
+            /*if (count((array) $mentions) > 0) {
                 $url = "/tabs/community/story/" . $story->getId();
                 foreach ($mentions as $mention) {
                     $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
