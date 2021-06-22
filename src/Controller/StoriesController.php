@@ -125,9 +125,9 @@ class StoriesController extends AbstractController
 
 
     /**
-     * @Route("/v1/story-upload", name="story_upload", methods={"POST"})
+     * @Route("/v1/upload-story", name="put_story_upload", methods={"POST"})
      */
-    public function storyUpload(Request $request)
+    public function upload(Request $request)
     {
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
