@@ -134,23 +134,24 @@ class StoriesController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $fromUser->getId());
-            // $story = new Story();
+            $story = new Story();
             $imageFile = $request->files->get('image');
-            /*$text = $request->request->get("text");
+            $text = $request->request->get("text");
 
             $story->setText($text);
             $story->setUser($fromUser);
             $mentions = array_unique(json_decode($request->request->get("mentions"), true));
             if ($mentions) {
                 $story->setMentions($mentions);
-            }*/
+            }
 
-            $filename = microtime(true);
+            /*$filename = microtime(true);
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
             $server = "https://app.frikiradar.com";
             $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
             $image = $uploader->uploadImage($imageFile, false, 80);
-            /*$src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);*/
+            $src = '';
             $story->setImage($src);
             $story->setTimeCreation();
             $this->em->persist($story);
@@ -163,7 +164,7 @@ class StoriesController extends AbstractController
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
                     $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
-            }*/
+            }
 
             $data = [
                 'code' => 200,
