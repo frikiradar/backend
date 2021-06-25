@@ -144,7 +144,7 @@ class ChatController extends AbstractController
                     $server = "https://$_SERVER[HTTP_HOST]";
                     $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
                     if ($imageFile) {
-                        $image = $uploader->uploadImage($imageFile, false, 70);
+                        $image = $uploader->uploadImage($imageFile, false, 80, 1920);
                         $chat->setImage($image);
                     }
                     if ($audioFile) {
@@ -158,7 +158,7 @@ class ChatController extends AbstractController
                     $server = "https://app.frikiradar.com";
                     $uploader = new FileUploaderService($absolutePath . $conversationId . "/", $filename);
                     if ($imageFile) {
-                        $image = $uploader->uploadImage($imageFile, false, 50);
+                        $image = $uploader->uploadImage($imageFile, false, 80, 1920);
                         $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                         $chat->setImage($src);
                         $chat->setText($text);

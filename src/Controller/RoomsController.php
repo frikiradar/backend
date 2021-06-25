@@ -277,7 +277,7 @@ class RoomsController extends AbstractController
                     $absolutePath = 'images/chat/';
                     $server = "https://$_SERVER[HTTP_HOST]";
                     $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
-                    $image = $uploader->uploadImage($imageFile, false, 80);
+                    $image = $uploader->uploadImage($imageFile, false, 80, 1920);
                     $chat->setImage($image);
                     $chat->setText($text);
                     $chat->setTimeCreation();
@@ -286,7 +286,7 @@ class RoomsController extends AbstractController
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/';
                     $server = "https://app.frikiradar.com";
                     $uploader = new FileUploaderService($absolutePath . $slug . "/", $filename);
-                    $image = $uploader->uploadImage($imageFile, false, 80);
+                    $image = $uploader->uploadImage($imageFile, false, 80, 1920);
                     $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                     $chat->setImage($src);
                     $chat->setText($text);

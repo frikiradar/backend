@@ -47,9 +47,11 @@ class FileUploaderService
                 $imageSize = $image->getSize();
                 $height = $imageSize->getHeight();
                 $width = $imageSize->getWidth();
-                $newWidth = $size;
-                $newHeigth = $height * $newWidth / $width;
-                $image->resize(new Box($newWidth, $newHeigth));
+                if ($width > $size) {
+                    $newWidth = $size;
+                    $newHeigth = $height * $newWidth / $width;
+                    $image->resize(new Box($newWidth, $newHeigth));
+                }
             }
             $image = $image->save($targetSrc, $options);
             if ($image) {
