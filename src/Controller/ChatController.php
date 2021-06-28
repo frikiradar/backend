@@ -90,7 +90,9 @@ class ChatController extends AbstractController
             $this->em->persist($fromUser);
             $this->em->flush();
 
-            $this->message->send($chat, $toUser, true);
+            if ($fromUser->getId() !== $toUser->getId()) {
+                $this->message->send($chat, $toUser, true);
+            }
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
@@ -177,7 +179,9 @@ class ChatController extends AbstractController
                     $this->em->flush();
                 }
 
-                $this->message->send($chat, $toUser, true);
+                if ($fromUser->getId() !== $toUser->getId()) {
+                    $this->message->send($chat, $toUser, true);
+                }
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
 
