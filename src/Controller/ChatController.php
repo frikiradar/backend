@@ -302,9 +302,7 @@ class ChatController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                if ($chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
-                    $this->message->send($chat, $toUser);
-                }
+                $this->message->send($chat, $chat->getFromuser());
 
                 // Borrar cachés de notificaciones de chat
                 $cache = new FilesystemAdapter();
