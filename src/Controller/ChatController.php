@@ -179,11 +179,6 @@ class ChatController extends AbstractController
                     $this->em->flush();
                 }
 
-                if ($fromUser->getId() !== $toUser->getId()) {
-                    $this->message->send($chat, $toUser, true);
-                }
-
-                $cache->deleteItem('users.chat.' . $fromUser->getId());
 
                 if (empty($text) && isset($image)) {
                     $chat->setText('📷 ' . $fromUser->getName() . ' te ha enviado una imagen.');
@@ -192,6 +187,12 @@ class ChatController extends AbstractController
                 } elseif (isset($audio)) {
                     $chat->setText('🎤 ' . $fromUser->getName() . ' te ha enviado un audio.');
                 }
+
+                if ($fromUser->getId() !== $toUser->getId()) {
+                    $this->message->send($chat, $toUser, true);
+                }
+
+                $cache->deleteItem('users.chat.' . $fromUser->getId());
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
             } else {
