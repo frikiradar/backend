@@ -108,6 +108,11 @@ class Chat
      */
     private $modded;
 
+    /**
+     * @Groups({"message"})
+     */
+    private $tmp_id = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -277,6 +282,18 @@ class Chat
     public function setModded(?bool $modded): self
     {
         $this->modded = $modded;
+
+        return $this;
+    }
+
+    public function getTmpId(): ?bool
+    {
+        return $this->tmp_id;
+    }
+
+    public function setTmpId(bool $tmp_id): self
+    {
+        $this->tmp_id = $tmp_id;
 
         return $this;
     }
