@@ -75,8 +75,10 @@ class ChatController extends AbstractController
 
             $conversationId = $min . "_" . $max;
 
-            $tmp_id = $this->request->get($request, "tmp_id");
-            $chat->setTmpId($tmp_id);
+            $tmp_id = $this->request->get($request, "tmp_id", false);
+            if ($tmp_id) {
+                $chat->setTmpId($tmp_id);
+            }
 
             $text = $this->request->get($request, "text", false);
             $chat->setText($text);
@@ -139,7 +141,9 @@ class ChatController extends AbstractController
                 $text = $request->request->get("text");
                 $audioFile = $request->files->get('audio');
                 $tmp_id = $request->request->get($request, "tmp_id");
-                $chat->setTmpId($tmp_id);
+                if ($tmp_id) {
+                    $chat->setTmpId($tmp_id);
+                }
 
                 // return new Response($this->serializer->serialize($audioFile, 'json'));
 
