@@ -111,7 +111,7 @@ class Chat
     /**
      * @Groups({"message"})
      */
-    private $tmp_id = false;
+    private $tmp_id;
 
     public function getId(): ?int
     {
@@ -286,12 +286,12 @@ class Chat
         return $this;
     }
 
-    public function getTmpId(): ?bool
+    public function getTmpId(): ?string
     {
         return $this->tmp_id;
     }
 
-    public function setTmpId(bool $tmp_id): self
+    public function setTmpId(string $tmp_id): self
     {
         $this->tmp_id = $tmp_id;
 
