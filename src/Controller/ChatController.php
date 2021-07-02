@@ -140,7 +140,7 @@ class ChatController extends AbstractController
                 $imageFile = $request->files->get('image');
                 $text = $request->request->get("text");
                 $audioFile = $request->files->get('audio');
-                $tmp_id = $request->request->get($request, "tmp_id");
+                $tmp_id = $request->request->get("tmp_id");
                 if ($tmp_id) {
                     $chat->setTmpId($tmp_id);
                 }
