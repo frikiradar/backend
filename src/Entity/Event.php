@@ -76,12 +76,6 @@ class Event
     private $url;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
-    private $location;
-
-    /**
      * @ORM\Column(type="date", nullable=true)
      * @Groups({"default"})
      */
@@ -98,6 +92,41 @@ class Event
      * @Groups({"default"})
      */
     private $minage;
+
+    /**
+     * @ORM\Column(type="string", length=70)
+     */
+    private $type;
+
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     */
+    private $country;
+
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     */
+    private $city;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $address;
+
+    /**
+     * @ORM\Column(type="string", length=10, nullable=true)
+     */
+    private $postal_code;
+
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     */
+    private $contact_phone;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $contact_email;
 
     public function __construct()
     {
@@ -216,18 +245,6 @@ class Event
         return $this;
     }
 
-    public function getLocation(): ?string
-    {
-        return $this->location;
-    }
-
-    public function setLocation(?string $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
     public function getDateEnd(): ?\DateTimeInterface
     {
         return $this->date_end;
@@ -260,6 +277,90 @@ class Event
     public function setMinage(?int $minage): self
     {
         $this->minage = $minage;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): self
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): self
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): self
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postal_code;
+    }
+
+    public function setPostalCode(?string $postal_code): self
+    {
+        $this->postal_code = $postal_code;
+
+        return $this;
+    }
+
+    public function getContactPhone(): ?string
+    {
+        return $this->contact_phone;
+    }
+
+    public function setContactPhone(?string $contact_phone): self
+    {
+        $this->contact_phone = $contact_phone;
+
+        return $this;
+    }
+
+    public function getContactEmail(): ?string
+    {
+        return $this->contact_email;
+    }
+
+    public function setContactEmail(?string $contact_email): self
+    {
+        $this->contact_email = $contact_email;
 
         return $this;
     }
