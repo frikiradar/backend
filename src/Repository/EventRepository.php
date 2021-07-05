@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Event;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -47,4 +48,13 @@ class EventRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findUserEvents(User $user)
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.creator = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
 }

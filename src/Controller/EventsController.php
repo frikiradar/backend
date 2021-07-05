@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Event;
+use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,19 +25,25 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class EventsController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request, NotificationService $notification)
-    {
+    public function __construct(
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        RequestService $request,
+        NotificationService $notification,
+        AccessCheckerService $accessChecker,
+    ) {
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
+        $this->accessChecker = $accessChecker;
     }
 
 
     /**
      * @Route("/v1/event", name="set_event", methods={"POST"})
      */
-    public function setEvent(Request $request)
+    public function setEventAction(Request $request)
     {
         $cache = new FilesystemAdapter();
         $cache->deleteItem('rooms.list.admin');
@@ -78,15 +85,15 @@ class EventsController extends AbstractController
             $event->setCreator($creator);
             $event->setRecursion(false);
 
-            /*if (!empty($imageFile)) {
-                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/rooms/';
+            if (!empty($imageFile)) {
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
                 $server = "https://app.frikiradar.com";
-                $filename = microtime();
+                $filename =  microtime();
                 $uploader = new FileUploaderService($absolutePath, $filename);
                 $image = $uploader->uploadImage($imageFile, true, 70);
                 $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 $event->setImage($src);
-            }*/
+            }
 
             $this->em->persist($event);
             $this->em->flush();
@@ -96,4 +103,56 @@ class EventsController extends AbstractController
             throw new HttpException(400, "Error al crear el event - Error: {$ex->getMessage()}");
         }
     }
+
+    /**
+     * @Route("/v1/event/{id}", name="get_event_id", methods={"GET"})
+     */
+    public function getEventAction($id)
+    {
+        $fromUser = $this->getUser();
+        $this->accessChecker->checkAccess($fromUser);
+
+        try {
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/my-events", name="get_my_events", methods={"GET"})
+     */
+    public function getMyEventsAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $events = $this->em->getRepository('App:Event')->findUserEvents($user);
+            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/my-events", name="get_my_events", methods={"GET"})
+     */
+    /*public function getMyAssistsEventsAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $event = $this->em->getRepository('App:Event')->8pi
+            
+            
+            
+            (array('id' => $id));
+            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+        }
+    }*/
 }
