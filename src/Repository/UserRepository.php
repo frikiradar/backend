@@ -444,7 +444,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $toTags = $this->getTagsFromUsers($users);
 
         foreach ($users as $key => $u) {
-            $users[$key]['avatar'] = $u['avatar'] ?: "https://app.frikiradar.com/images/layout/default.jpg";
+            $users[$key]['avatar'] = $u['avatar'] ?: $this->getDefaultAvatar($u['username']);
             $users[$key]['age'] = (int) $u['age'];
             if (!$u['hide_location']) {
                 $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
@@ -749,5 +749,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function deletePatreonMember($id)
     {
+    }
+
+    public function getDefaultAvatar($username)
+    {
+        $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $letter = strtoupper($username[0]);
+        if (in_array($letter, $letters)) {
+            return "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
+        } else {
+            return "https://api.frikiradar.com/images/avatar/default.png";
+        }
     }
 }
