@@ -48,7 +48,7 @@ class Event
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $repeat;
+    private $recursion;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -154,14 +154,14 @@ class Event
         return $this;
     }
 
-    public function getRepeat(): ?string
+    public function getRecursion(): ?string
     {
-        return $this->repeat;
+        return $this->recursion;
     }
 
-    public function setRepeat(?string $repeat): self
+    public function setRecursion(?string $recursion): self
     {
-        $this->repeat = $repeat;
+        $this->recursion = $recursion;
 
         return $this;
     }
