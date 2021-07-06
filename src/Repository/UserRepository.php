@@ -761,4 +761,26 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return "https://api.frikiradar.com/images/avatar/default.png";
         }
     }
+
+    public function isBannedIpOrDevice(User $user)
+    {
+        $ip = $user->getLastIp();
+        /*$devices = $user->getDevices();
+        foreach ($devices as $device) {
+            $device->getToken();
+            $device->getDeviceId();
+        }*/
+
+        $dql = "SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.last_ip = :ip";
+        $res = $this->getEntityManager()->createQuery($dql)
+            // ->setParameter('devices', $devices)
+            ->setParameter('ip', $ip)
+            ->getOneOrNullResult();
+
+        if ($res) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -20,7 +20,18 @@ class AccessCheckerService extends AbstractController
         if (!$user instanceof User) {
             $user = $this->getUser();
         }
-        $now = new \DateTime;
+
+        if ($this->em->getRepository('App:User')->isBannedIpOrDevice($user)) {
+            $user->setBanned(true);
+            $user->getBanReason('Multicuenta no autorizada. La cuenta original ha sido baneada.');
+            $user->setBanEnd(null);
+
+            $this->em->persist($user);
+            $this->em->flush();
+
+            throw new HttpException(401, "Banned account.");
+        }
+
         if (!empty($user) && $user->getBanned() !== false) {
             $now = new \DateTime;
             if ($user->getBanEnd() > $now || is_null($user->getBanEnd())) {
