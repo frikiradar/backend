@@ -777,7 +777,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         foreach ($res as $device) {
             if (in_array($device->getToken(), $tokens)) {
-                return false;
+                return true;
             }
         }
 
