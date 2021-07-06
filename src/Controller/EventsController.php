@@ -58,7 +58,15 @@ class EventsController extends AbstractController
         $slug = $request->request->get("slug");
         //$repeat = $request->request->get("repeat") ?: "";
         $url = $request->request->get("url");
-        $location = $request->request->get("location");
+        $type = $request->request->get("type");
+        if ($type === 'offline') {
+            $country = $request->request->get("country");
+            $city = $request->request->get("city");
+            $address = $request->request->get("address");
+            $postalCode = $request->request->get("postal_code");
+            $contactPhone = $request->request->get("contact_phone");
+            $contactEmail = $request->request->get("contact_email");
+        }
         $minage = $request->request->get("minage") ?: 0;
         $imageFile = $request->files->get('image');
         $creator = $this->getUser();
@@ -80,7 +88,13 @@ class EventsController extends AbstractController
                 $event->setTimeEnd(\DateTime::createFromFormat('H:i', '23:59'));
             }
             $event->setUrl($url);
-            $event->setLocation($location);
+            $event->setCountry($country);
+            $event->setCity($city);
+            $event->setAddress($address);
+            $event->setPostalCode($postalCode);
+            $event->setContactPhone($contactPhone);
+            $event->setContactEmail($contactEmail);
+
             $event->setMinage($minage);
             $event->setCreator($creator);
             $event->setRecursion(false);
