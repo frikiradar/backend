@@ -768,7 +768,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $devices = $user->getDevices();
         $tokens = [];
         foreach ($devices as $device) {
-            $tokens[] = $device->getToken();
+            if ($device->getToken()) {
+                $tokens[] = $device->getToken();
+            }
         }
 
         $dql = "SELECT d FROM App:Device d WHERE d.user IN (SELECT u.id FROM App:User u WHERE u.banned = 1)";
@@ -777,7 +779,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         foreach ($res as $device) {
             if (in_array($device->getToken(), $tokens)) {
-                return false;
+                return true;
             }
         }
 
