@@ -765,15 +765,24 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     public function isBannedIpOrDevice(User $user)
     {
         $ip = $user->getLastIp();
-        /*$devices = $user->getDevices();
+        $devices = $user->getDevices();
+        $tokens = [];
         foreach ($devices as $device) {
-            $device->getToken();
-            $device->getDeviceId();
-        }*/
+            $tokens[] = $device->getToken();
+        }
+
+        $dql = "SELECT d FROM App:Device d WHERE d.user IN (SELECT u.id FROM App:User u WHERE u.banned = 1)";
+        $res = $this->getEntityManager()->createQuery($dql)
+            ->getResult();
+
+        foreach ($res as $device) {
+            if (in_array($device->getToken(), $tokens)) {
+                return false;
+            }
+        }
 
         $dql = "SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.last_ip = :ip";
         $res = $this->getEntityManager()->createQuery($dql)
-            // ->setParameter('devices', $devices)
             ->setParameter('ip', $ip)
             ->getOneOrNullResult();
 
