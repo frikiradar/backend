@@ -23,7 +23,7 @@ class AccessCheckerService extends AbstractController
 
         if ($this->em->getRepository('App:User')->isBannedIpOrDevice($user)) {
             $user->setBanned(true);
-            $user->getBanReason('Multicuenta no autorizada. La cuenta original ha sido baneada.');
+            $user->setBanReason('Multicuenta no autorizada. La cuenta original ha sido baneada.');
             $user->setBanEnd(null);
 
             $this->em->persist($user);
