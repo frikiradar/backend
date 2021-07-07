@@ -40,16 +40,10 @@ class Event
     private $description;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default"})
      */
     private $date;
-
-    /**
-     * @ORM\Column(type="time", nullable=true)
-     * @Groups({"default"})
-     */
-    private $time;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -76,16 +70,10 @@ class Event
     private $url;
 
     /**
-     * @ORM\Column(type="date", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"default"})
      */
     private $date_end;
-
-    /**
-     * @ORM\Column(type="time", nullable=true)
-     * @Groups({"default"})
-     */
-    private $time_end;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -185,18 +173,6 @@ class Event
         return $this;
     }
 
-    public function getTime(): ?\DateTimeInterface
-    {
-        return $this->time;
-    }
-
-    public function setTime(?\DateTimeInterface $time): self
-    {
-        $this->time = $time;
-
-        return $this;
-    }
-
     public function getRecursion(): ?string
     {
         return $this->recursion;
@@ -253,18 +229,6 @@ class Event
     public function setDateEnd(?\DateTimeInterface $date_end): self
     {
         $this->date_end = $date_end;
-
-        return $this;
-    }
-
-    public function getTimeEnd(): ?\DateTimeInterface
-    {
-        return $this->time_end;
-    }
-
-    public function setTimeEnd(?\DateTimeInterface $time_end): self
-    {
-        $this->time_end = $time_end;
 
         return $this;
     }

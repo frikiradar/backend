@@ -52,9 +52,7 @@ class EventsController extends AbstractController
         $title = $request->request->get("title");
         $description = $request->request->get("description");
         $date = $request->request->get("date");
-        $time = $request->request->get("time");
         $endDate = $request->request->get("endDate");
-        $endTime = $request->request->get("endTime");
         $slug = $request->request->get("slug");
         //$repeat = $request->request->get("repeat") ?: "";
         $url = $request->request->get("url");
@@ -79,13 +77,13 @@ class EventsController extends AbstractController
             $event->setTitle($title);
             $event->setDescription($description);
             $event->setDate(\DateTime::createFromFormat('Y-m-d', $date));
-            $event->setTime(\DateTime::createFromFormat('H:i', $time));
-            if ($endDate && $endTime) {
+            // $event->setTime(\DateTime::createFromFormat('H:i', $time));
+            if ($endDate) {
                 $event->setDateEnd(\DateTime::createFromFormat('Y-m-d', $endDate));
-                $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
+                // $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
             } else {
                 $event->setDateEnd(\DateTime::createFromFormat('Y-m-d', $date));
-                $event->setTimeEnd(\DateTime::createFromFormat('H:i', '23:59'));
+                // $event->setTimeEnd(\DateTime::createFromFormat('H:i', '23:59'));
             }
             $event->setUrl($url);
             if ($type === 'offline') {
