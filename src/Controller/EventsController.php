@@ -88,12 +88,14 @@ class EventsController extends AbstractController
                 $event->setTimeEnd(\DateTime::createFromFormat('H:i', '23:59'));
             }
             $event->setUrl($url);
-            $event->setCountry($country);
-            $event->setCity($city);
-            $event->setAddress($address);
-            $event->setPostalCode($postalCode);
-            $event->setContactPhone($contactPhone);
-            $event->setContactEmail($contactEmail);
+            if ($type === 'offline') {
+                $event->setCountry($country);
+                $event->setCity($city);
+                $event->setAddress($address);
+                $event->setPostalCode($postalCode);
+                $event->setContactPhone($contactPhone);
+                $event->setContactEmail($contactEmail);
+            }
 
             $event->setMinage($minage);
             $event->setCreator($creator);
