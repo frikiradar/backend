@@ -107,7 +107,7 @@ class EventsController extends AbstractController
                 $server = "https://app.frikiradar.com";
                 $filename =  microtime();
                 $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage($imageFile, true, 70);
+                $image = $uploader->uploadImage($imageFile, false, 70);
                 $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 $event->setImage($src);
             }
