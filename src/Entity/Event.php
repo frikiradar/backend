@@ -199,7 +199,11 @@ class Event
 
     public function getImage(): ?string
     {
-        return $this->image;
+        if ($this->image) {
+            return $this->image;
+        } else {
+            return $this->creator->getAvatar();
+        }
     }
 
     public function setImage(?string $image): self

@@ -52,7 +52,7 @@ class EventsController extends AbstractController
         $title = $request->request->get("title");
         $description = $request->request->get("description");
         $date = $request->request->get("date");
-        $endDate = $request->request->get("endDate");
+        $endDate = $request->request->get("end_date");
         $slug = $request->request->get("slug");
         //$repeat = $request->request->get("repeat") ?: "";
         $url = $request->request->get("url");
