@@ -83,36 +83,43 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=70)
+     * @Groups({"default"})
      */
     private $type;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $country;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
+     * @Groups({"default"})
      */
     private $postal_code;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
+     * @Groups({"default"})
      */
     private $contact_phone;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
      */
     private $contact_email;
 
