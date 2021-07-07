@@ -100,6 +100,7 @@ class EventsController extends AbstractController
             $event->setMinage($minage);
             $event->setCreator($creator);
             $event->setRecursion(false);
+            $event->setType($type);
 
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
