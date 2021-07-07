@@ -126,11 +126,12 @@ class NotificationService extends AbstractController
             ]);
 
             $message = CloudMessage::new()
-                ->withAndroidConfig($androidConfig)
+                ->withHighestPossiblePriority()
+                ->withAndroidConfig($androidConfig->withHighPriority())
                 ->withData($data)
                 ->withNotification($notification)
-                ->withWebPushConfig($webConfig)
-                ->withApnsConfig($apnsConfig);
+                ->withWebPushConfig($webConfig->withHighUrgency())
+                ->withApnsConfig($apnsConfig->withImmediatePriority());
 
             try {
                 $messaging = (new Factory())->createMessaging();

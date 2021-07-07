@@ -49,6 +49,7 @@ class MessageService extends AbstractController
                 ];
 
                 $message = CloudMessage::new()
+                    ->withHighestPossiblePriority()
                     ->withData($data);
 
                 try {
@@ -85,6 +86,7 @@ class MessageService extends AbstractController
             ];
 
             $message = CloudMessage::withTarget('topic', $topic)
+                ->withHighestPossiblePriority()
                 ->withData($data);
 
             try {
