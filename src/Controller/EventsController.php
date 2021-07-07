@@ -76,14 +76,11 @@ class EventsController extends AbstractController
             $event = new Event();
             $event->setTitle($title);
             $event->setDescription($description);
-            $event->setDate(\DateTime::createFromFormat('Y-m-d', $date));
+            $event->setDate(new \DateTime($date));
             // $event->setTime(\DateTime::createFromFormat('H:i', $time));
             if ($endDate) {
-                $event->setDateEnd(\DateTime::createFromFormat('Y-m-d', $endDate));
+                $event->setDateEnd(new \DateTime($endDate));
                 // $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
-            } else {
-                $event->setDateEnd(\DateTime::createFromFormat('Y-m-d', $date));
-                // $event->setTimeEnd(\DateTime::createFromFormat('H:i', '23:59'));
             }
             $event->setUrl($url);
             if ($type === 'offline') {
