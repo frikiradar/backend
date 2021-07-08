@@ -94,7 +94,7 @@ class EventRepository extends ServiceEntityRepository
         return [...$officialEvents, ...$likeEvents];
     }
 
-    public function getOnlineEvents(User $user)
+    public function findOnlineEvents(User $user)
     {
         $today = new \DateTime;
 
@@ -107,7 +107,7 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getNearEvents(User $user)
+    public function findNearEvents(User $user)
     {
         $today = new \DateTime;
 
