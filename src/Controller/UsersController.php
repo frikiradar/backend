@@ -275,7 +275,7 @@ class UsersController extends AbstractController
                 $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
                 $user->setCountry($this->request->get($request, 'country') ?: $user->getCountry());
                 $city = $this->request->get($request, 'city') ?: $user->getCity();
-                if (strtolower($city) == 'cdmx') {
+                if (in_array(strtolower($city), ['cdmx', 'df'])) {
                     $city = "Ciudad de México";
                 }
                 $user->setCity($city);
