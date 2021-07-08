@@ -69,7 +69,7 @@ class EventRepository extends ServiceEntityRepository
             ->where('e.creator = :user')
             ->andWhere('e.date > :today')
             ->setParameter('user', $frikiradar)
-            ->setParameter('date', $today)
+            ->setParameter('today', $today)
             ->orderBy('e.date', 'asc')
             ->getQuery()
             ->getResult();
@@ -87,7 +87,7 @@ class EventRepository extends ServiceEntityRepository
             ->andWhere('e.date > :today')
             ->orderBy('e.date', 'asc')
             ->setParameter('slugs', $slugs)
-            ->setParameter('date', $today)
+            ->setParameter('today', $today)
             ->getQuery()
             ->getResult();
 
@@ -102,7 +102,7 @@ class EventRepository extends ServiceEntityRepository
             ->where('e.date > :today')
             ->andWhere('e.type = "online"')
             ->orderBy('e.date', 'asc')
-            ->setParameter('date', $today)
+            ->setParameter('today', $today)
             ->getQuery()
             ->getResult();
     }
@@ -116,7 +116,7 @@ class EventRepository extends ServiceEntityRepository
             ->orWhere('e.city LIKE :city')
             ->andWhere('e.date > :today')
             ->orderBy('e.date', 'asc')
-            ->setParameter('date', $today)
+            ->setParameter('today', $today)
             ->setParameter('city', '%' . $user->getCity() . '%')
             ->setParameter('country', $user->getCountry())
             ->getQuery()
