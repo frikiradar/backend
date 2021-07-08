@@ -112,7 +112,7 @@ class EventsController extends AbstractController
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al crear el event - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al crear el evento - Error: {$ex->getMessage()}");
         }
     }
 
@@ -128,7 +128,7 @@ class EventsController extends AbstractController
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
             return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
         }
     }
 
@@ -144,27 +144,55 @@ class EventsController extends AbstractController
             $events = $this->em->getRepository('App:Event')->findUserEvents($user);
             return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
     }
 
     /**
-     * @Route("/v1/my-events", name="get_my_events", methods={"GET"})
+     * @Route("/v1/suggested-events", name="get_suggested_events", methods={"GET"})
      */
-    /*public function getMyAssistsEventsAction()
+    public function getSuggestedEventsAction()
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
         try {
-            $event = $this->em->getRepository('App:Event')->8pi
-            
-            
-            
-            (array('id' => $id));
-            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+            $events = $this->em->getRepository('App:Event')->findSuggestedEvents($user);
+            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
-    }*/
+    }
+
+    /**
+     * @Route("/v1/online-events", name="get_online_events", methods={"GET"})
+     */
+    public function getOnlineEventsAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $events = $this->em->getRepository('App:Event')->findOnlineEvents($user);
+            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/near-events", name="get_near_events", methods={"GET"})
+     */
+    public function getNearEventsAction()
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $events = $this->em->getRepository('App:Event')->findNearEvents($user);
+            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
+        }
+    }
 }

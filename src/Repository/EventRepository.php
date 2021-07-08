@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Event;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -15,9 +16,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EventRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, Event::class);
+        $this->em = $entityManager;
     }
 
     // /**
@@ -54,6 +56,69 @@ class EventRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('e')
             ->andWhere('e.creator = :user')
             ->setParameter('user', $user)
+            ->orderBy('e.date', 'asc')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findSuggestedEvents(User $user)
+    {
+        $today = new \DateTime;
+        $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+        $officialEvents = $this->createQueryBuilder('e')
+            ->where('e.creator = :user')
+            ->andWhere('e.date > :today')
+            ->setParameter('user', $frikiradar)
+            ->setParameter('date', $today)
+            ->orderBy('e.date', 'asc')
+            ->getQuery()
+            ->getResult();
+
+        $tags = $user->getTags();
+        $slugs = [];
+        foreach ($tags as $tag) {
+            if ($tag->getSlug()) {
+                $slugs[] = $tag->getSlug();
+            }
+        }
+
+        $likeEvents = $this->createQueryBuilder('e')
+            ->where('e.slug IN (:slugs)')
+            ->andWhere('e.date > :today')
+            ->orderBy('e.date', 'asc')
+            ->setParameter('slugs', $slugs)
+            ->setParameter('date', $today)
+            ->getQuery()
+            ->getResult();
+
+        return [...$officialEvents, ...$likeEvents];
+    }
+
+    public function getOnlineEvents(User $user)
+    {
+        $today = new \DateTime;
+
+        return $this->createQueryBuilder('e')
+            ->where('e.date > :today')
+            ->andWhere('e.type = "online"')
+            ->orderBy('e.date', 'asc')
+            ->setParameter('date', $today)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getNearEvents(User $user)
+    {
+        $today = new \DateTime;
+
+        return $this->createQueryBuilder('e')
+            ->where('e.country = :country')
+            ->orWhere('e.city LIKE :city')
+            ->andWhere('e.date > :today')
+            ->orderBy('e.date', 'asc')
+            ->setParameter('date', $today)
+            ->setParameter('city', '%' . $user->getCity() . '%')
+            ->setParameter('country', $user->getCountry())
             ->getQuery()
             ->getResult();
     }
