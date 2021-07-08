@@ -91,7 +91,17 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return [...$officialEvents, ...$likeEvents];
+        $events = [...$officialEvents, ...$likeEvents];
+        if (count($events)) {
+            return $events;
+        } else {
+            return $this->createQueryBuilder('e')
+                ->where('e.date > :today')
+                ->setParameter('today', $today)
+                ->orderBy('e.date', 'asc')
+                ->getQuery()
+                ->getResult();
+        }
     }
 
     public function findOnlineEvents(User $user)
@@ -111,15 +121,19 @@ class EventRepository extends ServiceEntityRepository
     {
         $today = new \DateTime;
 
-        return $this->createQueryBuilder('e')
-            ->where('e.country = :country')
-            ->orWhere('e.city LIKE :city')
-            ->andWhere('e.date > :today')
-            ->orderBy('e.date', 'asc')
-            ->setParameter('today', $today)
-            ->setParameter('city', '%' . $user->getCity() . '%')
-            ->setParameter('country', $user->getCountry())
-            ->getQuery()
-            ->getResult();
+        if ($user->getCountry() || $user->getCity()) {
+            return $this->createQueryBuilder('e')
+                ->where('e.country = :country')
+                ->orWhere('e.city LIKE :city')
+                ->andWhere('e.date > :today')
+                ->orderBy('e.date', 'asc')
+                ->setParameter('today', $today)
+                ->setParameter('city', '%' . $user->getCity() . '%')
+                ->setParameter('country', $user->getCountry())
+                ->getQuery()
+                ->getResult();
+        } else {
+            return [];
+        }
     }
 }
