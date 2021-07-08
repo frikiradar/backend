@@ -274,7 +274,11 @@ class UsersController extends AbstractController
                 $user->setDescription($this->request->get($request, 'description'));
                 $user->setLocation($this->request->get($request, 'location') ?: $user->getLocation());
                 $user->setCountry($this->request->get($request, 'country') ?: $user->getCountry());
-                $user->setCity($this->request->get($request, 'city') ?: $user->getCity());
+                $city = $this->request->get($request, 'city') ?: $user->getCity();
+                if (strtolower($city) == 'cdmx') {
+                    $city = "Ciudad de México";
+                }
+                $user->setCity($city);
                 $user->setBirthday(\DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]));
                 $user->setGender($this->request->get($request, 'gender'));
                 $user->setOrientation($this->request->get($request, 'orientation'));
