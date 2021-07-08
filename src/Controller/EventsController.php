@@ -85,6 +85,10 @@ class EventsController extends AbstractController
             $event->setUrl($url);
             if ($type === 'offline') {
                 $event->setCountry($country);
+                if (strtolower($city) == 'cdmx') {
+                    $city = "Ciudad de México";
+                }
+
                 $event->setCity($city);
                 $event->setAddress($address);
                 $event->setPostalCode($postalCode);
