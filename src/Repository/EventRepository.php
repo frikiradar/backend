@@ -100,7 +100,7 @@ class EventRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('e')
             ->where('e.date > :today')
-            ->andWhere('e.type = "online"')
+            ->andWhere("e.type = 'online'")
             ->orderBy('e.date', 'asc')
             ->setParameter('today', $today)
             ->getQuery()
