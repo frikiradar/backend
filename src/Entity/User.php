@@ -190,6 +190,12 @@ class User implements UserInterface
     private $country;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"default"})
+     */
+    private $city;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\Device", mappedBy="user", orphanRemoval=true)
      * @Groups({"default"})
      */
@@ -1010,6 +1016,18 @@ class User implements UserInterface
     public function setCountry(?string $country): self
     {
         $this->country = $country;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): self
+    {
+        $this->city = $city;
 
         return $this;
     }
