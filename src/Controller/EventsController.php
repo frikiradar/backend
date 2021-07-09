@@ -121,6 +121,93 @@ class EventsController extends AbstractController
     }
 
     /**
+     * @Route("/v1/event", name="edit_event", methods={"POST"})
+     */
+    public function editEventAction(Request $request)
+    {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('rooms.list.admin');
+        $cache->deleteItem('rooms.list.visible');
+
+        $id = $request->request->get("id");
+        $title = $request->request->get("title");
+        $description = $request->request->get("description");
+        $date = $request->request->get("date");
+        $endDate = $request->request->get("end_date");
+        $url = $request->request->get("url");
+        $type = $request->request->get("type");
+        if ($type === 'offline') {
+            $country = $request->request->get("country");
+            $city = $request->request->get("city");
+            $address = $request->request->get("address");
+            $postalCode = $request->request->get("postal_code");
+            $contactPhone = $request->request->get("contact_phone");
+            $contactEmail = $request->request->get("contact_email");
+        }
+        $minage = $request->request->get("minage") ?: 0;
+        $imageFile = $request->files->get('image');
+        $creator = $this->getUser();
+
+        try {
+            /**
+             * @var Event
+             */
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            $event->setTitle($title);
+            $event->setDescription($description);
+            $event->setDate(new \DateTime($date));
+            // $event->setTime(\DateTime::createFromFormat('H:i', $time));
+            if ($endDate) {
+                $event->setDateEnd(new \DateTime($endDate));
+                // $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
+            }
+            $event->setUrl($url);
+            if ($type === 'offline') {
+                $event->setCountry($country);
+                if (in_array(strtolower($city), ['cdmx', 'df'])) {
+                    $city = "Ciudad de México";
+                }
+
+                $event->setCity($city);
+                $event->setAddress($address);
+                $event->setPostalCode($postalCode);
+                $event->setContactPhone($contactPhone);
+                $event->setContactEmail($contactEmail);
+            }
+
+            $event->setMinage($minage);
+            $event->setCreator($creator);
+            $event->setRecursion(false);
+            $event->setType($type);
+
+            if (!empty($imageFile)) {
+                // Borramos primero imagen antigua
+                $image = $event->getImage();
+                if ($image) {
+                    $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
+                    unlink($file);
+                }
+
+                // Subimos imagen nueva
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
+                $server = "https://app.frikiradar.com";
+                $filename =  microtime();
+                $uploader = new FileUploaderService($absolutePath, $filename);
+                $image = $uploader->uploadImage($imageFile, false, 70);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $event->setImage($src);
+            }
+
+            $this->em->persist($event);
+            $this->em->flush();
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al crear el evento - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/event/{id}", name="get_event_id", methods={"GET"})
      */
     public function getEventAction($id)
