@@ -365,6 +365,11 @@ class User implements UserInterface
      */
     private $patreon;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Event::class, mappedBy="participants")
+     */
+    private $events;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1466,6 +1471,24 @@ class User implements UserInterface
     public function setPatreon(?array $patreon): self
     {
         $this->patreon = $patreon;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Event[]
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events[] = $event;
+            $event->addParticipant($this);
+        }
 
         return $this;
     }
