@@ -121,7 +121,7 @@ class EventsController extends AbstractController
     }
 
     /**
-     * @Route("/v1/event", name="edit_event", methods={"POST"})
+     * @Route("/v1/edit-event", name="edit_event", methods={"POST"})
      */
     public function editEventAction(Request $request)
     {
