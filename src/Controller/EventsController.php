@@ -378,6 +378,8 @@ class EventsController extends AbstractController
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
             $event->addParticipant($user);
+            $this->em->persist($event);
+            $this->em->flush();
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -400,6 +402,8 @@ class EventsController extends AbstractController
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
             $event->removeParticipant($user);
+            $this->em->persist($event);
+            $this->em->flush();
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
