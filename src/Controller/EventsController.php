@@ -154,55 +154,59 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
-            $event->setTitle($title);
-            $event->setDescription($description);
-            $event->setDate(new \DateTime($date));
-            // $event->setTime(\DateTime::createFromFormat('H:i', $time));
-            if ($endDate) {
-                $event->setDateEnd(new \DateTime($endDate));
-                // $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
-            }
-            $event->setUrl($url);
-            if ($type === 'offline') {
-                $event->setCountry($country);
-                if (in_array(strtolower($city), ['cdmx', 'df'])) {
-                    $city = "Ciudad de México";
+            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
+                $event->setTitle($title);
+                $event->setDescription($description);
+                $event->setDate(new \DateTime($date));
+                // $event->setTime(\DateTime::createFromFormat('H:i', $time));
+                if ($endDate) {
+                    $event->setDateEnd(new \DateTime($endDate));
+                    // $event->setTimeEnd(\DateTime::createFromFormat('H:i', $endTime));
+                }
+                $event->setUrl($url);
+                if ($type === 'offline') {
+                    $event->setCountry($country);
+                    if (in_array(strtolower($city), ['cdmx', 'df'])) {
+                        $city = "Ciudad de México";
+                    }
+
+                    $event->setCity($city);
+                    $event->setAddress($address);
+                    $event->setPostalCode($postalCode);
+                    $event->setContactPhone($contactPhone);
+                    $event->setContactEmail($contactEmail);
                 }
 
-                $event->setCity($city);
-                $event->setAddress($address);
-                $event->setPostalCode($postalCode);
-                $event->setContactPhone($contactPhone);
-                $event->setContactEmail($contactEmail);
-            }
+                $event->setMinage($minage);
+                $event->setCreator($creator);
+                $event->setRecursion(false);
+                $event->setType($type);
 
-            $event->setMinage($minage);
-            $event->setCreator($creator);
-            $event->setRecursion(false);
-            $event->setType($type);
+                if (!empty($imageFile)) {
+                    // Borramos primero imagen antigua
+                    $image = $event->getImage();
+                    if ($image) {
+                        $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
+                        unlink($file);
+                    }
 
-            if (!empty($imageFile)) {
-                // Borramos primero imagen antigua
-                $image = $event->getImage();
-                if ($image) {
-                    $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
-                    unlink($file);
+                    // Subimos imagen nueva
+                    $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
+                    $server = "https://app.frikiradar.com";
+                    $filename =  microtime();
+                    $uploader = new FileUploaderService($absolutePath, $filename);
+                    $image = $uploader->uploadImage($imageFile, false, 70);
+                    $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                    $event->setImage($src);
                 }
 
-                // Subimos imagen nueva
-                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
-                $server = "https://app.frikiradar.com";
-                $filename =  microtime();
-                $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage($imageFile, false, 70);
-                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-                $event->setImage($src);
+                $this->em->persist($event);
+                $this->em->flush();
+
+                return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            } else {
+                throw new HttpException(401, "No puedes editar el evento de otro usuario");
             }
-
-            $this->em->persist($event);
-            $this->em->flush();
-
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear el evento - Error: {$ex->getMessage()}");
         }
@@ -230,33 +234,36 @@ class EventsController extends AbstractController
     }
 
     /**
-     * @Route("/v1/delete-event", name="delete_event", methods={"POST"})
+     * @Route("/v1/delete-event/{id}", name="delete_event", methods={"DELETE"})
      */
-    public function deleteEventAction(Request $request)
+    public function deleteEventAction(int $id)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        $id = $this->request->get($request, "id");
 
         try {
             /**
              * @var Event
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
-            $image = $event->getImage();
-            if ($image) {
-                $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
-                unlink($file);
+            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
+                $image = $event->getImage();
+                if ($image) {
+                    $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
+                    unlink($file);
+                }
+
+                $this->em->remove($event);
+                $this->em->flush();
+
+                $data = [
+                    'code' => 200,
+                    'message' => "Evento eliminado correctamente",
+                ];
+                return new JsonResponse($data, 200);
+            } else {
+                throw new HttpException(401, "No puedes eliminar el evento de otro usuario");
             }
-
-            $this->em->remove($event);
-            $this->em->flush();
-
-            $data = [
-                'code' => 200,
-                'message' => "Evento eliminado correctamente",
-            ];
-            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error eliminar el evento - Error: {$ex->getMessage()}");
         }
@@ -276,12 +283,17 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
-            $event->setStatus('cancelled');
+            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
 
-            $this->em->persist($event);
-            $this->em->flush();
+                $event->setStatus('cancelled');
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+                $this->em->persist($event);
+                $this->em->flush();
+
+                return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+            } else {
+                throw new HttpException(401, "No puedes cancelar el evento de otro usuario");
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error eliminar el evento - Error: {$ex->getMessage()}");
         }
