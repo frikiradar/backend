@@ -773,7 +773,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        $dql = "SELECT d FROM App:Device d WHERE d.user IN (SELECT u.id FROM App:User u WHERE u.banned = 1)";
+        $dql = "SELECT d FROM App:Device d WHERE d.user IN (SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.id <> '" . $user->getId() . "' )";
         $res = $this->getEntityManager()->createQuery($dql)
             ->getResult();
 
@@ -783,7 +783,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
         }
 
-        $dql = "SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.last_ip = :ip";
+        $dql = "SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.last_ip = :ip AND u.id <> '" . $user->getId() . "'";
         $res = $this->getEntityManager()->createQuery($dql)
             ->setParameter('ip', $ip)
             ->getOneOrNullResult();
