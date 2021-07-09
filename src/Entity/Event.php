@@ -131,8 +131,15 @@ class Event
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="events")
+     * @Groups({"default"})
      */
     private $participants;
+
+    /**
+     * @ORM\Column(type="string", length=70)
+     * @Groups({"default"})
+     */
+    private $status;
 
     public function __construct()
     {
@@ -384,6 +391,18 @@ class Event
     public function removeParticipant(User $participant): self
     {
         $this->participants->removeElement($participant);
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

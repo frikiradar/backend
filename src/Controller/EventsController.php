@@ -100,6 +100,7 @@ class EventsController extends AbstractController
             $event->setCreator($creator);
             $event->setRecursion(false);
             $event->setType($type);
+            $event->setStatus('active');
 
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
@@ -229,6 +230,64 @@ class EventsController extends AbstractController
     }
 
     /**
+     * @Route("/v1/delete-event", name="delete_event", methods={"POST"})
+     */
+    public function deleteEventAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            /**
+             * @var Event
+             */
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            $image = $event->getImage();
+            if ($image) {
+                $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
+                unlink($file);
+            }
+
+            $this->em->remove($event);
+            $this->em->flush();
+
+            $data = [
+                'code' => 200,
+                'message' => "Evento eliminado correctamente",
+            ];
+            return new JsonResponse($data, 200);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error eliminar el evento - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/cancel-event", name="cancel_event", methods={"PUT"})
+     */
+    public function cancelEventAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            /**
+             * @var Event
+             */
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            $event->setStatus('cancelled');
+
+            $this->em->persist($event);
+            $this->em->flush();
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error eliminar el evento - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/my-events", name="get_my_events", methods={"GET"})
      */
     public function getMyEventsAction()
@@ -289,6 +348,50 @@ class EventsController extends AbstractController
             return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/participate-event", name="participate_event", methods={"POST"})
+     */
+    public function participateEventAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            /**
+             * @var Event
+             */
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            $event->addParticipant($user);
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/remove-participant-event", name="remove_participant_event", methods={"DELETE"})
+     */
+    public function removeParticipantEventAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            /**
+             * @var Event
+             */
+            $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            $event->removeParticipant($user);
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }
     }
 }
