@@ -124,6 +124,11 @@ class Event
      */
     private $contact_email;
 
+    /**
+     * @Groups({"default"})
+     */
+    private $page;
+
     public function __construct()
     {
     }
@@ -337,6 +342,18 @@ class Event
     public function setContactEmail(?string $contact_email): self
     {
         $this->contact_email = $contact_email;
+
+        return $this;
+    }
+
+    public function getPage(): ?Page
+    {
+        return $this->page;
+    }
+
+    public function setPage(?Page $page): self
+    {
+        $this->page = $page;
 
         return $this;
     }

@@ -130,6 +130,11 @@ class EventsController extends AbstractController
 
         try {
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+            if ($event->getSlug()) {
+                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $event->getSlug()));
+                $event->setPage($page);
+            }
+
             return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");

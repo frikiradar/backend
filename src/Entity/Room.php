@@ -76,6 +76,11 @@ class Room
      */
     private $page;
 
+    /**
+     * @Groups({"default"})
+     */
+    private $event;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -197,6 +202,18 @@ class Room
     public function setPage(?Page $page): self
     {
         $this->page = $page;
+
+        return $this;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): self
+    {
+        $this->event = $event;
 
         return $this;
     }

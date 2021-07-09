@@ -119,16 +119,31 @@ class RoomsController extends AbstractController
             if (!$roomCache->isHit()) {
                 $room = $this->em->getRepository('App:Room')->findOneBy(array('slug' => $slug));
                 if (empty($room)) {
-                    $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
-                    if (!empty($page)) {
-                        $room = new Room();
-                        $room->setPage($page);
-                        $room->setName($page->getName());
-                        $room->setDescription($page->getDescription());
-                        $room->setSlug($page->getSlug());
-                        $room->setPermissions(['ROLE_USER']);
-                        $room->setVisible(false);
-                        $room->setImage($page->getCover());
+                    if (strpos($slug, 'event-') !== false) {
+                        $id = explode('-', $slug)[1];
+                        $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+                        if (!empty($event)) {
+                            $room = new Room();
+                            $room->setEvent($event);
+                            $room->setName($event->getTitle());
+                            $room->setDescription($event->getDescription());
+                            $room->setSlug($slug);
+                            $room->setPermissions(['ROLE_USER']);
+                            $room->setVisible(false);
+                            $room->setImage($event->getImage());
+                        }
+                    } else {
+                        $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+                        if (!empty($page)) {
+                            $room = new Room();
+                            $room->setPage($page);
+                            $room->setName($page->getName());
+                            $room->setDescription($page->getDescription());
+                            $room->setSlug($page->getSlug());
+                            $room->setPermissions(['ROLE_USER']);
+                            $room->setVisible(false);
+                            $room->setImage($page->getCover());
+                        }
                     }
                 }
                 $roomCache->set($room);
