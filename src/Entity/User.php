@@ -367,6 +367,7 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToMany(targetEntity=Event::class, mappedBy="participants")
+     * @Groups({"default"})
      */
     private $events;
 
