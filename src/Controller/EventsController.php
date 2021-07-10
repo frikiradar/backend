@@ -383,18 +383,17 @@ class EventsController extends AbstractController
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al participar en el evento - Error: {$ex->getMessage()}");
         }
     }
 
     /**
-     * @Route("/v1/remove-participant-event", name="remove_participant_event", methods={"DELETE"})
+     * @Route("/v1/remove-participant-event/{id}", name="remove_participant_event", methods={"DELETE"})
      */
-    public function removeParticipantEventAction(Request $request)
+    public function removeParticipantEventAction(int $id)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        $id = $this->request->get($request, "id");
 
         try {
             /**
@@ -407,7 +406,7 @@ class EventsController extends AbstractController
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
+            throw new HttpException(400, "Error al quitar participación en el evento - Error: {$ex->getMessage()}");
         }
     }
 }
