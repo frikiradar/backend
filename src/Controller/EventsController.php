@@ -45,10 +45,6 @@ class EventsController extends AbstractController
      */
     public function setEventAction(Request $request)
     {
-        $cache = new FilesystemAdapter();
-        $cache->deleteItem('rooms.list.admin');
-        $cache->deleteItem('rooms.list.visible');
-
         $title = $request->request->get("title");
         $description = $request->request->get("description");
         $date = $request->request->get("date");
@@ -101,6 +97,7 @@ class EventsController extends AbstractController
             $event->setRecursion(false);
             $event->setType($type);
             $event->setStatus('active');
+            $event->addParticipant($this->getUser());
 
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
@@ -126,10 +123,6 @@ class EventsController extends AbstractController
      */
     public function editEventAction(Request $request)
     {
-        $cache = new FilesystemAdapter();
-        $cache->deleteItem('rooms.list.admin');
-        $cache->deleteItem('rooms.list.visible');
-
         $id = $request->request->get("id");
         $title = $request->request->get("title");
         $description = $request->request->get("description");

@@ -55,6 +55,7 @@ class EventRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('e')
             ->andWhere('e.creator = :user')
+            ->orWhere('e.participants IN (:user)')
             ->setParameter('user', $user)
             ->orderBy('e.date', 'asc')
             ->getQuery()
