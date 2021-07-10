@@ -53,6 +53,7 @@ class EventsController extends AbstractController
         //$repeat = $request->request->get("repeat") ?: "";
         $url = $request->request->get("url");
         $type = $request->request->get("type");
+        $userId = $request->request->get("user");
         if ($type === 'offline') {
             $country = $request->request->get("country");
             $city = $request->request->get("city");
@@ -98,6 +99,11 @@ class EventsController extends AbstractController
             $event->setType($type);
             $event->setStatus('active');
             $event->addParticipant($this->getUser());
+
+            if ($userId) {
+                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+                $event->setUser($user);
+            }
 
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
