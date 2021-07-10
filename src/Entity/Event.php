@@ -374,7 +374,7 @@ class Event
     /**
      * @return Collection|User[]
      */
-    public function getParticipants(): Collection
+    public function getParticipants(): ?Collection
     {
         return $this->participants;
     }
