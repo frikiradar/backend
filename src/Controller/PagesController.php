@@ -91,10 +91,10 @@ class PagesController extends AbstractController
                 $page = $pageCache->get();
             }
 
-            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+            /*$messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
             if (isset($messages[0])) {
                 $page->getRoom()->setLastMessage($messages[0]['last_message']);
-            }
+            }*/
 
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
         } catch (Exception $ex) {
