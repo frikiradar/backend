@@ -144,4 +144,19 @@ class EventRepository extends ServiceEntityRepository
             return [];
         }
     }
+
+    public function findSlugEvents(string $slug)
+    {
+        $today = new \DateTime;
+
+        return $this->createQueryBuilder('e')
+            ->where('e.slug = :slug')
+            ->andWhere('e.date > :today')
+            ->andWhere("e.status <> 'cancelled'")
+            ->orderBy('e.date', 'asc')
+            ->setParameter('today', $today)
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getResult();
+    }
 }

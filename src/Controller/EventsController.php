@@ -363,6 +363,22 @@ class EventsController extends AbstractController
     }
 
     /**
+     * @Route("/v1/slug-events/{slug}", name="slug_events", methods={"GET"})
+     */
+    public function getSlugEvents(string $slug)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+
+        try {
+            $events = $this->em->getRepository('App:Event')->findSlugEvents($slug);
+            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
      * @Route("/v1/participate-event", name="participate_event", methods={"POST"})
      */
     public function participateEventAction(Request $request)
