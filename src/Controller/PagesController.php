@@ -77,6 +77,10 @@ class PagesController extends AbstractController
                     $room->setVisible(false);
                     $room->setPermissions(['ROLE_USER']);
                     $page->setRoom($room);
+
+                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
+                    $page->setLikes($likes['total']);
+
                     $pageCache->expiresAfter(3600 * 24);
                     $pageCache->set($page);
                     $cache->save($pageCache);
@@ -87,13 +91,10 @@ class PagesController extends AbstractController
                 $page = $pageCache->get();
             }
 
-            /*$messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
             if (isset($messages[0])) {
                 $page->getRoom()->setLastMessage($messages[0]['last_message']);
-            }*/
-
-            $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
-            $page->setLikes($likes['total']);
+            }
 
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
         } catch (Exception $ex) {
