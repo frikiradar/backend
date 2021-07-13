@@ -70,10 +70,10 @@ class EventRepository extends ServiceEntityRepository
         $today = new \DateTime;
         $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
         $officialEvents = $this->createQueryBuilder('e')
-            ->where('e.creator = :user')
+            ->where('e.creator = :frikiradar')
             ->andWhere('e.date > :today')
             ->andWhere("e.status <> 'cancelled'")
-            ->setParameter('user', $frikiradar)
+            ->setParameter('frikiradar', $frikiradar)
             ->setParameter('today', $today)
             ->orderBy('e.date', 'asc')
             ->getQuery()
@@ -91,9 +91,11 @@ class EventRepository extends ServiceEntityRepository
             ->where('e.slug IN (:slugs)')
             ->andWhere('e.date > :today')
             ->andWhere("e.status <> 'cancelled'")
+            ->andWhere('e.creator <> :frikiradar')
             ->orderBy('e.date', 'asc')
             ->setParameter('slugs', $slugs)
             ->setParameter('today', $today)
+            ->setParameter('frikiradar', $frikiradar)
             ->getQuery()
             ->getResult();
 
@@ -102,8 +104,10 @@ class EventRepository extends ServiceEntityRepository
             ->andWhere('e.date > :today')
             ->andWhere("e.status <> 'cancelled'")
             ->andWhere("e.user IS NULL")
+            ->andWhere('e.creator <> :frikiradar')
             ->orderBy('e.date', 'asc')
             ->setParameter('today', $today)
+            ->setParameter('frikiradar', $frikiradar)
             ->getQuery()
             ->getResult();
 
