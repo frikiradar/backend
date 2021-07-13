@@ -84,7 +84,7 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=70)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $type;
 
