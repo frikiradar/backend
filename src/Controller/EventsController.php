@@ -159,7 +159,7 @@ class EventsController extends AbstractController
                 }
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default', 'message']]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear el evento - Error: {$ex->getMessage()}");
         }
