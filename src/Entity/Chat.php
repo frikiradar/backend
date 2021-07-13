@@ -113,6 +113,12 @@ class Chat
      */
     private $tmp_id;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Event::class, cascade={"persist", "remove"})
+     * @Groups({"message"})
+     */
+    private $event;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -294,6 +300,18 @@ class Chat
     public function setTmpId(string $tmp_id): self
     {
         $this->tmp_id = $tmp_id;
+
+        return $this;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): self
+    {
+        $this->event = $event;
 
         return $this;
     }

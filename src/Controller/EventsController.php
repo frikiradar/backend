@@ -2,9 +2,11 @@
 // src/Controller/EventsController.php
 namespace App\Controller;
 
+use App\Entity\Chat;
 use App\Entity\Event;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
+use App\Service\MessageService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -31,12 +33,14 @@ class EventsController extends AbstractController
         RequestService $request,
         NotificationService $notification,
         AccessCheckerService $accessChecker,
+        MessageService $message,
     ) {
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
+        $this->message = $message;
     }
 
 
@@ -121,6 +125,39 @@ class EventsController extends AbstractController
 
             $this->em->persist($event);
             $this->em->flush();
+
+            if (isset($user) || $slug) {
+                // Mensaje de chat especial citas
+                $chat = new Chat();
+
+                if (isset($user)) {
+                    $chat->setTouser($user);
+                }
+                $chat->setFromuser($creator);
+                $chat->setTimeCreation();
+
+                if (isset($user)) {
+                    $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+                    $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
+                    $conversationId = $min . "_" . $max;
+                    $text = "¡" . $creator->getName() . " te ha invitado a una cita!";
+                } else {
+                    $conversationId = $slug;
+                    $text = "Nuevo evento creado";
+                }
+                $chat->setText($text);
+                $chat->setConversationId($conversationId);
+                $chat->setEvent($event);
+                $this->em->persist($chat);
+                $this->em->flush();
+
+                if (isset($user)) {
+                    $this->message->send($chat, $user, true);
+                    $this->message->send($chat, $creator);
+                } else {
+                    $this->message->sendTopic($chat, $slug, false);
+                }
+            }
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
