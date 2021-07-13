@@ -81,7 +81,7 @@ class EventRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('e')
             ->where('e.creator = :frikiradar')
             ->orWhere('e.slug IN (:slugs)')
-            ->orWhere('e.creator <> :frikiradar')
+            ->orWhere('e.creator <> :frikiradar AND e.slug IS NULL')
             ->andWhere('e.date > :today')
             ->andWhere("e.status <> 'cancelled'")
             ->setParameter('frikiradar', $frikiradar)
