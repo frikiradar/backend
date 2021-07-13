@@ -57,6 +57,7 @@ class EventRepository extends ServiceEntityRepository
             ->innerJoin('e.participants', 'p')
             ->where('e.creator = :user')
             ->orWhere('p.id = :id')
+            ->orWhere('e.user = :user')
             ->setParameter('user', $user)
             ->setParameter('id', $user->getId())
             ->orderBy('e.date', 'asc')
@@ -96,13 +97,26 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        $events = [...$officialEvents, ...$likeEvents];
+        $otherEvents = $this->createQueryBuilder('e')
+            ->where('e.slug IS NULL')
+            ->andWhere('e.date > :today')
+            ->andWhere("e.status <> 'cancelled'")
+            ->andWhere("e.user IS NULL")
+            ->orderBy('e.date', 'asc')
+            ->setParameter('today', $today)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $events = [...$officialEvents, ...$likeEvents, ...$otherEvents];
+
         if (count($events)) {
             return $events;
         } else {
             return $this->createQueryBuilder('e')
                 ->where('e.date > :today')
                 ->andWhere("e.status <> 'cancelled'")
+                ->andWhere("e.user IS NULL")
                 ->setParameter('today', $today)
                 ->orderBy('e.date', 'asc')
                 ->getQuery()
