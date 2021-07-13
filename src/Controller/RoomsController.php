@@ -153,9 +153,11 @@ class RoomsController extends AbstractController
                 $room = $roomCache->get();
             }
 
-            $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
-            if (isset($messages[0])) {
-                $room->setLastMessage($messages[0]['last_message']);
+            if (!isset($event)) {
+                $messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
+                if (isset($messages[0])) {
+                    $room->setLastMessage($messages[0]['last_message']);
+                }
             }
 
             if (!empty($room)) {
