@@ -105,6 +105,10 @@ class EventsController extends AbstractController
                 $event->setUser($user);
             }
 
+            if ($slug) {
+                $event->setSlug($slug);
+            }
+
             if (!empty($imageFile)) {
                 $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
                 $server = "https://app.frikiradar.com";
