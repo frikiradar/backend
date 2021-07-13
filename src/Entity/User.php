@@ -251,7 +251,7 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      * @Groups({"default"})
      */
-    private bool $mailing;
+    private ?bool $mailing;
 
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
