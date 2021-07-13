@@ -131,7 +131,7 @@ class Event
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="events")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $participants;
 
