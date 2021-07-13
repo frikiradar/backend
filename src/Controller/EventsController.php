@@ -259,6 +259,9 @@ class EventsController extends AbstractController
                 $this->em->remove($event);
                 $this->em->flush();
 
+                $slug = 'event-' . $id;
+                $this->em->getRepository('App:Chat')->deleteChatSlug($slug);
+
                 $data = [
                     'code' => 200,
                     'message' => "Evento eliminado correctamente",

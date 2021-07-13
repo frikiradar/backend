@@ -247,4 +247,24 @@ class ChatRepository extends ServiceEntityRepository
             return false;
         }
     }
+
+    public function deleteChatSlug(string $slug)
+    {
+        $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/chat/" . $slug . "/";
+        foreach (glob($folder . "*.*") as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
+        if (file_exists($folder)) {
+            rmdir($folder);
+        }
+
+        return $this->createQueryBuilder('c')
+            ->delete()
+            ->where('c.conversationId = :slug')
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->execute();
+    }
 }
