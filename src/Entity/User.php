@@ -251,7 +251,7 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      * @Groups({"default"})
      */
-    private ?bool $mailing;
+    private bool $mailing;
 
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
@@ -775,10 +775,7 @@ class User implements UserInterface
             return $this->avatar;
         } else {
             $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            $letter = null;
-            if (isset($this->getUsername()[0])) {
-                $letter = strtoupper($this->getUsername()[0]);
-            }
+            $letter = strtoupper($this->getUsername()[0]);
             if (in_array($letter, $letters)) {
                 return "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
             } else {
@@ -1234,10 +1231,7 @@ class User implements UserInterface
             return $this->thumbnail;
         } else {
             $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            $letter = null;
-            if (isset($this->getUsername()[0])) {
-                $letter = strtoupper($this->getUsername()[0]);
-            }
+            $letter = strtoupper($this->getUsername()[0]);
             if (in_array($letter, $letters)) {
                 return "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
             } else {
