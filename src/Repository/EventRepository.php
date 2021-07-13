@@ -69,15 +69,6 @@ class EventRepository extends ServiceEntityRepository
     {
         $today = new \DateTime;
         $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-        $officialEvents = $this->createQueryBuilder('e')
-            ->where('e.creator = :frikiradar')
-            ->andWhere('e.date > :today')
-            ->andWhere("e.status <> 'cancelled'")
-            ->setParameter('frikiradar', $frikiradar)
-            ->setParameter('today', $today)
-            ->orderBy('e.date', 'asc')
-            ->getQuery()
-            ->getResult();
 
         $tags = $user->getTags();
         $slugs = [];
@@ -87,44 +78,18 @@ class EventRepository extends ServiceEntityRepository
             }
         }
 
-        $likeEvents = $this->createQueryBuilder('e')
-            ->where('e.slug IN (:slugs)')
+        return $this->createQueryBuilder('e')
+            ->where('e.creator = :frikiradar')
+            ->orWhere('e.slug IN (:slugs)')
+            ->orWhere('e.creator <> :frikiradar')
             ->andWhere('e.date > :today')
             ->andWhere("e.status <> 'cancelled'")
-            ->andWhere('e.creator <> :frikiradar')
-            ->orderBy('e.date', 'asc')
+            ->setParameter('frikiradar', $frikiradar)
+            ->setParameter('today', $today)
             ->setParameter('slugs', $slugs)
-            ->setParameter('today', $today)
-            ->setParameter('frikiradar', $frikiradar)
-            ->getQuery()
-            ->getResult();
-
-        $otherEvents = $this->createQueryBuilder('e')
-            ->where('e.slug IS NULL')
-            ->andWhere('e.date > :today')
-            ->andWhere("e.status <> 'cancelled'")
-            ->andWhere("e.user IS NULL")
-            ->andWhere('e.creator <> :frikiradar')
             ->orderBy('e.date', 'asc')
-            ->setParameter('today', $today)
-            ->setParameter('frikiradar', $frikiradar)
             ->getQuery()
             ->getResult();
-
-        $events = [...$officialEvents, ...$likeEvents, ...$otherEvents];
-
-        if (count($events)) {
-            return $events;
-        } else {
-            return $this->createQueryBuilder('e')
-                ->where('e.date > :today')
-                ->andWhere("e.status <> 'cancelled'")
-                ->andWhere("e.user IS NULL")
-                ->setParameter('today', $today)
-                ->orderBy('e.date', 'asc')
-                ->getQuery()
-                ->getResult();
-        }
     }
 
     public function findOnlineEvents(User $user)
