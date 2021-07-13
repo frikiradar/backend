@@ -104,7 +104,6 @@ class EventRepository extends ServiceEntityRepository
             ->andWhere("e.user IS NULL")
             ->orderBy('e.date', 'asc')
             ->setParameter('today', $today)
-            ->setParameter('user', $user)
             ->getQuery()
             ->getResult();
 
