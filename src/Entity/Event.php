@@ -17,7 +17,7 @@ class Event
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $id;
 
@@ -30,19 +30,19 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $date;
 
@@ -60,7 +60,7 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $image;
 
@@ -72,7 +72,7 @@ class Event
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $date_end;
 
@@ -90,25 +90,25 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $country;
 
     /**
      * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $postal_code;
 
@@ -137,7 +137,7 @@ class Event
 
     /**
      * @ORM\Column(type="string", length=70)
-     * @Groups({"default"})
+     * @Groups({"default", "message"})
      */
     private $status;
 
