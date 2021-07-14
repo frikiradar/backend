@@ -468,4 +468,72 @@ class EventsController extends AbstractController
             throw new HttpException(400, "Error al quitar participación en el evento - Error: {$ex->getMessage()}");
         }
     }
+
+    /**
+     * @Route("/v1/confirm-date", name="confirm_date", methods={"POST"})
+     */
+    public function confirmDateAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+
+            /**
+             * @var Event
+             */
+            $event = $chat->getEvent();
+            $event->addParticipant($user);
+            $this->em->persist($event);
+            $this->em->flush();
+
+            $chat->setEvent($event);
+
+            $this->message->send($chat, $user);
+            $chat->setText($user->getName() . "ha aceptado tu invitación de cita.");
+            $this->message->send($chat, $event->getCreator(), true);
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al confirmar la cita - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/v1/decline-date", name="decline_date", methods={"PUT"})
+     */
+    public function declineDateAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $id = $this->request->get($request, "id");
+
+        try {
+            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+
+            /**
+             * @var Event
+             */
+            $event = $chat->getEvent();
+            if ($event->getCreator()->getId() === $this->getUser()->getId() || $event->getUser()->getId() === $this->getUser()->getId()) {
+                $event->setStatus('cancelled');
+
+                $this->em->persist($event);
+                $this->em->flush();
+                $chat->setEvent($event);
+
+                $this->message->send($chat, $user);
+                $chat->setText($user->getName() . "ha rechazado tu invitación de cita.");
+                $this->message->send($chat, $event->getCreator(), true);
+
+                return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            } else {
+                throw new HttpException(401, "No puedes rechazar la cita de otro usuario");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al rechazar la cita - Error: {$ex->getMessage()}");
+        }
+    }
 }
