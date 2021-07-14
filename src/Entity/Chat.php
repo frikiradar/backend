@@ -115,6 +115,7 @@ class Chat
 
     /**
      * @ORM\OneToOne(targetEntity=Event::class, cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      * @Groups({"message"})
      */
     private $event;
