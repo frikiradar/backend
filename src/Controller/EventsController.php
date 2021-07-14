@@ -292,13 +292,8 @@ class EventsController extends AbstractController
                     $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
                     unlink($file);
                 }
+
                 $participants = $event->getParticipants();
-                $this->em->remove($event);
-                $this->em->flush();
-
-                $slug = 'event-' . $id;
-                $this->em->getRepository('App:Chat')->deleteChatSlug($slug);
-
                 // Avisamos a los usuarios del evento eliminado
                 $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
                 $title = 'Evento eliminado.';
@@ -307,6 +302,12 @@ class EventsController extends AbstractController
                 foreach ($participants as $participant) {
                     $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
                 }
+
+                $this->em->remove($event);
+                $this->em->flush();
+
+                $slug = 'event-' . $id;
+                $this->em->getRepository('App:Chat')->deleteChatSlug($slug);
 
                 $data = [
                     'code' => 200,
