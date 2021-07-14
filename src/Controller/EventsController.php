@@ -288,7 +288,7 @@ class EventsController extends AbstractController
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
             if ($event->getCreator()->getId() === $this->getUser()->getId()) {
                 $image = $event->getImage();
-                if ($image) {
+                if ($image && !strpos($image, '/avatar/')) {
                     $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
                     unlink($file);
                 }
