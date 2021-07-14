@@ -18,7 +18,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -35,7 +34,6 @@ class EventsController extends AbstractController
         NotificationService $notification,
         AccessCheckerService $accessChecker,
         MessageService $message,
-        AuthorizationCheckerInterface $security
     ) {
         $this->serializer = $serializer;
         $this->em = $entityManager;
@@ -43,7 +41,6 @@ class EventsController extends AbstractController
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
         $this->message = $message;
-        $this->security = $security;
     }
 
 
@@ -71,13 +68,7 @@ class EventsController extends AbstractController
         }
         $minage = $request->request->get("minage") ?: 0;
         $imageFile = $request->files->get('image');
-
-        $official = $request->request->get("official");
-        if ($official && $this->security->isGranted('ROLE_ADMIN')) {
-            $creator = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-        } else {
-            $creator = $this->getUser();
-        }
+        $creator = $this->getUser();
 
         try {
             /**
@@ -111,9 +102,7 @@ class EventsController extends AbstractController
             $event->setRecursion(false);
             $event->setType($type);
             $event->setStatus('active');
-            if ($creator->getUsername() !== 'frikiradar') {
-                $event->addParticipant($this->getUser());
-            }
+            $event->addParticipant($this->getUser());
 
             if ($userId) {
                 $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
@@ -205,7 +194,7 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
-            if ($event->getCreator()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_ADMIN')) {
+            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
                 $event->setTitle($title);
                 $event->setDescription($description);
                 $event->setDate(new \DateTime($date));
