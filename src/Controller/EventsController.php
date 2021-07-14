@@ -492,7 +492,7 @@ class EventsController extends AbstractController
             $chat->setEvent($event);
 
             $this->message->send($chat, $user);
-            $chat->setText($user->getName() . "ha aceptado tu invitación de cita.");
+            $chat->setText($user->getName() . " ha aceptado tu invitación de cita.");
             $this->message->send($chat, $event->getCreator(), true);
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
@@ -525,7 +525,7 @@ class EventsController extends AbstractController
                 $chat->setEvent($event);
 
                 $this->message->send($chat, $user);
-                $chat->setText($user->getName() . "ha rechazado tu invitación de cita.");
+                $chat->setText($user->getName() . " ha rechazado tu invitación de cita.");
                 $this->message->send($chat, $event->getCreator(), true);
 
                 return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
