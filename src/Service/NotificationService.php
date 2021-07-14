@@ -2,7 +2,6 @@
 // src/Service/NotificationService.php
 namespace App\Service;
 
-use App\Entity\Chat;
 use App\Entity\Notification as EntityNotification;
 use App\Entity\User;
 use Kreait\Firebase\Factory;
