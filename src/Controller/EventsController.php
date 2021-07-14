@@ -198,7 +198,6 @@ class EventsController extends AbstractController
         }
         $minage = $request->request->get("minage") ?: 0;
         $imageFile = $request->files->get('image');
-        $creator = $this->getUser();
 
         try {
             /**
@@ -229,7 +228,6 @@ class EventsController extends AbstractController
                 }
 
                 $event->setMinage($minage);
-                $event->setCreator($creator);
                 $event->setRecursion(false);
                 $event->setType($type);
 
