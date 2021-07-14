@@ -292,12 +292,21 @@ class EventsController extends AbstractController
                     $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
                     unlink($file);
                 }
-
+                $participants = $event->getParticipants();
                 $this->em->remove($event);
                 $this->em->flush();
 
                 $slug = 'event-' . $id;
                 $this->em->getRepository('App:Chat')->deleteChatSlug($slug);
+
+                // Avisamos a los usuarios del evento eliminado
+                $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+                $title = 'Evento eliminado.';
+                $text = 'El evento ' . $event->getTitle() . ' ha sido eliminado.';
+                $url = "/tabs/events";
+                foreach ($participants as $participant) {
+                    $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
+                }
 
                 $data = [
                     'code' => 200,
@@ -332,6 +341,16 @@ class EventsController extends AbstractController
 
                 $this->em->persist($event);
                 $this->em->flush();
+
+                // Avisamos a los usuarios del evento cancelado
+                $participants = $event->getParticipants();
+                $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+                $title = 'Evento cancelado.';
+                $text = 'El evento ' . $event->getTitle() . ' ha sido cancelado.';
+                $url = "/event/" . $event->getId();
+                foreach ($participants as $participant) {
+                    $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
+                }
 
                 return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
             } else {
