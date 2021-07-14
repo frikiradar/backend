@@ -239,6 +239,7 @@ class EventsController extends AbstractController
                         unlink($file);
                     }
 
+                    $creator = $event->getCreator();
                     // Subimos imagen nueva
                     $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/events/' . $creator->getId() . '/';
                     $server = "https://app.frikiradar.com";
