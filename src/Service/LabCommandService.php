@@ -225,8 +225,37 @@ class LabCommandService
 
     public function testLab()
     {
-        $id = "5984278";
-        $user = $this->em->getRepository('App:User')->findUserByPatreonId($id);
-        print_r($user->getId());
+        /**
+         * @var Event[]
+         */
+        $events = $this->em->getRepository('App:Event')->findAll();
+
+        foreach ($events as $event) {
+            $slug = 'event-' . $event->getId();
+            $participants = $event->getParticipants();
+            foreach ($participants as $participant) {
+                foreach ($participant->getDevices() as $device) {
+                    if ($device->getActive() && !is_null($device->getToken())) {
+                        $token = $device->getToken();
+
+                        $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
+                        $headers = array('Authorization: key=' . $key, 'Content-Type: application/json');
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_POST, true);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, array());
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                        curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/" . $slug);
+                        curl_exec($ch);
+
+                        curl_close($ch);
+
+                        $this->o->writeln($participant->getUsername() . " - " . $token . " - " . $slug);
+                    }
+                }
+            }
+        }
     }
 }

@@ -222,7 +222,11 @@ class RoomsController extends AbstractController
                 $this->em->persist($chat);
                 $this->em->flush();
 
-                $this->message->sendTopic($chat, 'rooms', false);
+                if (strpos($slug, 'event-') !== false) {
+                    $this->message->sendTopic($chat, $slug, true);
+                } else {
+                    $this->message->sendTopic($chat, 'rooms', false);
+                }
 
                 $url = "/room/" . $slug;
 
@@ -315,7 +319,11 @@ class RoomsController extends AbstractController
                     $this->em->flush();
                 }
 
-                $this->message->sendTopic($chat, 'rooms', false);
+                if (strpos($slug, 'event-') !== false) {
+                    $this->message->sendTopic($chat, $slug, true);
+                } else {
+                    $this->message->sendTopic($chat, 'rooms', false);
+                }
 
                 $url = "/room/" . $slug;
 

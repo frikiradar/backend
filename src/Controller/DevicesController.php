@@ -66,7 +66,7 @@ class DevicesController extends AbstractController
                 $platform,
             );
 
-            if ($token && $this->security->isGranted('ROLE_MASTER')) {
+            if ($token) {
                 $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
                 $headers = array('Authorization: key=' . $key, 'Content-Type: application/json');
 

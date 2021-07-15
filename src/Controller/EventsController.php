@@ -470,6 +470,27 @@ class EventsController extends AbstractController
             $this->em->persist($event);
             $this->em->flush();
 
+            $slug = 'event-' . $id;
+            foreach ($user->getDevices() as $device) {
+                if ($device->getActive() && !is_null($device->getToken())) {
+                    $token = $device->getToken();
+
+                    $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
+                    $headers = array('Authorization: key=' . $key, 'Content-Type: application/json');
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, array());
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                    curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/" . $slug);
+                    curl_exec($ch);
+
+                    curl_close($ch);
+                }
+            }
+
             return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al participar en el evento - Error: {$ex->getMessage()}");
