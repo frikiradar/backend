@@ -88,7 +88,8 @@ class EventRepository extends ServiceEntityRepository
             ->setParameter('frikiradar', $frikiradar)
             ->setParameter('today', $today)
             ->setParameter('slugs', $slugs)
-            ->orderBy('e.date', 'asc')
+            ->orderBy('e.creator', 'asc')
+            ->addOrderBy('e.date', 'asc')
             ->getQuery()
             ->getResult();
     }
