@@ -224,9 +224,8 @@ class RoomsController extends AbstractController
 
                 if (strpos($slug, 'event-') !== false) {
                     $this->message->sendTopic($chat, $slug, true);
-                } else {
-                    $this->message->sendTopic($chat, 'rooms', false);
                 }
+                $this->message->sendTopic($chat, 'rooms', false);
 
                 $url = "/room/" . $slug;
 
