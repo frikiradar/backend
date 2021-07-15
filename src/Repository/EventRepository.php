@@ -89,7 +89,6 @@ class EventRepository extends ServiceEntityRepository
             ->setParameter('today', $today)
             ->setParameter('slugs', $slugs)
             ->orderBy('e.date', 'asc')
-            ->addOrderBy('e.creator.id', 'asc')
             ->getQuery()
             ->getResult();
     }
