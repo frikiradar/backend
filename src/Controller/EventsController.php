@@ -265,7 +265,7 @@ class EventsController extends AbstractController
     /**
      * @Route("/v1/event/{id}", name="get_event_id", methods={"GET"})
      */
-    public function getEventAction($id)
+    public function getEventAction(int $id)
     {
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
@@ -278,6 +278,34 @@ class EventsController extends AbstractController
             }
 
             return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * @Route("/event/{id}", name="public_event", methods={"GET"})
+     */
+    public function getPublicEvent(int $id)
+    {
+        $cache = new FilesystemAdapter();
+        try {
+            $eventCache = $cache->getItem('event.get.' . $id);
+            if (!$eventCache->isHit()) {
+                $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
+                if ($event->getSlug()) {
+                    $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $event->getSlug()));
+                    $event->setPage($page);
+                }
+
+                $eventCache->expiresAfter(3600 * 24);
+                $eventCache->set($event);
+                $cache->save($eventCache);
+            } else {
+                $event = $eventCache->get();
+            }
+
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
         }
