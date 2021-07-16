@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
  * @method Event|null find($id, $lockMode = null, $lockVersion = null)
@@ -50,6 +51,39 @@ class EventRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findPublicEvent(int $id)
+    {
+        $dql = $this->createQueryBuilder('e')
+            ->select(array(
+                'e.id',
+                'e.title',
+                'e.description',
+                'e.image',
+                'e.date',
+                'e.date_end',
+                'e.address',
+                'e.city',
+                'e.contact_email',
+                'e.contact_phone',
+                'e.minage',
+                'e.slug',
+                'e.status',
+                'e.type',
+                'e.url',
+            ))
+            ->where('e.id = :id');
+
+        $event = $dql->setParameters(array(
+            'id' => $id
+        ))->getQuery()->getOneOrNullResult();
+
+        if (!is_null($event)) {
+            return $event;
+        } else {
+            throw new Exception('Evento no encontrado');
+        }
+    }
 
     public function findUserEvents(User $user)
     {

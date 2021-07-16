@@ -290,12 +290,13 @@ class EventsController extends AbstractController
     {
         $cache = new FilesystemAdapter();
         try {
-            $eventCache = $cache->getItem('event.get.' . $id);
+            $cache->deleteItem('public-event.get.' . $id);
+            $eventCache = $cache->getItem('public-event.get.' . $id);
             if (!$eventCache->isHit()) {
-                $event = $this->em->getRepository('App:Event')->findOneBy(array('id' => $id));
-                if ($event->getSlug()) {
-                    $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $event->getSlug()));
-                    $event->setPage($page);
+                $event = $this->em->getRepository('App:Event')->findPublicEvent($id);
+                if ($event['slug']) {
+                    $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $event['slug']));
+                    $event['page'] = $page;
                 }
 
                 $eventCache->expiresAfter(3600 * 24);
@@ -305,7 +306,7 @@ class EventsController extends AbstractController
                 $event = $eventCache->get();
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
+            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
         }
