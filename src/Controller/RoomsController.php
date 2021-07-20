@@ -220,7 +220,7 @@ class RoomsController extends AbstractController
                 }
 
                 $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
-                if ($replyToChat) {
+                if ($replyToChat && !$replyToChat->getModded()) {
                     $chat->setReplyTo($replyToChat);
                 }
                 $this->em->persist($chat);
@@ -264,7 +264,7 @@ class RoomsController extends AbstractController
                     }
                 }
 
-                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
             } else {
                 throw new HttpException(400, "El texto no puede estar vacío");
             }
