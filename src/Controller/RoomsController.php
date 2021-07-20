@@ -209,6 +209,10 @@ class RoomsController extends AbstractController
                 $chat->setText($text);
                 $chat->setTimeCreation();
                 $chat->setConversationId($slug);
+                $tmp_id = $this->request->get($request, "tmp_id", false);
+                if ($tmp_id) {
+                    $chat->setTmpId($tmp_id);
+                }
 
                 $mentions = array_unique($this->request->get($request, "mentions", false));
                 if ($mentions) {
@@ -287,6 +291,11 @@ class RoomsController extends AbstractController
 
                 $chat->setTouser(null);
                 $chat->setFromuser($fromUser);
+
+                $tmp_id = $request->request->get("tmp_id");
+                if ($tmp_id) {
+                    $chat->setTmpId($tmp_id);
+                }
 
                 $mentions = array_unique(json_decode($request->request->get("mentions"), true));
                 if ($mentions) {
