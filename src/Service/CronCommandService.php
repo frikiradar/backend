@@ -68,4 +68,14 @@ class CronCommandService
         $process->disableOutput();
         $process->start();*/
     }
+
+    public function eventReminder()
+    {
+        // Buscamos todos los eventos próximos y enviamos avisos a los participantes
+        $events = $this->em->getRepository('App:Event')->findNextEvents();
+        foreach ($events as $event) {
+            $slug = 'event-' . $event->getId();
+            // Evento
+        }
+    }
 }

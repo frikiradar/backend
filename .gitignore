@@ -15,3 +15,5 @@ src/Migrations
 .env.prod
 .env.local
 migrations
+out/linecounter.txt
+out/linecounter.json

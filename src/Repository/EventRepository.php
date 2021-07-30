@@ -179,4 +179,20 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findNextEvents()
+    {
+        $today = new \DateTime;
+        $tomorrow = $today->modify('+1 day');
+
+        return $this->createQueryBuilder('e')
+            ->where('e.date > :today')
+            ->andWhere('e.date < :tomorrow')
+            ->andWhere("e.status <> 'cancelled'")
+            ->orderBy('e.date', 'asc')
+            ->setParameter('today', $today)
+            ->setParameter('tomorrow', $tomorrow)
+            ->getQuery()
+            ->getResult();
+    }
 }
