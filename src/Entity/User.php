@@ -527,7 +527,25 @@ class User implements UserInterface
 
     public function setGender(?string $gender): self
     {
-        $this->gender = $gender;
+        $genders = [
+            "Mujer",
+            "Hombre",
+            "Mujer transgénero",
+            "Hombre transgénero",
+            "Agénero",
+            "Andrógino",
+            "Género fluido",
+            "Bigénero",
+            "No-binario",
+            "No conforme",
+            "Pangénero",
+            "Poligénero",
+            "Intergénero"
+        ];
+
+        if (in_array($gender, $genders)) {
+            $this->gender = $gender;
+        }
 
         return $this;
     }
@@ -607,7 +625,11 @@ class User implements UserInterface
 
     public function setRelationship(?string $relationship): self
     {
-        $this->relationship = $relationship;
+        $relationsips = ["Monógama", "No-monógama"];
+
+        if (in_array($relationship, $relationsips)) {
+            $this->relationship = $relationship;
+        }
 
         return $this;
     }
@@ -619,7 +641,20 @@ class User implements UserInterface
 
     public function setOrientation(?string $orientation): self
     {
-        $this->orientation = $orientation;
+        $orientations = [
+            "Heterosexual",
+            "Homosexual",
+            "Bisexual",
+            "Pansexual",
+            "Queer",
+            "Demisexual",
+            "Sapiosexual",
+            "Asexual"
+        ];
+
+        if (in_array($orientation, $orientations)) {
+            $this->orientation = $orientation;
+        }
 
         return $this;
     }
@@ -631,7 +666,11 @@ class User implements UserInterface
 
     public function setPronoun(?string $pronoun): self
     {
-        $this->pronoun = $pronoun;
+        $pronouns = ["El", "Ella", "Elle", "Elli"];
+
+        if (in_array($pronoun, $pronouns)) {
+            $this->pronoun = $pronoun;
+        }
 
         return $this;
     }
@@ -643,7 +682,11 @@ class User implements UserInterface
 
     public function setStatus(?string $status): self
     {
-        $this->status = $status;
+        $statuses = ["Soltero", "Saliendo con alguien", "Pareja estable", "Casado"];
+
+        if (in_array($status, $statuses)) {
+            $this->status = $status;
+        }
 
         return $this;
     }
@@ -655,6 +698,28 @@ class User implements UserInterface
 
     public function setLovegender(?array $lovegender): self
     {
+        $genders = [
+            "Mujer",
+            "Hombre",
+            "Mujer transgénero",
+            "Hombre transgénero",
+            "Agénero",
+            "Andrógino",
+            "Género fluido",
+            "Bigénero",
+            "No-binario",
+            "No conforme",
+            "Pangénero",
+            "Poligénero",
+            "Intergénero"
+        ];
+
+        foreach ($lovegender as $key => $l) {
+            if (!in_array($l, $genders)) {
+                unset($lovegender[$key]);
+            }
+        }
+
         $this->lovegender = $lovegender;
 
         return $this;
@@ -689,8 +754,21 @@ class User implements UserInterface
         return $this->connection;
     }
 
-    public function setConnection($connection): self
+    public function setConnection(array $connection): self
     {
+        $connections = [
+            "Amistad",
+            "Sexo ocasional",
+            "Amistad con derechos",
+            "Pareja formal"
+        ];
+
+        foreach ($connection as $key => $c) {
+            if (!in_array($c, $connections)) {
+                unset($connection[$key]);
+            }
+        }
+
         $this->connection = $connection;
 
         return $this;
