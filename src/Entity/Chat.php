@@ -166,7 +166,7 @@ class Chat
         return $this->image;
     }
 
-    public function setImage(string $image): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
 
@@ -178,7 +178,7 @@ class Chat
         return $this->audio;
     }
 
-    public function setAudio(string $audio): self
+    public function setAudio(?string $audio): self
     {
         $this->audio = $audio;
 
