@@ -415,7 +415,7 @@ class ChatController extends AbstractController
                     }
                 }
 
-                $audio = $message->getImage();
+                $audio = $message->getAudio();
                 if (!empty($audio)) {
                     $f = explode("/", $audio);
                     $filename = $f[count($f) - 1];
@@ -430,6 +430,8 @@ class ChatController extends AbstractController
                 if ($message->getFromuser()->getId() != $user->getId() && $this->security->isGranted('ROLE_MASTER')) {
                     $message->setText("<em>Mensaje eliminado por un moderador</em>");
                     $message->setModded(true);
+                    $message->setImage(null);
+                    $message->setAudio(null);
                     $this->em->persist($message);
                     $this->em->flush();
                 } else {
