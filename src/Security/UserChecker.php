@@ -5,6 +5,7 @@ namespace App\Security;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -25,7 +26,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
 
         if ($user->getBanned() !== false) {
             $now = new \DateTime;
-            if (is_null($user->getBanEnd())) {
+            /*if (is_null($user->getBanEnd())) {
                 $data = [
                     'message' => 'Banned account.',
                     'reason' => $user->getBanReason(),
@@ -34,7 +35,8 @@ class UserChecker extends AbstractController implements UserCheckerInterface
 
                 $text = json_encode($data);
                 throw new CustomUserMessageAuthenticationException($text);
-            } elseif ($user->getBanEnd() <= $now) {
+            } else*/
+            if (!is_null($user->getBanEnd()) && $user->getBanEnd() <= $now) {
                 $user->setBanned(false);
                 $user->setBanReason(null);
                 $user->setBanEnd(null);
