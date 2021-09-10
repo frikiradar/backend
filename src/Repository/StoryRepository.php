@@ -86,7 +86,7 @@ class StoryRepository extends ServiceEntityRepository
     public function getAllStories()
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user.banned <> 1 ORDER BY s.time_creation ASC";
+        $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1) ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('yesterday', $yesterday);
