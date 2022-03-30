@@ -90,7 +90,7 @@ class NotificationService extends AbstractController
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    'sound' => "default",
+                    'sound' => "bipbip",
                     'tag' => $tag,
                     'channel_id' => $type,
                     'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
@@ -224,7 +224,7 @@ class NotificationService extends AbstractController
             'notification' => [
                 'title' => $title,
                 'body' => $text,
-                'sound' => "default",
+                'sound' => "bipbip",
                 'tag' => $topic,
                 'channel_id' => $topic,
                 'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
