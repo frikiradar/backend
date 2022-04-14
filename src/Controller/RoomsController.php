@@ -264,7 +264,7 @@ class RoomsController extends AbstractController
                     }
                 }
 
-                if (in_array($slug, ['frikiradar', 'patreon']) && !$this->security->isGranted('ROLE_MASTER')) {
+                if (in_array($slug, ['frikiradar-room', 'patreon']) && !$this->security->isGranted('ROLE_MASTER')) {
                     // Enviamos email avisando
                     $message = (new \Swift_Message('Nuevo mensaje en ' . $slug))
                         ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
