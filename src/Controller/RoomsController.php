@@ -264,6 +264,18 @@ class RoomsController extends AbstractController
                     }
                 }
 
+                if (in_array($slug, ['frikiradar', 'patreon']) && !$this->security->isGranted('ROLE_MASTER')) {
+                    // Enviamos email avisando
+                    $message = (new \Swift_Message('Nuevo mensaje en ' . $slug))
+                        ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
+                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
+                        ->setBody("El usuario " . $fromUser->getUsername() . " ha escrito: " . $text, 'text/html');
+
+                    if (0 === $mailer->send($message)) {
+                        // throw new HttpException(400, "Error al enviar el email avisando");
+                    }
+                }
+
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
             } else {
                 throw new HttpException(400, "El texto no puede estar vacío");
