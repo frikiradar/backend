@@ -370,6 +370,11 @@ class User implements UserInterface
      */
     private $events;
 
+    /**
+     * @ORM\Column(type="string", length=70, nullable=true)
+     */
+    private $mailing_code;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1567,6 +1572,23 @@ class User implements UserInterface
             $this->events[] = $event;
             $event->addParticipant($this);
         }
+
+        return $this;
+    }
+
+    public function getMailingCode(): ?string
+    {
+        return $this->mailing_code;
+    }
+
+    public function setMailingCode(): self
+    {
+        $key = '';
+        $pattern = '0123456789ABCDEFGHIJKLMNOPRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $max = strlen($pattern) - 1;
+        for ($i = 0; $i < 8; $i++) $key .= $pattern[mt_rand(0, $max)];
+
+        $this->mailing_code = $key;
 
         return $this;
     }

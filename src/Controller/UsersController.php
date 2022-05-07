@@ -96,6 +96,7 @@ class UsersController extends AbstractController
             $user->setReferral($this->request->get($request, 'referral') ?: null);
             $user->setMailing($this->request->get($request, 'mailing', false) ?: true);
             $user->setVerificationCode();
+            $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
             try {
 
