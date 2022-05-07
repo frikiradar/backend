@@ -1586,7 +1586,7 @@ class User implements UserInterface
         $key = '';
         $pattern = '0123456789ABCDEFGHIJKLMNOPRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
         $max = strlen($pattern) - 1;
-        for ($i = 0; $i < 8; $i++) $key .= $pattern[mt_rand(0, $max)];
+        for ($i = 0; $i < 10; $i++) $key .= $pattern[mt_rand(0, $max)];
 
         $this->mailing_code = $key;
 
