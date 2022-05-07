@@ -1097,6 +1097,26 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @Route("/unsubscribe/{code}", name="unsubscribe_mailing", methods={"GET"})
+     */
+    public function unsubscribeMailing(string $code)
+    {
+        $user = $this->em->getRepository('App:User')->findOneBy(array('mailing_code' => $code));
+        if ($user) {
+            $user->setMailing(false);
+            $this->em->persist($user);
+            $this->em->flush();
+            $data = [
+                'code' => 200,
+                'message' => "Te has desuscrito correctamente de nuestros emails.",
+            ];
+            return new JsonResponse($data, 200);
+        } else {
+            throw new HttpException(400, "El código de desuscripción para mailing no es válido.");
+        }
+    }
+
+    /**
      * @Route("/v1/disable", name="disable", methods={"PUT"})
      */
     public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
