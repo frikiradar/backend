@@ -1104,6 +1104,7 @@ class UsersController extends AbstractController
         $user = $this->em->getRepository('App:User')->findOneBy(array('mailing_code' => $code));
         if ($user) {
             $user->setMailing(false);
+            $user->setMailingCode();
             $this->em->persist($user);
             $this->em->flush();
             $data = [

@@ -47,6 +47,7 @@ class CronCommandService
                             "emails/reminder.html.twig",
                             [
                                 'username' => $user->getUsername(),
+                                'code' => $user->getMailingCode(),
                             ]
                         ),
                         'text/html'
