@@ -468,17 +468,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
                 if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
                     if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
-                        $radar = new Radar();
-                        $radar->setFromUser($fromUser);
                         $toUser = $this->findOneBy(array('id' => $u['id']));
-                        $radar->setToUser($toUser);
-                        $this->em->persist($radar);
-                        $this->em->flush();
+                        if (in_array('ROLE_PATREON', $toUser->getRoles())) {
+                            $radar = new Radar();
+                            $radar->setFromUser($fromUser);
+                            $radar->setToUser($toUser);
+                            $this->em->persist($radar);
+                            $this->em->flush();
 
-                        $title = $fromUser->getUsername();
-                        $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
-                        $url = "/profile/" . $fromUser->getId();
-                        $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
+                            $title = $fromUser->getUsername();
+                            $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                            $url = "/profile/" . $fromUser->getId();
+                            $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
+                        }
                     }
                 }
             }
