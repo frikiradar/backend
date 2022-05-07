@@ -371,7 +371,7 @@ class User implements UserInterface
     private $events;
 
     /**
-     * @ORM\Column(type="string", length=70, nullable=true)
+     * @ORM\Column(type="string", length=70, nullable=true, unique=true)
      */
     private $mailing_code;
 
