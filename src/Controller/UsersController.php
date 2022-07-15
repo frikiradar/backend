@@ -755,6 +755,9 @@ class UsersController extends AbstractController
             $this->em->persist($newBlock);
             $this->em->flush();
 
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $this->getUser()->getId() . '.' . $blockUser->getId());
+
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
@@ -785,6 +788,9 @@ class UsersController extends AbstractController
             $block = $this->em->getRepository('App:BlockUser')->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
             $this->em->remove($block);
             $this->em->flush();
+
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('users.get.' . $this->getUser()->getId() . '.' . $blockUser->getId());
 
             $users = $this->em->getRepository('App:BlockUser')->getBlockUsers($this->getUser());
 
