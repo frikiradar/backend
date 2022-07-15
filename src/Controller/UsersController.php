@@ -175,9 +175,9 @@ class UsersController extends AbstractController
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $user['block'] = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-
-                if (!$user['block']) {
+                $block = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+                $user->setBlock($block);
+                if (!$block) {
                     $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
                     if ($user['active']) {
                         $user['images'] = $toUser->getImages();

@@ -338,6 +338,11 @@ class User implements UserInterface
     private $public;
 
     /**
+     * @Groups({"default"})
+     */
+    private $block = false;
+
+    /**
      * @ORM\Column(type="boolean", options={"default" : 1})
      * @Groups({"default"})
      */
@@ -1458,6 +1463,18 @@ class User implements UserInterface
     public function setPublic(bool $public): self
     {
         $this->public = $public;
+
+        return $this;
+    }
+
+    public function getBlock(): ?bool
+    {
+        return $this->block;
+    }
+
+    public function setBlock(bool $block): self
+    {
+        $this->block = $block;
 
         return $this;
     }
