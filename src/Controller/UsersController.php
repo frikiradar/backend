@@ -188,6 +188,26 @@ class UsersController extends AbstractController
                 }
 
                 $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+
+                if ($user['block']) {
+                    unset($user['age']);
+                    unset($user['distance']);
+                    unset($user['description']);
+                    unset($user['gender']);
+                    unset($user['images']);
+                    unset($user['last_login']);
+                    unset($user['location']);
+                    unset($user['lovegender']);
+                    unset($user['orientation']);
+                    unset($user['pronoun']);
+                    unset($user['relationship']);
+                    unset($user['status']);
+                    $user['hide_connection'] = true;
+                    $user['hide_likes'] = true;
+                    $user['block_messags'] = true;
+                    $user['public'] = false;
+                }
+
                 $userCache->set($user);
                 $cache->save($userCache);
             } else {
