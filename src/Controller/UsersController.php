@@ -176,7 +176,6 @@ class UsersController extends AbstractController
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
                 $block = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-                $user->setBlock($block);
                 if (!$block) {
                     $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
                     if ($user['active']) {
@@ -192,7 +191,7 @@ class UsersController extends AbstractController
 
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 } else {
-                    $user = $this->em->getRepository('App:User')->findPublicUser($toUser);
+                    $user = $this->em->getRepository('App:User')->findBlockUser($toUser);
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 }
 

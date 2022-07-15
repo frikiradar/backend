@@ -226,6 +226,39 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
+    public function findBlockUser(User $toUser)
+    {
+        $dql = $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.active',
+                'u.verified',
+                'u.banned',
+                'u.avatar',
+                'u.thumbnail',
+                'u.roles'
+            ))
+            ->andWhere('u.id = :id')
+            ->andWhere('u.active = 1')
+            ->andWhere('u.public = 1')
+            ->andWhere('u.banned <> 1');
+
+        $user = $dql->setParameters(array(
+            'id' => $toUser->getId()
+        ))->getQuery()
+            ->getOneOrNullResult();
+
+        if (!is_null($user)) {
+            $user['avatar'] = $toUser->getAvatar() ?: null;
+            $user['block'] = true;
+            return $user;
+        } else {
+            throw new Exception('Usuario no encontrado');
+        }
+    }
+
     public function getRadarUsers(User $user, $page, $ratio, $options)
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
