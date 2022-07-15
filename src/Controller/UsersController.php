@@ -175,37 +175,25 @@ class UsersController extends AbstractController
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
                 $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
-                if ($user['active']) {
-                    $user['images'] = $toUser->getImages();
-                }
+                $user['block'] = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
 
-                $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
-                if (!is_null($radar)) {
-                    $radar->setTimeRead(new \DateTime);
-                    $this->em->persist($radar);
-                    $this->em->flush();
-                }
+                if (!$user['block']) {
+                    $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
+                    if ($user['active']) {
+                        $user['images'] = $toUser->getImages();
+                    }
 
-                $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+                    $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
+                    if (!is_null($radar)) {
+                        $radar->setTimeRead(new \DateTime);
+                        $this->em->persist($radar);
+                        $this->em->flush();
+                    }
 
-                if ($user['block']) {
-                    unset($user['age']);
-                    unset($user['distance']);
-                    unset($user['description']);
-                    unset($user['gender']);
-                    unset($user['images']);
-                    unset($user['last_login']);
-                    unset($user['location']);
-                    unset($user['lovegender']);
-                    unset($user['orientation']);
-                    unset($user['pronoun']);
-                    unset($user['relationship']);
-                    unset($user['status']);
-                    $user['hide_connection'] = true;
-                    $user['hide_likes'] = true;
-                    $user['block_messags'] = true;
-                    $user['public'] = false;
+                    $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+                } else {
+                    $user = $this->em->getRepository('App:User')->findPublicUser($toUser);
+                    $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 }
 
                 $userCache->set($user);
