@@ -193,7 +193,7 @@ class UsersController extends AbstractController
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 } else {
                     $user = $this->em->getRepository('App:User')->findPublicUser($toUser);
-                    $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
+                    $user = $this->serializer->serialize($user, "json", ['groups' => ['default'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 }
 
                 $userCache->set($user);
