@@ -150,46 +150,45 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $user['name'] = $user['name'] . ' (baneado)';
             }
 
-            $user['age'] = (int) $user['age'];
-            if (!$user['hide_location'] && $user['coordinates']) {
-                $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
-            } else {
-                unset($user['distance']);
-            }
-            if (!$this->security->isGranted('ROLE_MASTER') && $toUser->getId() != $fromUser->getId()) {
-                $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
-            }
-            if (empty($toUser->getConnection())) {
-                $user['connection'] = 'Amistad';
-            }
-            $user['tags'] = $toUser->getTags();
-            $user['stories'] = $toUser->getStories();
-            $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
-            $user['avatar'] = $toUser->getAvatar() ?: null;
-            $user['thumbnail'] = $toUser->getThumbnail() ?: null;
-            $user['roles'] = $toUser->getRoles();
-            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
-                'from_user' => $fromUser,
-                'to_user' => $toUser
-            ])) ? true : false;
-            $user['from_like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
-                'from_user' => $toUser,
-                'to_user' => $fromUser
-            ])) ? true : false;
-            if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
-                $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
-                $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
-            }
             $user['block'] = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
-            $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
-            if ($this->security->isGranted('ROLE_MASTER')) {
-                $user['ip'] = $toUser->getLastIp();
-            }
             if (!$user['block']) {
-                return $user;
-            } else {
-                throw new Exception('Usuario bloqueado');
+                $user['age'] = (int) $user['age'];
+                if (!$user['hide_location'] && $user['coordinates']) {
+                    $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+                } else {
+                    unset($user['distance']);
+                }
+                if (!$this->security->isGranted('ROLE_MASTER') && $toUser->getId() != $fromUser->getId()) {
+                    $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
+                }
+                if (empty($toUser->getConnection())) {
+                    $user['connection'] = 'Amistad';
+                }
+                $user['tags'] = $toUser->getTags();
+                $user['stories'] = $toUser->getStories();
+                $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
+                $user['avatar'] = $toUser->getAvatar() ?: null;
+                $user['thumbnail'] = $toUser->getThumbnail() ?: null;
+                $user['roles'] = $toUser->getRoles();
+                $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+                    'from_user' => $fromUser,
+                    'to_user' => $toUser
+                ])) ? true : false;
+                $user['from_like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+                    'from_user' => $toUser,
+                    'to_user' => $fromUser
+                ])) ? true : false;
+                if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
+                    $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
+                    $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
+                }
+                $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
+                if ($this->security->isGranted('ROLE_MASTER')) {
+                    $user['ip'] = $toUser->getLastIp();
+                }
             }
+
+            return $user;
         } else {
             throw new Exception('Usuario no encontrado');
         }
