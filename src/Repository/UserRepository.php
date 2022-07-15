@@ -253,6 +253,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!is_null($user)) {
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['block'] = true;
+            $user['block_messages'] = true;
             return $user;
         } else {
             throw new Exception('Usuario no encontrado');
