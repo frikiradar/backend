@@ -111,7 +111,7 @@ class DevicesController extends AbstractController
             $device = $this->request->get($request, "device");
 
             $message = (new \Swift_Message('Aviso de inicio de sesión desde un dispositivo desconocido'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
                     $this->renderView(

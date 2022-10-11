@@ -61,7 +61,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
             $user->setVerificationCode();
 
             $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
                 ->setTo($user->getEmail())
                 ->setBody(
                     $this->renderView(

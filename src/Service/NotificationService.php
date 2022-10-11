@@ -179,7 +179,7 @@ class NotificationService extends AbstractController
 
                 //Enviar email en lugar de notificación
                 $message = (new \Swift_Message($title))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
+                    ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
                     ->setTo($toUser->getEmail())
                     ->setBody(
                         $this->renderView(
