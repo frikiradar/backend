@@ -103,7 +103,7 @@ class UsersController extends AbstractController
                 $this->em->persist($user);
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                    ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setTo($user->getEmail())
                     ->setBody(
                         $this->renderView(
@@ -125,7 +125,7 @@ class UsersController extends AbstractController
                 return new Response($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']));
             } catch (Exception $ex) {
                 $message = (new \Swift_Message('Error de registro de usuario'))
-                    ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setBody("Datos del usuario:<br>" . $this->serializer->serialize($user, "json", ['groups' => 'default']) . "<br>" . $ex->getMessage());
 
@@ -571,7 +571,7 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
                     $this->renderView(
@@ -634,7 +634,7 @@ class UsersController extends AbstractController
             try {
 
                 $message = (new \Swift_Message($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar'))
-                    ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                     ->setTo($user->getEmail())
                     ->setBody(
                         $this->renderView(
@@ -946,7 +946,7 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu inicio de sesión'))
-                ->setFrom(['noreply@frikiradar.app' => 'FrikiRadar'])
+                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
                 ->setTo($this->getUser()->getEmail())
                 ->setBody(
                     $this->renderView(
