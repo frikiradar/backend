@@ -272,13 +272,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             if (empty($toUser->getConnection())) {
                 $user['connection'] = 'Amistad';
             }
-            $user['tags'] = $toUser->getTags();
-            $user['stories'] = $toUser->getStories();
-            $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
+            // $user['tags'] = $toUser->getTags();
+            // $user['stories'] = $toUser->getStories();
+            // $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['thumbnail'] = $toUser->getThumbnail() ?: null;
             $user['roles'] = $toUser->getRoles();
-            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+            /*$user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
                 'to_user' => $toUser
             ])) ? true : false;
@@ -289,7 +289,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
                 $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
                 $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
-            }
+            }*/
             $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
             if ($this->security->isGranted('ROLE_MASTER')) {
                 $user['ip'] = $toUser->getLastIp();
