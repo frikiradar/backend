@@ -177,7 +177,7 @@ class UsersController extends AbstractController
             $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
             $block = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
             if (!$block) {
-                if ($id == 7812 && $fromUser->getId() == 2) {
+                if ($id == 66738 && $fromUser->getId() == 2) {
                     $user = $this->em->getRepository('App:User')->findPublicUser($toUser);
                 } else {
                     $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
