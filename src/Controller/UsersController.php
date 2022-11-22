@@ -178,9 +178,9 @@ class UsersController extends AbstractController
             // $block = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
             // if (!$block) {
             $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
-            if ($user['active']) {
+            /*if ($user['active']) {
                 $user['images'] = $toUser->getImages();
-            }
+            }*/
 
             /*$radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
             if (!is_null($radar)) {
