@@ -278,7 +278,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['thumbnail'] = $toUser->getThumbnail() ?: null;
             $user['roles'] = $toUser->getRoles();
-            /*$user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
                 'from_user' => $fromUser,
                 'to_user' => $toUser
             ])) ? true : false;
@@ -286,7 +286,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'from_user' => $toUser,
                 'to_user' => $fromUser
             ])) ? true : false;
-            if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
+            /*if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
                 $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
                 $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
             }*/
