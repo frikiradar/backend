@@ -273,7 +273,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $user['connection'] = 'Amistad';
             }
             $user['tags'] = $toUser->getTags();
-            // $user['stories'] = $toUser->getStories();
+            $user['stories'] = $toUser->getStories();
             $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['thumbnail'] = $toUser->getThumbnail() ?: null;
