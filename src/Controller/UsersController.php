@@ -160,7 +160,7 @@ class UsersController extends AbstractController
     public function getUserAction($id)
     {
         $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
+        // $this->accessChecker->checkAccess($fromUser);
         // $cache = new FilesystemAdapter();
 
         if (!is_numeric($id)) {
