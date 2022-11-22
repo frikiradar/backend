@@ -182,12 +182,12 @@ class UsersController extends AbstractController
                 $user['images'] = $toUser->getImages();
             }
 
-            $radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
+            /*$radar = $this->em->getRepository('App:Radar')->isRadarNotified($toUser, $fromUser);
             if (!is_null($radar)) {
                 $radar->setTimeRead(new \DateTime);
                 $this->em->persist($radar);
                 $this->em->flush();
-            }
+            }*/
 
             $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
             /*} else {
