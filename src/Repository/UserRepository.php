@@ -176,10 +176,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'from_user' => $toUser,
                 'to_user' => $fromUser
             ])) ? true : false;
-            /*if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
+            if (/*!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || */$toUser->getId() == $fromUser->getId()) {
                 $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
                 $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
-            }*/
+            }
             $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
             if ($this->security->isGranted('ROLE_MASTER')) {
                 $user['ip'] = $toUser->getLastIp();
