@@ -191,6 +191,116 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
+    public function findTestUser(User $fromUser, User $toUser)
+    {
+        $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
+        $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
+
+        $dql = $this->createQueryBuilder('u')
+            ->select(array(
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.description',
+                'u.active',
+                '(DATE_DIFF(CURRENT_DATE(), u.birthday) / 365) age',
+                'u.gender',
+                'u.orientation',
+                'u.pronoun',
+                'u.relationship',
+                'u.status',
+                'u.lovegender',
+                'u.connection',
+                'u.location',
+                'u.hide_location',
+                'u.hide_likes',
+                'u.block_messages',
+                'u.last_login',
+                'u.hide_connection',
+                'u.register_date',
+                'u.verified',
+                'u.banned',
+                'u.ban_end',
+                'u.ban_reason',
+                'u.avatar',
+                'u.thumbnail',
+                'u.roles',
+                'u.public',
+                'u.coordinates',
+                "(GLength(
+                        LineStringFromWKB(
+                            LineString(
+                                u.coordinates,
+                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                            )
+                        )
+                    ) * 100) distance"
+            ))
+            ->andWhere('u.id = :id');
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql->andWhere('u.active = 1');
+        }
+
+        if (!$this->security->isGranted('ROLE_MASTER')) {
+            $dql->andWhere('u.banned <> 1');
+        }
+
+        /**
+         * @var User
+         */
+        $user = $dql->setParameters(array(
+            'id' => $toUser->getId()
+        ))->getQuery()
+            ->getOneOrNullResult();
+
+        if (!is_null($user)) {
+            $today = new \DateTime;
+
+            if ($user['banned'] && $this->security->isGranted('ROLE_MASTER')) {
+                $user['name'] = $user['name'] . ' (baneado)';
+            }
+
+            $user['age'] = (int) $user['age'];
+            if (!$user['hide_location'] && $user['coordinates']) {
+                $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+            } else {
+                unset($user['distance']);
+            }
+            if (!$this->security->isGranted('ROLE_MASTER') && $toUser->getId() != $fromUser->getId()) {
+                $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
+            }
+            if (empty($toUser->getConnection())) {
+                $user['connection'] = 'Amistad';
+            }
+            $user['tags'] = $toUser->getTags();
+            $user['stories'] = $toUser->getStories();
+            $user['match'] = $this->getMatchIndex($fromUser->getTags(), $toUser->getTags());
+            $user['avatar'] = $toUser->getAvatar() ?: null;
+            $user['thumbnail'] = $toUser->getThumbnail() ?: null;
+            $user['roles'] = $toUser->getRoles();
+            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $fromUser,
+                'to_user' => $toUser
+            ])) ? true : false;
+            $user['from_like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+                'from_user' => $toUser,
+                'to_user' => $fromUser
+            ])) ? true : false;
+            if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
+                $user['likes']['received'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'received'));
+                $user['likes']['delivered'] = count($this->em->getRepository('App:LikeUser')->getLikeUsers($toUser, 'delivered'));
+            }
+            $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
+            if ($this->security->isGranted('ROLE_MASTER')) {
+                $user['ip'] = $toUser->getLastIp();
+            }
+
+            return $user;
+        } else {
+            throw new Exception('Usuario no encontrado');
+        }
+    }
+
     public function findPublicUser(User $toUser)
     {
         $dql = $this->createQueryBuilder('u')
