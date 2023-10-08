@@ -42,8 +42,7 @@ class FileUploaderService
             if (!is_string($file)) {
                 $file = $file->getRealPath();
             }
-            $image = $imagine
-                ->open($file);
+            $image = $imagine->open($file);
             if ($square) {
                 $image->resize(new Box($size, $size));
             } else {
