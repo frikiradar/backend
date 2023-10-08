@@ -222,27 +222,29 @@ class PageRepository extends ServiceEntityRepository
 
             // Imágenes
             $server = "https://app.frikiradar.com";
-            $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/' . $game['slug'] . '/';
+            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/';
             if (isset($game['cover'])) {
-                $file =  'cover.jpg';
-                if (!file_exists($path)) {
-                    mkdir($path, 0777, true);
+                $filename =  'cover.jpg';
+                if (!file_exists($absolutePath . $game['slug'])) {
+                    mkdir($absolutePath . $game['slug'], 0777, true);
                 }
 
-                $uploader = new FileUploaderService($path, $file);
-                $image = $uploader->uploadImage(file_get_contents('https:' . $game['cover']['url']), false, 90, 300);
-                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
+                $imageFile = fopen('https:' . $game['cover']['url'], "r");
+                $image = $uploader->uploadImage($imageFile, false, 90, 300);
+                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($game['artworks'][0])) {
-                $file = 'artwork.jpg';
-                if (!file_exists($path)) {
-                    mkdir($path, 0777, true);
+                $filename = 'artwork.jpg';
+                if (!file_exists($absolutePath . $game['slug'])) {
+                    mkdir($absolutePath . $game['slug'], 0777, true);
                 }
 
-                $uploader = new FileUploaderService($path, $file);
-                $image = $uploader->uploadImage(file_get_contents('https:' . $game['artworks'][0]['url']), false, 90, 300);
-                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
+                $imageFile = fopen('https:' . $game['cover']['url'], "r");
+                $image = $uploader->uploadImage($imageFile, false, 90, 300);
+                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($game['first_release_date'])) {
