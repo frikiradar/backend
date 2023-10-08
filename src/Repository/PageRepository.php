@@ -175,7 +175,7 @@ class PageRepository extends ServiceEntityRepository
         }
 
         if (isset($game)) {
-            if ($game['slug'] === 'pokemon-red-version' && $search == 'pokemon') {
+            if ($game['slug'] === 'pokemon-red-version') {
                 $game['slug'] = 'pokemon';
                 $game['name'] = 'Pokémon';
             }
