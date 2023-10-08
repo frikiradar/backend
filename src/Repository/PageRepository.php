@@ -229,7 +229,7 @@ class PageRepository extends ServiceEntityRepository
             $server = "https://app.frikiradar.com";
             $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/' . $game['slug'] . '/';
             if (isset($game['cover'])) {
-                $filename =  'cover.jpg';
+                $filename =  'cover';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
                 }
@@ -240,7 +240,7 @@ class PageRepository extends ServiceEntityRepository
             }
 
             if (isset($game['artworks'][0])) {
-                $filename = 'artwork.jpg';
+                $filename = 'artwork';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
                 }
