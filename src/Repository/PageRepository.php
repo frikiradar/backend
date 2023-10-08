@@ -343,15 +343,15 @@ class PageRepository extends ServiceEntityRepository
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
-            $fs = new Filesystem();
             if (isset($film['poster_path'])) {
                 $file =  'cover.jpg';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
 
-                $fs->appendToFile($path . $file, file_get_contents('https://image.tmdb.org/t/p/w200/' . $film['poster_path']));
-                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                $uploader = new FileUploaderService($path, $file);
+                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200/' . $film['poster_path'], false, 90, 300);
+                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($film['backdrop_path']) || isset($film['poster_path'])) {
@@ -360,8 +360,9 @@ class PageRepository extends ServiceEntityRepository
                     mkdir($path, 0777, true);
                 }
 
-                $fs->appendToFile($path . $file, file_get_contents('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path'])));
-                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
+                $uploader = new FileUploaderService($path, $file);
+                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
+                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
