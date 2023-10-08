@@ -350,6 +350,11 @@ class PageRepository extends ServiceEntityRepository
                 $film['name'] = 'Re:Zero';
             }
 
+            if ($film['slug'] == 'los-siete-pecados-capitales-los-cuatro-jinetes-del-apocalipsis') {
+                $film['slug'] = 'nanatsu-no-taizai';
+                $film['name'] = 'Nanatsu no Taizai';
+            }
+
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
