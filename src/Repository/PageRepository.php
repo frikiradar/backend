@@ -175,6 +175,14 @@ class PageRepository extends ServiceEntityRepository
         }
 
         if (isset($game)) {
+            if ($game['slug'] === 'pokemon-red-version' && $search == 'pokemon') {
+                $game['slug'] = 'pokemon';
+            }
+
+            if ($game['slug'] == 're-zero---empezar-de-cero-en-un-mundo-diferente') {
+                $game['slug'] = 're-zero';
+            }
+
             if (isset($game['artworks'][0]['url'])) {
                 $game['artworks'][0]['url'] = str_replace('t_thumb', 't_screenshot_med', $game['artworks'][0]['url']);
             }
