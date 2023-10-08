@@ -230,7 +230,7 @@ class PageRepository extends ServiceEntityRepository
                 }
 
                 $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
-                $imageFile = fopen('https:' . $game['cover']['url'], "r");
+                $imageFile = file_get_contents('https:' . $game['cover']['url'], "r");
                 $image = $uploader->uploadImage($imageFile, false, 90, 300);
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
@@ -242,7 +242,7 @@ class PageRepository extends ServiceEntityRepository
                 }
 
                 $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
-                $imageFile = fopen('https:' . $game['cover']['url'], "r");
+                $imageFile = file_get_contents('https:' . $game['cover']['url'], "r");
                 $image = $uploader->uploadImage($imageFile, false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }

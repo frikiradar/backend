@@ -21,7 +21,7 @@ class FileUploaderService
         $this->targetFilename = $targetFilename;
     }
 
-    public function uploadImage(UploadedFile $file, $square = true, $quality = 90, $size = 512)
+    public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 512)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
@@ -39,8 +39,11 @@ class FileUploaderService
                 'jpeg_quality' => $quality
             );
 
+            if (!is_string($file)) {
+                $file = $file->getRealPath();
+            }
             $image = $imagine
-                ->open($file->getRealPath());
+                ->open($file);
             if ($square) {
                 $image->resize(new Box($size, $size));
             } else {
