@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Statickidz\GoogleTranslate;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Filesystem\Filesystem;
+use App\Service\FileUploaderService;
 
 /**
  * @method Page|null find($id, $lockMode = null, $lockVersion = null)
@@ -222,14 +223,14 @@ class PageRepository extends ServiceEntityRepository
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/' . $game['slug'] . '/';
-            $fs = new Filesystem();
             if (isset($game['cover'])) {
                 $file =  'cover.jpg';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
 
-                $fs->appendToFile($path . $file, file_get_contents('https:' . $game['cover']['url']));
+                $uploader = new FileUploaderService($path, $file);
+                $image = $uploader->uploadImage(file_get_contents('https:' . $game['cover']['url']), false, 90, 300);
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
@@ -239,7 +240,8 @@ class PageRepository extends ServiceEntityRepository
                     mkdir($path, 0777, true);
                 }
 
-                $fs->appendToFile($path . $file, file_get_contents('https:' . $game['artworks'][0]['url']));
+                $uploader = new FileUploaderService($path, $file);
+                $image = $uploader->uploadImage(file_get_contents('https:' . $game['artworks'][0]['url']), false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $path . $file);
             }
 
