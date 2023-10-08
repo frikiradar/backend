@@ -177,10 +177,7 @@ class PageRepository extends ServiceEntityRepository
         if (isset($game)) {
             if ($game['slug'] === 'pokemon-red-version' && $search == 'pokemon') {
                 $game['slug'] = 'pokemon';
-            }
-
-            if ($game['slug'] == 're-zero---empezar-de-cero-en-un-mundo-diferente') {
-                $game['slug'] = 're-zero';
+                $game['name'] = 'Pokémon';
             }
 
             if (isset($game['artworks'][0]['url'])) {
@@ -347,6 +344,11 @@ class PageRepository extends ServiceEntityRepository
             }
             $film['name'] = $name;
             $film['slug'] = $this->nameToSlug($name);
+
+            if ($film['slug'] == 're-zero---empezar-de-cero-en-un-mundo-diferente') {
+                $film['slug'] = 're-zero';
+                $film['name'] = 'Re:Zero';
+            }
 
             // Imágenes
             $server = "https://app.frikiradar.com";
