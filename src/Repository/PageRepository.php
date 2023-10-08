@@ -227,26 +227,26 @@ class PageRepository extends ServiceEntityRepository
 
             // Imágenes
             $server = "https://app.frikiradar.com";
-            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/';
+            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/games/' . $game['slug'] . '/';
             if (isset($game['cover'])) {
                 $filename =  'cover.jpg';
-                if (!file_exists($absolutePath . $game['slug'])) {
-                    mkdir($absolutePath . $game['slug'], 0777, true);
+                if (!file_exists($absolutePath)) {
+                    mkdir($absolutePath, 0777, true);
                 }
 
-                $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
+                $uploader = new FileUploaderService($absolutePath, $filename);
                 $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($game['artworks'][0])) {
                 $filename = 'artwork.jpg';
-                if (!file_exists($absolutePath . $game['slug'])) {
-                    mkdir($absolutePath . $game['slug'], 0777, true);
+                if (!file_exists($absolutePath)) {
+                    mkdir($absolutePath, 0777, true);
                 }
 
-                $uploader = new FileUploaderService($absolutePath . $game['slug'], $filename);
-                $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
+                $uploader = new FileUploaderService($absolutePath, $filename);
+                $image = $uploader->uploadImage('https:' . $game['artworks'][0]['url'], false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
