@@ -354,7 +354,7 @@ class PageRepository extends ServiceEntityRepository
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
             if (isset($film['poster_path'])) {
-                $file =  'cover.jpg';
+                $file =  'cover';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
@@ -365,7 +365,7 @@ class PageRepository extends ServiceEntityRepository
             }
 
             if (isset($film['backdrop_path']) || isset($film['poster_path'])) {
-                $file = 'artwork.jpg';
+                $file = 'artwork';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
