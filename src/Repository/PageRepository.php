@@ -453,8 +453,13 @@ class PageRepository extends ServiceEntityRepository
                 $page->setCover($result['cover']);
                 $page->setArtwork($result['artwork']);
 
-                $this->em->persist($page);
-                $this->em->flush();
+                try {
+                    $this->em->persist($page);
+                    $this->em->flush();
+                } catch (\Exception $ex) {
+                    // Si falla, es que ya existe, lo buscamos
+                    $page = $this->findOneBy(array('slug' => $result['slug']));
+                }
             }
         } else {
             $slug = $this->nameToSlug($name);
