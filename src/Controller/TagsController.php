@@ -62,6 +62,7 @@ class TagsController extends AbstractController
         $cache->deleteItem('users.get.' . $user->getId());
         try {
             $name = $this->request->get($request, 'name');
+            $slug = $this->request->get($request, 'slug', false);
             $categoryName = $this->request->get($request, 'category');
             $category = $this->em->getRepository('App:Category')->findOneBy(array('name' => $categoryName));
             $oldTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
@@ -70,7 +71,14 @@ class TagsController extends AbstractController
                 $tag = new Tag();
                 $tag->setUser($user);
                 $tag->setName($name);
-                $tag->setSlug($this->request->get($request, 'slug', false));
+                $tag->setCategory($category);
+
+                if (empty($slug) && in_array($categoryName, ['games', 'films'])) {
+                    // Creamos página
+                    $page = $this->em->getRepository('App:Page')->setPage($tag);
+                } else {
+                    $tag->setSlug($slug);
+                }
 
                 if (!empty($category)) {
                     $tag->setCategory($category);

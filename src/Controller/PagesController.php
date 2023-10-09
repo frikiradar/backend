@@ -124,71 +124,10 @@ class PagesController extends AbstractController
         $this->accessChecker->checkAccess($user);
         try {
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
-            $name = $tag->getName();
-            $category = $tag->getCategory()->getName();
-            switch ($category) {
-                case 'games':
-                    $result = $this->em->getRepository('App:Page')->getGamesApi($name);
-                    break;
-
-                case 'films':
-                    $result = $this->em->getRepository('App:Page')->getFilmsApi($name);
-                    break;
-            }
-
-            if ($result) {
-                $slug = $result['slug'];
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $result['slug']));
-                $oldPage = $page;
-
-                if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
-                    /**
-                     * @var Page
-                     */
-                    $page = new Page();
-                    $page->setName($result['name']);
-                    $page->setDescription($result['description']);
-                    $page->setSlug($result['slug'] . (null !== $oldPage && $oldPage->getCategory() !== $category ? '-' . $category : ''));
-                    $page->setRating($result['rating']);
-                    $page->setCategory($category);
-                    if (isset($result['developer'])) {
-                        $page->setDeveloper($result['developer']);
-                    }
-                    $page->setReleaseDate($result['release_date']);
-                    $page->setTimeCreation();
-                    $page->setLastUpdate();
-                    if (isset($result['game_mode'])) {
-                        $page->setGameMode($result['game_mode']);
-                    }
-                    $page->setCover($result['cover']);
-                    $page->setArtwork($result['artwork']);
-
-                    $this->em->persist($page);
-                    $this->em->flush();
-                }
-            } else {
-                $slug = $this->em->getRepository('App:Page')->nameToSlug($name);
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
-                if (empty($page)) {
-                    /**
-                     * @var Page
-                     */
-                    $page = new Page();
-                    $page->setName($name);
-                    $page->setSlug($slug);
-                    $page->setTimeCreation();
-                    $page->setLastUpdate();
-                    $page->setCategory($tag->getCategory()->getName());
-                    $this->em->persist($page);
-                    $this->em->flush();
-                }
-            }
-
-            // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-            $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
+            $page = $this->em->getRepository('App:Page')->setPage($tag);
 
             $cache = new FilesystemAdapter();
-            $cache->deleteItem('page.get.' . $slug);
+            $cache->deleteItem('page.get.' . $page->getSlug());
 
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
         } catch (Exception $ex) {

@@ -402,6 +402,74 @@ class PageRepository extends ServiceEntityRepository
         return  [];
     }
 
+    public function setPage($tag)
+    {
+        $name = $tag->getName();
+        $category = $tag->getCategory()->getName();
+        switch ($category) {
+            case 'games':
+                $result = $this->getGamesApi($name);
+                break;
+
+            case 'films':
+                $result = $this->getFilmsApi($name);
+                break;
+        }
+
+        if ($result) {
+            $slug = $result['slug'];
+            $page = $this->findOneBy(array('slug' => $result['slug']));
+            $oldPage = $page;
+
+            if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
+                /**
+                 * @var Page
+                 */
+                $page = new Page();
+                $page->setName($result['name']);
+                $page->setDescription($result['description']);
+                $page->setSlug($result['slug'] . (null !== $oldPage && $oldPage->getCategory() !== $category ? '-' . $category : ''));
+                $page->setRating($result['rating']);
+                $page->setCategory($category);
+                if (isset($result['developer'])) {
+                    $page->setDeveloper($result['developer']);
+                }
+                $page->setReleaseDate($result['release_date']);
+                $page->setTimeCreation();
+                $page->setLastUpdate();
+                if (isset($result['game_mode'])) {
+                    $page->setGameMode($result['game_mode']);
+                }
+                $page->setCover($result['cover']);
+                $page->setArtwork($result['artwork']);
+
+                $this->em->persist($page);
+                $this->em->flush();
+            }
+        } else {
+            $slug = $this->nameToSlug($name);
+            $page = $this->findOneBy(array('slug' => $slug));
+            if (empty($page)) {
+                /**
+                 * @var Page
+                 */
+                $page = new Page();
+                $page->setName($name);
+                $page->setSlug($slug);
+                $page->setTimeCreation();
+                $page->setLastUpdate();
+                $page->setCategory($tag->getCategory()->getName());
+                $this->em->persist($page);
+                $this->em->flush();
+            }
+        }
+
+        // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+        $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
+
+        return $page;
+    }
+
     public function nameToSlug($name)
     {
         $slug = trim(strtolower($name));
