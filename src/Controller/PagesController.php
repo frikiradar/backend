@@ -46,6 +46,19 @@ class PagesController extends AbstractController
 
         try {
             $pages = $this->em->getRepository('App:Page')->findPages($user);
+
+            // recogemos los tags del usuario y vemos si hay alguno sin slug y generamos páginas nuevas
+            $tags = $this->em->getRepository('App:Tag')->findBy(array('user' => $user));
+            foreach ($tags as $tag) {
+                $slug = $tag->getSlug();
+                if (!isset($slug)) {
+                    $page = $this->em->getRepository('App:Page')->setPage($tag);
+                    $tag->setPage($page);
+                    $this->em->persist($tag);
+                    $this->em->flush();
+                }
+            }
+
             return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
