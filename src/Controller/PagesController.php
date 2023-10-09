@@ -45,8 +45,6 @@ class PagesController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $pages = $this->em->getRepository('App:Page')->findPages($user);
-
             // recogemos los tags del usuario y vemos si hay alguno sin slug y generamos páginas nuevas
             $tags = $user->getTags();
             foreach ($tags as $tag) {
@@ -61,6 +59,8 @@ class PagesController extends AbstractController
                     }
                 }
             }
+
+            $pages = $this->em->getRepository('App:Page')->findPages($user);
 
             return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
