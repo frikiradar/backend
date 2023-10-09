@@ -311,11 +311,6 @@ class User implements UserInterface
     private $ban_end;
 
     /**
-     * @ORM\OneToMany(targetEntity=Room::class, mappedBy="creator")
-     */
-    private $rooms;
-
-    /**
      * @ORM\OneToMany(targetEntity=Story::class, mappedBy="user", orphanRemoval=true)
      * @ORM\OrderBy({"time_creation" = "ASC"})
      */
@@ -390,7 +385,6 @@ class User implements UserInterface
         $this->blockUsers = new ArrayCollection();
         $this->hideUsers = new ArrayCollection();
         $this->viewUsers = new ArrayCollection();
-        $this->rooms = new ArrayCollection();
         $this->stories = new ArrayCollection();
         $this->likeStories = new ArrayCollection();
         $this->viewStories = new ArrayCollection();
@@ -1331,36 +1325,6 @@ class User implements UserInterface
     public function setThumbnail(?string $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Room[]
-     */
-    public function getRooms(): Collection
-    {
-        return $this->rooms;
-    }
-
-    public function addRoom(Room $room): self
-    {
-        if (!$this->rooms->contains($room)) {
-            $this->rooms[] = $room;
-            $room->setCreator($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRoom(Room $room): self
-    {
-        if ($this->rooms->removeElement($room)) {
-            // set the owning side to null (unless already changed)
-            if ($room->getCreator() === $this) {
-                $room->setCreator(null);
-            }
-        }
 
         return $this;
     }

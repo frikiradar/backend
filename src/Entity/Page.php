@@ -85,11 +85,6 @@ class Page
     /**
      * @Groups({"default"})
      */
-    private $room;
-
-    /**
-     * @Groups({"default"})
-     */
     private $likes;
 
     /**
@@ -243,18 +238,6 @@ class Page
     public function setCategory(string $category): self
     {
         $this->category = $category;
-
-        return $this;
-    }
-
-    public function getRoom(): ?Room
-    {
-        return $this->room;
-    }
-
-    public function setRoom(?Room $room): self
-    {
-        $this->room = $room;
 
         return $this;
     }

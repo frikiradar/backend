@@ -76,9 +76,6 @@ class DevicesController extends AbstractController
                 curl_setopt($ch, CURLOPT_POSTFIELDS, array());
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-                curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/rooms");
-                curl_exec($ch);
-
                 curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/frikiradar");
                 curl_exec($ch);
 

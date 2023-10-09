@@ -70,7 +70,7 @@ class MessageService extends AbstractController
         }
     }
 
-    public function sendTopic(Chat $chat, string $topic, $notify = false)
+    /*public function sendTopic(Chat $chat, string $topic, $notify = false)
     {
         $message = $this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]);
 
@@ -98,5 +98,5 @@ class MessageService extends AbstractController
                 // echo "Error al enviar la notificación";
             }
         }
-    }
+    }*/
 }

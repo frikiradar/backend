@@ -375,8 +375,6 @@ class ChatController extends AbstractController
                     if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
                         $this->message->send($chat, $chat->getFromuser());
                     }
-                } else {
-                    $this->message->sendTopic($chat, 'rooms', false);
                 }
 
                 return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
@@ -445,8 +443,6 @@ class ChatController extends AbstractController
                     if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
                         $this->message->send($message, $message->getFromuser());
                     }
-                } else {
-                    $this->message->sendTopic($message, 'rooms', false);
                 }
 
                 return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));

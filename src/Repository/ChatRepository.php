@@ -76,21 +76,6 @@ class ChatRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getRoomChat(string $slug, $page = 1)
-    {
-        $limit = 50;
-        $offset = ($page - 1) * $limit;
-
-        return $this->createQueryBuilder('c')
-            ->where('c.conversationId = :slug')
-            ->orderBy('c.id', 'DESC')
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->setParameter('slug', $slug)
-            ->getQuery()
-            ->getResult();
-    }
-
     public function isChat(User $fromUser, User $toUser)
     {
         return $this->createQueryBuilder('c')

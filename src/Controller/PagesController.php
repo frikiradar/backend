@@ -2,10 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Category;
 use App\Entity\Page;
-use App\Entity\Room;
-use App\Entity\Tag;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,15 +66,6 @@ class PagesController extends AbstractController
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $room = new Room();
-                    $room->setName($page->getName());
-                    $room->setDescription($page->getDescription());
-                    $room->setImage($page->getCover());
-                    $room->setSlug($slug);
-                    $room->setVisible(false);
-                    $room->setPermissions(['ROLE_USER']);
-                    $page->setRoom($room);
-
                     $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
                     $page->setLikes($likes['total']);
 
@@ -90,11 +78,6 @@ class PagesController extends AbstractController
             } else {
                 $page = $pageCache->get();
             }
-
-            /*$messages = $this->em->getRepository('App:Room')->getLastMessages([$slug], $user);
-            if (isset($messages[0])) {
-                $page->getRoom()->setLastMessage($messages[0]['last_message']);
-            }*/
 
             return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
         } catch (Exception $ex) {
@@ -114,15 +97,6 @@ class PagesController extends AbstractController
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $room = new Room();
-                    $room->setName($page->getName());
-                    $room->setDescription($page->getDescription());
-                    $room->setImage($page->getCover());
-                    $room->setSlug($slug);
-                    $room->setVisible(false);
-                    $room->setPermissions(['ROLE_USER']);
-                    $page->setRoom($room);
-
                     $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
                     $page->setLikes($likes['total']);
                     $pageCache->expiresAfter(3600 * 24);

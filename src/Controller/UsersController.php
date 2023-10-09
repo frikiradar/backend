@@ -1019,27 +1019,6 @@ class UsersController extends AbstractController
                     if ($patreon['patron_status'] == 'active_patron') {
                         $user->addRol('ROLE_PATREON');
                         $user->setVerified(true);
-
-                        // Añadimos mensaje en sala de patreon
-                        $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
-                        $text = 'Muchas gracias por tu suscripción a Patreon @' . $user->getUsername();
-                        $slug = 'patreon';
-                        $chat = new Chat();
-                        $chat->setFromuser($frikiradar);
-                        $chat->setText($text);
-                        $chat->setTimeCreation();
-                        $chat->setConversationId($slug);
-                        $chat->setMentions([$user->getUsername()]);
-                        $this->em->persist($chat);
-                        $this->em->flush();
-
-                        $this->message->sendTopic($chat, 'rooms', false);
-
-                        $url = "/room/" . $slug;
-
-                        $title = "¡Te damos la bienvenida a Patreon " . $user->getUsername() . "!";
-                        $text = "Muchas gracias por suscribirte a Patreon. Con tu ayuda podemos seguir añadiendo nuevas funcionalidades y seguir creciendo.";
-                        $this->notification->set($frikiradar, $user, $title, $text, $url, 'room');
                     }
 
                     $this->em->persist($user);
