@@ -489,8 +489,12 @@ class PageRepository extends ServiceEntityRepository
                     $page->setTimeCreation();
                     $page->setLastUpdate();
                     $page->setCategory($tag->getCategory()->getName());
-                    $this->em->persist($page);
-                    $this->em->flush();
+                    try {
+                        $this->em->persist($page);
+                        $this->em->flush();
+                    } catch (\Exception $ex) {
+                        return false;
+                    }
                 }
             }
         }
