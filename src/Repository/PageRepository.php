@@ -425,11 +425,19 @@ class PageRepository extends ServiceEntityRepository
         if (empty($page)) {
             switch ($category) {
                 case 'games':
-                    $result = $this->getGamesApi($name);
+                    try {
+                        $result = $this->getGamesApi($name);
+                    } catch (\Exception $ex) {
+                        return false;
+                    }
                     break;
 
                 case 'films':
-                    $result = $this->getFilmsApi($name);
+                    try {
+                        $result = $this->getFilmsApi($name);
+                    } catch (\Exception $ex) {
+                        return false;
+                    }
                     break;
             }
 

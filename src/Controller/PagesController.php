@@ -57,7 +57,9 @@ class PagesController extends AbstractController
                         $slug = $tag->getSlug();
                         if (!isset($slug)) {
                             $page = $this->em->getRepository('App:Page')->setPage($tag);
-                            $tag->setSlug($page->getSlug());
+                            if ($page) {
+                                $tag->setSlug($page->getSlug());
+                            }
                         }
                     }
                 }
