@@ -416,66 +416,73 @@ class PageRepository extends ServiceEntityRepository
     {
         $name = $tag->getName();
         $category = $tag->getCategory()->getName();
-        switch ($category) {
-            case 'games':
-                $result = $this->getGamesApi($name);
-                break;
 
-            case 'films':
-                $result = $this->getFilmsApi($name);
-                break;
-        }
+        $slug = $this->nameToSlug($name);
+        // buscamos pagina con esta categoria y este slug
+        $page = $this->findOneBy(array('slug' => $slug, 'category' => $category));
 
-        if ($result) {
-            $slug = $result['slug'];
-            $page = $this->findOneBy(array('slug' => $result['slug']));
-            $oldPage = $page;
+        if (empty($page)) {
+            switch ($category) {
+                case 'games':
+                    $result = $this->getGamesApi($name);
+                    break;
 
-            if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
-                /**
-                 * @var Page
-                 */
-                $page = new Page();
-                $page->setName($result['name']);
-                $page->setDescription($result['description']);
-                $page->setSlug($result['slug'] . (null !== $oldPage && $oldPage->getCategory() !== $category ? '-' . $category : ''));
-                $page->setRating($result['rating']);
-                $page->setCategory($category);
-                if (isset($result['developer'])) {
-                    $page->setDeveloper($result['developer']);
+                case 'films':
+                    $result = $this->getFilmsApi($name);
+                    break;
+            }
+
+            if ($result) {
+                $slug = $result['slug'];
+                $page = $this->findOneBy(array('slug' => $result['slug']));
+                $oldPage = $page;
+
+                if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
+                    /**
+                     * @var Page
+                     */
+                    $page = new Page();
+                    $page->setName($result['name']);
+                    $page->setDescription($result['description']);
+                    $page->setSlug($result['slug'] . (null !== $oldPage && $oldPage->getCategory() !== $category ? '-' . $category : ''));
+                    $page->setRating($result['rating']);
+                    $page->setCategory($category);
+                    if (isset($result['developer'])) {
+                        $page->setDeveloper($result['developer']);
+                    }
+                    $page->setReleaseDate($result['release_date']);
+                    $page->setTimeCreation();
+                    $page->setLastUpdate();
+                    if (isset($result['game_mode'])) {
+                        $page->setGameMode($result['game_mode']);
+                    }
+                    $page->setCover($result['cover']);
+                    $page->setArtwork($result['artwork']);
+
+                    try {
+                        $this->em->persist($page);
+                        $this->em->flush();
+                    } catch (\Exception $ex) {
+                        // Si falla, es que ya existe, lo buscamos
+                        $page = $this->findOneBy(array('slug' => $result['slug']));
+                    }
                 }
-                $page->setReleaseDate($result['release_date']);
-                $page->setTimeCreation();
-                $page->setLastUpdate();
-                if (isset($result['game_mode'])) {
-                    $page->setGameMode($result['game_mode']);
-                }
-                $page->setCover($result['cover']);
-                $page->setArtwork($result['artwork']);
-
-                try {
+            } else {
+                $slug = $this->nameToSlug($name);
+                $page = $this->findOneBy(array('slug' => $slug));
+                if (empty($page)) {
+                    /**
+                     * @var Page
+                     */
+                    $page = new Page();
+                    $page->setName($name);
+                    $page->setSlug($slug);
+                    $page->setTimeCreation();
+                    $page->setLastUpdate();
+                    $page->setCategory($tag->getCategory()->getName());
                     $this->em->persist($page);
                     $this->em->flush();
-                } catch (\Exception $ex) {
-                    // Si falla, es que ya existe, lo buscamos
-                    $page = $this->findOneBy(array('slug' => $result['slug']));
                 }
-            }
-        } else {
-            $slug = $this->nameToSlug($name);
-            $page = $this->findOneBy(array('slug' => $slug));
-            if (empty($page)) {
-                /**
-                 * @var Page
-                 */
-                $page = new Page();
-                $page->setName($name);
-                $page->setSlug($slug);
-                $page->setTimeCreation();
-                $page->setLastUpdate();
-                $page->setCategory($tag->getCategory()->getName());
-                $this->em->persist($page);
-                $this->em->flush();
             }
         }
 
