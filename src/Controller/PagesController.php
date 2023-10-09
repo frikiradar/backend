@@ -46,17 +46,21 @@ class PagesController extends AbstractController
 
         try {
             // recogemos los tags del usuario y vemos si hay alguno sin slug y generamos páginas nuevas
-            /*$tags = $user->getTags();
-            foreach ($tags as $tag) {
-                $category = $tag->getCategory()->getName();
-                if (in_array($category, array('films', 'games'))) {
-                    $slug = $tag->getSlug();
-                    if (!isset($slug)) {
-                        $page = $this->em->getRepository('App:Page')->setPage($tag);
-                        $tag->setSlug($page->getSlug());
+            // $tags = $user->getTags();
+            if ($user->getId() == 2) {
+                $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
+
+                foreach ($tags as $tag) {
+                    $category = $tag->getCategory()->getName();
+                    if (in_array($category, array('films', 'games'))) {
+                        $slug = $tag->getSlug();
+                        if (!isset($slug)) {
+                            $page = $this->em->getRepository('App:Page')->setPage($tag);
+                            $tag->setSlug($page->getSlug());
+                        }
                     }
                 }
-            }*/
+            }
 
             $pages = $this->em->getRepository('App:Page')->findPages($user);
 

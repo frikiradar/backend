@@ -101,4 +101,23 @@ class TagRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findAllGroupedTags()
+    {
+        $em = $this->getEntityManager();
+
+        return $this->createQueryBuilder('t')
+            ->select(array(
+                't.name',
+                't.slug',
+                'c.name category'
+            ))
+            ->leftJoin('t.category', 'c')
+            ->groupBy('t.name')
+            ->groupBy('c.name')
+            ->where('c.name IN (' . "'films', 'games'" . ')')
+            ->orderBy('t.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
