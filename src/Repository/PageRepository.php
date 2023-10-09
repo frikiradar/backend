@@ -398,7 +398,7 @@ class PageRepository extends ServiceEntityRepository
 
             $result = [
                 'name' => $film['name'],
-                'description' => $film['overview'] ?: null,
+                'description' => $film['overview'] ?? null,
                 'cover' => $cover,
                 'artwork' => $artwork,
                 'slug' => $film['slug'],
