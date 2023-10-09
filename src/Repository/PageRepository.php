@@ -388,6 +388,10 @@ class PageRepository extends ServiceEntityRepository
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
                 $date = \DateTime::createFromFormat('Y-m-d', isset($film['release_date']) ? $film['release_date'] : $film['first_air_date']);
                 $releaseDate = $date;
+                // si es booleano, es que no tiene fecha de salida
+                if (is_bool($releaseDate)) {
+                    $releaseDate = null;
+                }
             }
 
             $result = [
