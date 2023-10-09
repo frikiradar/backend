@@ -259,14 +259,14 @@ class PageRepository extends ServiceEntityRepository
 
             $result = [
                 'name' => $game['name'],
-                'description' => $game['summary'],
-                'cover' => $cover ?: null,
-                'artwork' => $artwork ?: null,
+                'description' => $game['summary'] ?? "",
+                'cover' => $cover ?? null,
+                'artwork' => $artwork ?? null,
                 'slug' => $game['slug'],
-                'rating' => $game['aggregated_rating'],
-                'release_date' => $releaseDate ?: null,
-                'developer' => $game['developer'] ?: null,
-                'game_mode' => $game['game_mode']
+                'rating' => $game['aggregated_rating'] ?? null,
+                'release_date' => $releaseDate ?? null,
+                'developer' => $game['developer'] ?? null,
+                'game_mode' => $game['game_mode'] ?? null
             ];
 
             return $result;
