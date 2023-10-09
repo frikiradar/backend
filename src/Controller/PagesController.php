@@ -16,6 +16,8 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
+set_time_limit(0);
+
 /**
  * Class PagesController
  *
