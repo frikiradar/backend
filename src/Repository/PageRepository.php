@@ -308,7 +308,7 @@ class PageRepository extends ServiceEntityRepository
             return ((isset($b['popularity']) ? $b['popularity'] : 0) <=> (isset($a['popularity']) ? $a['popularity'] : 0));
         });
 
-        if (!empty($films)) {
+        if (isset($films[0])) {
             $filmFound = [];
 
             foreach ($films as $key => $film) {
