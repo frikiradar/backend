@@ -352,7 +352,7 @@ class PageRepository extends ServiceEntityRepository
             $film['name'] = $name;
             $film['slug'] = $this->nameToSlug($name);
 
-            if ($film['slug'] == 're-zero---empezar-de-cero-en-un-mundo-diferente') {
+            if ($film['slug'] == 're-zero-empezar-de-cero-en-un-mundo-diferente') {
                 $film['slug'] = 're-zero';
                 $film['name'] = 'Re:Zero';
             }
