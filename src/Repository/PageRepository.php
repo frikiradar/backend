@@ -402,7 +402,7 @@ class PageRepository extends ServiceEntityRepository
                 'cover' => $cover ?? null,
                 'artwork' => $artwork ?? null,
                 'slug' => $film['slug'],
-                'rating' => $film['vote_average'] ? ($film['vote_average'] * 100) : null,
+                'rating' => isset($film['vote_average']) ? ($film['vote_average'] * 100) : null,
                 'release_date' => $releaseDate ?? null
             ];
 
