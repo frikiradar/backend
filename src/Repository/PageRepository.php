@@ -299,7 +299,9 @@ class PageRepository extends ServiceEntityRepository
             $output = curl_exec($ch);
             curl_close($ch);
             $info = json_decode($output, true);
-            $films = [...$films, ...$info['results']];
+            if (isset($info['results'])) {
+                $films = [...$films, ...$info['results']];
+            }
         } while (count($info['results']) == 20);
 
         usort($films, function ($a, $b) {
