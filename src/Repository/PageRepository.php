@@ -86,6 +86,7 @@ class PageRepository extends ServiceEntityRepository
 
         $pages = $this->createQueryBuilder('p')
             ->where('p.slug IN (:slugs)')
+            ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_keys($slugs))
             ->getQuery()
             ->getResult();
