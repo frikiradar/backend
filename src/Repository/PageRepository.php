@@ -255,6 +255,10 @@ class PageRepository extends ServiceEntityRepository
                 $date = new \DateTime();
                 $date->setTimestamp($game['first_release_date']);
                 $releaseDate = $date;
+                // si es booleano, es que no tiene fecha de salida
+                if (is_bool($releaseDate)) {
+                    $releaseDate = null;
+                }
             }
 
             $result = [
