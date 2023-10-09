@@ -50,8 +50,6 @@ class TagRepository extends ServiceEntityRepository
 
     public function searchTags(string $query, string $category)
     {
-        $em = $this->getEntityManager();
-
         return $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
@@ -83,8 +81,6 @@ class TagRepository extends ServiceEntityRepository
 
     public function countTag(string $name, string $category)
     {
-        $em = $this->getEntityManager();
-
         return $this->createQueryBuilder('t')
             ->select(array(
                 'COUNT(t) total'
@@ -104,8 +100,6 @@ class TagRepository extends ServiceEntityRepository
 
     public function findAllGroupedTags()
     {
-        $em = $this->getEntityManager();
-
         // buscamos todos los tags agrupados por nombre y categoria
         // devolvemos entidad completa
         // solamente necesitamos los tags de las categorias films y games
@@ -113,8 +107,6 @@ class TagRepository extends ServiceEntityRepository
             ->where('t.category = (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
             ->groupBy('t.name')
             ->addGroupBy('t.category')
-            ->addGroupBy('t.slug')
-            ->orderBy('t.name', 'ASC')
             ->setParameters(array(
                 'category' => array('films', 'games')
             ))
