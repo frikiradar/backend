@@ -338,7 +338,7 @@ class PageRepository extends ServiceEntityRepository
 
             if (!empty($filmFound)) {
                 $film = $filmFound;
-            } else {
+            } elseif (isset($films[0])) {
                 $film = $films[0];
             }
         }
