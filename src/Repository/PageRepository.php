@@ -217,12 +217,13 @@ class PageRepository extends ServiceEntityRepository
             }
 
             if (isset($game['summary'])) {
-                $trans = new GoogleTranslate();
-                $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
                 try {
+                    $trans = new GoogleTranslate();
+                    $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
                     $game['summary'] = $trans->translate('en', 'es', $text);
                 } catch (Exception $ex) {
                     // Omitimos traducción si falla, lo metemos en inglés
+                    return false;
                 }
             }
 
