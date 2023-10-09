@@ -106,17 +106,23 @@ class TagRepository extends ServiceEntityRepository
     {
         $em = $this->getEntityManager();
 
+        // buscamos todos los tags agrupados por nombre y categoria
+        // devolvemos entidad completa
+        // solamente necesitamos los tags de las categorias films y games
         return $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
-                't.slug',
-                'c.name category'
+                't.category',
+                't.slug'
             ))
-            ->leftJoin('t.category', 'c')
+            ->where('t.category = (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
             ->groupBy('t.name')
-            ->groupBy('c.name')
-            ->where('c.name IN (' . "'films', 'games'" . ')')
+            ->addGroupBy('t.category')
+            ->addGroupBy('t.slug')
             ->orderBy('t.name', 'ASC')
+            ->setParameters(array(
+                'category' => array('films', 'games')
+            ))
             ->getQuery()
             ->getResult();
     }
