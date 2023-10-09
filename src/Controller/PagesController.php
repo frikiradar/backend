@@ -50,6 +50,8 @@ class PagesController extends AbstractController
             // $tags = $user->getTags();
             if ($user->getId() == 2) {
                 $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
+                // limitamos a 20 tags
+                $tags = array_slice($tags, 0, 20);
 
                 foreach ($tags as $tag) {
                     $category = $tag->getCategory()->getName();
