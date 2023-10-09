@@ -400,8 +400,8 @@ class PageRepository extends ServiceEntityRepository
                 'cover' => $cover,
                 'artwork' => $artwork,
                 'slug' => $film['slug'],
-                'rating' => $film['vote_average'] * 100,
-                'release_date' => $releaseDate
+                'rating' => $film['vote_average'] ? ($film['vote_average'] * 100) : null,
+                'release_date' => $releaseDate ?? null
             ];
 
             return $result;
