@@ -226,18 +226,18 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        /**
-         * @var User[]
-         */
-        $users = $this->em->getRepository('App:User')->findAll();
+        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
 
-        foreach ($users as $user) {
-            if (!$user->getMailingCode()) {
-                $user->setMailingCode();
-
-                $this->em->persist($user);
-                $this->em->flush();
-                $this->o->writeln("Usuario " . $user->getUsername());
+        foreach ($tags as $tag) {
+            $category = $tag->getCategory()->getName();
+            if (in_array($category, array('films', 'games'))) {
+                $slug = $tag->getSlug();
+                if (!isset($slug)) {
+                    $page = $this->em->getRepository('App:Page')->setPage($tag);
+                    if ($page) {
+                        $tag->setSlug($page->getSlug());
+                    }
+                }
             }
         }
     }
