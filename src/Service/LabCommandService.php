@@ -235,7 +235,8 @@ class LabCommandService
                 if (!isset($slug)) {
                     $page = $this->em->getRepository('App:Page')->setPage($tag);
                     if ($page) {
-                        $tag->setSlug($page->getSlug());
+                        // $tag->setSlug($page->getSlug());
+                        $this->o->writeln("Página generada: " . $page->getName() . " (" $page->getSlug(). ")");
                     }
                 }
             }
