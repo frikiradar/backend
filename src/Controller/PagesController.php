@@ -128,10 +128,13 @@ class PagesController extends AbstractController
             $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
             $page = $this->em->getRepository('App:Page')->setPage($tag);
 
-            $cache = new FilesystemAdapter();
-            $cache->deleteItem('page.get.' . $page->getSlug());
-
-            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
+            if ($page) {
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem('page.get.' . $page->getSlug());
+                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
+            } else {
+                throw new HttpException(400, "Error al crear la página");
+            }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");
         }
