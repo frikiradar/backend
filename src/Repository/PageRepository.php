@@ -379,6 +379,7 @@ class PageRepository extends ServiceEntityRepository
                 }
 
                 $uploader = new FileUploaderService($path, $file);
+                print_r($uploader);
                 $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200/' . $film['poster_path'], false, 90, 300);
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
