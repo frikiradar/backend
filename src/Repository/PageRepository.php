@@ -371,7 +371,7 @@ class PageRepository extends ServiceEntityRepository
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
-            /*if (isset($film['poster_path'])) {
+            if (isset($film['poster_path'])) {
                 $file =  'cover';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
@@ -391,7 +391,7 @@ class PageRepository extends ServiceEntityRepository
                 $uploader = new FileUploaderService($path, $file);
                 $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-            }*/
+            }
 
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
                 $date = \DateTime::createFromFormat('Y-m-d', isset($film['release_date']) ? $film['release_date'] : $film['first_air_date']);
