@@ -369,6 +369,8 @@ class PageRepository extends ServiceEntityRepository
                 $film['name'] = 'Nanatsu no Taizai';
             }
 
+            print_r("imagenes vienen");
+
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
@@ -398,6 +400,8 @@ class PageRepository extends ServiceEntityRepository
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
+            print_r("imagenes van");
+
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
                 $date = \DateTime::createFromFormat('Y-m-d', isset($film['release_date']) ? $film['release_date'] : $film['first_air_date']);
                 $releaseDate = $date;
@@ -416,8 +420,6 @@ class PageRepository extends ServiceEntityRepository
                 'rating' => isset($film['vote_average']) ? ($film['vote_average'] * 100) : null,
                 'release_date' => $releaseDate ?? null
             ];
-
-            print_r($result);
 
             return $result;
         }
@@ -453,8 +455,9 @@ class PageRepository extends ServiceEntityRepository
                     break;
             }
 
+            print_r($result);
+
             if (!empty($result)) {
-                print_r($result);
                 $slug = $result['slug'];
                 $page = $this->findOneBy(array('slug' => $result['slug']));
                 $oldPage = $page;
