@@ -246,7 +246,6 @@ class LabCommandService
                     }
                 }
             }
-            break;
         }
     }
 }
