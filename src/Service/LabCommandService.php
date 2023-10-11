@@ -232,7 +232,6 @@ class LabCommandService
             if (in_array($category, array('films', 'games'))) {
                 $slug = $tag->getSlug();
                 if (!isset($slug)) {
-                    $this->o->writeln($tag->getName() . " - " . $category);
                     try {
                         $page = $this->em->getRepository('App:Page')->setPage($tag);
                         if ($page) {
