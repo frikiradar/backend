@@ -239,7 +239,7 @@ class LabCommandService
                             // $tag->setSlug($page->getSlug());
                             $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
                         } else {
-                            $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
+                            $this->o->writeln("Error al generar página para: " . $tag->getName());
                         }
                     } catch (Exception $ex) {
                         $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
