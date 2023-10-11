@@ -385,6 +385,7 @@ class PageRepository extends ServiceEntityRepository
                     throw new \Exception($ex->getMessage());
                 }
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                print_r($cover);
             }
 
             if (isset($film['backdrop_path']) || isset($film['poster_path'])) {
