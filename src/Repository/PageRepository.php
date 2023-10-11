@@ -223,7 +223,8 @@ class PageRepository extends ServiceEntityRepository
                     $game['summary'] = $trans->translate('en', 'es', $text);
                 } catch (Exception $ex) {
                     // Omitimos traducción si falla, lo metemos en inglés
-                    return false;
+                    // return false;
+                    echo $ex->getMessage();
                 }
             }
 

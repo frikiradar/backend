@@ -16,7 +16,6 @@ use Patreon\API;
 use Patreon\OAuth;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use \Statickidz\GoogleTranslate;
 
 class LabCommandService
 {
