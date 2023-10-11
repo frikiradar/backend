@@ -150,7 +150,7 @@ class PageRepository extends ServiceEntityRepository
         usort($games, function ($a, $b) {
             return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
         });
-        print_r($games);
+        // print_r($games);
 
         if (!empty($games)) {
             $gameFound = [];
