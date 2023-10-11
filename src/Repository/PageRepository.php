@@ -475,7 +475,7 @@ class PageRepository extends ServiceEntityRepository
                 }
             } else {
                 // De momento no vamos a crear paginas vacías
-                // return false;
+                return false;
                 /*if (empty($page)) {
                     $page = new Page();
                     $page->setName($name);
