@@ -23,16 +23,14 @@ class FileUploaderService
 
     public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 512)
     {
-        print_r(1);
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
 
             if (!file_exists($this->getTargetDirectory())) {
                 mkdir($this->getTargetDirectory(), 0777, true);
             }
-            print_r(2);
+
             $imagine = new Imagine();
-            print_r(3);
 
             $options = array(
                 'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
@@ -42,13 +40,9 @@ class FileUploaderService
             );
 
             if (!is_string($file)) {
-                print_r(4);
                 $file = $file->getRealPath();
-                print_r(5);
             }
-            print_r(6);
             $image = $imagine->open($file);
-            print_r(7);
             if ($square) {
                 $image->resize(new Box($size, $size));
             } else {
