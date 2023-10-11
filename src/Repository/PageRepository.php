@@ -476,9 +476,10 @@ class PageRepository extends ServiceEntityRepository
                         $page = $this->findOneBy(array('slug' => $result['slug']));
                     }
                 }
-            } /*else {
+            } else {
                 // De momento no vamos a crear paginas vacías
-                if (empty($page)) {
+                return false;
+                /*if (empty($page)) {
                     $page = new Page();
                     $page->setName($name);
                     $page->setSlug($slug);
@@ -491,8 +492,8 @@ class PageRepository extends ServiceEntityRepository
                     } catch (\Exception $ex) {
                         return false;
                     }
-                }
-            }*/
+                }*/
+            }
         }
 
         // actualizamos todas las etiquetas con este mismo nombre de esta categoria
