@@ -350,7 +350,6 @@ class PageRepository extends ServiceEntityRepository
         }
 
         if (!empty($film)) {
-            print_r($film);
             if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
                 $name = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
             } else {
