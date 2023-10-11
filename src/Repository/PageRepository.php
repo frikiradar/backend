@@ -368,8 +368,6 @@ class PageRepository extends ServiceEntityRepository
                 $film['name'] = 'Nanatsu no Taizai';
             }
 
-            print_r("imagenes vienen");
-
             // Imágenes
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
@@ -377,8 +375,6 @@ class PageRepository extends ServiceEntityRepository
                 $file =  'cover';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
-                } elseif (file_exists($path . $file . '.jpg')) {
-                    unlink($path . $file . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($path, $file);
@@ -390,16 +386,12 @@ class PageRepository extends ServiceEntityRepository
                 $file = 'artwork';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
-                } elseif (file_exists($path . $file . '.jpg')) {
-                    unlink($path . $file . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($path, $file);
                 $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
-
-            print_r("imagenes van");
 
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
                 $date = \DateTime::createFromFormat('Y-m-d', isset($film['release_date']) ? $film['release_date'] : $film['first_air_date']);
@@ -453,8 +445,6 @@ class PageRepository extends ServiceEntityRepository
                     }
                     break;
             }
-
-            print_r($result);
 
             if (!empty($result)) {
                 $slug = $result['slug'];
