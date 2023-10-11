@@ -372,15 +372,13 @@ class PageRepository extends ServiceEntityRepository
             $server = "https://app.frikiradar.com";
             $path = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/pages/films/' . $film['slug'] . '/';
             if (isset($film['poster_path'])) {
-                print_r($film);
                 $file =  'cover';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
 
                 $uploader = new FileUploaderService($path, $file);
-                print_r($uploader);
-                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200/' . $film['poster_path'], false, 90, 300);
+                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200' . $film['poster_path'], false, 90, 300);
                 $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
@@ -391,7 +389,7 @@ class PageRepository extends ServiceEntityRepository
                 }
 
                 $uploader = new FileUploaderService($path, $file);
-                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400/' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
+                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
                 $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
