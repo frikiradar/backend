@@ -233,13 +233,16 @@ class LabCommandService
                 $slug = $tag->getSlug();
                 if (!isset($slug)) {
                     try {
-                    $page = $this->em->getRepository('App:Page')->setPage($tag);
-                    if ($page) {
-                        // $tag->setSlug($page->getSlug());
-                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+                        $page = $this->em->getRepository('App:Page')->setPage($tag);
+                        if ($page) {
+                            // $tag->setSlug($page->getSlug());
+                            $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+
+                            $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
+                        }
+                    } catch (Exception $ex) {
+                        $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
                     }
-                } catch (Exception $ex) {
-                    $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
                 }
             }
             break;
