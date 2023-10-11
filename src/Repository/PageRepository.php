@@ -235,6 +235,8 @@ class PageRepository extends ServiceEntityRepository
                 $filename =  'cover';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
+                } elseif (file_exists($absolutePath . $filename . '.jpg')) {
+                    unlink($absolutePath . $filename . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($absolutePath, $filename);
@@ -246,6 +248,8 @@ class PageRepository extends ServiceEntityRepository
                 $filename = 'artwork';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
+                } elseif (file_exists($absolutePath . $filename . '.jpg')) {
+                    unlink($absolutePath . $filename . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($absolutePath, $filename);
@@ -343,8 +347,6 @@ class PageRepository extends ServiceEntityRepository
             } elseif (isset($films[0])) {
                 $film = $films[0];
             }
-
-            print_r($films[0]);
         }
 
         if (isset($film)) {
@@ -373,6 +375,8 @@ class PageRepository extends ServiceEntityRepository
                 $file =  'cover';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
+                } elseif (file_exists($path . $file . '.jpg')) {
+                    unlink($path . $file . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($path, $file);
@@ -384,6 +388,8 @@ class PageRepository extends ServiceEntityRepository
                 $file = 'artwork';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
+                } elseif (file_exists($path . $file . '.jpg')) {
+                    unlink($path . $file . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($path, $file);
@@ -409,6 +415,8 @@ class PageRepository extends ServiceEntityRepository
                 'rating' => isset($film['vote_average']) ? ($film['vote_average'] * 100) : null,
                 'release_date' => $releaseDate ?? null
             ];
+
+            print_r($result);
 
             return $result;
         }
