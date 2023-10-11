@@ -483,6 +483,10 @@ class PageRepository extends ServiceEntityRepository
                 }
             } else {
                 // De momento no vamos a crear paginas vacías
+                // Le ponemos el slug para que no vuelva a intentar crearla
+                $tag->setSlug($slug);
+                $this->em->persist($tag);
+                $this->em->flush();
                 return false;
                 /*if (empty($page)) {
                     $page = new Page();
