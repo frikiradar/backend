@@ -380,6 +380,7 @@ class PageRepository extends ServiceEntityRepository
                 $uploader = new FileUploaderService($path, $file);
                 try {
                     $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200' . $film['poster_path'], false, 90, 300);
+                    print_r($image);
                 } catch (\Exception $ex) {
                     throw new \Exception($ex->getMessage());
                 }
