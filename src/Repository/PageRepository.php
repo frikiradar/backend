@@ -309,7 +309,7 @@ class PageRepository extends ServiceEntityRepository
         usort($films, function ($a, $b) {
             return ((isset($b['popularity']) ? $b['popularity'] : 0) <=> (isset($a['popularity']) ? $a['popularity'] : 0));
         });
-        print_r($films);
+
         if (isset($films[0])) {
             $filmFound = [];
 
@@ -343,6 +343,8 @@ class PageRepository extends ServiceEntityRepository
             } elseif (isset($films[0])) {
                 $film = $films[0];
             }
+
+            print_r($films[0]);
         }
 
         if (isset($film)) {
