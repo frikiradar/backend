@@ -107,7 +107,7 @@ class TagRepository extends ServiceEntityRepository
             ->select(array(
                 't.name',
                 't.category_id',
-                'COUNT(*) total'
+                'COUNT(t) total'
             ))
             ->andWhere('t.category_id IN (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
             ->andWhere('t.slug IS NULL')
