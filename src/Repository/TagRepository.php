@@ -120,17 +120,4 @@ class TagRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-
-    $tags = $this->em->getRepository("App:Tag")->createQueryBuilder('t')
-    ->select(array(
-        't.slug',
-        'COUNT(t) total'
-    ))
-    ->andWhere('t.slug IN (:slugs)')
-    ->groupBy('t.slug')
-    ->orderBy('total', 'DESC')
-    ->setParameter('slugs', $userSlugs)
-    ->getQuery()
-    ->getResult();
 }
