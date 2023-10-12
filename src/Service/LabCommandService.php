@@ -226,9 +226,8 @@ class LabCommandService
     {
         ini_set('memory_limit', '-1');
         $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
-        print_r($tags[0]['tag']['name']);
-        die();
-        foreach ($tags as $tag) {
+        foreach ($tags as $a) {
+            $tag = $a['tag'];
             $category = $tag->getCategory()->getName();
             if (in_array($category, array(/*'films', */'games'))) {
                 $slug = $tag->getSlug();
