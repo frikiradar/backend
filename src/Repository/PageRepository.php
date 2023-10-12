@@ -349,6 +349,8 @@ class PageRepository extends ServiceEntityRepository
             }
         }
 
+        print_r($film);
+
         if (!empty($film)) {
             if (isset($film['original_language']) && in_array($film['original_language'], ['en', 'es'])) {
                 $name = isset($film['original_title']) ? $film['original_title'] : $film['original_name'];
@@ -411,6 +413,8 @@ class PageRepository extends ServiceEntityRepository
                 'rating' => isset($film['vote_average']) ? ($film['vote_average'] * 100) : null,
                 'release_date' => $releaseDate ?? null
             ];
+
+            print_r($result);
 
             return $result;
         }
