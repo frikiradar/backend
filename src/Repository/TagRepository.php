@@ -116,7 +116,6 @@ class TagRepository extends ServiceEntityRepository
             ->setParameters(array(
                 'category' => array('films', 'games')
             ))
-            ->setMaxResults(1)
             ->getQuery()
             ->getResult();
     }
