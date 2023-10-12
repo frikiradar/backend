@@ -105,7 +105,8 @@ class TagRepository extends ServiceEntityRepository
         // solamente necesitamos los tags de las categorias films y games
         return $this->createQueryBuilder('t')
             ->select(array(
-                't',
+                't.name',
+                't.category',
                 'COUNT(t) total'
             ))
             ->where('t.category IN (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
