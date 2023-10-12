@@ -106,13 +106,13 @@ class TagRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
-                't.category_id',
+                't.category',
                 'COUNT(t) total'
             ))
-            ->andWhere('t.category_id IN (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
+            ->andWhere('t.category IN (SELECT c.id FROM App:Category c WHERE c.name IN (:category))')
             ->andWhere('t.slug IS NULL')
             ->groupBy('t.name')
-            ->addGroupBy('t.category_id')
+            ->addGroupBy('t.category')
             ->orderBy('total', 'DESC')
             ->setParameters(array(
                 'category' => array('films', 'games')
