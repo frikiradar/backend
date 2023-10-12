@@ -226,8 +226,7 @@ class LabCommandService
     {
         ini_set('memory_limit', '-1');
         $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
-        print_r($tags[0]['name']);
-        print_r($tags[0]['category']['name']);
+        print_r($tags[0]['tag']['name']);
         die();
         foreach ($tags as $tag) {
             $category = $tag->getCategory()->getName();
