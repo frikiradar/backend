@@ -229,7 +229,7 @@ class LabCommandService
 
         foreach ($tags as $tag) {
             $category = $tag->getCategory()->getName();
-            if (in_array($category, array('films'/*, 'games'*/))) {
+            if (in_array($category, array(/*'films', */'games'))) {
                 $slug = $tag->getSlug();
                 if (!isset($slug)) {
                     try {
