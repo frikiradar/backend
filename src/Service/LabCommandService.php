@@ -244,6 +244,7 @@ class LabCommandService
                     }
                 }
             }
+            sleep(10);
         }
     }
 }
