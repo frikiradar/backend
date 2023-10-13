@@ -98,7 +98,7 @@ class TagRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findAllGroupedTags()
+    public function findAllGroupedTags($categories = ['films', 'games'])
     {
         // buscamos todos los tags agrupados por nombre y categoria
         // devolvemos entidad completa
@@ -114,7 +114,7 @@ class TagRepository extends ServiceEntityRepository
             ->addGroupBy('t.category')
             ->orderBy('total', 'DESC')
             ->setParameters(array(
-                'category' => array('films', 'games')
+                'category' => $categories
             ))
             ->getQuery()
             ->getResult();

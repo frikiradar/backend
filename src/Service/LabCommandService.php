@@ -225,23 +225,20 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags();
+        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags([/*'films', */'games']);
         foreach ($tags as $a) {
             $tag = $a['tag'];
-            $category = $tag->getCategory()->getName();
-            if (in_array($category, array(/*'films', */'games'))) {
-                $slug = $tag->getSlug();
-                if (!isset($slug)) {
-                    try {
-                        $page = $this->em->getRepository('App:Page')->setPage($tag);
-                        if ($page) {
-                            $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
-                        } else {
-                            $this->o->writeln("Error al generar página para: " . $tag->getName());
-                        }
-                    } catch (Exception $ex) {
-                        $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
+            $slug = $tag->getSlug();
+            if (!isset($slug)) {
+                try {
+                    $page = $this->em->getRepository('App:Page')->setPage($tag);
+                    if ($page) {
+                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+                    } else {
+                        $this->o->writeln("Error al generar página para: " . $tag->getName());
                     }
+                } catch (Exception $ex) {
+                    $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
                 }
             }
             sleep(10);
