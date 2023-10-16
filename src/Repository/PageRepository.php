@@ -512,8 +512,8 @@ class PageRepository extends ServiceEntityRepository
         $slug = str_replace([':', "'", ' '], '-', $slug);
         $slug = str_replace(',', '', $slug);
         $slug = str_replace(['(', ')'], '', $slug);
-        // Quitar interrogaciones de apertura y cierre
         $slug = str_replace(['¿', '?'], '', $slug);
+        $slug = str_replace(['¡', '!'], '', $slug);
         $slug = preg_replace('/-+/', '-', $slug);
         $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $slug);
 
