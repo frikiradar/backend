@@ -510,7 +510,8 @@ class PageRepository extends ServiceEntityRepository
         $slug = str_replace('1/2', 'half', $slug);
         $slug = str_replace(': ', ' ', $slug);
         $slug = str_replace([':', "'", ' '], '-', $slug);
-        $slug = str_replace(['---', '--'], '-', $slug);
+        $slug = str_replace(['(', ')'], '', $slug);
+        $slug = preg_replace('/-+/', '-', $slug);
         $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $slug);
 
         return $slug;
