@@ -225,7 +225,7 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags(['films', 'games']);
+        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags(['films'/*, 'games'*/]);
         foreach ($tags as $a) {
             $tag = $a['tag'];
             $slug = $tag->getSlug();
