@@ -122,8 +122,10 @@ class PageRepository extends ServiceEntityRepository
         $endpoint = '/games';
         $bearer = "Authorization: Bearer " . $info['access_token']; // Prepare the authorisation token
         $client_id = "Client-ID: " . $clientId;
-        $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
 
+        // Hacemos una primera búsqueda por slug
+        $search = $this->nameToSlug($search);
+        $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
         $ch = curl_init($url . $endpoint); // Initialise cURL
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -133,10 +135,9 @@ class PageRepository extends ServiceEntityRepository
         curl_close($ch); // Close the cURL connection
         $games = json_decode($output, true); // Return the received data
 
+        // Si no hay resultados, hacemos una búsqueda por nombre
         if (empty($games)) {
-            $search = $this->nameToSlug($search);
-
-            $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -150,7 +151,7 @@ class PageRepository extends ServiceEntityRepository
         usort($games, function ($a, $b) {
             return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
         });
-        print_r($games);
+        // print_r($games);
 
         if (!empty($games)) {
             $gameFound = [];
