@@ -230,15 +230,18 @@ class LabCommandService
             $tag = $a['tag'];
             $slug = $tag->getSlug();
             if (!isset($slug)) {
-                try {
-                    $page = $this->em->getRepository('App:Page')->setPage($tag);
-                    if ($page) {
-                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
-                    } else {
-                        $this->o->writeln("Error al generar página para: " . $tag->getName());
+                if ($tag->getName() == "Pokémon Go") {
+                    try {
+                        $page = $this->em->getRepository('App:Page')->setPage($tag);
+                        if ($page) {
+                            $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+                        } else {
+                            $this->o->writeln("Error al generar página para: " . $tag->getName());
+                        }
+                    } catch (Exception $ex) {
+                        $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
                     }
-                } catch (Exception $ex) {
-                    $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
+                    die();
                 }
             }
             sleep(10);
