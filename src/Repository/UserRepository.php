@@ -387,6 +387,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
 
+        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $search)) {
+            $search = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $search);
+            $search = preg_replace('/\(\s*\)/', '', $search);
+        }
+
         $dql = $this->createQueryBuilder('u')
             ->select(array(
                 'u.id',
