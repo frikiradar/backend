@@ -101,6 +101,9 @@ class PageRepository extends ServiceEntityRepository
     public function getGamesApi($name)
     {
         $search = strtolower($name);
+        $search = preg_replace('/\s+(saga|trilogia|trilogía)/i', '', $search);
+        $search = preg_replace('/\(\s*\)/', '', $search);
+
         if ($search == 'lol') {
             $search = 'league of legends';
         }
@@ -292,8 +295,10 @@ class PageRepository extends ServiceEntityRepository
             $name = 'sword art online';
         }
 
-        if (strtolower($name) == 'el señor de los anillos' || strtolower($name) == 'the lord of the rings') {
-            $name = 'El señor de los anillos - Colección';
+        // Si el nombre tiene saga o trilogía buscamos por collection
+        $collection = false;
+        if (preg_match('/\s+(saga|trilogia|trilogía)/i', $name)) {
+            $collection = true;
         }
 
         $search = urlencode($name);
@@ -303,7 +308,11 @@ class PageRepository extends ServiceEntityRepository
         $films = [];
         do {
             $page++;
-            $endpoint = '/search/multi?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+            if (!$collection) {
+                $endpoint = '/search/multi?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+            } else {
+                $endpoint = '/search/collection?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+            }
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $api . $endpoint);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -426,9 +435,6 @@ class PageRepository extends ServiceEntityRepository
     public function setPage($tag)
     {
         $name = $tag->getName();
-        $name = preg_replace('/\s+(saga|trilogia|trilogía)/i', '', $name);
-        $name = preg_replace('/\(\s*\)/', '', $name);
-
         $category = $tag->getCategory()->getName();
 
         $slug = $this->nameToSlug($name);
