@@ -293,7 +293,7 @@ class PageRepository extends ServiceEntityRepository
         }
 
         if (strtolower($name) == 'el señor de los anillos' || strtolower($name) == 'the lord of the rings') {
-            $name = 'the lord of the rings - collection';
+            $name = 'El señor de los anillos - Colección';
         }
 
         $search = urlencode($name);
