@@ -319,7 +319,7 @@ class PageRepository extends ServiceEntityRepository
         do {
             $page++;
             if (!$collection) {
-                $endpoint = '/search/keyword?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+                $endpoint = '/search/multi?include_adult=true&language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
             } else {
                 $endpoint = '/search/collection?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
             }
@@ -333,7 +333,7 @@ class PageRepository extends ServiceEntityRepository
                 $films = [...$films, ...$info['results']];
             }
         } while (isset($info['results']) && count($info['results']) == 20);
-        // print_r($films);
+        print_r($films);
         usort($films, function ($a, $b) {
             return ((isset($b['vote_average']) ? $b['vote_average'] : 0) <=> (isset($a['vote_average']) ? $a['vote_average'] : 0));
         });
