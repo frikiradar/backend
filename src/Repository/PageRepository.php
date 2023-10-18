@@ -301,6 +301,7 @@ class PageRepository extends ServiceEntityRepository
         // Si el nombre tiene saga o trilogía buscamos por collection
         $collection = false;
         if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series)/i', $name)) {
+            $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series)/i', '', $name);
             $collection = true;
         }
 
