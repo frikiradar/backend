@@ -338,7 +338,7 @@ class PageRepository extends ServiceEntityRepository
                 $films = [...$films, ...$info['results']];
             }
         } while (isset($info['results']) && count($info['results']) == 20);
-        print_r($films);
+        // print_r($films);
         usort($films, function ($a, $b) {
             return ((isset($b['vote_average']) ? $b['vote_average'] : 0) <=> (isset($a['vote_average']) ? $a['vote_average'] : 0));
         });
