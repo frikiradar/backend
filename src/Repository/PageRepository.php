@@ -319,7 +319,7 @@ class PageRepository extends ServiceEntityRepository
         do {
             $page++;
             if (!$collection) {
-                $endpoint = '/search/multi?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
+                $endpoint = '/search/keyword?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
             } else {
                 $endpoint = '/search/collection?language=es&query=' . $search . '&page=' . $page . '&api_key=' . $token;
             }
