@@ -293,11 +293,13 @@ class PageRepository extends ServiceEntityRepository
     {
         $collection = false;
 
-        if (strtolower($name) == 'sao') {
+        $name = strtolower($name);
+        if ($name == 'sao') {
             $name = 'sword art online';
         }
-        if (strtolower($name) == 'the lord of the rings' || strtolower($name) == 'el señor de los anillos') {
-            $name = 'The Lord of the Rings';
+
+        if ($name == 'the lord of the rings' || $name == 'el señor de los anillos') {
+            $name = 'the lord of the rings';
             $collection = true;
         }
 
@@ -305,7 +307,7 @@ class PageRepository extends ServiceEntityRepository
         if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name) || $collection) {
             $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $name);
             $name = preg_replace('/\(\s*\)/', '', $name);
-            $name = $name . ' - Collection';
+            $name = $name . ' - collection';
             $collection = true;
         }
 
