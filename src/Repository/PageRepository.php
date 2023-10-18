@@ -292,6 +292,10 @@ class PageRepository extends ServiceEntityRepository
             $name = 'sword art online';
         }
 
+        if (strtolower($name) == 'el señor de los anillos' || strtolower($name) == 'the lord of the rings') {
+            $name = 'the lord of the rings - collection';
+        }
+
         $search = urlencode($name);
         $token = '777a37ca29cf54c4e246266509b0901b';
         $api = 'https://api.themoviedb.org/3';
