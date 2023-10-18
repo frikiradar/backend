@@ -302,6 +302,10 @@ class PageRepository extends ServiceEntityRepository
             $name = 'your name';
         }
 
+        if ($name == 'madoka magica') {
+            $name = 'mahou shoujo madoka magica';
+        }
+
         if ($name == 'volver al futuro (trilogía)') {
             $name = 'back to the future';
             $collection = true;
