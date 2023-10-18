@@ -69,7 +69,9 @@ class PagesController extends AbstractController
 
                 if (isset($page)) {
                     $likes = $this->em->getRepository('App:Tag')->countTag($page->getName(), $page->getCategory());
-                    $page->setLikes($likes['total']);
+                    if (isset($likes['total'])) {
+                        $page->setLikes($likes['total']);
+                    }
 
                     $pageCache->expiresAfter(3600 * 24);
                     $pageCache->set($page);
