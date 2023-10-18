@@ -412,6 +412,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
+            $search_mysqli = $this->em->getConnection()->escapeString($search);
 
             $dql
                 ->andHaving('age BETWEEN :minage AND :maxage')
@@ -433,7 +434,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . addslashes($search) . "%') OR u.name LIKE '%" . addslashes($search) . "%' OR u.username LIKE '%" . addslashes($search) . "%'")
+                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE '%" . $search_mysqli . "%') OR u.name LIKE '%" . $search_mysqli . "%' OR u.username LIKE '%" . $search_mysqli . "%'")
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setParameter('id', $user->getId())
