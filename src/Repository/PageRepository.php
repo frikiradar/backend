@@ -298,6 +298,10 @@ class PageRepository extends ServiceEntityRepository
             $name = 'sword art online';
         }
 
+        if ($name == 'kimi no na wa') {
+            $name = 'your name';
+        }
+
         if ($name == 'volver al futuro (trilogía)') {
             $name = 'back to the future';
             $collection = true;
