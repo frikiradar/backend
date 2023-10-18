@@ -295,12 +295,12 @@ class PageRepository extends ServiceEntityRepository
             $name = 'sword art online';
         }
         if (strtolower($name) == 'the lord of the rings' || strtolower($name) == 'el señor de los anillos') {
-            $name = 'the lord of the rings trilogy';
+            $name = 'El señor de los anillos (trilogía)';
         }
 
         // Si el nombre tiene saga o trilogía buscamos por collection
         $collection = false;
-        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series)/i', $name)) {
+        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name)) {
             $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series)/i', '', $name);
             $collection = true;
         }
