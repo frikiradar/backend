@@ -421,7 +421,7 @@ class PageRepository extends ServiceEntityRepository
 
     public function setPage($tag)
     {
-        $name = preg_replace('/\s\(saga\)/i', '', $tag->getName());
+        $name = preg_replace('/(\s\(saga\)|^saga\s|\ssaga$|\strilogia$|^trilogia\s)/i', '', $tag->getName());
         $category = $tag->getCategory()->getName();
 
         $slug = $this->nameToSlug($name);
