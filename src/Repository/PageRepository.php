@@ -512,6 +512,7 @@ class PageRepository extends ServiceEntityRepository
         $slug = \transliterator_transliterate('Any-Latin; Latin-ASCII;', $slug);
         $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
         $slug = preg_replace('/-+/', '-', $slug);
+        $slug = trim($slug, '-');
 
         return $slug;
     }
