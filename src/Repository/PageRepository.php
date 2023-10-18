@@ -302,7 +302,7 @@ class PageRepository extends ServiceEntityRepository
             $name = 'your name';
         }
 
-        if ($name == 'madoka magica') {
+        if ($name == 'madoka magica' || $name == 'puella magi madoka magica') {
             $name = 'mahou shoujo madoka magica';
         }
 
