@@ -298,7 +298,7 @@ class PageRepository extends ServiceEntityRepository
             $name = 'sword art online';
         }
 
-        if ($name == 'the lord of the rings' || $name == 'el señor de los anillos') {
+        if ($name == 'the lord of the rings' || $name == 'el señor de los anillos' || $name == 'el señor de los anillos trilogía') {
             $name = 'the lord of the rings';
             $collection = true;
         }
