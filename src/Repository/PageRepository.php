@@ -100,15 +100,20 @@ class PageRepository extends ServiceEntityRepository
 
     public function getGamesApi($name)
     {
-        $search = strtolower($name);
-        $search = preg_replace('/\s+(saga|trilogia|trilogía)/i', '', $search);
-        $search = preg_replace('/\(\s*\)/', '', $search);
+        $name = strtolower($name);
 
-        if ($search == 'lol') {
-            $search = 'league of legends';
+        // Si el nombre tiene saga o trilogía buscamos por collection
+        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name)) {
+            $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $name);
+            $name = preg_replace('/\(\s*\)/', '', $name);
         }
-        if ($search == 'wow') {
-            $search = 'world of warcraft';
+
+
+        if ($name == 'lol') {
+            $name = 'league of legends';
+        }
+        if ($name == 'wow') {
+            $name = 'world of warcraft';
         }
 
         $clientId = '1xglmlbz31omgifwlnjzfjjw5bukv9';
@@ -127,8 +132,8 @@ class PageRepository extends ServiceEntityRepository
         $client_id = "Client-ID: " . $clientId;
 
         // Hacemos una primera búsqueda por slug
-        $search = $this->nameToSlug($search);
-        $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $search . '"* & version_parent = null; limit 500;';
+        $slug = $this->nameToSlug($name);
+        $body = 'fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where slug ~ *"' . $slug . '"* & version_parent = null; limit 500;';
         $ch = curl_init($url . $endpoint); // Initialise cURL
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -140,7 +145,7 @@ class PageRepository extends ServiceEntityRepository
 
         // Si no hay resultados, hacemos una búsqueda por nombre
         if (empty($games)) {
-            $body = 'search "' . $search . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
+            $body = 'search "' . $name . '"; fields name, cover.url, game_modes.slug, multiplayer_modes.*, aggregated_rating, slug, summary, first_release_date, involved_companies.company.name, involved_companies.developer, artworks.*; where version_parent = null; limit 500;';
             $ch = curl_init($url . $endpoint); // Initialise cURL
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array($bearer, $client_id)); // Inject the token into the header
@@ -160,11 +165,11 @@ class PageRepository extends ServiceEntityRepository
             $gameFound = [];
 
             foreach ($games as $game) {
-                if ($game['slug'] === $search) {
+                if ($game['slug'] === $slug) {
                     $gameFound = $game;
                     break;
                 } else {
-                    similar_text(strtolower($game['name']), strtolower($search), $percent);
+                    similar_text(strtolower($game['name']), strtolower($name), $percent);
                     if ($percent >= 98) {
                         $gameFound = $game;
                         break;
