@@ -73,7 +73,7 @@ class PagesController extends AbstractController
                         $page->setLikes($likes['total']);
                     }
 
-                    $pageCache->expiresAfter(3600 * 24);
+                    $pageCache->expiresAfter(3600 * 1);
                     $pageCache->set($page);
                     $cache->save($pageCache);
                 } else {
@@ -103,7 +103,7 @@ class PagesController extends AbstractController
                 if (isset($page)) {
                     $likes = $this->em->getRepository('App:Tag')->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     $page->setLikes($likes['total']);
-                    $pageCache->expiresAfter(3600 * 24);
+                    $pageCache->expiresAfter(3600 * 1);
                     $pageCache->set($page);
                     $cache->save($pageCache);
                 } else {
