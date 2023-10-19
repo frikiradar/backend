@@ -314,7 +314,7 @@ class PageRepository extends ServiceEntityRepository
             $collection = true;
         }
 
-        if ($name == 'rebuild of evangelion') {
+        if ($name == 'rebuild of evangelion' || $name == 'evangelion rebuild') {
             $collection = true;
         }
 
