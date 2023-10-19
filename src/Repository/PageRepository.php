@@ -155,9 +155,14 @@ class PageRepository extends ServiceEntityRepository
             $games = json_decode($output, true); // Return the received data
         }
 
-        usort($games, function ($a, $b) {
+        /*usort($games, function ($a, $b) {
             return (isset($a['first_release_date']) ? $a['first_release_date'] : 99999999999) <=> (isset($b['first_release_date']) ? $b['first_release_date'] : 99999999999);
+        });*/
+
+        usort($games, function ($a, $b) {
+            return (isset($b['aggregated_rating']) ? $b['aggregated_rating'] : 0) <=> (isset($a['aggregated_rating']) ? $a['aggregated_rating'] : 0);
         });
+
         // print_r($games);
 
         if (!empty($games)) {
