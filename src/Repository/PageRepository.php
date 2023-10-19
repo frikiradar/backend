@@ -312,7 +312,7 @@ class PageRepository extends ServiceEntityRepository
         }
 
         if ($name == 'shingeki no kyojin' || $name == 'attack on titan' || $name == 'ataque a los titanes' || $name == 'el ataque de los titanes') {
-            $name = 'attack on titan';
+            $name = 'ataque a los titanes';
         }
 
         if ($name == 'the lord of the rings' || $name == 'el señor de los anillos' || $name == 'el señor de los anillos trilogía') {
