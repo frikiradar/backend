@@ -239,26 +239,20 @@ class PageRepository extends ServiceEntityRepository
                 $filename =  'cover';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
-                } elseif (file_exists($absolutePath . $filename . '.jpg')) {
-                    // unlink($absolutePath . $filename . '.jpg');
+                    $uploader = new FileUploaderService($absolutePath, $filename);
+                    $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
+                    $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 }
-
-                $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
-                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($game['artworks'][0])) {
                 $filename = 'artwork';
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
-                } elseif (file_exists($absolutePath . $filename . '.jpg')) {
-                    // unlink($absolutePath . $filename . '.jpg');
+                    $uploader = new FileUploaderService($absolutePath, $filename);
+                    $image = $uploader->uploadImage('https:' . $game['artworks'][0]['url'], false, 90, 300);
+                    $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
                 }
-
-                $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage('https:' . $game['artworks'][0]['url'], false, 90, 300);
-                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             }
 
             if (isset($game['first_release_date'])) {
