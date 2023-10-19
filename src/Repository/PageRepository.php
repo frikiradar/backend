@@ -102,10 +102,9 @@ class PageRepository extends ServiceEntityRepository
     {
         $name = strtolower($name);
 
-        // Si el nombre tiene saga o trilogía buscamos por collection
-        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name)) {
-            $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $name);
-            $name = preg_replace('/\(\s*\)/', '', $name);
+        $regex = '/^((saga|trilogia|trilogía|trilogy|series|collection)\s+)|(\s+(saga|trilogia|trilogía|trilogy|series|collection))|(\(\s*(saga|trilogia|trilogía|trilogy|series|collection)\s*\))$/i';
+        if (preg_match($regex, $name)) {
+            $name = trim(preg_replace($regex, '', $name));
         }
 
 
@@ -330,9 +329,9 @@ class PageRepository extends ServiceEntityRepository
         }
 
         // Si el nombre tiene saga o trilogía buscamos por collection
-        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name) || $collection) {
-            $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $name);
-            $name = preg_replace('/\(\s*\)/', '', $name);
+        $regex = '/^((saga|trilogia|trilogía|trilogy|series|collection)\s+)|(\s+(saga|trilogia|trilogía|trilogy|series|collection))|(\(\s*(saga|trilogia|trilogía|trilogy|series|collection)\s*\))$/i';
+        if (preg_match($regex, $name) || $collection) {
+            $name = trim(preg_replace($regex, '', $name));
             $name = $name . ' - collection';
             $collection = true;
         }
