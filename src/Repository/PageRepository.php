@@ -314,6 +314,10 @@ class PageRepository extends ServiceEntityRepository
             $collection = true;
         }
 
+        if ($name == 'rebuild of evangelion') {
+            $collection = true;
+        }
+
         // Si el nombre tiene saga o trilogía buscamos por collection
         if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', $name) || $collection) {
             $name = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection)/i', '', $name);
