@@ -240,7 +240,7 @@ class PageRepository extends ServiceEntityRepository
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
                 } elseif (file_exists($absolutePath . $filename . '.jpg')) {
-                    unlink($absolutePath . $filename . '.jpg');
+                    // unlink($absolutePath . $filename . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($absolutePath, $filename);
@@ -253,7 +253,7 @@ class PageRepository extends ServiceEntityRepository
                 if (!file_exists($absolutePath)) {
                     mkdir($absolutePath, 0777, true);
                 } elseif (file_exists($absolutePath . $filename . '.jpg')) {
-                    unlink($absolutePath . $filename . '.jpg');
+                    // unlink($absolutePath . $filename . '.jpg');
                 }
 
                 $uploader = new FileUploaderService($absolutePath, $filename);
