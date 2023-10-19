@@ -103,9 +103,7 @@ class PageRepository extends ServiceEntityRepository
         $name = strtolower($name);
 
         $regex = '/^((saga|trilogia|trilogía|trilogy|series|collection)\s+)|(\s+(saga|trilogia|trilogía|trilogy|series|collection))|(\(\s*(saga|trilogia|trilogía|trilogy|series|collection)\s*\))$/i';
-        if (preg_match($regex, $name)) {
-            $name = trim(preg_replace($regex, '', $name));
-        }
+        $name = trim(preg_replace($regex, '', $name));
 
 
         if ($name == 'lol') {

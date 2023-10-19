@@ -387,10 +387,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
 
-        if (preg_match('/\s+(saga|trilogia|trilogía|trilogy|series|collection|colección)/i', $search)) {
-            $search = preg_replace('/\s+(saga|trilogia|trilogía|trilogy|series|collection|colección)/i', '', $search);
-            $search = preg_replace('/\(\s*\)/', '', $search);
-        }
+        $regex = '/^((saga|trilogia|trilogía|trilogy|series|collection)\s+)|(\s+(saga|trilogia|trilogía|trilogy|series|collection))|(\(\s*(saga|trilogia|trilogía|trilogy|series|collection)\s*\))$/i';
+        $search = trim(preg_replace($regex, '', $search));
 
         $dql = $this->createQueryBuilder('u')
             ->select(array(
@@ -439,7 +437,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE :search OR t.slug LIKE :search) OR u.name LIKE :search OR u.username LIKE :search")
+                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE :search OR t.slug = :exact_search) OR u.name = :exact_search OR u.username = :exact_search")
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setParameter('id', $user->getId())
@@ -447,6 +445,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
                 ->setParameter('lovegender', $user->getLovegender() ?: 1)
                 ->setParameter('search', '%' . $search . '%')
+                ->setParameter('exact_search', $search)
                 ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
