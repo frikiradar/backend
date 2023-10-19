@@ -79,18 +79,20 @@ class TagRepository extends ServiceEntityRepository
             ->execute();
     }
 
-    public function countTag(string $name, string $category)
+    public function countTag(string $slug, string $name, string $category)
     {
         return $this->createQueryBuilder('t')
             ->select(array(
                 'COUNT(t) total'
             ))
-            ->where('t.name = :name')
+            ->where('t.slug = :slug')
+            ->orWhere('t.name = :name')
             ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)')
-            ->groupBy('t.name')
+            ->groupBy('t.slug')
             ->orderBy('total', 'DESC')
             ->setMaxResults(1)
             ->setParameters(array(
+                'slug' => $slug,
                 'name' => $name,
                 'category' => $category
             ))
