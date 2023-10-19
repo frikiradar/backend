@@ -141,4 +141,23 @@ class PagesController extends AbstractController
             throw new HttpException(400, "Error al crear la página - Error: {$ex->getMessage()}");
         }
     }
+
+    /**
+     * @Route("/v1/search-by-slug", name="search_by_slug", methods={"POST"})
+     */
+    public function searchBySlugAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $page = $this->request->get($request, "page");
+        $order = $this->request->get($request, "order");
+        $slug = $this->request->get($request, "slug");
+
+        try {
+            $users = $this->em->getRepository('App:User')->searchUsers($slug, $user, $order, $page, true);
+            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
+        }
+    }
 }

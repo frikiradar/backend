@@ -523,21 +523,12 @@ class UsersController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        // $cache = new FilesystemAdapter();
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
         $query = $this->request->get($request, "query");
 
         try {
-            /*$searchCache = $cache->getItem('users.search.' . $user->getId() . $page . $order . $query);
-            if (!$searchCache->isHit()) {
-                $searchCache->expiresAfter(60);*/
             $users = $this->em->getRepository('App:User')->searchUsers($query, $user, $order, $page);
-            /*$searchCache->set($users);
-                $cache->save($searchCache);
-            } else {
-                $users = $searchCache->get();
-            }*/
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
