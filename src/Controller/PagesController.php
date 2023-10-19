@@ -68,7 +68,7 @@ class PagesController extends AbstractController
                 $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getSlug(), $page->getName(), $page->getCategory())
+                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     if (isset($likes['total'])) {
                         $page->setLikes($likes['total']);
                     }
