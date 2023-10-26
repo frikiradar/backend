@@ -40,13 +40,15 @@ class PagesController extends AbstractController
     /**
      * @Route("/v1/pages", name="pages", methods={"GET"})
      */
-    public function getPages()
+    public function getPages(Request $request)
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
+        $limit = $this->request->get($request, "limit") ?? null;
+
         try {
-            $pages = $this->em->getRepository('App:Page')->findPages($user);
+            $pages = $this->em->getRepository('App:Page')->findPages($user, $limit);
 
             return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
         } catch (Exception $ex) {

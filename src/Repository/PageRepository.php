@@ -56,7 +56,7 @@ class PageRepository extends ServiceEntityRepository
     }
     */
 
-    public function findPages(User $user)
+    public function findPages(User $user, $limit = null)
     {
         $userTags = $user->getTags();
         $userSlugs = [];
@@ -89,6 +89,7 @@ class PageRepository extends ServiceEntityRepository
             ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_keys($slugs))
             ->getQuery()
+            ->setMaxResults($limit)
             ->getResult();
 
         usort($pages, function ($a, $b) {
