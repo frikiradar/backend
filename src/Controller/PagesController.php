@@ -45,7 +45,7 @@ class PagesController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
-        $limit = $this->request->get($request, "limit") ?? null;
+        $limit = $this->request->get($request, "limit", false) ?? null;
 
         try {
             $pages = $this->em->getRepository('App:Page')->findPages($user, $limit);
