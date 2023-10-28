@@ -75,6 +75,7 @@ class PageRepository extends ServiceEntityRepository
             ->groupBy('t.slug')
             ->orderBy('total', 'DESC')
             ->setParameter('slugs', $userSlugs)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
@@ -89,7 +90,6 @@ class PageRepository extends ServiceEntityRepository
             ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_keys($slugs))
             ->getQuery()
-            ->setMaxResults($limit)
             ->getResult();
 
         usort($pages, function ($a, $b) {
