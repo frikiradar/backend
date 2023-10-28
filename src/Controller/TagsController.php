@@ -79,7 +79,11 @@ class TagsController extends AbstractController
                     if (empty($slug) && in_array($categoryName, ['games', 'films'])) {
                         // Creamos página
                         $page = $this->em->getRepository('App:Page')->setPage($tag);
-                        $tag->setSlug($page->getSlug());
+                        if (!empty($page)) {
+                            $tag->setSlug($page->getSlug());
+                        } else {
+                            $tag->setSlug($slug);
+                        }
                     } else {
                         $tag->setSlug($slug);
                     }
