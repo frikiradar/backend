@@ -73,6 +73,12 @@ class UsersController extends AbstractController
         $email = $this->request->get($request, 'email');
         $username = $this->request->get($request, 'username');
         $password = $this->request->get($request, 'password');
+        $gender = $this->request->get($request, 'gender', false);
+        $lovegender = $this->request->get($request, 'lovegender', false);
+        $meet = $this->request->get($request, 'meet', false);
+        $referral = $this->request->get($request, 'referral', false);
+        $mailing = $this->request->get($request, 'mailing', false);
+
         $birthday = \DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]);
 
         if (is_null($this->em->getRepository('App:User')->findOneByUsernameOrEmail($username, $email))) {
@@ -82,8 +88,8 @@ class UsersController extends AbstractController
             $user->setName($username);
             $user->setPassword($encoder->encodePassword($user, $password));
             $user->setBirthday($birthday);
-            $user->setGender($this->request->get($request, 'gender', false) ?: null);
-            $user->setLovegender($this->request->get($request, 'lovegender', false) ?: null);
+            $user->setGender($gender);
+            $user->setLovegender($lovegender ?? []);
             $user->setRegisterDate();
             $user->setRegisterIp();
             $user->setActive(false);
@@ -92,9 +98,9 @@ class UsersController extends AbstractController
             $user->setHideLikes(true);
             $user->setTwoStep(false);
             $user->setVerified(false);
-            $user->setMeet($this->request->get($request, 'meet', false) ?: null);
-            $user->setReferral($this->request->get($request, 'referral', false) ?: null);
-            $user->setMailing($this->request->get($request, 'mailing', false) ?: true);
+            $user->setMeet($meet);
+            $user->setReferral($referral);
+            $user->setMailing($mailing ?? true);
             $user->setVerificationCode();
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
