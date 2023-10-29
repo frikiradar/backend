@@ -702,6 +702,10 @@ class User implements UserInterface
 
     public function setLovegender(?array $lovegender): self
     {
+        if (empty($lovegender)) {
+            return null;
+        }
+
         $genders = [
             "Mujer",
             "Hombre",
