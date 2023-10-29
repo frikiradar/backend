@@ -82,8 +82,8 @@ class UsersController extends AbstractController
             $user->setName($username);
             $user->setPassword($encoder->encodePassword($user, $password));
             $user->setBirthday($birthday);
-            $user->setGender($this->request->get($request, 'gender') ?: null);
-            $user->setLovegender($this->request->get($request, 'lovegender') ?: null);
+            $user->setGender($this->request->get($request, 'gender', false) ?: null);
+            $user->setLovegender($this->request->get($request, 'lovegender', false) ?: null);
             $user->setRegisterDate();
             $user->setRegisterIp();
             $user->setActive(false);
@@ -92,8 +92,8 @@ class UsersController extends AbstractController
             $user->setHideLikes(true);
             $user->setTwoStep(false);
             $user->setVerified(false);
-            $user->setMeet($this->request->get($request, 'meet') ?: null);
-            $user->setReferral($this->request->get($request, 'referral') ?: null);
+            $user->setMeet($this->request->get($request, 'meet', false) ?: null);
+            $user->setReferral($this->request->get($request, 'referral', false) ?: null);
             $user->setMailing($this->request->get($request, 'mailing', false) ?: true);
             $user->setVerificationCode();
             $user->setMailingCode();
