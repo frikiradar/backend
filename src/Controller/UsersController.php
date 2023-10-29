@@ -89,7 +89,7 @@ class UsersController extends AbstractController
             $user->setPassword($encoder->encodePassword($user, $password));
             $user->setBirthday($birthday);
             $user->setGender($gender);
-            $user->setLovegender(!empty($lovegender) ? $lovegender : null);
+            $user->setLovegender(!empty($lovegender) ? $lovegender : []);
             $user->setRegisterDate();
             $user->setRegisterIp();
             $user->setActive(false);
