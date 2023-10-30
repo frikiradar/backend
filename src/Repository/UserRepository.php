@@ -12,8 +12,6 @@ use App\Service\NotificationService;
 use App\Entity\Radar;
 use Doctrine\ORM\EntityManagerInterface;
 use mysqli;
-use Patreon\OAuth as PatreonOAuth;
-use Patreon\API as PatreonAPI;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -512,7 +510,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
                     if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
                         $toUser = $this->findOneBy(array('id' => $u['id']));
-                        if (in_array('ROLE_PATREON', $toUser->getRoles())) {
+                        if (in_array('ROLE_PREMIUM', $toUser->getRoles()) || in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
                             $radar = new Radar();
                             $radar->setFromUser($fromUser);
                             $radar->setToUser($toUser);
@@ -742,58 +740,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setParameter('query', '%' . $query . '%')
             ->getQuery()
             ->getArrayResult();
-    }
-
-    public function getPatreonTokens(string $oauthCode)
-    {
-        $client_id = 'T6KMsWw673-ffH__MVNHOkzEMMavJ6IP_TMv1UHmNqv96PHC-_DsDmiYOyOvwloj';
-        $client_secret = '_dyBkMG-HQB4uPIZD4mYdFNOBMPGCnqMIDvmvJkJxTYpFxdz_qYSf1ZEPiooZO7Q';
-        $redirect_uri = 'https://frikiradar.app/patreon';
-        $oauth_client = new PatreonOAuth($client_id, $client_secret);
-        $tokens = $oauth_client->get_tokens($oauthCode, $redirect_uri);
-
-        if (!isset($tokens['error'])) {
-            $api_client = new PatreonAPI($tokens['access_token']);
-            $user = $api_client->fetch_user();
-
-            $patreon = [
-                'id' => $user['data']['id'],
-                'email' => isset($user['data']['attributes']['email']) ? $user['data']['attributes']['email'] : null,
-                'full_name' => isset($user['data']['attributes']['full_name']) ? $user['data']['attributes']['full_name'] : null,
-                'access_token' => $tokens['access_token'],
-                'refresh_token' => $tokens['refresh_token'],
-                'patron_status' => isset($user['included'][0]['attributes']['patron_status']) ? $user['included'][0]['attributes']['patron_status'] : false
-            ];
-
-            return $patreon;
-        } else {
-            throw new Exception("El código Oauth ya ha sido usado");
-        }
-    }
-
-    public function checkPatreonMembership(string $access_token)
-    {
-        $api_client = new PatreonAPI($access_token);
-        $user = $api_client->fetch_user();
-        return $user;
-        if ($user['included'][0]['attributes']['patron_status'] == 'active_patron') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function findUserByPatreonId($id)
-    {
-        return $this->createQueryBuilder('u')
-            ->where('u.patreon LIKE :query')
-            ->setParameter('query', '%"id": "' . $id . '"%')
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    public function deletePatreonMember($id)
-    {
     }
 
     public function getDefaultAvatar($username)

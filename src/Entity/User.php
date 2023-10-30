@@ -360,12 +360,6 @@ class User implements UserInterface
     private $created_events;
 
     /**
-     * @ORM\Column(type="json", length=255, nullable=true)
-     * @Groups({"default"})
-     */
-    private $patreon;
-
-    /**
      * @ORM\ManyToMany(targetEntity=Event::class, mappedBy="participants")
      */
     private $events;
@@ -428,7 +422,6 @@ class User implements UserInterface
         $roles = $this->roles;
         if (in_array('ROLE_ADMIN', $roles)) {
             $roles[] = 'ROLE_MASTER';
-            $roles[] = 'ROLE_PATREON';
         }
 
         // guarantee every user at least has ROLE_USER
@@ -1527,18 +1520,6 @@ class User implements UserInterface
                 $event->setCreator(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getPatreon(): ?array
-    {
-        return $this->patreon;
-    }
-
-    public function setPatreon(?array $patreon): self
-    {
-        $this->patreon = $patreon;
 
         return $this;
     }

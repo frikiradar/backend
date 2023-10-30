@@ -39,7 +39,6 @@ class ConfigController extends AbstractController
                 $config['min_version'] = $this->configRepository->findOneBy(['name' => 'min_version'])->getValue();
                 $config['chat'] = (bool) $this->configRepository->findOneBy(['name' => 'chat'])->getValue();
                 $config['push_url'] = $this->configRepository->findOneBy(['name' => 'push_url'])->getValue();
-                $config['patreon'] = $this->configRepository->findOneBy(['name' => 'patreon'])->getValue();
                 $configCache->set($config);
                 $cache->save($configCache);
             } else {

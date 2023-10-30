@@ -12,8 +12,6 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
-use Patreon\API;
-use Patreon\OAuth;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 

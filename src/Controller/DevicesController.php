@@ -84,11 +84,6 @@ class DevicesController extends AbstractController
                     curl_exec($ch);
                 }
 
-                if ($this->security->isGranted('ROLE_PATREON') || $this->security->isGranted('ROLE_MASTER')) {
-                    curl_setopt($ch, CURLOPT_URL, "https://iid.googleapis.com/iid/v1/$token/rel/topics/patreon");
-                    curl_exec($ch);
-                }
-
                 curl_close($ch);
             }
 
