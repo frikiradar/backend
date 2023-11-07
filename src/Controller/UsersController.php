@@ -70,6 +70,8 @@ class UsersController extends AbstractController
      */
     public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
     {
+        throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
+
         $email = $this->request->get($request, 'email');
         $username = $this->request->get($request, 'username');
         $password = $this->request->get($request, 'password');
