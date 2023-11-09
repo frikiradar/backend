@@ -482,6 +482,8 @@ class UsersController extends AbstractController
             if (strpos($user->getAvatar(), $filename) !== false) {
                 $user->setAvatar(null);
                 $user->setThumbnail(null);
+                $this->em->persist($user);
+                $this->em->flush();
             }
             $user->setImages($user->getImages());
 
