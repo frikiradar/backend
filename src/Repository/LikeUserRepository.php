@@ -60,12 +60,12 @@ class LikeUserRepository extends ServiceEntityRepository
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $fromUser->getId());
-        /*if (!is_null($page)) {
+        if (!is_null($page)) {
             $limit = 30;
             $offset = ($page - 1) * $limit;
             $query->setFirstResult($offset)
                 ->setMaxResults($limit);
-        }*/
+        }
         $likes = $query->getResult();
         foreach ($likes as $key => $like) {
             $userId = $like["fromuser"];
