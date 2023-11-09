@@ -21,7 +21,7 @@ class FileUploaderService
         $this->targetFilename = $targetFilename;
     }
 
-    public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 512)
+    public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 800)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
@@ -34,8 +34,8 @@ class FileUploaderService
 
             $options = array(
                 'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
-                'resolution-x' => 150,
-                'resolution-y' => 150,
+                'resolution-x' => 72,
+                'resolution-y' => 72,
                 'jpeg_quality' => $quality
             );
 
