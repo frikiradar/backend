@@ -89,4 +89,12 @@ class LikeUserRepository extends ServiceEntityRepository
 
         return $likes;
     }
+
+    public function countLikeUsers(User $fromUser, $param)
+    {
+        return $this->getEntityManager()
+            ->createQuery("SELECT COUNT(l.id) FROM App:LikeUser l WHERE " . ($param == "delivered" ? "l.from_user" : "l.to_user") . " = :id")
+            ->setParameter('id', $fromUser->getId())
+            ->getSingleScalarResult();
+    }
 }
