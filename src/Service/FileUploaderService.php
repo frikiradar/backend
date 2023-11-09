@@ -21,7 +21,7 @@ class FileUploaderService
         $this->targetFilename = $targetFilename;
     }
 
-    public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 800)
+    public function uploadImage(UploadedFile | string $file, $square = true, $quality = 90, $size = 512)
     {
         try {
             $targetSrc = $this->getTargetDirectory() . $this->getTargetFilename() . '.jpg';
