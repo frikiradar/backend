@@ -34,8 +34,8 @@ class FileUploaderService
 
             $options = array(
                 'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
-                'resolution-x' => 72,
-                'resolution-y' => 72,
+                'resolution-x' => 150,
+                'resolution-y' => 150,
                 'jpeg_quality' => $quality
             );
 
