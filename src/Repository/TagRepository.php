@@ -64,7 +64,7 @@ class TagRepository extends ServiceEntityRepository
         if (in_array($category, ['films', 'games'])) {
             $query->andWhere('t.slug IS NOT NULL');
         }
-        $query
+        $tags = $query
             ->groupBy('t.name')
             ->orderBy('total', 'DESC')
             ->setMaxResults(3)
