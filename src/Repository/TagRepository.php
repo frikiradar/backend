@@ -99,6 +99,8 @@ class TagRepository extends ServiceEntityRepository
                     if ($tag['slug'] == $page['slug']) {
                         $tags[$key]['name'] = $page['name'];
                         $tags[$key]['image'] = $page['cover'];
+                        $tags[$key]['slug'] = $page['slug'];
+                        $tags[$key]['category'] = $category;
                     }
                 }
             }
