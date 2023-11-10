@@ -70,6 +70,10 @@ class LikeUserRepository extends ServiceEntityRepository
         foreach ($likes as $key => $like) {
             $userId = $like["fromuser"];
             $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+            if (empty($toUser)) {
+                unset($likes[$key]);
+                continue;
+            }
             $blocked = $this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser) ? true : false;
 
             if ($toUser->getActive() && !$blocked) {
