@@ -52,14 +52,19 @@ class TagRepository extends ServiceEntityRepository
 
     public function searchTags(string $query, string $category)
     {
-        $tags = $this->createQueryBuilder('t')
+        $query = $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
                 't.slug',
                 'COUNT(t) total'
             ))
             ->where('t.name LIKE :name')
-            ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)')
+            ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)');
+
+        if (in_array($category, ['films', 'games'])) {
+            $query->andWhere('t.slug IS NOT NULL');
+        }
+        $query
             ->groupBy('t.name')
             ->orderBy('total', 'DESC')
             ->setMaxResults(3)
