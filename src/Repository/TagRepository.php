@@ -50,9 +50,10 @@ class TagRepository extends ServiceEntityRepository
 
     public function searchTags(string $query, string $category)
     {
-        return $this->createQueryBuilder('t')
+        $tags = $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
+                't.slug',
                 'COUNT(t) total'
             ))
             ->where('t.name LIKE :name')
@@ -66,6 +67,33 @@ class TagRepository extends ServiceEntityRepository
             ))
             ->getQuery()
             ->getResult();
+
+        if (in_array($category, ['films', 'games'])) {
+            // buscamos páginas que contengan el tag para tener el nombre y cover
+            $pages = $this->em->getRepository("App:Page")->createQueryBuilder('p')
+                ->select(array(
+                    'p.name',
+                    'p.cover',
+                ))
+                ->where('p.name IN (:names)')
+                ->andWhere('p.category = :category)')
+                ->setParameters(array(
+                    'names' => array_column($tags, 'name'),
+                    'category' => $category
+                ))
+                ->getQuery()
+                ->getResult();
+
+            foreach ($tags as $key => $tag) {
+                foreach ($pages as $page) {
+                    if ($tag['name'] == $page['name']) {
+                        $tags[$key]['cover'] = $page['cover'];
+                    }
+                }
+            }
+        } else {
+            return $tags;
+        }
     }
 
     public function setTagsSlug(Tag $tag, string $slug)
