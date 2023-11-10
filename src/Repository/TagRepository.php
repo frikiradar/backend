@@ -93,9 +93,8 @@ class TagRepository extends ServiceEntityRepository
                     }
                 }
             }
-        } else {
-            return $tags;
         }
+        return $tags;
     }
 
     public function setTagsSlug(Tag $tag, string $slug)
