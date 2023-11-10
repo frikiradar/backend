@@ -85,10 +85,10 @@ class TagRepository extends ServiceEntityRepository
                     'p.slug',
                     'p.cover',
                 ))
-                ->where('p.name IN (:names)')
+                ->where('p.slug IN (:slugs)')
                 ->andWhere('p.category = :category')
                 ->setParameters(array(
-                    'names' => array_column($tags, 'name'),
+                    'slugs' => array_column($tags, 'slug'),
                     'category' => $category
                 ))
                 ->getQuery()
@@ -97,8 +97,8 @@ class TagRepository extends ServiceEntityRepository
             foreach ($tags as $key => $tag) {
                 foreach ($pages as $page) {
                     if ($tag['slug'] == $page['slug']) {
+                        $tags[$key]['name'] = $page['name'];
                         $tags[$key]['image'] = $page['cover'];
-                        $tags[$key]['category'] = $category;
                     }
                 }
             }
