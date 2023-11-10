@@ -78,7 +78,7 @@ class TagRepository extends ServiceEntityRepository
                     'p.cover',
                 ))
                 ->where('p.name IN (:names)')
-                ->andWhere('p.category = :category)')
+                ->andWhere('p.category = :category')
                 ->setParameters(array(
                     'names' => array_column($tags, 'name'),
                     'category' => $category
