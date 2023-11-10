@@ -64,9 +64,10 @@ class TagRepository extends ServiceEntityRepository
         if (in_array($category, ['films', 'games'])) {
             $dql->andWhere('t.slug IS NOT NULL')
                 ->groupBy('t.slug');
+        } else {
+            $dql->groupBy('t.name');
         }
         $tags = $dql
-            ->groupBy('t.name')
             ->orderBy('total', 'DESC')
             ->setMaxResults(5)
             ->setParameters(array(
