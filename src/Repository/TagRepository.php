@@ -101,6 +101,7 @@ class TagRepository extends ServiceEntityRepository
                         $tags[$key]['image'] = $page['cover'];
                         $tags[$key]['slug'] = $page['slug'];
                         $tags[$key]['category'] = $category;
+                        unset($tags[$key]['total']);
                     }
                 }
             }
