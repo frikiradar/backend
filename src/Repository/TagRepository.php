@@ -62,12 +62,13 @@ class TagRepository extends ServiceEntityRepository
             ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)');
 
         if (in_array($category, ['films', 'games'])) {
-            $dql->andWhere('t.slug IS NOT NULL');
+            $dql->andWhere('t.slug IS NOT NULL')
+                ->groupBy('t.slug');
         }
         $tags = $dql
             ->groupBy('t.name')
             ->orderBy('total', 'DESC')
-            ->setMaxResults(3)
+            ->setMaxResults(5)
             ->setParameters(array(
                 'name' => '%' . $query . '%',
                 'category' => $category
