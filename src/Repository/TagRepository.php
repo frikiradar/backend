@@ -52,7 +52,7 @@ class TagRepository extends ServiceEntityRepository
 
     public function searchTags(string $query, string $category)
     {
-        $query = $this->createQueryBuilder('t')
+        $dql = $this->createQueryBuilder('t')
             ->select(array(
                 't.name',
                 't.slug',
@@ -62,9 +62,9 @@ class TagRepository extends ServiceEntityRepository
             ->andWhere('t.category = (SELECT c.id FROM App:Category c WHERE c.name = :category)');
 
         if (in_array($category, ['films', 'games'])) {
-            $query->andWhere('t.slug IS NOT NULL');
+            $dql->andWhere('t.slug IS NOT NULL');
         }
-        $tags = $query
+        $tags = $dql
             ->groupBy('t.name')
             ->orderBy('total', 'DESC')
             ->setMaxResults(3)
