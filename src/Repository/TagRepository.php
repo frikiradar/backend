@@ -87,6 +87,7 @@ class TagRepository extends ServiceEntityRepository
                 ))
                 ->where('p.slug IN (:slugs)')
                 ->andWhere('p.category = :category')
+                ->andWhere('p.cover IS NOT NULL')
                 ->setParameters(array(
                     'slugs' => array_column($tags, 'slug'),
                     'category' => $category
@@ -101,7 +102,9 @@ class TagRepository extends ServiceEntityRepository
                         $tags[$key]['image'] = $page['cover'];
                         $tags[$key]['slug'] = $page['slug'];
                         $tags[$key]['category'] = $category;
-                        unset($tags[$key]['total']);
+                        if ($page['cover']) {
+                            unset($tags[$key]['total']);
+                        }
                     }
                 }
             }
