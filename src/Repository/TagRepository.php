@@ -80,6 +80,7 @@ class TagRepository extends ServiceEntityRepository
             $pages = $this->em->getRepository("App:Page")->createQueryBuilder('p')
                 ->select(array(
                     'p.name',
+                    'p.slug',
                     'p.cover',
                 ))
                 ->where('p.name IN (:names)')
@@ -93,10 +94,15 @@ class TagRepository extends ServiceEntityRepository
 
             foreach ($tags as $key => $tag) {
                 foreach ($pages as $page) {
-                    if ($tag['name'] == $page['name']) {
-                        $tags[$key]['cover'] = $page['cover'];
+                    if ($tag['slug'] == $page['slug']) {
+                        $tags[$key]['image'] = $page['cover'];
+                        $tags[$key]['category'] = $category;
                     }
                 }
+            }
+        } else {
+            foreach ($tags as $key => $tag) {
+                $tags[$key]['category'] = $category;
             }
         }
         return $tags;
