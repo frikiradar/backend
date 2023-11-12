@@ -157,7 +157,7 @@ class StoriesController extends AbstractController
             $this->em->flush();
 
             if (count((array) $mentions) > 0) {
-                $url = "/tabs/radar/story/" . $story->getId();
+                $url = "/tabs/explore/story/" . $story->getId();
                 foreach ($mentions as $mention) {
                     $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
@@ -274,7 +274,7 @@ class StoriesController extends AbstractController
 
                 $title = $user->getName();
                 $text = "A " . $user->getName() . " le ha gustado tu historia.";
-                $url = "/tabs/radar/story/" . $story->getId();
+                $url = "/tabs/explore/story/" . $story->getId();
 
                 $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
             }
@@ -346,7 +346,7 @@ class StoriesController extends AbstractController
                 $this->em->persist($comment);
                 $this->em->flush();
 
-                $url = "/tabs/radar/story/" . $story->getId();
+                $url = "/tabs/explore/story/" . $story->getId();
                 if (count((array) $mentions) > 0) {
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
@@ -399,7 +399,7 @@ class StoriesController extends AbstractController
                 if ($user->getId() !== $comment->getUser()->getId()) {
                     $title = $user->getName();
                     $text = "A " . $user->getName() . " le ha gustado tu comentario.";
-                    $url = "/tabs/radar/story/" . $comment->getStory()->getId();
+                    $url = "/tabs/explore/story/" . $comment->getStory()->getId();
 
                     $this->notification->set($user, $comment->getUser(), $title, $text, $url, "story");
                 }
