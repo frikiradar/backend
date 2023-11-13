@@ -53,7 +53,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0, $banned = false)
     {
-        $limit = 15;
+        $limit = 50;
         $offset = ($page - 1) * $limit;
 
         $dql = $this->createQueryBuilder('c');
