@@ -272,6 +272,27 @@ class UsersController extends AbstractController
 
 
     /**
+     * @Route("/check-login/{login}", name="check_login", methods={"GET"})
+     */
+    public function checkLoginAction(string $login)
+    {
+        $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL);
+
+        if ($isEmail) {
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $login]);
+        } else {
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['username' => $login]);
+        }
+
+        if (empty($user)) {
+            throw new HttpException(400, "No existe ningún usuario con este nombre o email");
+        }
+
+        return new Response($this->serializer->serialize($login, "json"));
+    }
+
+
+    /**
      * @Route("/v1/user", name="update_user", methods={"PUT"})
      */
     public function putAction(Request $request)
