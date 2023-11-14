@@ -5,5 +5,3 @@ api_platform:
         json: ['application/merge-patch+json']
     swagger:
         versions: [3]
-    title: API FrikiRadar
-    version: 1.0

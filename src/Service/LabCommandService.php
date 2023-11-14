@@ -45,7 +45,7 @@ class LabCommandService
 
     public function geolocation()
     {
-        /*$users = $this->em->getRepository('App:User')->findAll();
+        /*$users = $this->em->getRepository(\App\Entity\User::class)->findAll();
 
         foreach ($users as $user) {
             if ((empty($user->getCountry()) || empty($user->getLocation())) && !empty($user->getCoordinates())) {
@@ -72,8 +72,8 @@ class LabCommandService
 
     public function notification($fromId, $toId)
     {
-        $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $fromId));
-        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $toId));
+        $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $fromId));
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $toId));
         $title = "Notificación de prueba";
         $text = "test";
         $url = "/profile/" . $fromId;
@@ -82,7 +82,7 @@ class LabCommandService
 
     public function email($toId)
     {
-        $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $toId));
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $toId));
         $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
             ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
             ->setTo($user->getEmail())
@@ -107,7 +107,7 @@ class LabCommandService
         /**
          * @var User[]
          */
-        $users = $this->em->getRepository('App:User')->findAll();
+        $users = $this->em->getRepository(\App\Entity\User::class)->findAll();
 
         foreach ($users as $user) {
             $id = $user->getId();
@@ -177,11 +177,11 @@ class LabCommandService
 
     public function removeAccount($username)
     {
-        $user = $this->em->getRepository('App:User')->findOneBy(array('username' => $username));
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $username));
 
         try {
             // borramos chats y sus archivos
-            $this->em->getRepository('App:Chat')->deleteChatsFiles($user);
+            $this->em->getRepository(\App\Entity\Chat::class)->deleteChatsFiles($user);
 
             // borramos archivos de historias
             $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";
@@ -223,13 +223,13 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository('App:Tag')->findAllGroupedTags(['films', 'games']);
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['films', 'games']);
         foreach ($tags as $a) {
             $tag = $a['tag'];
             $slug = $tag->getSlug();
             if (!isset($slug)) {
                 try {
-                    $page = $this->em->getRepository('App:Page')->setPage($tag);
+                    $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
                     if ($page) {
                         $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
                     } else {

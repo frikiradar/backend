@@ -64,8 +64,8 @@ class TagsController extends AbstractController
             $name = $this->request->get($request, 'name');
             $slug = $this->request->get($request, 'slug', false);
             $categoryName = $this->request->get($request, 'category');
-            $category = $this->em->getRepository('App:Category')->findOneBy(array('name' => $categoryName));
-            $oldTag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+            $category = $this->em->getRepository(\App\Entity\Category::class)->findOneBy(array('name' => $categoryName));
+            $oldTag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
 
             if (empty($oldTag)) {
                 $tag = new Tag();
@@ -78,7 +78,7 @@ class TagsController extends AbstractController
 
                     if (empty($slug) && in_array($categoryName, ['games', 'films'])) {
                         // Creamos página
-                        $page = $this->em->getRepository('App:Page')->setPage($tag);
+                        $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
                         if (!empty($page)) {
                             $tag->setSlug($page->getSlug());
                         } else {
@@ -123,9 +123,9 @@ class TagsController extends AbstractController
         try {
             if (!is_numeric($id)) { // TODO: Eliminar medida provisional
                 $username = $id;
-                $tag = $this->em->getRepository('App:Tag')->findOneBy(array('name' => $username, 'user' => $user));
+                $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('name' => $username, 'user' => $user));
             } else {
-                $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $id));
+                $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('id' => $id));
             }
 
             if ($tag->getUser()->getId() == $user->getId()) {

@@ -69,12 +69,12 @@ class LikeUserRepository extends ServiceEntityRepository
         $likes = $query->getResult();
         foreach ($likes as $key => $like) {
             $userId = $like["fromuser"];
-            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $userId));
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $userId));
             if (empty($toUser)) {
                 unset($likes[$key]);
                 continue;
             }
-            $blocked = $this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser) ? true : false;
+            $blocked = $this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser) ? true : false;
 
             if ($toUser->getActive() && !$blocked) {
                 $likes[$key]['user'] = [

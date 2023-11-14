@@ -37,7 +37,7 @@ class CronCommandService
     {
         if ($days >= 15) {
             // Recoge los usuarios que hace exactamente $days días que no se conectan
-            $users = $this->em->getRepository('App:User')->getUsersByLastLogin($days);
+            $users = $this->em->getRepository(\App\Entity\User::class)->getUsersByLastLogin($days);
             foreach ($users as $user) {
                 $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
                     ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
@@ -73,7 +73,7 @@ class CronCommandService
     public function eventReminder()
     {
         // Buscamos todos los eventos próximos y enviamos avisos a los participantes
-        $events = $this->em->getRepository('App:Event')->findNextEvents();
+        $events = $this->em->getRepository(\App\Entity\Event::class)->findNextEvents();
         foreach ($events as $event) {
             $slug = 'event-' . $event->getId();
             // Evento

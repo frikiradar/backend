@@ -51,7 +51,7 @@ class StoriesController extends AbstractController
     public function getStoriesAction()
     {
         $user = $this->getUser();
-        $stories = $this->em->getRepository('App:Story')->getStories($user);
+        $stories = $this->em->getRepository(\App\Entity\Story::class)->getStories($user);
 
         return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
     }
@@ -63,7 +63,7 @@ class StoriesController extends AbstractController
     {
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
-        $stories = $this->em->getRepository('App:Story')->getStoriesBySlug($slug);
+        $stories = $this->em->getRepository(\App\Entity\Story::class)->getStoriesBySlug($slug);
 
         return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
     }
@@ -75,7 +75,7 @@ class StoriesController extends AbstractController
     {
         $user = $this->getUser();
         // $this->accessChecker->checkAccess($user);
-        $stories = $this->em->getRepository('App:Story')->getAllStories();
+        $stories = $this->em->getRepository(\App\Entity\Story::class)->getAllStories();
 
         return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
     }
@@ -90,8 +90,8 @@ class StoriesController extends AbstractController
             $storiesCache = $cache->getItem('stories.get.' . $id);
             if (!$storiesCache->isHit()) {
                 $storiesCache->expiresAfter(3600 * 24);
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-                $stories = $this->em->getRepository('App:Story')->getUserStories($user);
+                $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+                $stories = $this->em->getRepository(\App\Entity\Story::class)->getUserStories($user);
                 $stories = $this->serializer->serialize($stories, "json", ['groups' => ['story']]);
                 $storiesCache->set($stories);
                 $cache->save($storiesCache);
@@ -112,7 +112,7 @@ class StoriesController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
             if (!is_null($story)) {
                 return new Response($this->serializer->serialize($story, "json", ['groups' => ['story']]));
             } else {
@@ -159,7 +159,7 @@ class StoriesController extends AbstractController
             if (count((array) $mentions) > 0) {
                 $url = "/tabs/explore/story/" . $story->getId();
                 foreach ($mentions as $mention) {
-                    $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                    $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $mention));
                     $title = $fromUser->getName() . ' te ha mencionado en una historia.';
                     $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
@@ -185,7 +185,7 @@ class StoriesController extends AbstractController
             /**
              * @var Story
              */
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -221,7 +221,7 @@ class StoriesController extends AbstractController
             /**
              * @var Story
              */
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
             if ($this->security->isGranted('ROLE_MASTER')) {
@@ -261,8 +261,8 @@ class StoriesController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
-            $like = $this->em->getRepository('App:LikeStory')->findOneBy(array('story' => $story, 'user' => $user));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $like = $this->em->getRepository(\App\Entity\LikeStory::class)->findOneBy(array('story' => $story, 'user' => $user));
 
             if (empty($like)) {
                 $newLike = new LikeStory();
@@ -279,7 +279,7 @@ class StoriesController extends AbstractController
                 $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
             }
 
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -299,14 +299,14 @@ class StoriesController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
-            $like = $this->em->getRepository('App:LikeStory')->findOneBy(array('story' => $story, 'user' => $user));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
+            $like = $this->em->getRepository(\App\Entity\LikeStory::class)->findOneBy(array('story' => $story, 'user' => $user));
             if (!empty($like)) {
                 $this->em->remove($like);
                 $this->em->flush();
             }
 
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $id));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -325,11 +325,11 @@ class StoriesController extends AbstractController
 
         $this->accessChecker->checkAccess($user);
         try {
-            $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
 
             $comment = new Comment();
 
-            if (empty($this->em->getRepository('App:BlockUser')->isBlocked($user, $story->getUser()))) {
+            if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($user, $story->getUser()))) {
                 $comment->setStory($story);
                 $comment->setUser($user);
 
@@ -349,7 +349,7 @@ class StoriesController extends AbstractController
                 $url = "/tabs/explore/story/" . $story->getId();
                 if (count((array) $mentions) > 0) {
                     foreach ($mentions as $mention) {
-                        $toUser = $this->em->getRepository('App:User')->findOneBy(array('username' => $mention));
+                        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $mention));
                         $title = $user->getUsername() . ' te ha mencionado en una historia.';
                         $this->notification->set($user, $toUser, $title, $text, $url, 'story');
                     }
@@ -358,7 +358,7 @@ class StoriesController extends AbstractController
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
                 }
 
-                $story = $this->em->getRepository('App:Story')->findOneBy(array('id' => $this->request->get($request, 'story')));
+                $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -382,7 +382,7 @@ class StoriesController extends AbstractController
             /**
              * @var Comment
              */
-            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $this->request->get($request, 'comment')));
+            $comment = $this->em->getRepository(\App\Entity\Comment::class)->findOneBy(array('id' => $this->request->get($request, 'comment')));
             $likes = $comment->getLikes();
             $liked = false;
             foreach ($likes as $like) {
@@ -428,7 +428,7 @@ class StoriesController extends AbstractController
             /**
              * @var Comment
              */
-            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $id));
+            $comment = $this->em->getRepository(\App\Entity\Comment::class)->findOneBy(array('id' => $id));
             $likes = $comment->getLikes();
             $liked = false;
             foreach ($likes as $like) {
@@ -462,7 +462,7 @@ class StoriesController extends AbstractController
             /**
              * @var Comment
              */
-            $comment = $this->em->getRepository('App:Comment')->findOneBy(array('id' => $id));
+            $comment = $this->em->getRepository(\App\Entity\Comment::class)->findOneBy(array('id' => $id));
             if ($comment->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $story = $comment->getStory();
                 $this->em->remove($comment);

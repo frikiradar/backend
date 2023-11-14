@@ -111,7 +111,7 @@ class ChatRepository extends ServiceEntityRepository
                     if ($fromUser->getId() !== $user->getId()) {
                         $chats[$key]['count'] = intval($this->countUnreadUser($fromUser, $user));
                     }
-                    $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $user)) ? true : false;
+                    $blocked = !empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $user)) ? true : false;
 
                     if (!$blocked) {
                         $chats[$key]['user'] = [

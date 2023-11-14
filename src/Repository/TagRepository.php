@@ -79,7 +79,7 @@ class TagRepository extends ServiceEntityRepository
 
         if (in_array($category, ['films', 'games'])) {
             // buscamos páginas que contengan el tag para tener el nombre y cover
-            $pages = $this->em->getRepository("App:Page")->createQueryBuilder('p')
+            $pages = $this->em->getRepository(\App\Entity\Page::class)->createQueryBuilder('p')
                 ->select(array(
                     'p.name',
                     'p.slug',

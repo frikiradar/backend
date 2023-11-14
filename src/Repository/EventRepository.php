@@ -102,7 +102,7 @@ class EventRepository extends ServiceEntityRepository
     public function findSuggestedEvents(User $user)
     {
         $today = new \DateTime;
-        $frikiradar = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+        $frikiradar = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
 
         $tags = $user->getTags();
         $slugs = [];

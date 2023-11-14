@@ -66,7 +66,7 @@ class PageRepository extends ServiceEntityRepository
             }
         }
 
-        $tags = $this->em->getRepository("App:Tag")->createQueryBuilder('t')
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->createQueryBuilder('t')
             ->select(array(
                 't.slug',
                 'COUNT(t) total'
@@ -551,7 +551,7 @@ class PageRepository extends ServiceEntityRepository
         }
 
         // actualizamos todas las etiquetas con este mismo nombre de esta categoria
-        $this->em->getRepository('App:Tag')->setTagsSlug($tag, $slug);
+        $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
 
         return $page;
     }

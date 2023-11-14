@@ -55,7 +55,7 @@ class Comment
     private $story;
 
     /**
-     * @ORM\Column(type="json_array", nullable=true)
+     * @ORM\Column(type="json", nullable=true)
      * @Groups({"story"})
      */
     private $mentions = [];

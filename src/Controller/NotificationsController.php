@@ -42,8 +42,8 @@ class NotificationsController extends AbstractController
         try {
             $notificationsCache = $cache->getItem('users.notifications.' . $user->getId());
             if (!$notificationsCache->isHit()) {
-                $countGeneral = $this->em->getRepository('App:Notification')->countUnread($user);
-                $countChats = $this->em->getRepository('App:Chat')->countUnread($user);
+                $countGeneral = $this->em->getRepository(\App\Entity\Notification::class)->countUnread($user);
+                $countChats = $this->em->getRepository(\App\Entity\Chat::class)->countUnread($user);
                 $notifications = ["notifications" => (int) $countGeneral, "chats" => (int) $countChats];
 
                 $notificationsCache->set($notifications);
@@ -72,7 +72,7 @@ class NotificationsController extends AbstractController
         try {
             $notificationsCache = $cache->getItem('users.notifications-list.' . $user->getId());
             if (!$notificationsCache->isHit()) {
-                $notifications = $this->em->getRepository('App:Notification')->findBy(['user' => $user], ['id' => 'DESC'], 25);
+                $notifications = $this->em->getRepository(\App\Entity\Notification::class)->findBy(['user' => $user], ['id' => 'DESC'], 25);
                 $notifications = $this->serializer->serialize($notifications, "json", ['groups' => ['notification']]);
                 $notificationsCache->set($notifications);
                 $cache->save($notificationsCache);
@@ -94,7 +94,7 @@ class NotificationsController extends AbstractController
         $cache = new FilesystemAdapter();
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository('App:Notification')->findOneBy(array('id' => $id));
+            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
                 $notification->setTimeRead(new \DateTime);
                 $this->em->persist($notification);
@@ -120,7 +120,7 @@ class NotificationsController extends AbstractController
         $cache = new FilesystemAdapter();
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository('App:Notification')->findOneBy(array('id' => $id));
+            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
                 $notification->setTimeRead(null);
                 $this->em->persist($notification);
@@ -146,7 +146,7 @@ class NotificationsController extends AbstractController
         $cache = new FilesystemAdapter();
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository('App:Notification')->findOneBy(array('id' => $id));
+            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
                 $this->em->remove($notification);
                 $this->em->flush();

@@ -58,7 +58,7 @@ class DevicesController extends AbstractController
         try {
             $token = $this->request->get($request, "token") ?: "";
             $platform = $this->request->get($request, "platform", false);
-            $this->em->getRepository('App:Device')->set(
+            $this->em->getRepository(\App\Entity\Device::class)->set(
                 $this->getUser(),
                 $this->request->get($request, "id"),
                 $this->request->get($request, "name"),
@@ -144,7 +144,7 @@ class DevicesController extends AbstractController
     {
         try {
             $user = $this->getUser();
-            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $user, 'id' => $id));
+            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $user, 'id' => $id));
             $user->removeDevice($device);
             $this->em->persist($user);
             $this->em->flush();
@@ -165,7 +165,7 @@ class DevicesController extends AbstractController
             /**
              * @var Device
              */
-            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'id' => $id));
+            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $this->getUser(), 'id' => $id));
             $device->setActive(!$device->getActive());
             $this->em->persist($device);
             $this->em->flush();
@@ -186,7 +186,7 @@ class DevicesController extends AbstractController
             /**
              * @var Device
              */
-            $device = $this->em->getRepository('App:Device')->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
+            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
 
             if (!empty($device)) {
                 $device->setToken(null);

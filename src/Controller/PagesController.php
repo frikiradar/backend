@@ -48,7 +48,7 @@ class PagesController extends AbstractController
         $limit = $this->request->get($request, "limit", false) ?? null;
 
         try {
-            $pages = $this->em->getRepository('App:Page')->findPages($user, $limit);
+            $pages = $this->em->getRepository(\App\Entity\Page::class)->findPages($user, $limit);
 
             return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -67,10 +67,10 @@ class PagesController extends AbstractController
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+                $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getSlug(), $page->getName(), $page->getCategory());
+                    $likes = $this->em->getRepository(\App\Entity\Tag::class)->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     if (isset($likes['total'])) {
                         $page->setLikes($likes['total']);
                     }
@@ -100,10 +100,10 @@ class PagesController extends AbstractController
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
-                $page = $this->em->getRepository('App:Page')->findOneBy(array('slug' => $slug));
+                $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $likes = $this->em->getRepository('App:Tag')->countTag($page->getSlug(), $page->getName(), $page->getCategory());
+                    $likes = $this->em->getRepository(\App\Entity\Tag::class)->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     $page->setLikes($likes['total']);
                     $pageCache->expiresAfter(3600 * 1);
                     $pageCache->set($page);
@@ -129,8 +129,8 @@ class PagesController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $tag = $this->em->getRepository('App:Tag')->findOneBy(array('id' => $this->request->get($request, 'id')));
-            $page = $this->em->getRepository('App:Page')->setPage($tag);
+            $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('id' => $this->request->get($request, 'id')));
+            $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
 
             if ($page) {
                 $cache = new FilesystemAdapter();
@@ -156,7 +156,7 @@ class PagesController extends AbstractController
         $slug = $this->request->get($request, "slug");
 
         try {
-            $users = $this->em->getRepository('App:User')->searchUsers($slug, $user, $order, $page, true);
+            $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($slug, $user, $order, $page, true);
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");

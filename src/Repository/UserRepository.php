@@ -167,19 +167,19 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $user['avatar'] = $toUser->getAvatar() ?: null;
             $user['thumbnail'] = $toUser->getThumbnail() ?: null;
             $user['roles'] = $toUser->getRoles();
-            $user['like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+            $user['like'] = !empty($this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy([
                 'from_user' => $fromUser,
                 'to_user' => $toUser
             ])) ? true : false;
-            $user['from_like'] = !empty($this->em->getRepository('App:LikeUser')->findOneBy([
+            $user['from_like'] = !empty($this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy([
                 'from_user' => $toUser,
                 'to_user' => $fromUser
             ])) ? true : false;
             if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
-                $user['likes']['received'] = $this->em->getRepository('App:LikeUser')->countLikeUsers($toUser, 'received');
-                $user['likes']['delivered'] = $this->em->getRepository('App:LikeUser')->countLikeUsers($toUser, 'delivered');
+                $user['likes']['received'] = $this->em->getRepository(\App\Entity\LikeUser::class)->countLikeUsers($toUser, 'received');
+                $user['likes']['delivered'] = $this->em->getRepository(\App\Entity\LikeUser::class)->countLikeUsers($toUser, 'delivered');
             }
-            $user['chat'] = !empty($this->em->getRepository('App:Chat')->isChat($fromUser, $toUser)) ? true : false;
+            $user['chat'] = !empty($this->em->getRepository(\App\Entity\Chat::class)->isChat($fromUser, $toUser)) ? true : false;
             if ($this->security->isGranted('ROLE_MASTER')) {
                 $user['ip'] = $toUser->getLastIp();
             }
@@ -505,10 +505,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['common_tags'] = [];
             }
 
-            if (!$this->security->isGranted('ROLE_DEMO')) {
+            /*if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
                 if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
-                    if (empty($this->em->getRepository('App:Radar')->findById($fromUser->getId(), $u['id']))) {
+                    if (empty($this->em->getRepository(\App\Entity\Radar::class)->findById($fromUser->getId(), $u['id']))) {
                         $toUser = $this->findOneBy(array('id' => $u['id']));
                         if (in_array('ROLE_PREMIUM', $toUser->getRoles()) || in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
                             $radar = new Radar();
@@ -524,7 +524,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         }
                     }
                 }
-            }
+            }*/
         }
 
         return $users;
@@ -718,7 +718,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $users = $this->getEntityManager()->createQuery($dql)->getResult();
         foreach ($users as $key => $user) {
             $toUser = $this->findOneBy(array('id' => $user['id']));
-            $users[$key]['count'] = intval($this->em->getRepository('App:Chat')->countUnreadUser($fromUser, $toUser));
+            $users[$key]['count'] = intval($this->em->getRepository(\App\Entity\Chat::class)->countUnreadUser($fromUser, $toUser));
         }
 
         usort($users, function ($a, $b) {

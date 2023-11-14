@@ -119,7 +119,7 @@ class User implements UserInterface
     private $last_login;
 
     /**
-     * @ORM\Column(type="json_array", nullable=true)
+     * @ORM\Column(type="json", nullable=true)
      * @Groups({"default"})
      */
     private ?array $lovegender = [];
@@ -137,7 +137,7 @@ class User implements UserInterface
     private $maxage;
 
     /**
-     * @ORM\Column(type="json_array", nullable=true)
+     * @ORM\Column(type="json", nullable=true)
      * @Groups({"default"})
      */
     private $connection;

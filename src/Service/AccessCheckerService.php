@@ -23,7 +23,7 @@ class AccessCheckerService extends AbstractController
             $user = $this->getUser();
         }
 
-        if ($this->em->getRepository('App:User')->isBannedIpOrDevice($user)) {
+        if ($this->em->getRepository(\App\Entity\User::class)->isBannedIpOrDevice($user)) {
             $user->setBanned(true);
             $user->setBanReason('Multicuenta no autorizada. La cuenta original ha sido baneada.');
             $user->setBanEnd(null);
@@ -50,7 +50,7 @@ class AccessCheckerService extends AbstractController
                 $reason = 'Debido a las nuevas políticas de FrikiRadar es necesario tener al menos 18 años para utilizar la aplicación.';
                 $days = (18 - $age) * 365;
                 $hours = null;
-                $this->em->getRepository('App:user')->banUser($user, $reason, $days, $hours);
+                $this->em->getRepository(\App\Entity\User::class)->banUser($user, $reason, $days, $hours);
             } catch (Exception $ex) {
                 // Si falla por cualquier motivo el baneo igualmente no le dejamos acceder.
                 throw new HttpException(401, "Eres menor de 18 años");
@@ -68,7 +68,7 @@ class AccessCheckerService extends AbstractController
                     $reason = 'Eres menor de edad, para usar FrikiRadar es necesario tener al menos 18 años.';
                     $days = (18 - $age) * 365;
                     $hours = null;
-                    $this->em->getRepository('App:user')->banUser($user, $reason, $days, $hours);
+                    $this->em->getRepository(\App\Entity\User::class)->banUser($user, $reason, $days, $hours);
                 } catch (Exception $ex) {
                     // Si falla por cualquier motivo el baneo igualmente no le dejamos acceder.
                     throw new HttpException(401, "Eres menor de 18 años");

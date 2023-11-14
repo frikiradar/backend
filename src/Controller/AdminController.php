@@ -45,7 +45,7 @@ class AdminController extends AbstractController
         $chat = new Chat();
 
         try {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
+            $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
             $topic = $this->request->get($request, 'topic');
             $title = $this->request->get($request, 'title') ?: "❤ ¡Información importante! 🎏";
             $text = $this->request->get($request, 'message');
@@ -74,11 +74,11 @@ class AdminController extends AbstractController
      */
     public function getBannedMessagesAction(int $id)
     {
-        $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
-        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
 
         //marcamos como leidos los antiguos
-        $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
+        $unreadChats = $this->em->getRepository(\App\Entity\Chat::class)->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
         foreach ($unreadChats as $chat) {
             if (!is_null($chat->getFromUser())) {
                 $chat->setTimeRead(new \DateTime);
@@ -87,7 +87,7 @@ class AdminController extends AbstractController
         }
         $this->em->flush();
 
-        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, true, 1, 0, true);
+        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, true, 1, 0, true);
 
         return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
     }
@@ -97,11 +97,11 @@ class AdminController extends AbstractController
      */
     public function put(Request $request)
     {
-        $fromUser = $this->em->getRepository('App:User')->findOneBy(array('id' => 1));
+        $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
         $id = $this->request->get($request, "touser");
 
         $chat = new Chat();
-        $toUser = $this->em->getRepository('App:User')->find($id);
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->find($id);
 
         $chat->setTouser($toUser);
         $chat->setFromuser($fromUser);
@@ -130,11 +130,11 @@ class AdminController extends AbstractController
     public function ban(Request $request)
     {
         try {
-            $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($this->request->get($request, "touser"));
             $reason = $this->request->get($request, 'message');
             $days = $this->request->get($request, 'days', false);
             $hours = $this->request->get($request, 'hours', false);
-            $this->em->getRepository('App:User')->banUser($toUser, $reason, $days, $hours);
+            $this->em->getRepository(\App\Entity\User::class)->banUser($toUser, $reason, $days, $hours);
 
             return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
         } catch (Exception $ex) {
@@ -147,7 +147,7 @@ class AdminController extends AbstractController
      */
     public function getBansAction()
     {
-        $users = $this->em->getRepository('App:User')->getBanUsers();
+        $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
 
         return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
     }
@@ -161,7 +161,7 @@ class AdminController extends AbstractController
             /**
              * @var User
              */
-            $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
 
             $user->setBanned(0);
             $user->setBanReason(null);
@@ -169,7 +169,7 @@ class AdminController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            $users = $this->em->getRepository('App:User')->getBanUsers();
+            $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -185,8 +185,8 @@ class AdminController extends AbstractController
         $chat = new Chat();
 
         try {
-            $fromUser = $this->em->getRepository('App:User')->findOneBy(array('username' => 'frikiradar'));
-            $toUser = $this->em->getRepository('App:User')->find($this->request->get($request, "touser"));
+            $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($this->request->get($request, "touser"));
             $title = "⚠️ Aviso de moderación";
             $text = $this->request->get($request, 'message');
             $url = "/chat/" . $fromUser->getId();

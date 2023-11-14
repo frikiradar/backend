@@ -48,12 +48,12 @@ class UserLikesController extends AbstractController
     {
         $fromUser = $this->getUser();
         try {
-            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
             $cache->deleteItem('users.get.' . $toUser->getId());
 
-            $like = $this->em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
+            $like = $this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
 
             if (empty($like)) {
                 $newLike = new LikeUser();
@@ -69,7 +69,7 @@ class UserLikesController extends AbstractController
                 $this->notification->set($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
             }
 
-            $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneUser($fromUser, $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -85,16 +85,16 @@ class UserLikesController extends AbstractController
     {
         $fromUser = $this->getUser();
         try {
-            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
             $cache->deleteItem('users.get.' . $toUser->getId());
 
-            $like = $this->em->getRepository('App:LikeUser')->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
+            $like = $this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
             $this->em->remove($like);
             $this->em->flush();
 
-            $user = $this->em->getRepository('App:User')->findOneUser($fromUser, $toUser);
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneUser($fromUser, $toUser);
 
             return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -114,7 +114,7 @@ class UserLikesController extends AbstractController
             $page = $this->request->get($request, "page", false);
             $id = $this->request->get($request, "user", false);
             if ($id) {
-                $user = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+                $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
             } else {
                 $user = $this->getUser();
             }
@@ -123,7 +123,7 @@ class UserLikesController extends AbstractController
                 $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
                 if (!$likesCache->isHit()) {
                     $likesCache->expiresAfter(5 * 60);
-                    $likes = $this->em->getRepository('App:LikeUser')->getLikeUsers($user, $param, $page);
+                    $likes = $this->em->getRepository(\App\Entity\LikeUser::class)->getLikeUsers($user, $param, $page);
                     $likesCache->set($likes);
                     $cache->save($likesCache);
                 } else {
@@ -145,7 +145,7 @@ class UserLikesController extends AbstractController
     public function markAsReadAction(int $id)
     {
         try {
-            $like = $this->em->getRepository('App:LikeUser')->findOneBy(array('from_user' => $id, 'to_user' => $this->getUser()->getId()));
+            $like = $this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy(array('from_user' => $id, 'to_user' => $this->getUser()->getId()));
             $like->setTimeRead(new \DateTime);
             $this->em->persist($like);
             $this->em->flush();

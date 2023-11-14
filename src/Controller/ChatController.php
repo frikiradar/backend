@@ -62,8 +62,8 @@ class ChatController extends AbstractController
 
         $cache = new FilesystemAdapter();
         $chat = new Chat();
-        $toUser = $this->em->getRepository('App:User')->find($id);
-        if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser))) {
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->find($id);
+        if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser))) {
             if (!$fromUser->getBanned() && $id == 1 && !$this->security->isGranted('ROLE_DEMO')) {
                 throw new HttpException(400, "No se puede escribir al usuario frikiradar sin estar baneado - Error");
             }
@@ -86,7 +86,7 @@ class ChatController extends AbstractController
             $chat->setTimeCreation();
             $chat->setConversationId($conversationId);
 
-            $replyToChat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
+            $replyToChat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
             if ($replyToChat && !$replyToChat->getModded()) {
                 $chat->setReplyTo($replyToChat);
             }
@@ -127,8 +127,8 @@ class ChatController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $chat = new Chat();
-            $toUser = $this->em->getRepository('App:User')->find($request->request->get("touser"));
-            if (empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($request->request->get("touser"));
+            if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
                 $chat->setTouser($toUser);
                 $chat->setFromuser($fromUser);
 
@@ -221,7 +221,7 @@ class ChatController extends AbstractController
             /*$chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
             if (!$chatsCache->isHit()) {
                 $chatsCache->expiresAfter(3600);*/
-            $chats = $this->em->getRepository('App:Chat')->getChatUsers($fromUser);
+            $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChatUsers($fromUser);
             /*$chatsCache->set($chats);
                 $cache->save($chatsCache);*/
             $this->em->persist($fromUser);
@@ -249,13 +249,13 @@ class ChatController extends AbstractController
         $page = $this->request->get($request, "page");
         $lastId = $this->request->get($request, "lastid", false) ?: 0;
 
-        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
 
-        $blocked = !empty($this->em->getRepository('App:BlockUser')->isBlocked($fromUser, $toUser)) ? true : false;
+        $blocked = !empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser)) ? true : false;
 
         if ($fromUser->getId() !== $toUser->getId()) {
             //marcamos como leidos los antiguos
-            $unreadChats = $this->em->getRepository('App:Chat')->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
+            $unreadChats = $this->em->getRepository(\App\Entity\Chat::class)->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
             foreach ($unreadChats as $chat) {
                 if (!is_null($chat->getFromuser())) {
                     $chat->setTimeRead(new \DateTime);
@@ -273,7 +273,7 @@ class ChatController extends AbstractController
         $this->em->persist($fromUser);
         $this->em->flush();
 
-        $chats = $this->em->getRepository('App:Chat')->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->getBanned());
+        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->getBanned());
         foreach ($chats as $key => $chat) {
             if ((null !== $chat->getFromuser() && !$chat->getFromuser()->getActive()) || $blocked) {
                 if ($blocked) {
@@ -306,7 +306,7 @@ class ChatController extends AbstractController
     {
         try {
             $toUser = $this->getUser();
-            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
             if ($chat->getTouser()->getId() == $toUser->getId()) {
                 $chat->setTimeRead(new \DateTime);
                 $this->em->persist($chat);
@@ -333,7 +333,7 @@ class ChatController extends AbstractController
     public function writingAction(Request $request)
     {
         $fromUser = $this->getUser();
-        $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $this->request->get($request, "touser")));
+        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, "touser")));
 
         $chat = new Chat();
         $min = min($fromUser->getId(), $toUser->getId());
@@ -363,7 +363,7 @@ class ChatController extends AbstractController
         try {
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
-            $chat = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
             if ($chat->getFromuser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
                 $chat->setText($text);
                 $chat->setEdited(1);
@@ -398,7 +398,7 @@ class ChatController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $user->getId());
 
-            $message = $this->em->getRepository('App:Chat')->findOneBy(array('id' => $id));
+            $message = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
             if (!$message->getModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
@@ -465,8 +465,8 @@ class ChatController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-            $toUser = $this->em->getRepository('App:User')->findOneBy(array('id' => $id));
-            $this->em->getRepository('App:Chat')->deleteChatUser($toUser, $fromUser);
+            $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+            $this->em->getRepository(\App\Entity\Chat::class)->deleteChatUser($toUser, $fromUser);
 
             return new Response($this->serializer->serialize($id, "json"));
         } catch (Exception $ex) {

@@ -97,7 +97,7 @@ class Chat
     private $writing = false;
 
     /**
-     * @ORM\Column(type="json_array", nullable=true)
+     * @ORM\Column(type="json", nullable=true)
      * @Groups({"message"})
      */
     private $mentions = [];
