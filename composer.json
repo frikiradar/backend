@@ -8,7 +8,7 @@
     "ext-ctype": "*",
     "ext-iconv": "*",
     "ext-json": "*",
-    "api-platform/core": "^2.6",
+    "api-platform/core": "*",
     "composer/package-versions-deprecated": "1.11.99.1",
     "creof/doctrine2-spatial": "^1.2",
     "doctrine/annotations": "^1.11",
