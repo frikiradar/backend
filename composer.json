@@ -105,7 +105,8 @@
     "symfony": {
       "allow-contrib": false,
       "require": "5.4.*"
-    }
+    },
+    "public_dir": "/var/www/vhosts/frikiradar.com/api.frikiradar.com/public/"
   },
   "require-dev": {
     "symfony/browser-kit": "5.4.*",
