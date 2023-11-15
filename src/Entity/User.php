@@ -249,7 +249,8 @@ class User implements UserInterface
     private ?string $mailing_code;
 
     #[ORM\Column(length: 70, nullable: true)]
-    private ?string $google = null;
+    #[Groups("default")]
+    private ?string $google_id = null;
 
     public function __construct()
     {
@@ -1456,14 +1457,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getGoogle(): ?string
+    public function getGoogleId(): ?string
     {
-        return $this->google;
+        return $this->google_id;
     }
 
-    public function setGoogle(?string $google): static
+    public function setGoogleId(?string $google_id): static
     {
-        $this->google = $google;
+        $this->google_id = $google_id;
 
         return $this;
     }

@@ -95,7 +95,7 @@ class UsersController extends AbstractController
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $payload['email']]);
             // si ya existía le seteamos el id de google
             if (!is_null($user)) {
-                $user->setGoogle($google);
+                $user->setGoogleId($google);
             }
         }
 
@@ -165,7 +165,7 @@ class UsersController extends AbstractController
 
                         if ($payload['email'] == $email) {
                             $user->setEmail($email);
-                            $user->setGoogle($payload['sub']);
+                            $user->setGoogleId($payload['sub']);
                         } else {
                             throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
                         }
