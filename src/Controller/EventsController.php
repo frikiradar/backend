@@ -501,7 +501,7 @@ class EventsController extends AbstractController
 
             $slug = 'event-' . $id;
             foreach ($user->getDevices() as $device) {
-                if ($device->getActive() && !is_null($device->getToken())) {
+                if ($device->isActive() && !is_null($device->getToken())) {
                     $token = $device->getToken();
 
                     $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';
@@ -545,7 +545,7 @@ class EventsController extends AbstractController
 
             $slug = 'event-' . $id;
             foreach ($user->getDevices() as $device) {
-                if ($device->getActive() && !is_null($device->getToken())) {
+                if ($device->isActive() && !is_null($device->getToken())) {
                     $token = $device->getToken();
 
                     $key = 'AAAAZI4Tcp4:APA91bHi1b30Lb-c-AvrqhFBLcBrFOf2fwEn417i9UQvmJra7VgMl8LMgCfQjgNtQ4aMdCBOnYX9q7kWlnLrN9jpnSUUM-hyqYeXLuegLeFiqVHTNboEv3-EIuNsIi6sg7LW6UykvzEZ';

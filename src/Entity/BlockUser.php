@@ -2,40 +2,30 @@
 
 namespace App\Entity;
 
+use App\Repository\getBlockUserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\BlockUserRepository")
- */
+#[ORM\Entity(repositoryClass: BlockUserRepository::class)]
 class BlockUser
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="blockUsers", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'blockUsers', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private $from_user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private $block_user;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $date;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $note;
 
     public function getId(): ?int

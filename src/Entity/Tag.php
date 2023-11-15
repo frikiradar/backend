@@ -2,58 +2,39 @@
 
 namespace App\Entity;
 
+use App\Repository\TagRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use ApiPlatform\Core\Annotation\ApiResource;
 
-/**
- * @ApiResource()
- * @ORM\Entity(repositoryClass="App\Repository\TagRepository")
- */
+#[ApiResource]
+#[ORM\Entity(repositoryClass: TagRepository::class)]
 class Tag
 {
-
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({"default", "message", "like"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['default', 'message', 'like'])]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['default'])]
     private $name;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="tags", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @MaxDepth(1)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tags', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[MaxDepth(1)]
     private $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({"default"})
-     */
+    #[ORM\ManyToOne(targetEntity: Category::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['default'])]
     private $category;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default'])]
     private $slug;
-
-    /*public function __construct($name, $user, $category)
-    {
-        $this->name = $name;
-        $this->year = $user;
-        $this->category = $category;
-    }*/
 
     public function setId(int $id): self
     {

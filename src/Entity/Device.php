@@ -2,68 +2,50 @@
 
 namespace App\Entity;
 
+use App\Repository\DeviceRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\DeviceRepository")
- */
+#[ORM\Entity(repositoryClass: DeviceRepository::class)]
 class Device
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({"default"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups('default')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="devices")
-     * @ORM\JoinColumn(nullable=false)
-     * @MaxDepth(1)
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'devices')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[MaxDepth(1)]
     private $user;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
     private $token;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $last_update;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'boolean')]
+    #[Groups('default')]
     private $active;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups('default')]
     private $device_id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups('default')]
     private $device_name;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
     private $platform;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
     private $config = [];
 
     public function getId(): ?int
@@ -107,7 +89,7 @@ class Device
         return $this;
     }
 
-    public function getActive(): ?bool
+    public function isActive(): ?bool
     {
         return $this->active;
     }

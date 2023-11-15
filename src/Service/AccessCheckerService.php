@@ -34,13 +34,13 @@ class AccessCheckerService extends AbstractController
             throw new HttpException(401, "Banned account.");
         }
 
-        if (!empty($user) && $user->getBanned() !== false) {
+        if (!empty($user) && $user->isBanned() !== false) {
             if ($user->getBanEnd() > $now || is_null($user->getBanEnd())) {
                 throw new HttpException(401, "Banned account.");
             }
         }
 
-        if (!empty($user) && !$user->getActive()) {
+        if (!empty($user) && !$user->isActive()) {
             throw new HttpException(401, "Disabled account.");
         }
 
@@ -61,7 +61,7 @@ class AccessCheckerService extends AbstractController
             strpos(strtolower($user->getDescription()), 'parece') !== false &&
             preg_match("/tengo\s(\d+)\saños/", strtolower($user->getDescription()), $matches)
         ) {
-            if ($user->getBanned() === false && $matches[1] < 18) {
+            if ($user->isBanned() === false && $matches[1] < 18) {
                 try {
                     $age = $matches[1];
                     // Baneamos la cuenta

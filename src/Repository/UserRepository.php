@@ -175,7 +175,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'from_user' => $toUser,
                 'to_user' => $fromUser
             ])) ? true : false;
-            if (!$toUser->getHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
+            if (!$toUser->isHideLikes() || $this->security->isGranted('ROLE_MASTER') || $toUser->getId() == $fromUser->getId()) {
                 $user['likes']['received'] = $this->em->getRepository(\App\Entity\LikeUser::class)->countLikeUsers($toUser, 'received');
                 $user['likes']['delivered'] = $this->em->getRepository(\App\Entity\LikeUser::class)->countLikeUsers($toUser, 'delivered');
             }

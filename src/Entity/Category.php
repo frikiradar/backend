@@ -2,29 +2,24 @@
 
 namespace App\Entity;
 
+use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiResource;
 
-/**
- * @ApiResource()
- * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
- */
+#[ApiResource]
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({"default", "tags"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['default', 'tags'])]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=70, unique=true)
-     * @Groups({"default", "tags"})
-     */
+    #[ORM\Column(type: 'string', length: 70, unique: true)]
+    #[Groups(['default', 'tags'])]
     private $name;
 
     public function __construct()

@@ -56,7 +56,7 @@ class ChatController extends AbstractController
     {
         $fromUser = $this->getUser();
         $id = $this->request->get($request, "touser");
-        if ($fromUser->getBanned() && $id !== 1) {
+        if ($fromUser->isBanned() && $id !== 1) {
             $this->accessChecker->checkAccess($fromUser);
         }
 
@@ -64,7 +64,7 @@ class ChatController extends AbstractController
         $chat = new Chat();
         $toUser = $this->em->getRepository(\App\Entity\User::class)->find($id);
         if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser))) {
-            if (!$fromUser->getBanned() && $id == 1 && !$this->security->isGranted('ROLE_DEMO')) {
+            if (!$fromUser->isBanned() && $id == 1 && !$this->security->isGranted('ROLE_DEMO')) {
                 throw new HttpException(400, "No se puede escribir al usuario frikiradar sin estar baneado - Error");
             }
             $chat->setTouser($toUser);
@@ -87,7 +87,7 @@ class ChatController extends AbstractController
             $chat->setConversationId($conversationId);
 
             $replyToChat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
-            if ($replyToChat && !$replyToChat->getModded()) {
+            if ($replyToChat && !$replyToChat->isModded()) {
                 $chat->setReplyTo($replyToChat);
             }
             $this->em->persist($chat);
@@ -99,7 +99,7 @@ class ChatController extends AbstractController
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-            if ($fromUser->getBanned() && $id == 1) {
+            if ($fromUser->isBanned() && $id == 1) {
                 // Enviamos email avisando
                 $message = (new \Swift_Message('Mensaje de usuario baneado'))
                     ->setFrom([$fromUser->getEmail() => $fromUser->getName()])
@@ -273,9 +273,9 @@ class ChatController extends AbstractController
         $this->em->persist($fromUser);
         $this->em->flush();
 
-        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->getBanned());
+        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
         foreach ($chats as $key => $chat) {
-            if ((null !== $chat->getFromuser() && !$chat->getFromuser()->getActive()) || $blocked) {
+            if ((null !== $chat->getFromuser() && !$chat->getFromuser()->isActive()) || $blocked) {
                 if ($blocked) {
                     $chats[$key]->getFromuser()->setUsername('Usuario desconocido');
                     $chats[$key]->getFromuser()->setName('Usuario desconocido');
@@ -284,7 +284,7 @@ class ChatController extends AbstractController
                 $chats[$key]->getFromuser()->setActive(false);
                 $chats[$key]->getFromuser()->setLastLogin(null);
             }
-            if ((null !== $chat->getTouser() && !$chat->getTouser()->getActive()) || $blocked) {
+            if ((null !== $chat->getTouser() && !$chat->getTouser()->isActive()) || $blocked) {
                 if ($blocked) {
                     $chats[$key]->getTouser()->setUsername('Usuario desconocido');
                     $chats[$key]->getTouser()->setName('Usuario desconocido');
@@ -364,7 +364,7 @@ class ChatController extends AbstractController
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
             $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
-            if ($chat->getFromuser()->getId() == $this->getUser()->getId() && !$chat->getModded()) {
+            if ($chat->getFromuser()->getId() == $this->getUser()->getId() && !$chat->isModded()) {
                 $chat->setText($text);
                 $chat->setEdited(1);
                 $this->em->persist($chat);
@@ -399,7 +399,7 @@ class ChatController extends AbstractController
             $cache->deleteItem('users.chat.' . $user->getId());
 
             $message = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
-            if (!$message->getModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
+            if (!$message->isModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
                 if (!empty($image)) {

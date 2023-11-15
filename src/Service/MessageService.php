@@ -38,7 +38,7 @@ class MessageService extends AbstractController
         } else {
             $tokens = [];
             foreach ($toUser->getDevices() as $device) {
-                if ($device->getActive() && !is_null($device->getToken())) {
+                if ($device->isActive() && !is_null($device->getToken())) {
                     $tokens[] = $device->getToken();
                 }
             }

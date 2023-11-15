@@ -3,94 +3,65 @@
 namespace App\Entity;
 
 use App\Repository\PageRepository;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PageRepository::class)
- */
+#[ORM\Entity(repositoryClass: PageRepository::class)]
 class Page
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups('default')]
     private $name;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('default')]
     private $description;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $time_creation;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $last_update;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
     private $cover;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
     private $artwork;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups('default')]
     private $rating;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
     private $game_mode;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[Groups('default')]
     private $slug;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups('default')]
     private $release_date;
 
-    /**
-     * @ORM\Column(type="string", length=70)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 70)]
+    #[Groups('default')]
     private $category;
 
-    /**
-     * @Groups({"default"})
-     */
+    #[Groups('default')]
     private $likes;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
     private $developer;
 
     public function getId(): ?int

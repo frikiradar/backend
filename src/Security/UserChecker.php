@@ -24,7 +24,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
             return;
         }
 
-        if ($user->getBanned() !== false) {
+        if ($user->isBanned() !== false) {
             $now = new \DateTime;
             /*if (is_null($user->getBanEnd())) {
                 $data = [
@@ -56,7 +56,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
         $user->setLastIP();
         $user->setNumLogins(($user->getNumLogins() ?: 0) + 1);
 
-        if (!$user->getActive() && !$user->getVerificationCode()) {
+        if (!$user->isActive() && !$user->getVerificationCode()) {
             //Generamos y enviamos por email
             $user->setVerificationCode();
 

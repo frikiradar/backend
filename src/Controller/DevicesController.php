@@ -166,7 +166,7 @@ class DevicesController extends AbstractController
              * @var Device
              */
             $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $this->getUser(), 'id' => $id));
-            $device->setActive(!$device->getActive());
+            $device->setActive(!$device->isActive());
             $this->em->persist($device);
             $this->em->flush();
 

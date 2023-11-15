@@ -2,62 +2,47 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CommentRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ApiResource()
- * @ORM\Entity(repositoryClass=CommentRepository::class)
- */
+#[ApiResource]
+#[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"story"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups('story')]
     private $id;
 
-    /**
-     * @ORM\Column(type="text")
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'text')]
+    #[Groups('story')]
     private $text;
 
-    /**
-     * @ORM\Column(type="datetime")
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'datetime')]
+    #[Groups('story')]
     private $time_creation;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"story"})
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Groups('story')]
     private $user;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class)
-     * @Groups({"story"})
-     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[Groups('story')]
     private $likes;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Story::class, inversedBy="comments")
-     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: Story::class, inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: true, referencedColumnName: 'id', onDelete: 'CASCADE')]
     private $story;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups('story')]
     private $mentions = [];
 
     public function __construct()

@@ -76,7 +76,7 @@ class LikeUserRepository extends ServiceEntityRepository
             }
             $blocked = $this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser) ? true : false;
 
-            if ($toUser->getActive() && !$blocked) {
+            if ($toUser->isActive() && !$blocked) {
                 $likes[$key]['user'] = [
                     'id' => $userId,
                     'username' => $toUser->getUsername(),

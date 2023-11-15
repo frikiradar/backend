@@ -2,122 +2,88 @@
 
 namespace App\Entity;
 
+use App\Repository\ChatRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ChatRepository")
- */
+#[ORM\Entity(repositoryClass: ChatRepository::class)]
 class Chat
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @MaxDepth(1)
-     * @Groups({"message"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[MaxDepth(1)]
+    #[Groups('message')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     * @MaxDepth(1)
-     * @Groups({"message"})
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[MaxDepth(1)]
+    #[Groups('message')]
     private $fromuser;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     * @MaxDepth(1)
-     * @Groups({"message"})
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[MaxDepth(1)]
+    #[Groups('message')]
     private $touser;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('message')]
     private $text;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('message')]
     private $image;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('message')]
     private $audio;
 
-    /**
-     * @ORM\Column(type="datetime")
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'datetime')]
+    #[Groups('message')]
     private $time_creation;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups('message')]
     private $time_read;
 
-    /**
-     * @ORM\Column(type="string")
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'string')]
+    #[Groups('message')]
     private $conversationId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Chat", cascade={"persist"})
-     * @MaxDepth(1)
-     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="CASCADE")
-     * @Groups({"message"})
-     */
+    #[ORM\ManyToOne(targetEntity: Chat::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[MaxDepth(1)]
+    #[Groups('message')]
     private $reply_to;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true, options={"default" : 0})
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'boolean', nullable: true, options: ['default' => 0])]
+    #[Groups('message')]
     private $edited;
 
-    /**
-     * @Groups({"message"})
-     */
+    #[Groups('message')]
     private $deleted = false;
 
-    /**
-     * @Groups({"message"})
-     */
+    #[Groups('message')]
     private $writing = false;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups('message')]
     private $mentions = [];
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"message"})
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups('message')]
     private $modded;
 
-    /**
-     * @Groups({"message"})
-     */
+    #[Groups('message')]
     private $tmp_id;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Event::class, cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     * @Groups({"message"})
-     */
+    #[ORM\OneToOne(targetEntity: Event::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[Groups('message')]
     private $event;
 
     public function getId(): ?int
@@ -233,7 +199,7 @@ class Chat
         return $this;
     }
 
-    public function getEdited(): ?bool
+    public function isEdited(): ?bool
     {
         return $this->edited;
     }
@@ -281,7 +247,7 @@ class Chat
         return $this;
     }
 
-    public function getModded(): ?bool
+    public function isModded(): ?bool
     {
         return $this->modded;
     }

@@ -4,72 +4,53 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\StoryRepository;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ApiResource()
- * @ORM\Entity(repositoryClass=StoryRepository::class)
- */
+#[ApiResource]
+#[ORM\Entity(repositoryClass: StoryRepository::class)]
 class Story
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"story"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups('story')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups('story')]
     private $image;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('story')]
     private $text;
 
-    /**
-     * @ORM\Column(type="datetime")
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'datetime')]
+    #[Groups('story')]
     private $time_creation;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="stories")
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({"story"})
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stories')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups('story')]
     private $user;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="story")
-     * @Groups({"story"})
-     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'story')]
+    #[Groups('story')]
     private $comments;
 
-    /**
-     * @ORM\OneToMany(targetEntity=LikeStory::class, mappedBy="story", orphanRemoval=true)
-     * @Groups({"story"})
-     */
+    #[ORM\OneToMany(targetEntity: LikeStory::class, mappedBy: 'story', orphanRemoval: true)]
+    #[Groups('story')]
     private $likeStories;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ViewStory::class, mappedBy="story", orphanRemoval=true)
-     * @Groups({"story"})
-     */
+    #[ORM\OneToMany(targetEntity: ViewStory::class, mappedBy: 'story', orphanRemoval: true)]
+    #[Groups('story')]
     private $viewStories;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"story"})
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups('story')]
     private $mentions = [];
 
     public function __construct()

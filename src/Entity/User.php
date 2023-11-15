@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -12,367 +13,247 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- */
+#[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     * @Groups({"default", "message", "like", "story", "notification"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['default', 'message', 'like', 'story', 'notification'])]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\Regex(
-     *     pattern="/^[a-zA-Z0-9._-]+$/",
-     *     match=true,
-     *     message="Solo se permiten caracteres alfanuméricos, puntos y/o guiones; ni letras con tildes, ni caracteres especiales",
-     *     payload = {"severity" = "error"}
-     * )
-     * @Groups({"default", "message", "story", "notification"})
-     */
+    #[ORM\Column(type: 'string', length: 180, unique: true)]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z0-9._-]+$/",
+        match: true,
+        message: "Solo se permiten caracteres alfanuméricos, puntos y/o guiones; ni letras con tildes, ni caracteres especiales",
+        payload: ['severity' => 'error']
+    )]
+    #[Groups(['default', 'message', 'story', 'notification'])]
     private $username;
 
-    /**
-     * @var array
-     * @ORM\Column(type="json")
-     * @Groups({"default", "message", "story"})
-     */
-    private $roles = [];
+    #[ORM\Column(type: 'json')]
+    #[Groups(['default', 'message', 'story'])]
+    private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     * @ORM\Column(type="string")
-     * @Groups({"private"})
-     * @Ignore()
-     */
-    private $password;
+    #[ORM\Column(type: 'string')]
+    #[Groups('private')]
+    #[Ignore]
+    private string $password;
 
-    /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"default"})
-     */
-    private $email;
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[Groups('default')]
+    private string $email;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
-     */
-    private $register_date;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups('default')]
+    private ?\DateTimeInterface $register_date;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"default"})
-     */
-    private $description;
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups('default')]
+    private ?string $description;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $gender;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $gender;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $orientation;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $orientation;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $relationship;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $relationship;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $pronoun;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $pronoun;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $status;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $status;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Ignore()
-     */
-    private $register_ip;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Ignore]
+    private ?string $register_ip;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Ignore()
-     */
-    private $last_ip;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Ignore]
+    private ?string $last_ip;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default", "message"})
-     */
-    private $last_login;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['default', 'message'])]
+    private ?\DateTimeInterface $last_login;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups('default')]
     private ?array $lovegender = [];
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"default"})
-     */
-    private $minage;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups('default')]
+    private ?int $minage;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"default"})
-     */
-    private $maxage;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups('default')]
+    private ?int $maxage;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups('default')]
     private $connection;
 
-    /**
-     * @ORM\Column(type="point", nullable=true)
-     * @Ignore()
-     */
+    #[ORM\Column(type: 'point', nullable: true)]
+    #[Ignore]
     private $coordinates;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Tag", mappedBy="user", orphanRemoval=true, cascade={"persist","merge"})
-     * @Groups({"tags"})
-     */
+    #[ORM\OneToMany(targetEntity: 'App\Entity\Tag', mappedBy: 'user', orphanRemoval: true, cascade: ['persist', 'merge'])]
+    #[Groups('tags')]
     private $tags;
 
-    /**
-     * @ORM\Column(type="date", nullable=true)
-     * @Groups({"default"})
-     */
-    private $birthday;
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups('default')]
+    private ?\DateTimeInterface $birthday;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message", "story"})
-     */
-    private $avatar;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default', 'message', 'story'])]
+    private ?string $avatar;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message", "story", "notification"})
-     */
-    private $thumbnail;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default', 'message', 'story', 'notification'])]
+    private ?string $thumbnail;
 
-    /**
-     * @Groups({"default"})
-     */
+    #[Groups('default')]
     private array $images = [];
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
-    private $location;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
+    private ?string $location;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
-    private $country;
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
+    private ?string $country;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
-    private $city;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
+    private ?string $city;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Device", mappedBy="user", orphanRemoval=true)
-     * @Groups({"default"})
-     */
+    #[ORM\OneToMany(targetEntity: 'App\Entity\Device', mappedBy: 'user', orphanRemoval: true)]
+    #[Groups('default')]
     private $devices;
 
-    /**
-     * @ORM\Column(type="string", length=6, nullable=true)
-     */
-    private $verificationCode;
+    #[ORM\Column(type: 'string', length: 6, nullable: true)]
+    private ?string $verificationCode;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['default', 'message'])]
     private bool $active = false;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups('default')]
     private ?bool $hide_location = false;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['default', 'message'])]
     private ?bool $hide_connection = false;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups('default')]
     private ?bool $block_messages = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'boolean')]
+    #[Groups('default')]
     private ?bool $two_step = false;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups('default')]
     private ?int $num_logins = 0;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Radar", mappedBy="toUser", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: 'App\Entity\Radar', mappedBy: 'toUser', orphanRemoval: true)]
     private $radars;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'boolean')]
+    #[Groups('default')]
     private bool $mailing;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Groups('default')]
     private ?string $meet;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups('default')]
     private ?string $referral;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
+    #[Groups(['default', 'message'])]
     private bool $verified;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message", "story", "notification"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default', 'message', 'story', 'notification'])]
     private ?string $name;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\BlockUser", mappedBy="from_user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: 'App\Entity\BlockUser', mappedBy: 'from_user', orphanRemoval: true)]
     private $blockUsers;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\HideUser", mappedBy="from_user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: 'App\Entity\HideUser', mappedBy: 'from_user', orphanRemoval: true)]
     private $hideUsers;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ViewUser::class, mappedBy="from_user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: ViewUser::class, mappedBy: 'from_user', orphanRemoval: true)]
     private $viewUsers;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default" : 0})
-     * @Groups({"default", "message"})
-     */
-    private $banned;
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
+    #[Groups(['default', 'message'])]
+    private bool $banned;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
-    private $ban_reason;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups('default')]
+    private ?string $ban_reason;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default"})
-     */
-    private $ban_end;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups('default')]
+    private ?\DateTimeInterface $ban_end;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Story::class, mappedBy="user", orphanRemoval=true)
-     * @ORM\OrderBy({"time_creation" = "ASC"})
-     */
+    #[ORM\OneToMany(targetEntity: Story::class, mappedBy: 'user', orphanRemoval: true)]
+    #[ORM\OrderBy(['time_creation' => 'ASC'])]
     private $stories;
 
-    /**
-     * @ORM\OneToMany(targetEntity=LikeStory::class, mappedBy="user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: LikeStory::class, mappedBy: 'user', orphanRemoval: true)]
     private $likeStories;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ViewStory::class, mappedBy="user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: ViewStory::class, mappedBy: "user", orphanRemoval: true)]
     private $viewStories;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default" : 1})
-     * @Groups({"default"})
-     */
-    private $public;
+    #[ORM\Column(type: "boolean", options: ["default" => 1])]
+    #[Groups("default")]
+    private bool $public;
 
-    /**
-     * @Groups({"default"})
-     */
-    private $block = false;
+    #[Groups("default")]
+    private bool $block = false;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default" : 1})
-     * @Groups({"default"})
-     */
-    private $hide_likes;
+    #[ORM\Column(type: "boolean", options: ["default" => 1])]
+    #[Groups("default")]
+    private bool $hide_likes;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @Groups({"default"})
-     */
-    private $config = [];
+    #[ORM\Column(type: "json", nullable: true)]
+    #[Groups("default")]
+    private array $config = [];
 
-    /**
-     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: "user", orphanRemoval: true)]
     private $notifications;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Event::class, mappedBy="creator", orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: "creator", orphanRemoval: true)]
     private $created_events;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Event::class, mappedBy="participants")
-     */
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: "participants")]
     private $events;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true, unique=true)
-     */
-    private $mailing_code;
+    #[ORM\Column(type: "string", length: 70, nullable: true, unique: true)]
+    private ?string $mailing_code;
+
+    #[ORM\Column(length: 70, nullable: true)]
+    private ?string $google = null;
 
     public function __construct()
     {
         $this->tags = new ArrayCollection();
-        $this->chats = new ArrayCollection();
         $this->devices = new ArrayCollection();
         $this->blockUsers = new ArrayCollection();
         $this->radars = new ArrayCollection();
@@ -384,6 +265,12 @@ class User implements UserInterface
         $this->viewStories = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->events = new ArrayCollection();
+        $this->created_events = new ArrayCollection();
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->username;
     }
 
     public function setId(int $id): self
@@ -573,7 +460,7 @@ class User implements UserInterface
 
     public function getLastLogin(): ?\DateTimeInterface
     {
-        if ($this->getHideConnection()) {
+        if ($this->isHideConnection()) {
             return null;
         }
 
@@ -917,29 +804,6 @@ class User implements UserInterface
         }
     }
 
-    public function addChat(Chat $chat): self
-    {
-        if (!$this->chats->contains($chat)) {
-            $this->chats[] = $chat;
-            $chat->setFromuser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeChat(Chat $chat): self
-    {
-        if ($this->chats->contains($chat)) {
-            $this->chats->removeElement($chat);
-            // set the owning side to null (unless already changed)
-            if ($chat->getFromuser() === $this) {
-                $chat->setFromuser(null);
-            }
-        }
-
-        return $this;
-    }
-
     /**
      * @return Collection|Device[]
      */
@@ -1001,7 +865,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getActive(): ?bool
+    public function isActive(): ?bool
     {
         return $this->active;
     }
@@ -1013,7 +877,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getHideLocation(): ?bool
+    public function isHideLocation(): ?bool
     {
         return $this->hide_location;
     }
@@ -1025,7 +889,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getBlockMessages(): ?bool
+    public function isBlockMessages(): ?bool
     {
         return $this->block_messages;
     }
@@ -1037,7 +901,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getTwoStep(): ?bool
+    public function isTwoStep(): ?bool
     {
         return $this->two_step;
     }
@@ -1116,7 +980,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getHideConnection(): ?bool
+    public function isHideConnection(): ?bool
     {
         return $this->hide_connection;
     }
@@ -1128,7 +992,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getMailing(): ?bool
+    public function isMailing(): ?bool
     {
         return $this->mailing;
     }
@@ -1164,7 +1028,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getVerified(): ?bool
+    public function isVerified(): ?bool
     {
         return $this->verified;
     }
@@ -1268,7 +1132,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getBanned(): ?bool
+    public function isBanned(): ?bool
     {
         return $this->banned;
     }
@@ -1416,7 +1280,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getPublic(): ?bool
+    public function isPublic(): ?bool
     {
         return $this->public;
     }
@@ -1440,7 +1304,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getHideLikes(): ?bool
+    public function isHideLikes(): ?bool
     {
         return $this->hide_likes;
     }
@@ -1554,6 +1418,52 @@ class User implements UserInterface
         $key = substr(str_shuffle($pattern), 0, 32);
 
         $this->mailing_code = $key;
+
+        return $this;
+    }
+
+    public function removeBlockUser(BlockUser $blockUser): static
+    {
+        if ($this->blockUsers->removeElement($blockUser)) {
+            // set the owning side to null (unless already changed)
+            if ($blockUser->getFromUser() === $this) {
+                $blockUser->setFromUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function addCreatedEvent(Event $createdEvent): static
+    {
+        if (!$this->created_events->contains($createdEvent)) {
+            $this->created_events->add($createdEvent);
+            $createdEvent->setCreator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreatedEvent(Event $createdEvent): static
+    {
+        if ($this->created_events->removeElement($createdEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($createdEvent->getCreator() === $this) {
+                $createdEvent->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getGoogle(): ?string
+    {
+        return $this->google;
+    }
+
+    public function setGoogle(?string $google): static
+    {
+        $this->google = $google;
 
         return $this;
     }

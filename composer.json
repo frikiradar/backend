@@ -18,6 +18,8 @@
     "geocoder-php/free-geoip-provider": "^4.4",
     "geocoder-php/geo-plugin-provider": "^4.2",
     "geocoder-php/google-maps-provider": "^4.6",
+    "google/apiclient": "^2.14",
+    "google/auth": "^1.9",
     "guzzlehttp/psr7": "^1.7",
     "http-interop/http-factory-guzzle": "*",
     "imagine/imagine": "^1.2",
@@ -110,7 +112,7 @@
   },
   "require-dev": {
     "symfony/browser-kit": "5.4.*",
-    "symfony/maker-bundle": "^1.28",
+    "symfony/maker-bundle": "^1.50",
     "symfony/stopwatch": "^5.2",
     "symfony/web-profiler-bundle": "^5.2"
   }

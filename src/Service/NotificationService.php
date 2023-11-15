@@ -52,7 +52,7 @@ class NotificationService extends AbstractController
     {
         $tokens = [];
         foreach ($toUser->getDevices() as $device) {
-            if ($device->getActive() && !is_null($device->getToken())) {
+            if ($device->isActive() && !is_null($device->getToken())) {
                 $tokens[] = $device->getToken();
             }
         }
@@ -164,7 +164,7 @@ class NotificationService extends AbstractController
         }
 
         if ($sendEmail && $today->diff($toUser->getLastLogin())->format('%a') >= 1) {
-            if ($toUser->getMailing()) {
+            if ($toUser->isMailing()) {
                 switch ($type) {
                     case 'chat':
                         $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en FrikiRadar';

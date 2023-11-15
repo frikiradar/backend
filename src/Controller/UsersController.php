@@ -19,17 +19,19 @@ use App\Service\RequestService;
 use App\Service\AccessCheckerService;
 use App\Service\MessageService;
 use Doctrine\ORM\EntityManagerInterface;
+use Kreait\Firebase\Util\JSON;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 /**
  * Class UsersController
@@ -38,6 +40,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class UsersController extends AbstractController
 {
+    private $userRepository;
+    private $serializer;
+    private $em;
+    private $request;
+    private $notification;
+    private $accessChecker;
+    private $message;
+    private $jwtManager;
+
     public function __construct(
         UserRepository $userRepository,
         SerializerInterface $serializer,
@@ -45,7 +56,8 @@ class UsersController extends AbstractController
         RequestService $request,
         NotificationService $notification,
         AccessCheckerService $accessChecker,
-        MessageService $message
+        MessageService $message,
+        JWTTokenManagerInterface $jwtManager
     ) {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -54,6 +66,7 @@ class UsersController extends AbstractController
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
         $this->message = $message;
+        $this->jwtManager = $jwtManager;
     }
 
     // USER URI's
@@ -66,9 +79,44 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @Route("/login/{provider}", name="user_login_provider", methods={"POST"})
+     */
+    public function getLoginProviderAction(Request $request, String $provider)
+    {
+        $credential = $this->request->get($request, 'credential');
+
+        $client = new \Google\Client();
+        $payload = $client->verifyIdToken($credential);
+        $google = $payload['sub'];
+
+        // Buscamos un usuario con el id de google y si no hay buscamos por el email
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['google' => $google]);
+        if (is_null($user)) {
+            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $payload['email']]);
+            // si ya existía le seteamos el id de google
+            if (!is_null($user)) {
+                $user->setGoogle($google);
+            }
+        }
+
+        // el login con credential devuelve un objeto con el parámetro token que es la credencial
+        if (!is_null($user)) {
+            $user->setLastLogin();
+            $this->em->persist($user);
+            $this->em->flush();
+
+            $token = $this->jwtManager->create($user);
+
+            return new JsonResponse(['token' => $token]);
+        } else {
+            throw new HttpException(400, "Error: No existe ningún usuario con estos datos.");
+        }
+    }
+
+    /**
      * @Route("/register", name="user_register", methods={"POST"})
      */
-    public function registerAction(Request $request, UserPasswordEncoderInterface $encoder, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordHasherInterface $passwordHasher, \Swift_Mailer $mailer)
     {
         // throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
 
@@ -80,15 +128,14 @@ class UsersController extends AbstractController
         $meet = $this->request->get($request, 'meet', false);
         $referral = $this->request->get($request, 'referral', false);
         $mailing = $this->request->get($request, 'mailing', false);
-
         $birthday = \DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]);
+        $provider = $this->request->get($request, 'provider', false);
+        $credential = $this->request->get($request, 'credential', false);
 
         if (is_null($this->em->getRepository(\App\Entity\User::class)->findOneByUsernameOrEmail($username, $email))) {
             $user = new User();
-            $user->setEmail($email);
             $user->setUsername($username);
             $user->setName($username);
-            $user->setPassword($encoder->encodePassword($user, $password));
             $user->setBirthday($birthday);
             $user->setGender($gender);
             $user->setLovegender(!empty($lovegender) ? $lovegender : []);
@@ -106,6 +153,25 @@ class UsersController extends AbstractController
             $user->setVerificationCode();
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
+            if (empty($provider)) {
+                $user->setEmail($email);
+                $user->setPassword($passwordHasher->hashPassword($user, $password));
+            } else {
+                $user->setPassword(password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT));
+                switch ($provider) {
+                    case 'google':
+                        $client = new \Google\Client();
+                        $payload = $client->verifyIdToken($credential);
+
+                        if ($payload['email'] == $email) {
+                            $user->setEmail($email);
+                            $user->setGoogle($payload['sub']);
+                        } else {
+                            throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
+                        }
+                        break;
+                }
+            }
             try {
 
                 $this->em->persist($user);
@@ -599,7 +665,7 @@ class UsersController extends AbstractController
                     $this->renderView(
                         "emails/registration.html.twig",
                         [
-                            'username' => $this->getUser()->getUsername(),
+                            'username' => $this->getUser()->getUserIdentifier(),
                             'code' => $this->getUser()->getVerificationCode()
                         ]
                     ),
@@ -686,7 +752,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/recover", name="recover-password", methods={"PUT"})
      */
-    public function recoverPasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
+    public function recoverPasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
         $verificationCode = $this->request->get($request, "verification_code");
 
@@ -697,7 +763,7 @@ class UsersController extends AbstractController
         }
 
         if (!is_null($user)) {
-            $user->setPassword($encoder->encodePassword($user, $this->request->get($request, 'password')));
+            $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'password')));
             $user->setVerificationCode(null);
             $this->em->persist($user);
             $this->em->flush();
@@ -712,12 +778,12 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/password", name="change-password", methods={"PUT"})
      */
-    public function changePasswordAction(Request $request, UserPasswordEncoderInterface $encoder)
+    public function changePasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
         $user = $this->getUser();
 
-        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "old_password"))) {
-            $user->setPassword($encoder->encodePassword($user, $this->request->get($request, 'new_password')));
+        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "old_password"))) {
+            $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'new_password')));
 
             $this->em->persist($user);
             $this->em->flush();
@@ -790,9 +856,9 @@ class UsersController extends AbstractController
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
                 $message = (new \Swift_Message('Nuevo usuario bloqueado'))
-                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
+                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUserIdentifier()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha bloqueado al usuario <a href='https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
+                    ->setBody("El usuario " . $this->getUser()->getUserIdentifier() . " ha bloqueado al usuario <a href='https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
@@ -852,9 +918,9 @@ class UsersController extends AbstractController
             if (!empty($note)) {
                 // Enviar email al administrador informando del motivo
                 $message = (new \Swift_Message('Nuevo usuario reportado'))
-                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
+                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUserIdentifier()])
                     ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
+                    ->setBody("El usuario " . $this->getUser()->getUserIdentifier() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
 
                 if (0 === $mailer->send($message)) {
                     throw new HttpException(400, "Error al enviar el email con motivo del reporte");
@@ -934,7 +1000,7 @@ class UsersController extends AbstractController
     {
         try {
             $fromUser = $this->getUser();
-            if ($fromUser->getUsername() !== 'frikiradar') {
+            if ($fromUser->getUserIdentifier() !== 'frikiradar') {
                 $viewUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
 
                 $newView = new ViewUser();
@@ -974,7 +1040,7 @@ class UsersController extends AbstractController
                     $this->renderView(
                         "emails/two-step.html.twig",
                         [
-                            'username' => $this->getUser()->getUsername(),
+                            'username' => $this->getUser()->getUserIdentifier(),
                             'code' => $this->getUser()->getVerificationCode()
                         ]
                     ),
@@ -1049,11 +1115,11 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/disable", name="disable", methods={"PUT"})
      */
-    public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
+    public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordHasherInterface $passwordHasher)
     {
         $user = $this->getUser();
 
-        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "password"))) {
+        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
             try {
                 // ponemos usuario en disable
                 $user->setActive(false);
@@ -1065,10 +1131,10 @@ class UsersController extends AbstractController
 
                 if (!empty($this->request->get($request, 'note'))) {
                     // Enviar email al administrador informando del motivo
-                    $message = (new \Swift_Message($user->getUsername() . ' ha desactivado su cuenta.'))
-                        ->setFrom([$user->getEmail() => $user->getUsername()])
+                    $message = (new \Swift_Message($user->getUserIdentifier() . ' ha desactivado su cuenta.'))
+                        ->setFrom([$user->getEmail() => $user->getUserIdentifier()])
                         ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                        ->setBody("El usuario " . $user->getUsername() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
+                        ->setBody("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
 
                     if (0 === $mailer->send($message)) {
                         // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
@@ -1087,11 +1153,11 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/remove-account", name="remove_account", methods={"PUT"})
      */
-    public function removeAccountAction(Request $request, \Swift_Mailer $mailer, UserPasswordEncoderInterface $encoder)
+    public function removeAccountAction(Request $request, \Swift_Mailer $mailer, UserPasswordHasherInterface $passwordHasher)
     {
         $user = $this->getUser();
 
-        if ($user->getPassword() == $encoder->encodePassword($user, $this->request->get($request, "password"))) {
+        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
             try {
                 // borramos archivos de chat
                 $this->em->getRepository(\App\Entity\Chat::class)->deleteChatsFiles($user);
@@ -1118,7 +1184,7 @@ class UsersController extends AbstractController
                     rmdir($folder);
                 }
 
-                $username = $user->getUsername();
+                $username = $user->getUserIdentifier();
                 // Eliminamos usuario
                 $this->em->remove($user);
                 $this->em->flush();

@@ -5,146 +5,101 @@ namespace App\Entity;
 use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=EventRepository::class)
- */
+#[ORM\Entity(repositoryClass: EventRepository::class)]
 class Event
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['default', 'message'])]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="events", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Groups({"default"})
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Groups(['default'])]
     private $creator;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['default', 'message'])]
     private $title;
 
-    /**
-     * @ORM\Column(type="text")
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'text')]
+    #[Groups(['default', 'message'])]
     private $description;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['default', 'message'])]
     private $date;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default'])]
     private $recursion;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default'])]
     private $slug;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default', 'message'])]
     private $image;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default'])]
     private $url;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['default', 'message'])]
     private $date_end;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['default'])]
     private $minage;
 
-    /**
-     * @ORM\Column(type="string", length=70)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 70)]
+    #[Groups(['default', 'message'])]
     private $type;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups(['default', 'message'])]
     private $country;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups(['default', 'message'])]
     private $city;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default', 'message'])]
     private $address;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=true)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    #[Groups(['default', 'message'])]
     private $postal_code;
 
-    /**
-     * @ORM\Column(type="string", length=70, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 70, nullable: true)]
+    #[Groups(['default'])]
     private $contact_phone;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"default"})
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['default'])]
     private $contact_email;
 
-    /**
-     * @Groups({"default"})
-     */
+    #[Groups(['default'])]
     private $page;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="events")
-     * @Groups({"default", "message"})
-     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
+    #[Groups(['default', 'message'])]
     private $participants;
 
-    /**
-     * @ORM\Column(type="string", length=70)
-     * @Groups({"default", "message"})
-     */
+    #[ORM\Column(type: 'string', length: 70)]
+    #[Groups(['default', 'message'])]
     private $status;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @Groups({"default"})
-     */
+    
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[Groups(['default'])]
     private $user;
 
     public function __construct()
