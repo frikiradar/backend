@@ -87,15 +87,15 @@ class UsersController extends AbstractController
 
         $client = new \Google\Client();
         $payload = $client->verifyIdToken($credential);
-        $google = $payload['sub'];
+        $google_id = $payload['sub'];
 
         // Buscamos un usuario con el id de google y si no hay buscamos por el email
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['google' => $google]);
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['google_id' => $google_id]);
         if (is_null($user)) {
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $payload['email']]);
             // si ya existía le seteamos el id de google
             if (!is_null($user)) {
-                $user->setGoogleId($google);
+                $user->setGoogleId($google_id);
             }
         }
 
