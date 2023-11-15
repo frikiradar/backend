@@ -234,7 +234,7 @@ class User implements UserInterface
 
     #[ORM\Column(type: "json", nullable: true)]
     #[Groups("default")]
-    private array $config = [];
+    private ?array $config = [];
 
     #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: "user", orphanRemoval: true)]
     private $notifications;
