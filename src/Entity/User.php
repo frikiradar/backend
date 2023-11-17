@@ -99,7 +99,7 @@ class User implements UserInterface
 
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups('default')]
-    private $connection;
+    private ?array $connection;
 
     #[ORM\Column(type: 'point', nullable: true)]
     #[Ignore]
@@ -643,8 +643,12 @@ class User implements UserInterface
         return $this->connection;
     }
 
-    public function setConnection(array $connection): self
+    public function setConnection(?array $connection): self
     {
+        if (empty($connection)) {
+            $this->connection = [];
+            return $this;
+        }
         $connections = [
             "Amistad",
             "Sexo ocasional",
