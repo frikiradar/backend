@@ -19,7 +19,7 @@ class RequestService
 
             foreach ($arrayData as $key => $value) {
                 if ($fieldName === $key) {
-                    return $value;
+                    return trim($value);
                 }
             }
 
@@ -31,12 +31,12 @@ class RequestService
         }
 
         if (is_array($requestData) && array_key_exists($fieldName, $requestData)) {
-            return $requestData[$fieldName];
+            return trim($requestData[$fieldName]);
         }
 
         $requestQuery = $request->query->get($fieldName);
         if (!empty($requestQuery)) {
-            return $requestQuery;
+            return trim($requestQuery);
         }
 
         if ($isRequired) {
