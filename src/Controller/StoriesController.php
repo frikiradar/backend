@@ -272,11 +272,13 @@ class StoriesController extends AbstractController
                 $this->em->persist($newLike);
                 $this->em->flush();
 
-                $title = $user->getName();
-                $text = "A " . $user->getName() . " le ha gustado tu historia.";
-                $url = "/tabs/explore/story/" . $story->getId();
+                if ($user->getId() !== $story->getUser()->getId()) {
+                    $title = $user->getName();
+                    $text = "A " . $user->getName() . " le ha gustado tu historia.";
+                    $url = "/tabs/explore/story/" . $story->getId();
 
-                $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
+                    $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
+                }
             }
 
             $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $this->request->get($request, 'story')));
