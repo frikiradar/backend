@@ -9,9 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
-use App\Entity\Radar;
 use Doctrine\ORM\EntityManagerInterface;
-use mysqli;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -59,6 +57,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         ;
     }
      */
+
+    public function loadUserByIdentifier(string $identifier): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.username = :identifier OR u.email = :identifier')
+            ->setParameter('identifier', $identifier)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
     public function loadUserByUsername($usernameOrEmail)
     {

@@ -5,12 +5,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Entity\Tag;
-use App\Entity\Chat;
-use App\Entity\Category;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
-use App\Entity\Config;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
@@ -19,7 +15,6 @@ use App\Service\RequestService;
 use App\Service\AccessCheckerService;
 use App\Service\MessageService;
 use Doctrine\ORM\EntityManagerInterface;
-use Kreait\Firebase\Util\JSON;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,13 +35,10 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
  */
 class UsersController extends AbstractController
 {
-    private $userRepository;
     private $serializer;
     private $em;
     private $request;
-    private $notification;
     private $accessChecker;
-    private $message;
     private $jwtManager;
 
     public function __construct(

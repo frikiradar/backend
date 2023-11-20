@@ -252,6 +252,10 @@ class User implements UserInterface
     #[Groups("default")]
     private ?string $google_id = null;
 
+    #[ORM\Column(type: "json", nullable: true)]
+    #[Groups("default")]
+    private ?array $languages = [];
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1469,6 +1473,18 @@ class User implements UserInterface
     public function setGoogleId(?string $google_id): static
     {
         $this->google_id = $google_id;
+
+        return $this;
+    }
+
+    public function getLanguages(): ?array
+    {
+        return $this->languages;
+    }
+
+    public function setLanguages(?array $languages): static
+    {
+        $this->languages = $languages;
 
         return $this;
     }
