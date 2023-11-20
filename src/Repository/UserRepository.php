@@ -608,6 +608,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     private function orientation2Genre($orientation, $connection)
     {
+        if (!is_array($connection)) {
+            $connection = [];
+        }
         if (in_array('Amistad', $connection)) {
             return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
         } else {
