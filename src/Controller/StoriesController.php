@@ -29,6 +29,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class StoriesController extends AbstractController
 {
+    private $em;
+    private $serializer;
+    private $request;
+    private $accessChecker;
+    private $notification;
+    private $security;
+
     public function __construct(
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
@@ -352,10 +359,12 @@ class StoriesController extends AbstractController
                 if (count((array) $mentions) > 0) {
                     foreach ($mentions as $mention) {
                         $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $mention));
-                        $title = $user->getUsername() . ' te ha mencionado en una historia.';
-                        $this->notification->set($user, $toUser, $title, $text, $url, 'story');
+                        if ($toUser->getId() !== $user->getId()) {
+                            $title = $user->getUserIdentifier() . ' te ha mencionado en una historia.';
+                            $this->notification->set($user, $toUser, $title, $text, $url, 'story');
+                        }
                     }
-                } else {
+                } elseif ($user->getId() !== $story->getUser()->getId()) {
                     $title = $user->getName() . ' ha comentado tu historia.';
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
                 }
