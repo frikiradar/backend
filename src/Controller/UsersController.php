@@ -375,6 +375,7 @@ class UsersController extends AbstractController
                 }
                 $user->setCity($city);
                 $user->setBirthday(\DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]));
+                $user->setLanguages($this->request->get($request, 'languages'));
                 $user->setGender($this->request->get($request, 'gender'));
                 $user->setOrientation($this->request->get($request, 'orientation'));
                 $user->setPronoun($this->request->get($request, 'pronoun'));
