@@ -358,7 +358,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $recent = date('Y-m-d H:i:s', strtotime('-12 hours', strtotime(date("Y-m-d H:i:s"))));
+            $recent = date('Y-m-d H:i:s', strtotime('-6 hours', strtotime(date("Y-m-d H:i:s"))));
             $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :recent')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
@@ -368,7 +368,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->setMaxResults($limit)
                 ->getResult();
 
-            $users = $this->enhanceUsers($users, $user);
+            $users = $this->enhanceUsers($users, $user, 'radar-cards');
             // shuffle($users);
             return array_slice($users, 0);
         } else {
@@ -377,7 +377,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->getQuery()
                 ->getResult();
 
-            $users = $this->enhanceUsers($users, $user);
+            $users = $this->enhanceUsers($users, $user, 'radar-list');
             usort($users, function ($a, $b) {
                 return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
             });
@@ -486,7 +486,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return array_slice($users, $offset, $limit);
     }
 
-    public function enhanceUsers($users, User $fromUser, $type = 'radar')
+    public function enhanceUsers($users, User $fromUser, $type = 'radar-cards')
     {
         $today = new \DateTime;
         $fromTags = $fromUser->getTags();
@@ -494,6 +494,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         foreach ($users as $key => $u) {
             $users[$key]['avatar'] = $u['avatar'] ?: $this->getDefaultAvatar($u['username']);
+            if ($type == 'radar-cards') {
+                $toUser = $this->findOneBy(array('id' => $u['id']));
+                $users[$key]['images'] = $toUser->getImages();
+            }
             $users[$key]['age'] = (int) $u['age'];
             if (!$u['hide_location']) {
                 $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
