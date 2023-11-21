@@ -434,6 +434,8 @@ class User implements UserInterface
 
         if (in_array($gender, $genders)) {
             $this->gender = $gender;
+        } else {
+            $this->gender = "";
         }
 
         return $this;
@@ -518,6 +520,8 @@ class User implements UserInterface
 
         if (in_array($relationship, $relationsips)) {
             $this->relationship = $relationship;
+        } else {
+            $this->relationship = "";
         }
 
         return $this;
@@ -543,6 +547,8 @@ class User implements UserInterface
 
         if (in_array($orientation, $orientations)) {
             $this->orientation = $orientation;
+        } else {
+            $this->orientation = "";
         }
 
         return $this;
@@ -559,6 +565,8 @@ class User implements UserInterface
 
         if (in_array($pronoun, $pronouns)) {
             $this->pronoun = $pronoun;
+        } else {
+            $this->pronoun = "";
         }
 
         return $this;
@@ -575,6 +583,8 @@ class User implements UserInterface
 
         if (in_array($status, $statuses)) {
             $this->status = $status;
+        } else {
+            $this->status = "";
         }
 
         return $this;
@@ -1484,6 +1494,35 @@ class User implements UserInterface
 
     public function setLanguages(?array $languages): static
     {
+        $languagesList = [
+            "es",
+            "en",
+            "ja",
+            "ko",
+            "zh",
+            "pt",
+            "fr",
+            "de",
+            "it",
+            "ru",
+            "ca",
+            "eu",
+            "gl",
+            "sv",
+            "no",
+            "da",
+            "fi",
+            "pl",
+            "ro",
+            "ar"
+        ];
+
+        foreach ($languages as $key => $l) {
+            if (!in_array($l, $languagesList)) {
+                unset($languages[$key]);
+            }
+        }
+
         $this->languages = $languages;
 
         return $this;
