@@ -145,6 +145,7 @@ class UsersController extends AbstractController
             $user->setVerificationCode();
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
+            $user->setLanguages(["es"]);
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
