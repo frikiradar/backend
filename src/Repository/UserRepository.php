@@ -304,57 +304,57 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
-        // if (!$this->security->isGranted('ROLE_DEMO')) {
-        $lastLogin = 45;
-        $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
-        if (!$options || ($options && $options['range'] === true)) {
-            $dql
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->setParameter('minage', $user->getMinage() ?: 18)
-                ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999);
-        } else {
-            $dql
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->setParameter('minage', 18)
-                ->setParameter('maxage', 150.9999);
-        }
-        if (!$options || ($options && $options['identity'] === true)) {
-            $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
-                ->setParameter('lovegender', $user->getLovegender() ?: 1);
-        }
-        if (!$options || ($options && $options['connection'] === true)) {
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $lastLogin = 45;
+            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
+            if (!$options || ($options && $options['range'] === true)) {
+                $dql
+                    ->andHaving('age BETWEEN :minage AND :maxage')
+                    ->setParameter('minage', $user->getMinage() ?: 18)
+                    ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999);
+            } else {
+                $dql
+                    ->andHaving('age BETWEEN :minage AND :maxage')
+                    ->setParameter('minage', 18)
+                    ->setParameter('maxage', 150.9999);
+            }
+            if (!$options || ($options && $options['identity'] === true)) {
+                $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                    ->setParameter('lovegender', $user->getLovegender() ?: 1);
+            }
+            if (!$options || ($options && $options['connection'] === true)) {
+                $dql->andWhere(
+                    in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                        "u.connection NOT LIKE '%Amistad%'"
+                );
+            }
             $dql->andWhere(
-                in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
-                    "u.connection NOT LIKE '%Amistad%'"
-            );
-        }
-        $dql->andWhere(
-            $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
-                'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                    'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-        )
-            ->andWhere('u.id <> :id')
-            ->andWhere('u.avatar IS NOT NULL')
-            ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
-            ->andWhere('u.active = 1')
-            ->andWhere('u.banned <> 1')
-            ->andWhere('u.coordinates IS NOT NULL')
-            ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)")
-            ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
-            ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
-            ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-            ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-            ->setParameter('id', $user->getId())
-            ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
-            ->setParameter('lastlogin', $lastLogin);
-        /*} else {
+                $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
+                    'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                        'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+            )
+                ->andWhere('u.id <> :id')
+                ->andWhere('u.avatar IS NOT NULL')
+                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
+                ->andWhere('u.active = 1')
+                ->andWhere('u.banned <> 1')
+                ->andWhere('u.coordinates IS NOT NULL')
+                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)")
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
+                ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
+                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                ->setParameter('id', $user->getId())
+                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
+                ->setParameter('lastlogin', $lastLogin);
+        } else {
             $dql
                 ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.id <> :id')
                 ->setParameters(array(
                     'id' => $user->getId()
                 ));
-        }*/
+        }
 
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
