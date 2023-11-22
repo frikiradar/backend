@@ -97,7 +97,6 @@ class StoryRepository extends ServiceEntityRepository
             $dql = "SELECT s FROM App:Story s WHERE s.user NOT IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
-            return $query->getResult();
         }
 
         return $query->getResult();
