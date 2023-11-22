@@ -89,12 +89,12 @@ class StoryRepository extends ServiceEntityRepository
     {
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.roles NOT LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1 OR u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday);
         } else {
-            $dql = "SELECT s FROM App:Story s WHERE s.user NOT IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
         }
