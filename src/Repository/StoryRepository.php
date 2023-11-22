@@ -6,6 +6,7 @@ use App\Entity\Story;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * @method Story|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,9 +16,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class StoryRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security)
     {
         parent::__construct($registry, Story::class);
+        $this->security = $security;
     }
 
     // /**
@@ -85,11 +87,19 @@ class StoryRepository extends ServiceEntityRepository
 
     public function getAllStories()
     {
-        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1) ORDER BY s.time_creation ASC";
-        $query = $this->getEntityManager()
-            ->createQuery($dql)
-            ->setParameter('yesterday', $yesterday);
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+            $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1 AND u.roles NOT LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $query = $this->getEntityManager()
+                ->createQuery($dql)
+                ->setParameter('yesterday', $yesterday);
+        } else {
+            $dql = "SELECT s FROM App:Story s WHERE s.user NOT IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $query = $this->getEntityManager()
+                ->createQuery($dql);
+            return $query->getResult();
+        }
+
         return $query->getResult();
     }
 }
