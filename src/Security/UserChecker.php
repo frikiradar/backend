@@ -5,17 +5,21 @@ namespace App\Security;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserChecker extends AbstractController implements UserCheckerInterface
 {
-    public function __construct(\Swift_Mailer $mailer, EntityManagerInterface $entityManager)
+    private $em;
+    private $mailer;
+
+    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
-        $this->mailer = $mailer;
         $this->em = $entityManager;
+        $this->mailer = $mailer;
     }
 
     public function checkPreAuth(UserInterface $user)
@@ -46,7 +50,7 @@ class UserChecker extends AbstractController implements UserCheckerInterface
         }
     }
 
-    public function checkPostAuth(UserInterface $user)
+    public function checkPostAuth(UserInterface $user): void
     {
         if (!$user instanceof User) {
             return;
@@ -60,21 +64,19 @@ class UserChecker extends AbstractController implements UserCheckerInterface
             //Generamos y enviamos por email
             $user->setVerificationCode();
 
-            $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($user->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/registration.html.twig",
-                        [
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ),
-                    'text/html'
-                );
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($user->getVerificationCode() . ' es tu código de activación de FrikiRadar')
+                ->html($this->renderView(
+                    "emails/registration.html.twig",
+                    [
+                        'username' => $user->getUserIdentifier(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
 
-            $this->mailer->send($message);
+            $this->mailer->send($email);
         }
 
         $this->em->persist($user);

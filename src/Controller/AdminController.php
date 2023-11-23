@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
-use App\Service\FileUploaderService;
 use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,17 +13,20 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Class AdminController
- * Require ROLE_MASTER for only this controller method.
- * @IsGranted("ROLE_MASTER")
  * @Route(path="/api")
  */
+#[IsGranted("ROLE_MASTER")]
 class AdminController extends AbstractController
 {
+    private $request;
+    private $serializer;
+    private $em;
+    private $notification;
+
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,

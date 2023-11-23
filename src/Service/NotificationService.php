@@ -11,13 +11,18 @@ use Doctrine\ORM\EntityManagerInterface;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\WebPushConfig;
-use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class NotificationService extends AbstractController
 {
-    public function __construct(Swift_Mailer $mailer, EntityManagerInterface $em)
+    private $mailer;
+    private $em;
+
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
     {
         $this->mailer = $mailer;
         $this->em = $em;
@@ -178,24 +183,22 @@ class NotificationService extends AbstractController
                 }
 
                 //Enviar email en lugar de notificación
-                $message = (new \Swift_Message($title))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setTo($toUser->getEmail())
-                    ->setBody(
-                        $this->renderView(
-                            "emails/notification.html.twig",
-                            [
-                                'username' => $toUser->getUsername(),
-                                'title' => $title,
-                                'text' => $text,
-                                'code' => $toUser->getMailingCode(),
-                                'url' => 'https://frikiradar.app' . $url
-                            ]
-                        ),
-                        'text/html'
-                    );
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address($toUser->getEmail(), $toUser->getUsername()))
+                    ->subject($title)
+                    ->html($this->renderView(
+                        "emails/notification.html.twig",
+                        [
+                            'username' => $toUser->getUsername(),
+                            'title' => $title,
+                            'text' => $text,
+                            'code' => $toUser->getMailingCode(),
+                            'url' => 'https://frikiradar.app' . $url
+                        ]
+                    ));
 
-                $this->mailer->send($message);
+                $this->mailer->send($email);
             }
         }
     }

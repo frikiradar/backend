@@ -10,6 +10,8 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -20,13 +22,16 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  */
 class UserRepository extends ServiceEntityRepository implements UserLoaderInterface
 {
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification, \Swift_Mailer $mailer)
+    private $security;
+    private $em;
+    private $notification;
+
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
         $this->em = $entityManager;
         $this->notification = $notification;
-        $this->mailer = $mailer;
     }
 
     // /**
@@ -665,7 +670,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $query->getResult();
     }
 
-    public function banUser(User $toUser, $reason, $days, $hours)
+    public function banUser(User $toUser, $reason, $days, $hours, MailerInterface $mailer)
     {
         $chat = new Chat();
         $fromUser = $this->findOneBy(array('username' => 'frikiradar'));
@@ -715,12 +720,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
         // Enviamos email avisando
-        $message = (new \Swift_Message('Nuevo usuario baneado'))
-            ->setFrom([$fromUser->getEmail() => $fromUser->getUsername()])
-            ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-            ->setBody("El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text, 'text/html');
+        $email = (new Email())
+            ->from($fromUser->getEmail())
+            ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+            ->subject('Nuevo usuario baneado')
+            ->html("<p>El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text . "</p>");
 
-        if (0 === $this->mailer->send($message)) {
+        if (0 === $mailer->send($email)) {
             // throw new HttpException(400, "Error al enviar el email avisando el bug");
         }
     }

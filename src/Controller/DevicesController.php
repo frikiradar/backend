@@ -2,7 +2,6 @@
 // src/Controller/DevicesController.php
 namespace App\Controller;
 
-use App\Repository\DeviceRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,6 +11,9 @@ use App\Entity\Device;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -22,14 +24,17 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class DevicesController extends AbstractController
 {
+    private $serializer;
+    private $em;
+    private $request;
+    private $security;
+
     public function __construct(
-        DeviceRepository $deviceRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         RequestService $request,
         AuthorizationCheckerInterface $security
     ) {
-        $this->deviceRepository = $deviceRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
@@ -42,7 +47,9 @@ class DevicesController extends AbstractController
     public function getDevices()
     {
         try {
-            $response = $this->getUser()->getDevices();
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $response = $user->getDevices();
             return new Response($this->serializer->serialize($response, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los dispositivos - Error: {$ex->getMessage()}");
@@ -97,28 +104,26 @@ class DevicesController extends AbstractController
     /**
      * @Route("/v1/unknown-device", name="unknown_device", methods={"PUT"})
      */
-    public function unknownDeviceAction(Request $request, \Swift_Mailer $mailer)
+    public function unknownDeviceAction(Request $request, MailerInterface $mailer)
     {
         try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $device = $this->request->get($request, "device");
 
-            $message = (new \Swift_Message('Aviso de inicio de sesión desde un dispositivo desconocido'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($this->getUser()->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/unknown-device.html.twig",
-                        [
-                            'username' => $this->getUser()->getUsername(),
-                            'device' => $device['device_name']
-                        ]
-                    ),
-                    'text/html'
-                );
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject('Aviso de inicio de sesión desde un dispositivo desconocido')
+                ->html($this->renderView(
+                    "emails/unknown-device.html.twig",
+                    [
+                        'username' => $user->getUsername(),
+                        'device' => $device['device_name']
+                    ]
+                ));
 
-            if (0 === $mailer->send($message)) {
-                throw new \RuntimeException('Unable to send email');
-            }
+            $mailer->send($email);
 
             $response = [
                 'code' => 200,
@@ -143,6 +148,7 @@ class DevicesController extends AbstractController
     public function deleteAction(int $id)
     {
         try {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $user, 'id' => $id));
             $user->removeDevice($device);

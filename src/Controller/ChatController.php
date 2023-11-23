@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
-use App\Repository\ChatRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use App\Service\MessageService;
@@ -12,15 +11,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Service\NotificationService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 
 /**
  * Class ChatController
@@ -29,21 +30,24 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class ChatController extends AbstractController
 {
+    private $em;
+    private $serializer;
+    private $request;
+    private $message;
+    private $accessChecker;
+    private $security;
+
     public function __construct(
-        ChatRepository $chatRepository,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         RequestService $request,
-        NotificationService $notification,
         MessageService $message,
         AccessCheckerService $accessChecker,
         AuthorizationCheckerInterface $security
     ) {
-        $this->chatRepository = $chatRepository;
         $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
-        $this->notification = $notification;
         $this->message = $message;
         $this->accessChecker = $accessChecker;
         $this->security = $security;
@@ -52,8 +56,9 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/chat", name="put_chat", methods={"PUT"})
      */
-    public function put(Request $request, \Swift_Mailer $mailer)
+    public function put(Request $request, MailerInterface $mailer)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $id = $this->request->get($request, "touser");
         if ($fromUser->isBanned() && $id !== 1) {
@@ -101,14 +106,13 @@ class ChatController extends AbstractController
 
             if ($fromUser->isBanned() && $id == 1) {
                 // Enviamos email avisando
-                $message = (new \Swift_Message('Mensaje de usuario baneado'))
-                    ->setFrom([$fromUser->getEmail() => $fromUser->getName()])
-                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario baneado " . $fromUser->getName() . " ha escrito un mensaje: " . $text, 'text/html');
+                $email = (new Email())
+                    ->from($fromUser->getEmail())
+                    ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->subject('Mensaje de usuario baneado')
+                    ->html("El usuario baneado " . $fromUser->getName() . " ha escrito un mensaje: " . $text);
 
-                if (0 === $mailer->send($message)) {
-                    // throw new HttpException(400, "Error al enviar el email avisando el bug");
-                }
+                $mailer->send($email);
             }
 
             return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
@@ -122,6 +126,7 @@ class ChatController extends AbstractController
      */
     public function upload(Request $request)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         try {
@@ -214,6 +219,7 @@ class ChatController extends AbstractController
      */
     public function getChats()
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         // $cache = new FilesystemAdapter();
@@ -241,6 +247,7 @@ class ChatController extends AbstractController
      */
     public function getChatAction(int $id, Request $request)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.chat.' . $fromUser->getId());
@@ -305,6 +312,7 @@ class ChatController extends AbstractController
     public function markAsReadAction(int $id)
     {
         try {
+            /** @var \App\Entity\User $toUser */
             $toUser = $this->getUser();
             $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
             if ($chat->getTouser()->getId() == $toUser->getId()) {
@@ -332,6 +340,7 @@ class ChatController extends AbstractController
      */
     public function writingAction(Request $request)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, "touser")));
 
@@ -361,10 +370,12 @@ class ChatController extends AbstractController
     public function updateMessageAction(Request $request)
     {
         try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
             $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
-            if ($chat->getFromuser()->getId() == $this->getUser()->getId() && !$chat->isModded()) {
+            if ($chat->getFromuser()->getId() == $user->getId() && !$chat->isModded()) {
                 $chat->setText($text);
                 $chat->setEdited(1);
                 $this->em->persist($chat);
@@ -392,6 +403,7 @@ class ChatController extends AbstractController
      */
     public function deleteMessageAction(int $id)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
@@ -461,6 +473,7 @@ class ChatController extends AbstractController
     public function deleteAction(int $id)
     {
         try {
+            /** @var \App\Entity\User $fromUser */
             $fromUser = $this->getUser();
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $fromUser->getId());
@@ -479,6 +492,7 @@ class ChatController extends AbstractController
      */
     public function chatsConfigAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $config = $user->getConfig();
         $chatsConfig = $this->request->get($request, "chats_config");
@@ -493,7 +507,7 @@ class ChatController extends AbstractController
     /**
      * @Route("/v1/report-chat", name="report_chat", methods={"PUT"})
      */
-    public function putReportAction(Request $request, \Swift_Mailer $mailer)
+    public function putReportAction(Request $request, MailerInterface $mailer)
     {
         try {
             /**
@@ -507,14 +521,15 @@ class ChatController extends AbstractController
             $room = $chat['conversationId'];
 
             // Enviar email al administrador informando del motivo
-            $message = (new \Swift_Message('Nuevo mensaje reportado'))
-                ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUsername()])
-                ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setBody("El usuario " . $this->getUser()->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Contenido del mensaje: " . $text, 'text/html');
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->subject('Nuevo mensaje reportado')
+                ->html("El usuario " . $user->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Contenido del mensaje: " . $text);
 
-            if (0 === $mailer->send($message)) {
-                throw new HttpException(400, "Error al enviar el email con motivo del reporte");
-            }
+            $mailer->send($email);
 
             return new Response($this->serializer->serialize("Mensaje reportado correctamente", "json"));
         } catch (Exception $ex) {

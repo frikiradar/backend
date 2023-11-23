@@ -3,55 +3,42 @@
 namespace App\Service;
 
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
-use ipinfo\ipinfo\IPinfo;
+use Geocoder\Provider\GoogleMaps\GoogleMaps;
+use Geocoder\Query\GeocodeQuery;
+use GuzzleHttp\Client as GuzzleClient;
 
 class GeolocationService
 {
-    private $httpClient;
-
     public function __construct()
     {
-        $this->httpClient = new \Http\Adapter\Guzzle6\Client();
     }
 
-    public function geolocate($ip, $latitude = '', $longitude = ''): Point
+    public function geolocate($latitude = '', $longitude = '', $city = '', $country = ''): Point
     {
         $coords = new Point(0, 0);
-        $coords
-            ->setLatitude($latitude)
-            ->setLongitude($longitude);
 
         if ($latitude && $longitude) {
             $coords
                 ->setLatitude($latitude)
                 ->setLongitude($longitude);
         } else {
-            $access_token = 'fa54c07e390886';
-            $client = new IPinfo($access_token);
-            $details = $client->getDetails($ip);
+            // $key = 'AIzaSyB3VlBHlrMY6Vw9wf3_oGE2PcI7QV9EBT8';
+            $httpClient = new GuzzleClient();
+            // $provider = new GoogleMaps($httpClient, null, $key);
+            $provider = new \Geocoder\Provider\ArcGISOnline\ArcGISOnline($httpClient);
+            $geocoder = new \Geocoder\StatefulGeocoder($provider, 'en');
 
-            if (!is_null($details->latitude)) {
+            $result = $geocoder->geocodeQuery(GeocodeQuery::create($city . ', ' . $country));
+            $coordinates = $result->first()->getCoordinates();
+            $latitude = $coordinates->getLatitude();
+            $longitude = $coordinates->getLongitude();
+
+            if ($latitude && $longitude) {
                 $coords
-                    ->setLatitude($details->latitude)
-                    ->setLongitude($details->longitude);
+                    ->setLatitude($latitude)
+                    ->setLongitude($longitude);
             }
         }
         return $coords;
     }
-
-    /*public function getLocationName($latitude, $longitude): array
-    {
-        try {
-            $google = new \Geocoder\Provider\GoogleMaps\GoogleMaps($this->httpClient, null, 'AIzaSyDgwnkBNx1TrvQO0GZeMmT6pNVvG3Froh0');
-            $geocoder = new \Geocoder\StatefulGeocoder($google, 'es');
-            $result = $geocoder->reverseQuery(ReverseQuery::fromCoordinates($latitude, $longitude));
-            if (!$result->isEmpty()) {
-                return ["locality" => $result->first()->getLocality() ?: $result->first()->getSubLocality(), "country" => $result->first()->getCountry()->getCode()];
-            } else {
-                return false;
-            }
-        } catch (Exception $ex) {
-            // throw new HttpException(400, "No se ha podido obtener la localidad - Error: {$ex->getMessage()}");
-        }
-    }*/
 }

@@ -3,28 +3,24 @@
 namespace App\Service;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Config\Definition\Exception\Exception;
-use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class CronCommandService
 {
     protected $io;
     protected $o;
 
-    private $mailer;
     private $em;
     private $twig;
-    private $notification;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        \Swift_Mailer $mailer,
-        NotificationService $notification
     ) {
         $this->em = $entityManager;
-        $this->mailer = $mailer;
-        $this->notification = $notification;
     }
 
     public function setIo($i, $o)
@@ -33,30 +29,29 @@ class CronCommandService
         $this->o = $o;
     }
 
-    public function reminder($days)
+    public function reminder($days, MailerInterface $mailer)
     {
         if ($days >= 15) {
             // Recoge los usuarios que hace exactamente $days días que no se conectan
             $users = $this->em->getRepository(\App\Entity\User::class)->getUsersByLastLogin($days);
             foreach ($users as $user) {
-                $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setTo($user->getEmail())
-                    ->setBody(
-                        $this->twig->render(
-                            "emails/reminder.html.twig",
-                            [
-                                'username' => $user->getUsername(),
-                                'code' => $user->getMailingCode(),
-                            ]
-                        ),
-                        'text/html'
-                    );
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address($user->getEmail(), $user->getUsername()))
+                    ->subject('¡FrikiRadar te extraña 💔!')
+                    ->html($this->twig->render(
+                        "emails/reminder.html.twig",
+                        [
+                            'username' => $user->getUsername(),
+                            'code' => $user->getMailingCode(),
+                        ]
+                    ));
 
-                if (0 === $this->mailer->send($message)) {
-                    $this->o->writeln("Error al enviar el email a " . $user->getUsername() . " (" . $user->getEmail() . ")");
-                } else {
+                try {
+                    $mailer->send($email);
                     $this->o->writeln("Email enviado a " . $user->getUsername() . " (" . $user->getEmail() . ")");
+                } catch (TransportExceptionInterface $e) {
+                    $this->o->writeln("Error al enviar el email a " . $user->getUsername() . " (" . $user->getEmail() . ")");
                 }
             }
         } else {

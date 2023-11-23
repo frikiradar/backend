@@ -4,16 +4,19 @@ namespace App\Service;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Service\GeolocationService;
 use App\Service\NotificationService;
 use App\Entity\User;
-use DateTime;
+use Geocoder\Query\GeocodeQuery;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Box;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use GuzzleHttp\Client as GuzzleClient;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class LabCommandService
 {
@@ -27,14 +30,10 @@ class LabCommandService
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        GeolocationService $geolocation,
         NotificationService $notification,
-        \Swift_Mailer $mailer
     ) {
         $this->em = $entityManager;
-        $this->geolocation = $geolocation;
         $this->notification = $notification;
-        $this->mailer = $mailer;
     }
 
     public function setIo($i, $o)
@@ -45,29 +44,20 @@ class LabCommandService
 
     public function geolocation()
     {
-        /*$users = $this->em->getRepository(\App\Entity\User::class)->findAll();
+        $city = 'Badajoz';
+        $country = 'España';
+        // $key = 'AIzaSyB3VlBHlrMY6Vw9wf3_oGE2PcI7QV9EBT8';
+        $httpClient = new GuzzleClient();
+        // $provider = new GoogleMaps($httpClient, null, $key);
+        $provider = new \Geocoder\Provider\ArcGISOnline\ArcGISOnline($httpClient);
+        $geocoder = new \Geocoder\StatefulGeocoder($provider, 'en');
 
-        foreach ($users as $user) {
-            if ((empty($user->getCountry()) || empty($user->getLocation())) && !empty($user->getCoordinates())) {
-                $latitude = $user->getCoordinates()->getLatitude();
-                $longitude = $user->getCoordinates()->getLongitude();
+        $result = $geocoder->geocodeQuery(GeocodeQuery::create($city . ', ' . $country));
+        $coordinates = $result->first()->getCoordinates();
+        $latitude = $coordinates->getLatitude();
+        $longitude = $coordinates->getLongitude();
 
-                $location = $this->geolocation->getLocationName($latitude, $longitude);
-                $country = $location["country"];
-                $location = $location["locality"];
-                if (!empty($country)) {
-                    $user->setCountry($country);
-                }
-                if (!empty($location)) {
-                    $user->setLocation($location);
-                }
-                $this->em->persist($user);
-                $this->em->flush();
-
-                $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $country . " - " . $location);
-                $this->em->detach($user);
-            }
-        }*/
+        $this->o->writeln($latitude . " - " . $longitude);
     }
 
     public function notification($fromId, $toId)
@@ -80,24 +70,24 @@ class LabCommandService
         $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
     }
 
-    public function email($toId)
+    public function email($toId, MailerInterface $mailer)
     {
         $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $toId));
-        $message = (new \Swift_Message('¡FrikiRadar te extraña 💔!'))
-            ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-            ->setTo($user->getEmail())
-            ->setBody(
-                $this->twig->render(
-                    "emails/registration.html.twig",
-                    [
-                        'username' => $user->getUsername(),
-                        'code' => 'ABCDEF'
-                    ]
-                ),
-                'text/html'
-            );
+        $email = (new Email())
+            ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+            ->to(new Address($user->getEmail(), $user->getUsername()))
+            ->subject('¡FrikiRadar te extraña 💔!')
+            ->html($this->twig->render(
+                "emails/registration.html.twig",
+                [
+                    'username' => $user->getUsername(),
+                    'code' => 'ABCDEF'
+                ]
+            ));
 
-        if (0 === $this->mailer->send($message)) {
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
             throw new \RuntimeException('Unable to send email');
         }
     }

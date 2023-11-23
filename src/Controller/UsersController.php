@@ -4,16 +4,13 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
 use App\Service\GeolocationService;
-use App\Service\NotificationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
-use App\Service\MessageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +24,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 /**
  * Class UsersController
@@ -42,22 +42,16 @@ class UsersController extends AbstractController
     private $jwtManager;
 
     public function __construct(
-        UserRepository $userRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         RequestService $request,
-        NotificationService $notification,
         AccessCheckerService $accessChecker,
-        MessageService $message,
-        JWTTokenManagerInterface $jwtManager
+        JWTTokenManagerInterface $jwtManager,
     ) {
-        $this->userRepository = $userRepository;
         $this->serializer = $serializer;
         $this->em = $entityManager;
         $this->request = $request;
-        $this->notification = $notification;
         $this->accessChecker = $accessChecker;
-        $this->message = $message;
         $this->jwtManager = $jwtManager;
     }
 
@@ -108,7 +102,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/register", name="user_register", methods={"POST"})
      */
-    public function registerAction(Request $request, UserPasswordHasherInterface $passwordHasher, \Swift_Mailer $mailer)
+    public function registerAction(Request $request, UserPasswordHasherInterface $passwordHasher, MailerInterface $mailer)
     {
         // throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
 
@@ -169,34 +163,31 @@ class UsersController extends AbstractController
 
                 $this->em->persist($user);
 
-                $message = (new \Swift_Message($user->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setTo($user->getEmail())
-                    ->setBody(
-                        $this->renderView(
-                            "emails/registration.html.twig",
-                            [
-                                'username' => $user->getUsername(),
-                                'code' => $user->getVerificationCode()
-                            ]
-                        ),
-                        'text/html'
-                    );
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address($user->getEmail(), $user->getUsername()))
+                    ->subject($user->getVerificationCode() . ' es tu código de activación de FrikiRadar')
+                    ->html($this->renderView(
+                        "emails/registration.html.twig",
+                        [
+                            'username' => $user->getUsername(),
+                            'code' => $user->getVerificationCode()
+                        ]
+                    ));
 
-                if (0 === $mailer->send($message)) {
-                    throw new HttpException(400, "La dirección de email introducida no es válida");
-                }
+                $mailer->send($email);
 
                 $this->em->flush();
 
                 return new Response($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']));
             } catch (Exception $ex) {
-                $message = (new \Swift_Message('Error de registro de usuario'))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("Datos del usuario:<br>" . $this->serializer->serialize($user, "json", ['groups' => 'default']) . "<br>" . $ex->getMessage());
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->subject('Error de registro de usuario')
+                    ->html("Datos del usuario:<br>" . $this->serializer->serialize($user, "json", ['groups' => 'default']) . "<br>" . $ex->getMessage());
 
-                $mailer->send($message);
+                $mailer->send($email);
                 throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
             }
         } else {
@@ -210,6 +201,7 @@ class UsersController extends AbstractController
      */
     public function getAction()
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $user->setImages($user->getImages());
 
@@ -238,6 +230,7 @@ class UsersController extends AbstractController
         }
 
         try {
+            /** @var \App\Entity\User $fromUser */
             $userCache = $cache->getItem('users.get.' . $fromUser->getId() . '.' . $id);
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
@@ -356,13 +349,11 @@ class UsersController extends AbstractController
      */
     public function putAction(Request $request)
     {
-        /**
-         * @var User
-         */
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            if ($this->request->get($request, 'id') == $this->getUser()->getId()) {
+            if ($this->request->get($request, 'id') == $user->getId()) {
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
                 $cache->deleteItem('users.get.' . $user->getId());
@@ -413,22 +404,28 @@ class UsersController extends AbstractController
      */
     public function putCoordinatesAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $geolocation = new GeolocationService();
-            $coords = $geolocation->geolocate($user->getIP(), $this->request->get($request, 'latitude'), $this->request->get($request, 'longitude'));
-            $user->setCoordinates($coords);
-            $this->em->persist($user);
-            $this->em->flush();
+            $latitude = $this->request->get($request, 'latitude', false);
+            $longitude = $this->request->get($request, 'longitude', false);
+            $city = $this->request->get($request, 'city', false);
+            $country = $this->request->get($request, 'country', false);
 
-            /*$location = $geolocation->getLocationName($coords->getLatitude(), $coords->getLongitude());
-            if ($location) {
-                $user->setLocation($location["locality"]);
-                $user->setCountry($location["country"]);
+            if (!$longitude && !$latitude && $country && $city && $user->getCountry() == $country && $user->getCity() == $city) {
+                $coords = $user->getCoordinates();
+            } else {
+                $geolocation = new GeolocationService();
+                $coords = $geolocation->geolocate($latitude, $longitude, $city, $country);
+                if ($country && $city) {
+                    $user->setCountry($country);
+                    $user->setCity($city);
+                }
+                $user->setCoordinates($coords);
                 $this->em->persist($user);
                 $this->em->flush();
-            }*/
+            }
 
             return new Response($this->serializer->serialize($coords, "json"));
         } catch (Exception $ex) {
@@ -442,6 +439,7 @@ class UsersController extends AbstractController
      */
     public function uploadAvatarAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $avatar = $request->files->get('avatar');
@@ -507,6 +505,7 @@ class UsersController extends AbstractController
      */
     public function updateAvatarAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
@@ -541,6 +540,7 @@ class UsersController extends AbstractController
      */
     public function deleteAvatarAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
@@ -644,31 +644,28 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/activation", name="activation-email", methods={"GET"})
      */
-    public function activationEmailAction(\Swift_Mailer $mailer)
+    public function activationEmailAction(MailerInterface $mailer)
     {
         try {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setVerificationCode();
             $this->em->persist($user);
             $this->em->flush();
 
-            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es tu código de activación de FrikiRadar'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($this->getUser()->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/registration.html.twig",
-                        [
-                            'username' => $this->getUser()->getUserIdentifier(),
-                            'code' => $this->getUser()->getVerificationCode()
-                        ]
-                    ),
-                    'text/html'
-                );
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($user->getVerificationCode() . ' es tu código de activación de FrikiRadar')
+                ->html($this->renderView(
+                    "emails/registration.html.twig",
+                    [
+                        'username' => $this->getUser()->getUserIdentifier(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
 
-            if (0 === $mailer->send($message)) {
-                throw new HttpException(400, "Error al enviar el email de activación");
-            }
+            $mailer->send($email);
 
             return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
         } catch (Exception $ex) {
@@ -683,7 +680,9 @@ class UsersController extends AbstractController
     public function activationAction(Request $request)
     {
         $verificationCode = $this->request->get($request, "verification_code");
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
         if (!is_null($user)) {
             $user->setActive(true);
             $user->setVerificationCode(null);
@@ -700,7 +699,7 @@ class UsersController extends AbstractController
     /**
      * @Route("/recover", name="recover-email", methods={"POST"})
      */
-    public function requestEmailAction(Request $request, \Swift_Mailer $mailer)
+    public function requestEmailAction(Request $request, MailerInterface $mailer)
     {
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('email' => $this->request->get($request, 'username')));
@@ -714,24 +713,19 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             try {
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address($user->getEmail(), $user->getUsername()))
+                    ->subject($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar')
+                    ->html($this->renderView(
+                        "emails/recover.html.twig",
+                        [
+                            'username' => $user->getUsername(),
+                            'code' => $user->getVerificationCode()
+                        ]
+                    ));
 
-                $message = (new \Swift_Message($user->getVerificationCode() . ' es el código para recuperar tu contraseña de FrikiRadar'))
-                    ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setTo($user->getEmail())
-                    ->setBody(
-                        $this->renderView(
-                            "emails/recover.html.twig",
-                            [
-                                'username' => $user->getUsername(),
-                                'code' => $user->getVerificationCode()
-                            ]
-                        ),
-                        'text/html'
-                    );
-
-                if (0 === $mailer->send($message)) {
-                    throw new HttpException(400, "Error al enviar el email de recuperación");
-                }
+                $mailer->send($email);
 
                 return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
             } catch (Exception $ex) {
@@ -774,6 +768,7 @@ class UsersController extends AbstractController
      */
     public function changePasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "old_password"))) {
@@ -794,6 +789,7 @@ class UsersController extends AbstractController
      */
     public function changeEmailAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if ($user->getEmail() == $this->request->get($request, "old_email")) {
@@ -815,6 +811,7 @@ class UsersController extends AbstractController
     public function changeUsernameAction(Request $request)
     {
         try {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setUsername($this->request->get($request, 'new_username'));
 
@@ -831,32 +828,33 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/block", name="block", methods={"PUT"})
      */
-    public function putBlockAction(Request $request, \Swift_Mailer $mailer)
+    public function putBlockAction(Request $request, MailerInterface $mailer)
     {
         try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $blockUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
 
             $newBlock = new BlockUser();
             $newBlock->setDate(new \DateTime);
-            $newBlock->setFromUser($this->getUser());
+            $newBlock->setFromUser($user);
             $newBlock->setBlockUser($blockUser);
             $newBlock->setNote($this->request->get($request, 'note', false));
             $this->em->persist($newBlock);
             $this->em->flush();
 
             $cache = new FilesystemAdapter();
-            $cache->deleteItem('users.get.' . $this->getUser()->getId() . '.' . $blockUser->getId());
+            $cache->deleteItem('users.get.' . $user->getId() . '.' . $blockUser->getId());
 
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
-                $message = (new \Swift_Message('Nuevo usuario bloqueado'))
-                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUserIdentifier()])
-                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUserIdentifier() . " ha bloqueado al usuario <a href='https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote(), 'text/html');
+                $email = (new Email())
+                    ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->subject('Nuevo usuario bloqueado')
+                    ->html("El usuario " . $user->getUserIdentifier() . " ha bloqueado al usuario <a href='https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
 
-                if (0 === $mailer->send($message)) {
-                    // throw new HttpException(400, "Error al enviar el email con motivo del bloqueo");
-                }
+                $mailer->send($email);
             }
 
             return new Response($this->serializer->serialize("Usuario bloqueado correctamente", "json"));
@@ -872,6 +870,8 @@ class UsersController extends AbstractController
     public function removeBlockAction(int $id)
     {
         try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $blockUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
 
             $block = $this->em->getRepository(\App\Entity\BlockUser::class)->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
@@ -879,9 +879,9 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             $cache = new FilesystemAdapter();
-            $cache->deleteItem('users.get.' . $this->getUser()->getId() . '.' . $blockUser->getId());
+            $cache->deleteItem('users.get.' . $user->getId() . '.' . $blockUser->getId());
 
-            $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($this->getUser());
+            $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($user);
 
             return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
         } catch (Exception $ex) {
@@ -903,22 +903,23 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/report", name="report", methods={"PUT"})
      */
-    public function putReportAction(Request $request, \Swift_Mailer $mailer)
+    public function putReportAction(Request $request, MailerInterface $mailer)
     {
         try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $reportUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
             $note = $this->request->get($request, 'note', false);
 
             if (!empty($note)) {
                 // Enviar email al administrador informando del motivo
-                $message = (new \Swift_Message('Nuevo usuario reportado'))
-                    ->setFrom([$this->getUser()->getEmail() => $this->getUser()->getUserIdentifier()])
-                    ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                    ->setBody("El usuario " . $this->getUser()->getUserIdentifier() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note, 'text/html');
+                $email = (new Email())
+                    ->from([$user->getEmail(), $user->getUsername()])
+                    ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->subject('Nuevo usuario reportado')
+                    ->html("El usuario " . $user->getUserIdentifier() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note);
 
-                if (0 === $mailer->send($message)) {
-                    throw new HttpException(400, "Error al enviar el email con motivo del reporte");
-                }
+                $mailer->send($email);
             }
 
             return new Response($this->serializer->serialize("Usuario reportado correctamente", "json"));
@@ -1019,31 +1020,28 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/two-step", name="two_step", methods={"GET"})
      */
-    public function twoStepAction(\Swift_Mailer $mailer)
+    public function twoStepAction(MailerInterface $mailer)
     {
         try {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setVerificationCode();
             $this->em->persist($user);
             $this->em->flush();
 
-            $message = (new \Swift_Message($this->getUser()->getVerificationCode() . ' es el código para verificar tu inicio de sesión'))
-                ->setFrom(['hola@frikiradar.com' => 'FrikiRadar'])
-                ->setTo($this->getUser()->getEmail())
-                ->setBody(
-                    $this->renderView(
-                        "emails/two-step.html.twig",
-                        [
-                            'username' => $this->getUser()->getUserIdentifier(),
-                            'code' => $this->getUser()->getVerificationCode()
-                        ]
-                    ),
-                    'text/html'
-                );
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($user->getVerificationCode() . ' es el código para verificar tu inicio de sesión')
+                ->html($this->renderView(
+                    "emails/two-step.html.twig",
+                    [
+                        'username' => $user->getUserIdentifier(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
 
-            if (0 === $mailer->send($message)) {
-                throw new \RuntimeException('Unable to send email');
-            }
+            $mailer->send($email);
 
             $response = [
                 'code' => 200,
@@ -1068,14 +1066,16 @@ class UsersController extends AbstractController
     public function verifyLoginAction(Request $request)
     {
         $verificationCode = $this->request->get($request, "verification_code");
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->getUser()->getId(), 'verificationCode' => $verificationCode));
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
         if (!is_null($user)) {
             try {
                 $user->setVerificationCode(null);
                 $this->em->persist($user);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
+                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu sesión: " . $e);
             }
@@ -1109,8 +1109,9 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/disable", name="disable", methods={"PUT"})
      */
-    public function disableAction(Request $request, \Swift_Mailer $mailer, UserPasswordHasherInterface $passwordHasher)
+    public function disableAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
@@ -1125,14 +1126,13 @@ class UsersController extends AbstractController
 
                 if (!empty($this->request->get($request, 'note'))) {
                     // Enviar email al administrador informando del motivo
-                    $message = (new \Swift_Message($user->getUserIdentifier() . ' ha desactivado su cuenta.'))
-                        ->setFrom([$user->getEmail() => $user->getUserIdentifier()])
-                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                        ->setBody("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
+                    $email = (new Email())
+                        ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                        ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                        ->subject($user->getUserIdentifier() . ' ha desactivado su cuenta.')
+                        ->html("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'));
 
-                    if (0 === $mailer->send($message)) {
-                        // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
-                    }
+                    $mailer->send($email);
                 }
 
                 return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
@@ -1147,8 +1147,9 @@ class UsersController extends AbstractController
     /**
      * @Route("/v1/remove-account", name="remove_account", methods={"PUT"})
      */
-    public function removeAccountAction(Request $request, \Swift_Mailer $mailer, UserPasswordHasherInterface $passwordHasher)
+    public function removeAccountAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
@@ -1185,14 +1186,13 @@ class UsersController extends AbstractController
 
                 if (!empty($this->request->get($request, 'note'))) {
                     // Enviar email al administrador informando del motivo
-                    $message = (new \Swift_Message($username . ' ha eliminado su cuenta.'))
-                        ->setFrom([$user->getEmail() => $username])
-                        ->setTo(['hola@frikiradar.com' => 'FrikiRadar'])
-                        ->setBody("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'), 'text/html');
+                    $email = (new Email())
+                        ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                        ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                        ->subject($username . ' ha eliminado su cuenta.')
+                        ->html("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'));
 
-                    if (0 === $mailer->send($message)) {
-                        // throw new HttpException(400, "Error al enviar el email con motivo de la desactivación");
-                    }
+                    $mailer->send($email);
                 }
 
                 $data = [
