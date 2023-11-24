@@ -30,7 +30,7 @@
     "lexik/jwt-authentication-bundle": "^2.10",
     "nelmio/cors-bundle": "^2.1",
     "patreon/patreon": "^1.0",
-    "php-ffmpeg/php-ffmpeg": "^0.18.0",
+    "php-ffmpeg/php-ffmpeg": "^1.1",
     "php-http/message": "^1.16",
     "phpdocumentor/reflection-docblock": "^5.2",
     "psr/http-factory": "^1.0",

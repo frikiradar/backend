@@ -1,7 +1,4 @@
 {
-    "alchemy/binary-driver": {
-        "version": "v5.2.0"
-    },
     "api-platform/api-pack": {
         "version": "v1.3.0"
     },
@@ -240,9 +237,6 @@
         "files": [
             "config/packages/nelmio_cors.yaml"
         ]
-    },
-    "neutron/temporary-filesystem": {
-        "version": "3.0"
     },
     "nikic/php-parser": {
         "version": "v4.10.4"
