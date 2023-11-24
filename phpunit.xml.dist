@@ -18,7 +18,7 @@
 
         <!-- ###+ symfony/framework-bundle ### -->
         <env name="APP_ENV" value="dev"/>
-        <env name="APP_SECRET" value="0ff6c62972ddaf9735b277ee1a0014a3"/>
+        <env name="APP_SECRET" value="92d42b56f5f09dbd927e69da11d89876"/>
         <!-- ###- symfony/framework-bundle ### -->
 
         <!-- ###+ doctrine/doctrine-bundle ### -->
