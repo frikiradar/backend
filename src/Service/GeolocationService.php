@@ -15,29 +15,32 @@ class GeolocationService
     public function geolocate($latitude = '', $longitude = '', $city = '', $country = ''): Point
     {
         $coords = new Point(0, 0);
+        $coords
+            ->setLatitude($latitude)
+            ->setLongitude($longitude);
+
+        return $coords;
+    }
+
+    public function manualGeolocate($city = '', $country = ''): Point
+    {
+        $coords = new Point(0, 0);
+
+        $httpClient = new GuzzleClient();
+        $provider = new \Geocoder\Provider\ArcGISOnline\ArcGISOnline($httpClient);
+        $geocoder = new \Geocoder\StatefulGeocoder($provider, 'en');
+
+        $result = $geocoder->geocodeQuery(GeocodeQuery::create($city . ', ' . $country));
+        $coordinates = $result->first()->getCoordinates();
+        $latitude = $coordinates->getLatitude();
+        $longitude = $coordinates->getLongitude();
 
         if ($latitude && $longitude) {
             $coords
                 ->setLatitude($latitude)
                 ->setLongitude($longitude);
-        } else {
-            // $key = 'AIzaSyB3VlBHlrMY6Vw9wf3_oGE2PcI7QV9EBT8';
-            $httpClient = new GuzzleClient();
-            // $provider = new GoogleMaps($httpClient, null, $key);
-            $provider = new \Geocoder\Provider\ArcGISOnline\ArcGISOnline($httpClient);
-            $geocoder = new \Geocoder\StatefulGeocoder($provider, 'en');
-
-            $result = $geocoder->geocodeQuery(GeocodeQuery::create($city . ', ' . $country));
-            $coordinates = $result->first()->getCoordinates();
-            $latitude = $coordinates->getLatitude();
-            $longitude = $coordinates->getLongitude();
-
-            if ($latitude && $longitude) {
-                $coords
-                    ->setLatitude($latitude)
-                    ->setLongitude($longitude);
-            }
         }
+
         return $coords;
     }
 }

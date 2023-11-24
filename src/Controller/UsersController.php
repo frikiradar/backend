@@ -387,18 +387,36 @@ class UsersController extends AbstractController
         try {
             $latitude = $this->request->get($request, 'latitude', false);
             $longitude = $this->request->get($request, 'longitude', false);
+
+            $geolocation = new GeolocationService();
+            $coords = $geolocation->geolocate($latitude, $longitude);
+            $user->setCoordinates($coords);
+            $this->em->persist($user);
+            $this->em->flush();
+
+            return new JsonResponse($this->serializer->serialize($coords, "json"), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
+        }
+    }
+
+    #[Route('/v1/manual-geolocation', name: 'manual_geolocation', methods: ['PUT'])]
+    public function putManualGeolocationAction(Request $request)
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        try {
             $city = $this->request->get($request, 'city', false);
             $country = $this->request->get($request, 'country', false);
 
-            if (!$longitude && !$latitude && $country && $city && $user->getCountry() == $country && $user->getCity() == $city) {
+            if ($user->getCountry() == $country && $user->getCity() == $city) {
                 $coords = $user->getCoordinates();
             } else {
                 $geolocation = new GeolocationService();
-                $coords = $geolocation->geolocate($latitude, $longitude, $city, $country);
-                if ($country && $city) {
-                    $user->setCountry($country);
-                    $user->setCity($city);
-                }
+                $coords = $geolocation->manualGeolocate($city, $country);
+                $user->setCountry($country);
+                $user->setCity($city);
                 $user->setCoordinates($coords);
                 $this->em->persist($user);
                 $this->em->flush();
