@@ -27,7 +27,7 @@
     "ipinfo/ipinfo": "^2.1",
     "kreait/firebase-bundle": "^3.1",
     "kreait/firebase-php": "^5.25",
-    "lexik/jwt-authentication-bundle": "^2.10",
+    "lexik/jwt-authentication-bundle": "^2.19",
     "nelmio/cors-bundle": "^2.1",
     "patreon/patreon": "^1.0",
     "php-ffmpeg/php-ffmpeg": "^1.1",
