@@ -11,7 +11,7 @@
     "api-platform/core": "^2.6",
     "composer/package-versions-deprecated": "1.11.99.1",
     "creof/doctrine2-spatial": "^1.2",
-    "doctrine/annotations": "^1.11",
+    "doctrine/annotations": "^2.0",
     "doctrine/doctrine-bundle": "^2.11",
     "doctrine/doctrine-migrations-bundle": "^3.3",
     "doctrine/orm": "^2.16",
