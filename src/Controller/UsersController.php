@@ -771,7 +771,7 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "old_password"))) {
+        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "old_password"))) {
             $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'new_password')));
 
             $this->em->persist($user);
