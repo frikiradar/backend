@@ -206,7 +206,7 @@ class LabCommandService
             ];
             $this->o->writeln("Eliminado correctamente");
         } catch (Exception $ex) {
-            $this->o->writeln("Error al eliminar: ${$ex}");
+            $this->o->writeln("Error al eliminar: {$ex}");
         }
     }
 
