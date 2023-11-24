@@ -1114,7 +1114,7 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
+        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "password"))) {
             try {
                 // ponemos usuario en disable
                 $user->setActive(false);
@@ -1152,7 +1152,7 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "password"))) {
+        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "password"))) {
             try {
                 // borramos archivos de chat
                 $this->em->getRepository(\App\Entity\Chat::class)->deleteChatsFiles($user);
