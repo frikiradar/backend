@@ -129,14 +129,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.roles',
                 'u.public',
                 'u.coordinates',
-                "(GLength(
-                        LineStringFromWKB(
-                            LineString(
-                                u.coordinates,
-                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                            )
-                        )
-                    ) * 100) distance"
+                "(SpDistance(
+                    u.coordinates,
+                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                ) * 111.045) distance"
             ))
             ->andWhere('u.id = :id');
         if (!$this->security->isGranted('ROLE_DEMO')) {
@@ -297,14 +293,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.connection',
                 'u.avatar',
                 'u.thumbnail',
-                "(GLength(
-                        LineStringFromWKB(
-                            LineString(
-                                u.coordinates,
-                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                            )
-                        )
-                    ) * 100) distance"
+                "(SpDistance(
+                    u.coordinates,
+                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                ) * 111.045) distance"
             ));
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
@@ -415,14 +407,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.hide_connection',
                 'u.avatar',
                 'u.thumbnail',
-                "(GLength(
-                        LineStringFromWKB(
-                            LineString(
-                                u.coordinates,
-                                GeomFromText('Point(" . $longitude . " " . $latitude . ")')
-                            )
-                        )
-                    ) * 100) distance"
+                "(SpDistance(
+                    u.coordinates,
+                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                ) * 111.045) distance"
             ));
 
         if (!$this->security->isGranted('ROLE_DEMO')) {

@@ -22,10 +22,10 @@ doctrine:
       profiling_collect_backtrace: '%kernel.debug%'
     url: "%env(resolve:DATABASE_URL)%"
     types:
-      geometry: CrEOF\Spatial\DBAL\Types\GeometryType
-      point: CrEOF\Spatial\DBAL\Types\Geometry\PointType
-      polygon: CrEOF\Spatial\DBAL\Types\Geometry\PolygonType
-      linestring: CrEOF\Spatial\DBAL\Types\Geometry\LineStringType
+      geometry:   LongitudeOne\Spatial\DBAL\Types\GeometryType
+      point:      LongitudeOne\Spatial\DBAL\Types\Geometry\PointType
+      polygon:    LongitudeOne\Spatial\DBAL\Types\Geometry\PolygonType
+      linestring: LongitudeOne\Spatial\DBAL\Types\Geometry\LineStringType
     mapping_types:
       point: point
       _text: string
@@ -45,11 +45,9 @@ doctrine:
         alias: App
     dql:
       numeric_functions:
-        point: CrEOF\Spatial\ORM\Query\AST\Functions\MySql\Point
-        glength: CrEOF\Spatial\ORM\Query\AST\Functions\MySql\GLength
-        linestringfromwkb: CrEOF\Spatial\ORM\Query\AST\Functions\MySql\LineStringFromWKB
-        linestring: CrEOF\Spatial\ORM\Query\AST\Functions\MySql\LineString
-        geomfromtext: CrEOF\Spatial\ORM\Query\AST\Functions\MySql\GeomFromText
+        point: LongitudeOne\Spatial\ORM\Query\AST\Functions\MySql\Point
+        spdistance: LongitudeOne\Spatial\ORM\Query\AST\Functions\MySql\SpDistance
+        stgeomfromtext: LongitudeOne\Spatial\ORM\Query\AST\Functions\Standard\StGeomFromText
 
 when@test:
     doctrine:

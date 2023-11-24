@@ -2,8 +2,7 @@
 // src/Service/GeolocationService.php
 namespace App\Service;
 
-use CrEOF\Spatial\PHP\Types\Geometry\Point;
-use Geocoder\Provider\GoogleMaps\GoogleMaps;
+use LongitudeOne\Spatial\PHP\Types\Geometry\Point;
 use Geocoder\Query\GeocodeQuery;
 use GuzzleHttp\Client as GuzzleClient;
 
