@@ -31,14 +31,17 @@ security:
         api:
             pattern: ^/api/v1
             stateless: true
+            anonymous: false
             provider: api_user_provider
-            jwt: ~
+            guard:
+                authenticators:
+                - lexik_jwt_authentication.jwt_token_authenticator
 
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/login/.*, roles: PUBLIC_ACCESS}
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/config, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/login/.*, roles: IS_AUTHENTICATED_ANONYMOUSLY}
+        - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/config, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/v1, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
