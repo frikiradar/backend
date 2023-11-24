@@ -23,11 +23,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 
-/**
- * Class ChatController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class ChatController extends AbstractController
 {
     private $em;
@@ -53,9 +49,7 @@ class ChatController extends AbstractController
         $this->security = $security;
     }
 
-    /**
-     * @Route("/v1/chat", name="put_chat", methods={"PUT"})
-     */
+    #[Route('/v1/chat', name: 'put_chat', methods: ['PUT'])]
     public function put(Request $request, MailerInterface $mailer)
     {
         /** @var \App\Entity\User $fromUser */
@@ -121,9 +115,7 @@ class ChatController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/chat-upload", name="chat_upload", methods={"POST"})
-     */
+    #[Route('/v1/chat-upload', name: 'chat_upload', methods: ['POST'])]
     public function upload(Request $request)
     {
         /** @var \App\Entity\User $fromUser */
@@ -214,9 +206,7 @@ class ChatController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/chats", name="get_chats", methods={"GET"})
-     */
+    #[Route('/v1/chats', name: 'get_chats', methods: ['GET'])]
     public function getChats()
     {
         /** @var \App\Entity\User $fromUser */
@@ -233,9 +223,7 @@ class ChatController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/chat/{id}", name="get_chat", methods={"GET"})
-     */
+    #[Route('/v1/chat/{id}', name: 'get_chat', methods: ['GET'])]
     public function getChatAction(int $id, Request $request)
     {
         /** @var \App\Entity\User $fromUser */
@@ -297,9 +285,7 @@ class ChatController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/read-chat/{id}", name="read_chat", methods={"GET"})
-     */
+    #[Route('/v1/read-chat/{id}', name: 'read_chat', methods: ['GET'])]
     public function markAsReadAction(int $id)
     {
         try {
@@ -326,9 +312,7 @@ class ChatController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/writing-chat", name="writing_chat", methods={"PUT"})
-     */
+    #[Route('/v1/writing-chat', name: 'writing_chat', methods: ['PUT'])]
     public function writingAction(Request $request)
     {
         /** @var \App\Entity\User $fromUser */
@@ -355,9 +339,7 @@ class ChatController extends AbstractController
         return new JsonResponse($data, 200);
     }
 
-    /**
-     * @Route("/v1/update-message", name="update_message", methods={"PUT"})
-     */
+    #[Route('/v1/update-message', name: 'update_message', methods: ['PUT'])]
     public function updateMessageAction(Request $request)
     {
         try {
@@ -389,9 +371,7 @@ class ChatController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/chat-message/{id}", name="delete_message", methods={"DELETE"})
-     */
+    #[Route('/v1/chat-message/{id}', name: 'delete_message', methods: ['DELETE'])]
     public function deleteMessageAction(int $id)
     {
         /** @var \App\Entity\User $user */
@@ -458,9 +438,7 @@ class ChatController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/chat/{id}", name="delete_chat", methods={"DELETE"})
-     */
+    #[Route('/v1/chat/{id}', name: 'delete_chat', methods: ['DELETE'])]
     public function deleteAction(int $id)
     {
         try {
@@ -478,9 +456,7 @@ class ChatController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/chats-config", name="chats_config", methods={"PUT"})
-     */
+    #[Route('/v1/chats-config', name: 'chats_config', methods: ['PUT'])]
     public function chatsConfigAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -495,9 +471,7 @@ class ChatController extends AbstractController
         return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/report-chat", name="report_chat", methods={"PUT"})
-     */
+    #[Route('/v1/report-chat', name: 'report_chat', methods: ['PUT'])]
     public function putReportAction(Request $request, MailerInterface $mailer)
     {
         try {

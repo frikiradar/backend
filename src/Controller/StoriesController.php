@@ -22,11 +22,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * Class StoriesController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class StoriesController extends AbstractController
 {
     private $em;
@@ -52,9 +48,7 @@ class StoriesController extends AbstractController
         $this->security = $security;
     }
 
-    /**
-     * @Route("/v1/stories", name="get_stories", methods={"GET"})
-     */
+    #[Route('/v1/stories', name: 'get_stories', methods: ['GET'])]
     public function getStoriesAction()
     {
         $user = $this->getUser();
@@ -63,9 +57,7 @@ class StoriesController extends AbstractController
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/stories-slug/{slug}", name="get_stories_slug", methods={"GET"})
-     */
+    #[Route('/v1/stories-slug/{slug}', name: 'get_stories_slug', methods: ['GET'])]
     public function getStoriesSlugAction(string $slug)
     {
         $user = $this->getUser();
@@ -75,9 +67,7 @@ class StoriesController extends AbstractController
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/all-stories", name="get_all_stories", methods={"GET"})
-     */
+    #[Route('/v1/all-stories', name: 'get_all_stories', methods: ['GET'])]
     public function getAllStoriesAction()
     {
         $user = $this->getUser();
@@ -87,9 +77,7 @@ class StoriesController extends AbstractController
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/user-stories/{id}", name="get_user_stories", methods={"GET"})
-     */
+    #[Route('/v1/user-stories/{id}', name: 'get_user_stories', methods: ['GET'])]
     public function getUserStoriesAction(int $id)
     {
         $cache = new FilesystemAdapter();
@@ -111,9 +99,7 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/story/{id}", name="get_story", methods={"GET"})
-     */
+    #[Route('/v1/story/{id}', name: 'get_story', methods: ['GET'])]
     public function getStoryAction(int $id)
     {
         $user = $this->getUser();
@@ -131,11 +117,10 @@ class StoriesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/story-upload", name="story_upload", methods={"POST"})
-     */
+    #[Route('/v1/story-upload', name: 'story_upload', methods: ['POST'])]
     public function upload(Request $request)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         try {
@@ -182,12 +167,11 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/view-story", name="view_story", methods={"PUT"})
-     */
+    #[Route('/v1/view-story', name: 'view_story', methods: ['PUT'])]
     public function putViewAction(Request $request)
     {
         try {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
             /**
              * @var Story
@@ -219,23 +203,20 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/delete-story/{id}", name="delete_story", methods={"DELETE"})
-     */
+    #[Route('/v1/delete-story/{id}', name: 'delete_story', methods: ['DELETE'])]
     public function removeStoryAction(int $id)
     {
         try {
-            /**
-             * @var Story
-             */
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
             if ($this->security->isGranted('ROLE_MASTER')) {
-                $cache->deleteItem('stories.get.' . $this->getUser()->getId());
+                $cache->deleteItem('stories.get.' . $user->getId());
             }
 
-            if ($story->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
+            if ($story->getUser()->getId() === $user->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $image = $story->getImage();
                 if ($image) {
                     $f = explode("/", $image);
@@ -260,11 +241,10 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/like-story", name="like_story", methods={"PUT"})
-     */
+    #[Route('/v1/like-story', name: 'like_story', methods: ['PUT'])]
     public function putLikeAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
@@ -299,9 +279,7 @@ class StoriesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/like-story/{id}", name="unlike_story", methods={"DELETE"})
-     */
+    #[Route('/v1/like-story/{id}', name: 'unlike_story', methods: ['DELETE'])]
     public function removeLikeAction(int $id)
     {
         $user = $this->getUser();
@@ -325,11 +303,10 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/comment-story", name="comment_story", methods={"PUT"})
-     */
+    #[Route('/v1/comment-story', name: 'comment_story', methods: ['PUT'])]
     public function putCommentAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         $this->accessChecker->checkAccess($user);
@@ -382,11 +359,10 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/like-comment", name="like_comment", methods={"PUT"})
-     */
+    #[Route('/v1/like-comment', name: 'like_comment', methods: ['PUT'])]
     public function putLikeCommentAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
@@ -427,11 +403,10 @@ class StoriesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/like-comment/{id}", name="unlike_comment", methods={"DELETE"})
-     */
+    #[Route('/v1/like-comment/{id}', name: 'unlike_comment', methods: ['DELETE'])]
     public function removeLikeCommentAction(int $id)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
@@ -464,17 +439,14 @@ class StoriesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/delete-comment/{id}", name="delete_comment", methods={"DELETE"})
-     */
+    #[Route('/v1/delete-comment/{id}', name: 'delete_comment', methods: ['DELETE'])]
     public function removeCommentAction(int $id)
     {
         try {
-            /**
-             * @var Comment
-             */
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $comment = $this->em->getRepository(\App\Entity\Comment::class)->findOneBy(array('id' => $id));
-            if ($comment->getUser()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_MASTER')) {
+            if ($comment->getUser()->getId() === $user->getId() || $this->security->isGranted('ROLE_MASTER')) {
                 $story = $comment->getStory();
                 $this->em->remove($comment);
                 $this->em->flush();
@@ -482,7 +454,7 @@ class StoriesController extends AbstractController
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('stories.get.' . $story->getUser()->getId());
                 if ($this->security->isGranted('ROLE_MASTER')) {
-                    $cache->deleteItem('stories.get.' . $this->getUser()->getId());
+                    $cache->deleteItem('stories.get.' . $user->getId());
                 }
 
                 return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);

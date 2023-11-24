@@ -28,11 +28,8 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
-/**
- * Class UsersController
- *
- * @Route(path="/api")
- */
+
+#[Route(path: '/api')]
 class UsersController extends AbstractController
 {
     private $serializer;
@@ -57,16 +54,12 @@ class UsersController extends AbstractController
 
     // USER URI's
 
-    /**
-     * @Route("/login", name="user_login", methods={"POST"})
-     */
+    #[Route('/login', name: 'user_login', methods: ['POST'])]
     public function getLoginAction()
     {
     }
 
-    /**
-     * @Route("/login/{provider}", name="user_login_provider", methods={"POST"})
-     */
+    #[Route('/login/{provider}', name: 'user_login_provider', methods: ['POST'])]
     public function getLoginProviderAction(Request $request, String $provider)
     {
         $credential = $this->request->get($request, 'credential');
@@ -99,9 +92,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/register", name="user_register", methods={"POST"})
-     */
+    #[Route('/register', name: 'user_register', methods: ['POST'])]
     public function registerAction(Request $request, UserPasswordHasherInterface $passwordHasher, MailerInterface $mailer)
     {
         // throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
@@ -196,9 +187,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/user", name="get_user", methods={"GET"})
-     */
+    #[Route('/v1/user', name: 'get_user', methods: ['GET'])]
     public function getAction()
     {
         /** @var \App\Entity\User $user */
@@ -213,9 +202,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/user/{id}", name="get_user_id", methods={"GET"})
-     */
+    #[Route('/v1/user/{id}', name: 'get_user_id', methods: ['GET'])]
     public function getUserAction($id)
     {
         $fromUser = $this->getUser();
@@ -267,9 +254,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/public-user/{id}", name="get_public_user", methods={"GET"})
-     */
+    #[Route('/public-user/{id}', name: 'get_public_user', methods: ['GET'])]
     public function getPublicUserAction($id)
     {
         $cache = new FilesystemAdapter();
@@ -303,9 +288,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/username/{username}", name="check_username", methods={"GET"})
-     */
+    #[Route('/username/{username}', name: 'check_username', methods: ['GET'])]
     public function checkUsernameAction(string $username)
     {
         try {
@@ -323,9 +306,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/check-login/{login}", name="check_login", methods={"GET"})
-     */
+    #[Route('/check-login/{login}', name: 'check_login', methods: ['GET'])]
     public function checkLoginAction(string $login)
     {
         $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL);
@@ -344,9 +325,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/user", name="update_user", methods={"PUT"})
-     */
+    #[Route('/v1/user', name: 'update_user', methods: ['PUT'])]
     public function putAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -399,9 +378,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/coordinates", name="coordinates", methods={"PUT"})
-     */
+    #[Route('/v1/coordinates', name: 'coordinates', methods: ['PUT'])]
     public function putCoordinatesAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -434,9 +411,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/avatar", name="avatar", methods={"POST"})
-     */
+    #[Route('/v1/avatar', name: 'avatar', methods: ['POST'])]
     public function uploadAvatarAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -500,9 +475,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/avatar", name="update_avatar", methods={"PUT"})
-     */
+    #[Route('/v1/avatar', name: 'update_avatar', methods: ['PUT'])]
     public function updateAvatarAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -535,9 +508,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/delete-avatar", name="delete_avatar", methods={"PUT"})
-     */
+    #[Route('/v1/delete-avatar', name: 'delete_avatar', methods: ['PUT'])]
     public function deleteAvatarAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -575,9 +546,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/radar", name="radar", methods={"PUT"})
-     */
+    #[Route('/v1/radar', name: 'radar', methods: ['PUT'])]
     public function getRadarUsers(Request $request)
     {
         $user = $this->getUser();
@@ -598,9 +567,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/search", name="search", methods={"POST"})
-     */
+    #[Route('/v1/search', name: 'search', methods: ['POST'])]
     public function searchAction(Request $request)
     {
         $user = $this->getUser();
@@ -618,9 +585,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/search-usernames/{query}", name="search_usernames", methods={"GET"})
-     */
+    #[Route('/v1/search-usernames/{query}', name: 'search_usernames', methods: ['GET'])]
     public function searchUsernames($query)
     {
         try {
@@ -632,9 +597,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/activation", name="activation-email", methods={"GET"})
-     */
+    #[Route('/v1/activation', name: 'activation-email', methods: ['GET'])]
     public function activationEmailAction(MailerInterface $mailer)
     {
         try {
@@ -665,9 +628,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/activation", name="activation", methods={"PUT"})
-     */
+    #[Route('/v1/activation', name: 'activation', methods: ['PUT'])]
     public function activationAction(Request $request)
     {
         $verificationCode = $this->request->get($request, "verification_code");
@@ -687,9 +648,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/recover", name="recover-email", methods={"POST"})
-     */
+    #[Route('/recover', name: 'recover-email', methods: ['POST'])]
     public function requestEmailAction(Request $request, MailerInterface $mailer)
     {
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
@@ -728,9 +687,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/recover", name="recover-password", methods={"PUT"})
-     */
+    #[Route('/recover', name: 'recover-password', methods: ['PUT'])]
     public function recoverPasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
         $verificationCode = $this->request->get($request, "verification_code");
@@ -754,9 +711,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/password", name="change-password", methods={"PUT"})
-     */
+    #[Route('/v1/password', name: 'change-password', methods: ['PUT'])]
     public function changePasswordAction(Request $request, UserPasswordHasherInterface $passwordHasher)
     {
         /** @var \App\Entity\User $user */
@@ -775,9 +730,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/email", name="change-email", methods={"PUT"})
-     */
+    #[Route('/v1/email', name: 'change-email', methods: ['PUT'])]
     public function changeEmailAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -796,9 +749,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/username", name="change-username", methods={"PUT"})
-     */
+    #[Route('/v1/username', name: 'change-username', methods: ['PUT'])]
     public function changeUsernameAction(Request $request)
     {
         try {
@@ -816,9 +767,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/block", name="block", methods={"PUT"})
-     */
+    #[Route('/v1/block', name: 'block', methods: ['PUT'])]
     public function putBlockAction(Request $request, MailerInterface $mailer)
     {
         try {
@@ -855,9 +804,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/block/{id}", name="unblock", methods={"DELETE"})
-     */
+    #[Route('/v1/block/{id}', name: 'unblock', methods: ['DELETE'])]
     public function removeBlockAction(int $id)
     {
         try {
@@ -881,9 +828,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/blocks", name="blocks", methods={"GET"})
-     */
+    #[Route('/v1/blocks', name: 'blocks', methods: ['GET'])]
     public function getBlocksAction()
     {
         $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($this->getUser());
@@ -891,9 +836,7 @@ class UsersController extends AbstractController
         return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/report", name="report", methods={"PUT"})
-     */
+    #[Route('/v1/report', name: 'report', methods: ['PUT'])]
     public function putReportAction(Request $request, MailerInterface $mailer)
     {
         try {
@@ -920,9 +863,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/hide", name="hide", methods={"PUT"})
-     */
+    #[Route('/v1/hide', name: 'hide', methods: ['PUT'])]
     public function putHideAction(Request $request)
     {
         try {
@@ -947,9 +888,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/hide/{id}", name="unhide", methods={"DELETE"})
-     */
+    #[Route('/v1/hide/{id}', name: 'unhide', methods: ['DELETE'])]
     public function removeHideAction(int $id)
     {
         try {
@@ -968,9 +907,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/hides", name="hides", methods={"GET"})
-     */
+    #[Route('/v1/hides', name: 'hides', methods: ['GET'])]
     public function getHidesAction()
     {
         $users = $this->em->getRepository(\App\Entity\HideUser::class)->getHideUsers($this->getUser());
@@ -979,9 +916,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/view", name="view", methods={"PUT"})
-     */
+    #[Route('/v1/view', name: 'view', methods: ['PUT'])]
     public function putViewAction(Request $request)
     {
         try {
@@ -1008,9 +943,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/two-step", name="two_step", methods={"GET"})
-     */
+    #[Route('/v1/two-step', name: 'two_step', methods: ['GET'])]
     public function twoStepAction(MailerInterface $mailer)
     {
         try {
@@ -1051,9 +984,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/two-step", name="verify_session", methods={"PUT"})
-     */
+    #[Route('/v1/two-step', name: 'verify_session', methods: ['PUT'])]
     public function verifyLoginAction(Request $request)
     {
         $verificationCode = $this->request->get($request, "verification_code");
@@ -1076,9 +1007,7 @@ class UsersController extends AbstractController
     }
 
 
-    /**
-     * @Route("/unsubscribe/{code}", name="unsubscribe_mailing", methods={"GET"})
-     */
+    #[Route('/unsubscribe/{code}', name: 'unsubscribe_mailing', methods: ['GET'])]
     public function unsubscribeMailing(string $code)
     {
         $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('mailing_code' => $code));
@@ -1097,9 +1026,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/disable", name="disable", methods={"PUT"})
-     */
+    #[Route('/v1/disable', name: 'disable', methods: ['PUT'])]
     public function disableAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher)
     {
         /** @var \App\Entity\User $user */
@@ -1135,9 +1062,7 @@ class UsersController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/remove-account", name="remove_account", methods={"PUT"})
-     */
+    #[Route('/v1/remove-account', name: 'remove_account', methods: ['PUT'])]
     public function removeAccountAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher)
     {
         /** @var \App\Entity\User $user */

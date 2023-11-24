@@ -18,11 +18,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-/**
- * Class TagsController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class TagsController extends AbstractController
 {
     private $tagRepository;
@@ -46,9 +42,7 @@ class TagsController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/tags", name="tags", methods={"POST"})
-     */
+    #[Route('/v1/tags', name: 'tags', methods: ['POST'])]
     public function searchTags(Request $request)
     {
         $tags = $this->tagRepository->searchTags($this->request->get($request, 'tag'), $this->request->get($request, 'category'));
@@ -56,9 +50,7 @@ class TagsController extends AbstractController
         return new JsonResponse($this->serializer->serialize($tags, "json"), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/add-tag", name="add_tag", methods={"PUT"})
-     */
+    #[Route('/v1/add-tag', name: 'add_tag', methods: ['PUT'])]
     public function addTag(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -117,9 +109,7 @@ class TagsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/tag/{id}", name="remove_tag", methods={"DELETE"})
-     */
+    #[Route('/v1/tag/{id}', name: 'remove_tag', methods: ['DELETE'])]
     public function removeTag($id)
     {
         /** @var \App\Entity\User $user */

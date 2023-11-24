@@ -21,11 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * Class EventsController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class EventsController extends AbstractController
 {
     private $serializer;
@@ -55,9 +51,7 @@ class EventsController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/event", name="set_event", methods={"POST"})
-     */
+    #[Route('/v1/event', name: 'set_event', methods: ['POST'])]
     public function setEventAction(Request $request)
     {
         $title = $request->request->get("title");
@@ -184,9 +178,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/edit-event", name="edit_event", methods={"POST"})
-     */
+    #[Route('/v1/edit-event', name: 'edit_event', methods: ['POST'])]
     public function editEventAction(Request $request)
     {
         $id = $request->request->get("id");
@@ -269,9 +261,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/event/{id}", name="get_event_id", methods={"GET"})
-     */
+    #[Route('/v1/event/{id}', name: 'get_event_id', methods: ['GET'])]
     public function getEventAction(int $id)
     {
         $fromUser = $this->getUser();
@@ -290,9 +280,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/event/{id}", name="public_event", methods={"GET"})
-     */
+    #[Route('/event/{id}', name: 'public_event', methods: ['GET'])]
     public function getPublicEvent(int $id)
     {
         $cache = new FilesystemAdapter();
@@ -319,9 +307,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/delete-event/{id}", name="delete_event", methods={"DELETE"})
-     */
+    #[Route('/v1/delete-event/{id}', name: 'delete_event', methods: ['DELETE'])]
     public function deleteEventAction(int $id)
     {
         /** @var \App\Entity\User $user */
@@ -369,9 +355,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/cancel-event", name="cancel_event", methods={"PUT"})
-     */
+    #[Route('/v1/cancel-event', name: 'cancel_event', methods: ['PUT'])]
     public function cancelEventAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -410,9 +394,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/my-events", name="get_my_events", methods={"GET"})
-     */
+    #[Route('/v1/my-events', name: 'get_my_events', methods: ['GET'])]
     public function getMyEventsAction()
     {
         $user = $this->getUser();
@@ -426,9 +408,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/suggested-events", name="get_suggested_events", methods={"GET"})
-     */
+    #[Route('/v1/suggested-events', name: 'get_suggested_events', methods: ['GET'])]
     public function getSuggestedEventsAction()
     {
         $user = $this->getUser();
@@ -442,9 +422,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/online-events", name="get_online_events", methods={"GET"})
-     */
+    #[Route('/v1/online-events', name: 'get_online_events', methods: ['GET'])]
     public function getOnlineEventsAction()
     {
         $user = $this->getUser();
@@ -458,9 +436,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/near-events", name="get_near_events", methods={"GET"})
-     */
+    #[Route('/v1/near-events', name: 'get_near_events', methods: ['GET'])]
     public function getNearEventsAction()
     {
         $user = $this->getUser();
@@ -474,9 +450,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/slug-events/{slug}", name="slug_events", methods={"GET"})
-     */
+    #[Route('/v1/slug-events/{slug}', name: 'slug_events', methods: ['GET'])]
     public function getSlugEvents(string $slug)
     {
         $user = $this->getUser();
@@ -490,9 +464,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/participate-event", name="participate_event", methods={"POST"})
-     */
+    #[Route('/v1/participate-event', name: 'participate_event', methods: ['POST'])]
     public function participateEventAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -536,9 +508,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/remove-participant-event/{id}", name="remove_participant_event", methods={"DELETE"})
-     */
+    #[Route('/v1/remove-participant-event/{id}', name: 'remove_participant_event', methods: ['DELETE'])]
     public function removeParticipantEventAction(int $id)
     {
         /** @var \App\Entity\User $user */
@@ -581,9 +551,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/confirm-date", name="confirm_date", methods={"POST"})
-     */
+    #[Route('/v1/confirm-date', name: 'confirm_date', methods: ['POST'])]
     public function confirmDateAction(Request $request)
     {
         /** @var \App\Entity\User $user */
@@ -615,9 +583,7 @@ class EventsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/decline-date", name="decline_date", methods={"PUT"})
-     */
+    #[Route('/v1/decline-date', name: 'decline_date', methods: ['PUT'])]
     public function declineDateAction(Request $request)
     {
         /** @var \App\Entity\User $user */

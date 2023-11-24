@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\PageRepository;
-use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 

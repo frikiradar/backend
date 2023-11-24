@@ -18,11 +18,7 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * Class DevicesController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class DevicesController extends AbstractController
 {
     private $serializer;
@@ -42,9 +38,7 @@ class DevicesController extends AbstractController
         $this->security = $security;
     }
 
-    /**
-     * @Route("/v1/devices", name="get_devices", methods={"GET"})
-     */
+    #[Route('/v1/devices', name: 'get_devices', methods: ['GET'])]
     public function getDevices()
     {
         try {
@@ -58,9 +52,7 @@ class DevicesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/device", name="put_device", methods={"PUT"})
-     */
+    #[Route('/v1/device', name: 'put_device', methods: ['PUT'])]
     public function setDeviceAction(Request $request)
     {
         try {
@@ -102,9 +94,7 @@ class DevicesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/unknown-device", name="unknown_device", methods={"PUT"})
-     */
+    #[Route('/v1/unknown-device', name: 'unknown_device', methods: ['PUT'])]
     public function unknownDeviceAction(Request $request, MailerInterface $mailer)
     {
         try {
@@ -143,9 +133,7 @@ class DevicesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/device/{id}", name="delete_device", methods={"DELETE"})
-     */
+    #[Route('/v1/device/{id}', name: 'delete_device', methods: ['DELETE'])]
     public function deleteAction(int $id)
     {
         try {
@@ -163,9 +151,7 @@ class DevicesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/switch-device/{id}", name="switch_device", methods={"GET"})
-     */
+    #[Route('/v1/switch-device/{id}', name: 'switch_device', methods: ['GET'])]
     public function switchAction(int $id)
     {
         try {
@@ -184,9 +170,7 @@ class DevicesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/turnoff-device/{uuid}", name="turnoff_device", methods={"GET"})
-     */
+    #[Route('/v1/turnoff-device/{uuid}', name: 'turnoff_device', methods: ['GET'])]
     public function turnOffAction(string $uuid)
     {
         try {

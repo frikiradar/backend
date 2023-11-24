@@ -12,11 +12,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * Class NotificationsController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class NotificationsController extends AbstractController
 {
     private $serializer;
@@ -29,9 +25,7 @@ class NotificationsController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/notifications", name="get_notifications", methods={"GET"})
-     */
+    #[Route('/v1/notifications', name: 'get_notifications', methods: ['GET'])]
     public function getNotifications()
     {
         $cache = new FilesystemAdapter();
@@ -60,9 +54,7 @@ class NotificationsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/notifications-list", name="notifications_list", methods={"GET"})
-     */
+    #[Route('/v1/notifications-list', name: 'notifications_list', methods: ['GET'])]
     public function getNotificationsList()
     {
         $cache = new FilesystemAdapter();
@@ -85,9 +77,7 @@ class NotificationsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/read-notification/{id}", name="read_notification", methods={"GET"})
-     */
+    #[Route('/v1/read-notification/{id}', name: 'read_notification', methods: ['GET'])]
     public function readNotification(int $id)
     {
         $cache = new FilesystemAdapter();
@@ -112,9 +102,7 @@ class NotificationsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/unread-notification/{id}", name="unread_notification", methods={"GET"})
-     */
+    #[Route('/v1/unread-notification/{id}', name: 'unread_notification', methods: ['GET'])]
     public function unreadNotification(int $id)
     {
         $cache = new FilesystemAdapter();
@@ -139,9 +127,7 @@ class NotificationsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/remove-notification/{id}", name="remove_notification", methods={"DELETE"})
-     */
+    #[Route('/v1/remove-notification/{id}', name: 'remove_notification', methods: ['DELETE'])]
     public function removeNotification(int $id)
     {
         $cache = new FilesystemAdapter();
@@ -169,9 +155,7 @@ class NotificationsController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/remove-notifications", name="remove_notifications", methods={"DELETE"})
-     */
+    #[Route('/v1/remove-notifications', name: 'remove_notifications', methods: ['DELETE'])]
     public function removeNotifications()
     {
         $cache = new FilesystemAdapter();

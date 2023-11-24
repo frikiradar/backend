@@ -12,11 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-/**
- * Class ConfigController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class ConfigController extends AbstractController
 {
     private $configRepository;
@@ -28,9 +24,7 @@ class ConfigController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    /**
-     * @Route("/config", name="config", methods={"GET"})
-     */
+    #[Route('/config', name: 'config', methods: ['GET'])]
     public function getConfig()
     {
         $cache = new FilesystemAdapter();

@@ -16,10 +16,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * Class AdminController
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 #[IsGranted("ROLE_MASTER")]
 class AdminController extends AbstractController
 {
@@ -40,9 +37,7 @@ class AdminController extends AbstractController
         $this->notification = $notification;
     }
 
-    /**
-     * @Route("/v1/topic-message", name="topic_message", methods={"PUT"})
-     */
+    #[Route('/v1/topic-message', name: 'topic_message', methods: ['PUT'])]
     public function putTopicMessage(Request $request)
     {
         $chat = new Chat();
@@ -72,9 +67,7 @@ class AdminController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/banned-messages/{id}", name="get_banned_messages", methods={"GET"})
-     */
+    #[Route('/v1/banned-messages/{id}', name: 'get_banned_messages', methods: ['GET'])]
     public function getBannedMessagesAction(int $id)
     {
         $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
@@ -95,9 +88,7 @@ class AdminController extends AbstractController
         return new JsonResponse($this->serializer->serialize($chats, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/banned-message", name="banned_message", methods={"PUT"})
-     */
+    #[Route('/v1/banned-message', name: 'banned_message', methods: ['PUT'])]
     public function put(Request $request)
     {
         $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
@@ -127,9 +118,7 @@ class AdminController extends AbstractController
         return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/ban", name="ban", methods={"PUT"})
-     */
+    #[Route('/v1/ban', name: 'ban', methods: ['PUT'])]
     public function ban(Request $request)
     {
         try {
@@ -145,9 +134,7 @@ class AdminController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/bans", name="bans", methods={"GET"})
-     */
+    #[Route('/v1/bans', name: 'bans', methods: ['GET'])]
     public function getBansAction()
     {
         $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
@@ -155,9 +142,7 @@ class AdminController extends AbstractController
         return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
 
-    /**
-     * @Route("/v1/ban/{id}", name="unban", methods={"DELETE"})
-     */
+    #[Route('/v1/ban/{id}', name: 'unban', methods: ['DELETE'])]
     public function removeBanAction(int $id)
     {
         try {
@@ -180,9 +165,7 @@ class AdminController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/warn", name="warn_chat", methods={"PUT"})
-     */
+    #[Route('/v1/warn', name: 'warn_chat', methods: ['PUT'])]
     public function warn(Request $request)
     {
         $chat = new Chat();

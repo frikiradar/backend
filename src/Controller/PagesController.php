@@ -17,11 +17,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 
-/**
- * Class PagesController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class PagesController extends AbstractController
 {
     private $request;
@@ -42,9 +38,7 @@ class PagesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/pages", name="pages", methods={"GET"})
-     */
+    #[Route('/v1/pages', name: 'pages', methods: ['GET'])]
     public function getPages(Request $request)
     {
         $user = $this->getUser();
@@ -61,9 +55,7 @@ class PagesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/page/{slug}", name="page", methods={"GET"})
-     */
+    #[Route('/v1/page/{slug}', name: 'page', methods: ['GET'])]
     public function getPage(string $slug)
     {
         $user = $this->getUser();
@@ -96,9 +88,7 @@ class PagesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/page/{slug}", name="public_page", methods={"GET"})
-     */
+    #[Route('/page/{slug}', name: 'public_page', methods: ['GET'])]
     public function getPublicPage(string $slug)
     {
         $cache = new FilesystemAdapter();
@@ -126,9 +116,7 @@ class PagesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/page", name="set_page", methods={"POST"})
-     */
+    #[Route('/v1/page', name: 'set_page', methods: ['POST'])]
     public function setPage(Request $request)
     {
         $user = $this->getUser();
@@ -149,9 +137,7 @@ class PagesController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/v1/search-by-slug", name="search_by_slug", methods={"POST"})
-     */
+    #[Route('/v1/search-by-slug', name: 'search_by_slug', methods: ['POST'])]
     public function searchBySlugAction(Request $request)
     {
         $user = $this->getUser();

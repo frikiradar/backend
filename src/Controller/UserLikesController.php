@@ -18,11 +18,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * Class UserLikesController
- *
- * @Route(path="/api")
- */
+#[Route(path: '/api')]
 class UserLikesController extends AbstractController
 {
     private $serializer;
@@ -46,11 +42,10 @@ class UserLikesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/like", name="like", methods={"PUT"})
-     */
+    #[Route('/v1/like', name: 'like', methods: ['PUT'])]
     public function putLikeAction(Request $request)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         try {
             $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
@@ -83,11 +78,10 @@ class UserLikesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/like/{id}", name="unlike", methods={"DELETE"})
-     */
+    #[Route('/v1/like/{id}', name: 'unlike', methods: ['DELETE'])]
     public function removeLikeAction(int $id)
     {
+        /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         try {
             $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
@@ -108,23 +102,24 @@ class UserLikesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/likes", name="get_likes", methods={"GET"})
-     */
+    #[Route('/v1/likes', name: 'get_likes', methods: ['GET'])]
     public function getLikesAction(Request $request)
     {
         $cache = new FilesystemAdapter();
         try {
+            /** @var \App\Entity\User $user */
             $param = $this->request->get($request, "param") ?: "received";
             $page = $this->request->get($request, "page", false);
             $id = $this->request->get($request, "user", false);
             if ($id) {
+                /** @var \App\Entity\User $user */
                 $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
             } else {
+                /** @var \App\Entity\User $user */
                 $user = $this->getUser();
             }
 
-            if ($user->getId() === $this->getUser()->getId() || !$user->isHideLikes() || $this->security->isGranted('ROLE_MASTER')) {
+            if ($user->getId() === $user->getId() || !$user->isHideLikes() || $this->security->isGranted('ROLE_MASTER')) {
                 $likesCache = $cache->getItem('users.likes.' . $user->getId() . $param . $page);
                 if (!$likesCache->isHit()) {
                     $likesCache->expiresAfter(5 * 60);
@@ -144,13 +139,13 @@ class UserLikesController extends AbstractController
     }
 
 
-    /**
-     * @Route("/v1/read-like/{id}", name="read_like", methods={"GET"})
-     */
+    #[Route('/v1/read-like/{id}', name: 'read_like', methods: ['GET'])]
     public function markAsReadAction(int $id)
     {
         try {
-            $like = $this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy(array('from_user' => $id, 'to_user' => $this->getUser()->getId()));
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $like = $this->em->getRepository(\App\Entity\LikeUser::class)->findOneBy(array('from_user' => $id, 'to_user' => $user->getId()));
             $like->setTimeRead(new \DateTime);
             $this->em->persist($like);
             $this->em->flush();
