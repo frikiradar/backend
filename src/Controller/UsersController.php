@@ -179,7 +179,7 @@ class UsersController extends AbstractController
 
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']));
+                return new JsonResponse($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
                 $email = (new Email())
                     ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
@@ -209,7 +209,7 @@ class UsersController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
-        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
+        return new JsonResponse($this->serializer->serialize($user, 'json', ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }
 
 
@@ -261,7 +261,7 @@ class UsersController extends AbstractController
                 $user = $userCache->get();
             }
 
-            return new Response($user);
+            return new JsonResponse($user, Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
@@ -296,7 +296,7 @@ class UsersController extends AbstractController
                 $user = $userCache->get();
             }
 
-            return new Response($user);
+            return new JsonResponse($user, Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el usuario - Error: {$ex->getMessage()}");
         }
@@ -312,10 +312,10 @@ class UsersController extends AbstractController
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $username));
 
             if (empty($user)) {
-                return new Response($this->serializer->serialize($username, "json"));
+                return new JsonResponse($this->serializer->serialize($username, "json"), Response::HTTP_OK, [], true);
             } else {
                 $username = $this->em->getRepository(\App\Entity\User::class)->getSuggestionUsername($username);
-                return new Response($this->serializer->serialize($username, "json"));
+                return new JsonResponse($this->serializer->serialize($username, "json"), Response::HTTP_OK, [], true);
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al comprobar el nombre de usuario - Error: {$ex->getMessage()}");
@@ -340,7 +340,7 @@ class UsersController extends AbstractController
             throw new HttpException(400, "No existe ningún usuario con este nombre o email");
         }
 
-        return new Response($this->serializer->serialize($login, "json"));
+        return new JsonResponse($this->serializer->serialize($login, "json"), Response::HTTP_OK, [], true);
     }
 
 
@@ -389,7 +389,7 @@ class UsersController extends AbstractController
                 $this->em->persist($user);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']));
+                return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "El usuario no eres tu, ¿intentando hacer trampa?");
             }
@@ -427,7 +427,7 @@ class UsersController extends AbstractController
                 $this->em->flush();
             }
 
-            return new Response($this->serializer->serialize($coords, "json"));
+            return new JsonResponse($this->serializer->serialize($coords, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar coordenadas - Error: {$ex->getMessage()}");
         }
@@ -493,7 +493,7 @@ class UsersController extends AbstractController
 
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "Error al subir la imagen");
         }
@@ -528,7 +528,7 @@ class UsersController extends AbstractController
 
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al actualizar el avatar - Error: {$ex->getMessage()}");
         }
@@ -568,7 +568,7 @@ class UsersController extends AbstractController
             }
             $user->setImages($user->getImages());
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al borrar el avatar - Error: {$ex->getMessage()}");
         }
@@ -584,23 +584,14 @@ class UsersController extends AbstractController
         $this->accessChecker->checkAccess($user);
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
-        // $cache = new FilesystemAdapter();
 
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
         $options = $this->request->get($request, 'options', false);
         try {
-            /*$usersCache = $cache->getItem('users.radar.' . $user->getId() . $page . $ratio);
-            if (!$usersCache->isHit()) {
-                $usersCache->expiresAfter(60 * 5);*/
             $users = $this->em->getRepository(\App\Entity\User::class)->getRadarUsers($user, $page, $ratio, $options);
-            /*$usersCache->set($users);
-                $cache->save($usersCache);
-            } else {
-                $users = $usersCache->get();
-            }*/
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
@@ -621,7 +612,7 @@ class UsersController extends AbstractController
         try {
             $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($query, $user, $order, $page);
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }
@@ -635,7 +626,7 @@ class UsersController extends AbstractController
         try {
             $usernames = $this->em->getRepository(\App\Entity\User::class)->searchUsernames($query);
 
-            return new Response($this->serializer->serialize($usernames, "json"));
+            return new JsonResponse($this->serializer->serialize($usernames, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al buscar nombres de usuario - Error: {$ex->getMessage()}");
         }
@@ -667,7 +658,7 @@ class UsersController extends AbstractController
 
             $mailer->send($email);
 
-            return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Email enviado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el email de activación - Error: {$ex->getMessage()}");
         }
@@ -689,7 +680,7 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "Error al activar la cuenta");
         }
@@ -727,7 +718,7 @@ class UsersController extends AbstractController
 
                 $mailer->send($email);
 
-                return new Response($this->serializer->serialize("Email enviado correctamente", "json"));
+                return new JsonResponse($this->serializer->serialize("Email enviado correctamente", "json"), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al enviar el email de recuperación - Error: {$ex->getMessage()}");
             }
@@ -756,7 +747,7 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "Error al recuperar la cuenta");
         }
@@ -777,7 +768,7 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "La contraseña actual no es válida");
         }
@@ -798,7 +789,7 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "El email actual no es válido");
         }
@@ -818,7 +809,7 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Ya hay un usuario con ese nombre - Error: {$ex->getMessage()}");
         }
@@ -857,7 +848,7 @@ class UsersController extends AbstractController
                 $mailer->send($email);
             }
 
-            return new Response($this->serializer->serialize("Usuario bloqueado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Usuario bloqueado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al bloquear usuario - Error: {$ex->getMessage()}");
         }
@@ -883,7 +874,7 @@ class UsersController extends AbstractController
 
             $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($user);
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbloquear el usuario - Error: {$ex->getMessage()}");
         }
@@ -897,7 +888,7 @@ class UsersController extends AbstractController
     {
         $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($this->getUser());
 
-        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -922,7 +913,7 @@ class UsersController extends AbstractController
                 $mailer->send($email);
             }
 
-            return new Response($this->serializer->serialize("Usuario reportado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Usuario reportado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al reportar usuario - Error: {$ex->getMessage()}");
         }
@@ -946,7 +937,7 @@ class UsersController extends AbstractController
                 $this->em->persist($newHide);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize("Usuario ocultado correctamente", "json"));
+                return new JsonResponse($this->serializer->serialize("Usuario ocultado correctamente", "json"), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "Error al ocultar usuario");
             }
@@ -970,7 +961,7 @@ class UsersController extends AbstractController
 
             $users = $this->em->getRepository(\App\Entity\HideUser::class)->getHideUsers($this->getUser());
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desocultar el usuario - Error: {$ex->getMessage()}");
         }
@@ -984,7 +975,7 @@ class UsersController extends AbstractController
     {
         $users = $this->em->getRepository(\App\Entity\HideUser::class)->getHideUsers($this->getUser());
 
-        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
 
 
@@ -1056,7 +1047,7 @@ class UsersController extends AbstractController
             ];
         }
 
-        return new Response($this->serializer->serialize($response, "json"));
+        return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
     }
 
 
@@ -1075,7 +1066,7 @@ class UsersController extends AbstractController
                 $this->em->persist($user);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu sesión: " . $e);
             }
@@ -1135,7 +1126,7 @@ class UsersController extends AbstractController
                     $mailer->send($email);
                 }
 
-                return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
                 throw new HttpException(400, "Error al desactivar la cuenta - Error: {$ex->getMessage()}");
             }

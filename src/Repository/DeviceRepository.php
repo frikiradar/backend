@@ -17,6 +17,8 @@ use Symfony\Component\Config\Definition\Exception\Exception;
  */
 class DeviceRepository extends ServiceEntityRepository
 {
+    private $em;
+
     public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, Device::class);

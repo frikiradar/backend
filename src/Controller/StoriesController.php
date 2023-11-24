@@ -60,7 +60,7 @@ class StoriesController extends AbstractController
         $user = $this->getUser();
         $stories = $this->em->getRepository(\App\Entity\Story::class)->getStories($user);
 
-        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+        return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -72,7 +72,7 @@ class StoriesController extends AbstractController
         $this->accessChecker->checkAccess($user);
         $stories = $this->em->getRepository(\App\Entity\Story::class)->getStoriesBySlug($slug);
 
-        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+        return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -84,7 +84,7 @@ class StoriesController extends AbstractController
         // $this->accessChecker->checkAccess($user);
         $stories = $this->em->getRepository(\App\Entity\Story::class)->getAllStories();
 
-        return new Response($this->serializer->serialize($stories, "json", ['groups' => ['story']]));
+        return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -121,7 +121,7 @@ class StoriesController extends AbstractController
         try {
             $story = $this->em->getRepository(\App\Entity\Story::class)->findOneBy(array('id' => $id));
             if (!is_null($story)) {
-                return new Response($this->serializer->serialize($story, "json", ['groups' => ['story']]));
+                return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "Historia no encontrada");
             }
@@ -210,7 +210,7 @@ class StoriesController extends AbstractController
                 $this->em->persist($view);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize("Historia vista correctamente", "json"));
+                return new JsonResponse($this->serializer->serialize("Historia vista correctamente", "json"), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(404, "No puedes marcar como vista tu propia historia o ver la misma historia dos veces.");
             }
@@ -292,7 +292,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al entregar kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -319,7 +319,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -373,7 +373,7 @@ class StoriesController extends AbstractController
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-                return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+                return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "No se puede comentar a este usuario, estás bloqueado - Error");
             }
@@ -420,7 +420,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al entregar kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -458,7 +458,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+            return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro a una historia - Error: {$ex->getMessage()}");
         }
@@ -485,7 +485,7 @@ class StoriesController extends AbstractController
                     $cache->deleteItem('stories.get.' . $this->getUser()->getId());
                 }
 
-                return new Response($this->serializer->serialize($story, "json", ['groups' => 'story']));
+                return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => 'story']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(404, "No se puede eliminar el comentario de otro usuario.");
             }

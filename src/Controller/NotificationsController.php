@@ -2,14 +2,10 @@
 // src/Controller/ChatController.php
 namespace App\Controller;
 
-use App\Entity\Chat;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Service\NotificationService;
-use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -23,12 +19,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class NotificationsController extends AbstractController
 {
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, RequestService $request, NotificationService $notification)
+    private $serializer;
+    private $em;
+
+    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
         $this->serializer = $serializer;
         $this->em = $entityManager;
-        $this->request = $request;
-        $this->notification = $notification;
     }
 
 
@@ -38,6 +35,7 @@ class NotificationsController extends AbstractController
     public function getNotifications()
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notificationsCache = $cache->getItem('users.notifications.' . $user->getId());
@@ -56,7 +54,7 @@ class NotificationsController extends AbstractController
                 $notifications = $notificationsCache->get();
             }
 
-            return new Response($this->serializer->serialize($notifications, "json"));
+            return new JsonResponse($this->serializer->serialize($notifications, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "No se pueden obtener los contadores de notificaciones - Error: {$ex->getMessage()}");
         }
@@ -68,6 +66,7 @@ class NotificationsController extends AbstractController
     public function getNotificationsList()
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notificationsCache = $cache->getItem('users.notifications-list.' . $user->getId());
@@ -92,6 +91,7 @@ class NotificationsController extends AbstractController
     public function readNotification(int $id)
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
@@ -103,7 +103,7 @@ class NotificationsController extends AbstractController
                 $cache->deleteItem('users.notifications.' . $user->getId());
                 $cache->deleteItem('users.notifications-list.' . $user->getId());
 
-                return new Response($this->serializer->serialize($notification, "json", ['groups' => 'notification']));
+                return new JsonResponse($this->serializer->serialize($notification, "json", ['groups' => 'notification']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No se puede marcar como leída la notificación de otro usuario");
             }
@@ -118,6 +118,7 @@ class NotificationsController extends AbstractController
     public function unreadNotification(int $id)
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
@@ -129,7 +130,7 @@ class NotificationsController extends AbstractController
                 $cache->deleteItem('users.notifications.' . $user->getId());
                 $cache->deleteItem('users.notifications-list.' . $user->getId());
 
-                return new Response($this->serializer->serialize($notification, "json", ['groups' => 'notification']));
+                return new JsonResponse($this->serializer->serialize($notification, "json", ['groups' => 'notification']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No se puede desmarcar como leída la notificación de otro usuario");
             }
@@ -144,6 +145,7 @@ class NotificationsController extends AbstractController
     public function removeNotification(int $id)
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
@@ -173,6 +175,7 @@ class NotificationsController extends AbstractController
     public function removeNotifications()
     {
         $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
             $notifications = $user->getNotifications();

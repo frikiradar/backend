@@ -115,7 +115,7 @@ class ChatController extends AbstractController
                 $mailer->send($email);
             }
 
-            return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+            return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]), Response::HTTP_OK, [], true);
         } else {
             throw new HttpException(400, "Error al marcar como leido - Error");
         }
@@ -204,7 +204,7 @@ class ChatController extends AbstractController
 
                 $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "Error al marcar como leido - Error");
             }
@@ -222,20 +222,11 @@ class ChatController extends AbstractController
         /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
-        // $cache = new FilesystemAdapter();
         try {
-            /*$chatsCache = $cache->getItem('users.chat.' . $fromUser->getId());
-            if (!$chatsCache->isHit()) {
-                $chatsCache->expiresAfter(3600);*/
             $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChatUsers($fromUser);
-            /*$chatsCache->set($chats);
-                $cache->save($chatsCache);*/
             $this->em->persist($fromUser);
             $this->em->flush();
-            /*} else {
-                $chats = $chatsCache->get();
-            }*/
-            return new Response($this->serializer->serialize($chats, "json"));
+            return new JsonResponse($this->serializer->serialize($chats, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
         }
@@ -302,7 +293,7 @@ class ChatController extends AbstractController
             }
         }
 
-        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
+        return new JsonResponse($this->serializer->serialize($chats, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
 
 
@@ -326,7 +317,7 @@ class ChatController extends AbstractController
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('users.notifications.' . $toUser->getId());
 
-                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No se puede marcar como leído el chat de otro usuario");
             }
@@ -388,7 +379,7 @@ class ChatController extends AbstractController
                     }
                 }
 
-                return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]));
+                return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No se puede editar el mensaje de otro usuario.");
             }
@@ -457,7 +448,7 @@ class ChatController extends AbstractController
                     }
                 }
 
-                return new Response($this->serializer->serialize($message, "json", ['groups' => 'message']));
+                return new JsonResponse($this->serializer->serialize($message, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "Error al eliminar el mensaje. - Error: acción no permitida.");
             }
@@ -481,7 +472,7 @@ class ChatController extends AbstractController
             $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
             $this->em->getRepository(\App\Entity\Chat::class)->deleteChatUser($toUser, $fromUser);
 
-            return new Response($this->serializer->serialize($id, "json"));
+            return new JsonResponse($this->serializer->serialize($id, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el mensaje - Error: {$ex->getMessage()}");
         }
@@ -501,7 +492,7 @@ class ChatController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
-        return new Response($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]));
+        return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -531,7 +522,7 @@ class ChatController extends AbstractController
 
             $mailer->send($email);
 
-            return new Response($this->serializer->serialize("Mensaje reportado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Mensaje reportado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al reportar mensaje - Error: {$ex->getMessage()}");
         }

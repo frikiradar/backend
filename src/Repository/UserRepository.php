@@ -11,6 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -709,7 +710,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         // Enviamos email avisando
         $email = (new Email())
-            ->from($fromUser->getEmail())
+            ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
             ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
             ->subject('Nuevo usuario baneado')
             ->html("<p>El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text . "</p>");

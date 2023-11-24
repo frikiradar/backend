@@ -28,11 +28,6 @@ abstract class BaseRepository
     private function getEntityManager()
     {
         $entityManager = $this->managerRegistry->getManager();
-
-        if ($entityManager->isOpen()) {
-            return $entityManager;
-        }
-
-        return $this->managerRegistry->resetManager();
+        return $entityManager;
     }
 }

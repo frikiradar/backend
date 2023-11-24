@@ -14,6 +14,7 @@ use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -24,8 +25,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class UserLikesController extends AbstractController
 {
+    private $serializer;
+    private $em;
+    private $request;
+    private $notification;
+    private $security;
+
     public function __construct(
-        UserRepository $userRepository,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         RequestService $request,
@@ -33,7 +39,6 @@ class UserLikesController extends AbstractController
         AuthorizationCheckerInterface $security
     ) {
         $this->serializer = $serializer;
-        $this->userRepository = $userRepository;
         $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
@@ -71,7 +76,7 @@ class UserLikesController extends AbstractController
 
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneUser($fromUser, $toUser);
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al entregar tu kokoro - Error: {$ex->getMessage()}");
         }
@@ -96,7 +101,7 @@ class UserLikesController extends AbstractController
 
             $user = $this->em->getRepository(\App\Entity\User::class)->findOneUser($fromUser, $toUser);
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al retirarle tu kokoro - Error: {$ex->getMessage()}");
         }
@@ -129,7 +134,7 @@ class UserLikesController extends AbstractController
                 } else {
                     $likes = $likesCache->get();
                 }
-                return new Response($this->serializer->serialize($likes, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($likes, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "El usuario no permite ver sus kokoros");
             }
@@ -150,7 +155,7 @@ class UserLikesController extends AbstractController
             $this->em->persist($like);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($like, "json", ['groups' => 'like']));
+            return new JsonResponse($this->serializer->serialize($like, "json", ['groups' => 'like']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }

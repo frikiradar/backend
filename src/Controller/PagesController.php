@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Page;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -24,6 +24,11 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
  */
 class PagesController extends AbstractController
 {
+    private $request;
+    private $serializer;
+    private $accessChecker;
+    private $em;
+
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,
@@ -50,7 +55,7 @@ class PagesController extends AbstractController
         try {
             $pages = $this->em->getRepository(\App\Entity\Page::class)->findPages($user, $limit);
 
-            return new Response($this->serializer->serialize($pages, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($pages, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
         }
@@ -85,7 +90,7 @@ class PagesController extends AbstractController
                 $page = $pageCache->get();
             }
 
-            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
+            return new JsonResponse($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener la página - Error: {$ex->getMessage()}");
         }
@@ -115,7 +120,7 @@ class PagesController extends AbstractController
                 $page = $pageCache->get();
             }
 
-            return new Response($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]));
+            return new JsonResponse($this->serializer->serialize($page, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d', AbstractObjectNormalizer::SKIP_NULL_VALUES => true]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener la página - Error: {$ex->getMessage()}");
         }
@@ -135,7 +140,7 @@ class PagesController extends AbstractController
             if ($page) {
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('page.get.' . $page->getSlug());
-                return new Response($this->serializer->serialize($page, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($page, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(400, "Error al crear la página");
             }
@@ -157,7 +162,7 @@ class PagesController extends AbstractController
 
         try {
             $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($slug, $user, $order, $page, true);
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
         }

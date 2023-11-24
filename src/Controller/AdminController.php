@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -65,7 +66,7 @@ class AdminController extends AbstractController
 
             $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
 
-            return new Response($this->serializer->serialize("Notificación enviada correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Notificación enviada correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar la notificación global - Error: {$ex->getMessage()}");
         }
@@ -91,7 +92,7 @@ class AdminController extends AbstractController
 
         $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, true, 1, 0, true);
 
-        return new Response($this->serializer->serialize($chats, "json", ['groups' => 'message']));
+        return new JsonResponse($this->serializer->serialize($chats, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -123,7 +124,7 @@ class AdminController extends AbstractController
 
         $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
-        return new Response($this->serializer->serialize($chat, "json", ['groups' => 'message']));
+        return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -138,7 +139,7 @@ class AdminController extends AbstractController
             $hours = $this->request->get($request, 'hours', false);
             $this->em->getRepository(\App\Entity\User::class)->banUser($toUser, $reason, $days, $hours);
 
-            return new Response($this->serializer->serialize("Baneo realizado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Baneo realizado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al realizar el baneo - Error: {$ex->getMessage()}");
         }
@@ -151,7 +152,7 @@ class AdminController extends AbstractController
     {
         $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
 
-        return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+        return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -173,7 +174,7 @@ class AdminController extends AbstractController
 
             $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
 
-            return new Response($this->serializer->serialize($users, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desbanear al usuario - Error: {$ex->getMessage()}");
         }
@@ -204,7 +205,7 @@ class AdminController extends AbstractController
 
             $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 
-            return new Response($this->serializer->serialize("Aviso enviado correctamente", "json"));
+            return new JsonResponse($this->serializer->serialize("Aviso enviado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al enviar el aviso de moderación - Error: {$ex->getMessage()}");
         }

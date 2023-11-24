@@ -16,6 +16,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class LikeUserRepository extends ServiceEntityRepository
 {
+    private $em;
+
     public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, LikeUser::class);

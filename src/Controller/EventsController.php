@@ -28,6 +28,14 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class EventsController extends AbstractController
 {
+    private $serializer;
+    private $em;
+    private $request;
+    private $notification;
+    private $accessChecker;
+    private $message;
+    private $security;
+
     public function __construct(
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
@@ -166,11 +174,11 @@ class EventsController extends AbstractController
                     $this->message->send($chat, $user, true);
                     $this->message->send($chat, $creator);
                 } else {
-                    $this->message->sendTopic($chat, $slug, false);
+                    // $this->message->sendTopic($chat, $slug, false);
                 }
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default', 'message']]));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => ['default', 'message']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al crear el evento - Error: {$ex->getMessage()}");
         }
@@ -200,11 +208,10 @@ class EventsController extends AbstractController
         $imageFile = $request->files->get('image');
 
         try {
-            /**
-             * @var Event
-             */
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
             $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
-            if ($event->getCreator()->getId() === $this->getUser()->getId() || $this->security->isGranted('ROLE_ADMIN')) {
+            if ($event->getCreator()->getId() === $user->getId() || $this->security->isGranted('ROLE_ADMIN')) {
                 $event->setTitle($title);
                 $event->setDescription($description);
                 $event->setDate(new \DateTime($date));
@@ -253,7 +260,7 @@ class EventsController extends AbstractController
                 $this->em->persist($event);
                 $this->em->flush();
 
-                return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No puedes editar el evento de otro usuario");
             }
@@ -277,7 +284,7 @@ class EventsController extends AbstractController
                 $event->setPage($page);
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
         }
@@ -306,7 +313,7 @@ class EventsController extends AbstractController
                 $event = $eventCache->get();
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener el evento - Error: {$ex->getMessage()}");
         }
@@ -317,6 +324,7 @@ class EventsController extends AbstractController
      */
     public function deleteEventAction(int $id)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
@@ -325,7 +333,7 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
-            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
+            if ($event->getCreator()->getId() === $user->getId()) {
                 $image = $event->getImage();
                 if ($image && !strpos($image, '/avatar/')) {
                     $file = str_replace('https://app.frikiradar.com/', '/var/www/vhosts/frikiradar.com/app.frikiradar.com/', $image);
@@ -366,6 +374,7 @@ class EventsController extends AbstractController
      */
     public function cancelEventAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
@@ -375,7 +384,7 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
-            if ($event->getCreator()->getId() === $this->getUser()->getId()) {
+            if ($event->getCreator()->getId() === $user->getId()) {
 
                 $event->setStatus('cancelled');
 
@@ -392,7 +401,7 @@ class EventsController extends AbstractController
                     $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
                 }
 
-                return new Response($this->serializer->serialize($event, "json", ['groups' => ['default']]));
+                return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No puedes cancelar el evento de otro usuario");
             }
@@ -411,7 +420,7 @@ class EventsController extends AbstractController
 
         try {
             $events = $this->em->getRepository(\App\Entity\Event::class)->findUserEvents($user);
-            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
@@ -427,7 +436,7 @@ class EventsController extends AbstractController
 
         try {
             $events = $this->em->getRepository(\App\Entity\Event::class)->findSuggestedEvents($user);
-            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
@@ -443,7 +452,7 @@ class EventsController extends AbstractController
 
         try {
             $events = $this->em->getRepository(\App\Entity\Event::class)->findOnlineEvents($user);
-            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
@@ -459,7 +468,7 @@ class EventsController extends AbstractController
 
         try {
             $events = $this->em->getRepository(\App\Entity\Event::class)->findNearEvents($user);
-            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
@@ -475,7 +484,7 @@ class EventsController extends AbstractController
 
         try {
             $events = $this->em->getRepository(\App\Entity\Event::class)->findSlugEvents($slug);
-            return new Response($this->serializer->serialize($events, "json", ['groups' => ['default']]));
+            return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
         }
@@ -486,6 +495,7 @@ class EventsController extends AbstractController
      */
     public function participateEventAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
@@ -520,7 +530,7 @@ class EventsController extends AbstractController
                 }
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al participar en el evento - Error: {$ex->getMessage()}");
         }
@@ -531,6 +541,7 @@ class EventsController extends AbstractController
      */
     public function removeParticipantEventAction(int $id)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
 
@@ -564,7 +575,7 @@ class EventsController extends AbstractController
                 }
             }
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al quitar participación en el evento - Error: {$ex->getMessage()}");
         }
@@ -575,6 +586,7 @@ class EventsController extends AbstractController
      */
     public function confirmDateAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
@@ -597,7 +609,7 @@ class EventsController extends AbstractController
             $url = "/chat/" + $user->getId();
             $this->message->send($chat, $event->getCreator(), true, $url);
 
-            return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al confirmar la cita - Error: {$ex->getMessage()}");
         }
@@ -608,6 +620,7 @@ class EventsController extends AbstractController
      */
     public function declineDateAction(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
@@ -619,7 +632,7 @@ class EventsController extends AbstractController
              * @var Event
              */
             $event = $chat->getEvent();
-            if ($event->getCreator()->getId() === $this->getUser()->getId() || $event->getUser()->getId() === $this->getUser()->getId()) {
+            if ($event->getCreator()->getId() === $user->getId() || $event->getUser()->getId() === $user->getId()) {
                 $event->setStatus('cancelled');
 
                 $this->em->persist($event);
@@ -632,7 +645,7 @@ class EventsController extends AbstractController
                 $url = "/chat/" + $user->getId();
                 $this->message->send($chat, $event->getCreator(), true, $url);
 
-                return new Response($this->serializer->serialize($event, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 throw new HttpException(401, "No puedes rechazar la cita de otro usuario");
             }

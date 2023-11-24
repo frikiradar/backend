@@ -10,6 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class AccessCheckerService extends AbstractController
 {
+    private $em;
+
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->em = $entityManager;
@@ -20,6 +22,7 @@ class AccessCheckerService extends AbstractController
         $now = new \DateTime;
 
         if (!$user instanceof User) {
+            /** @var \App\Entity\User $user */
             $user = $this->getUser();
         }
 

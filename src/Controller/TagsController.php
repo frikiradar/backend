@@ -25,6 +25,12 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 class TagsController extends AbstractController
 {
+    private $tagRepository;
+    private $request;
+    private $serializer;
+    private $accessChecker;
+    private $em;
+
     public function __construct(
         TagRepository $tagRepository,
         SerializerInterface $serializer,
@@ -47,7 +53,7 @@ class TagsController extends AbstractController
     {
         $tags = $this->tagRepository->searchTags($this->request->get($request, 'tag'), $this->request->get($request, 'category'));
 
-        return new Response($this->serializer->serialize($tags, "json"));
+        return new JsonResponse($this->serializer->serialize($tags, "json"), Response::HTTP_OK, [], true);
     }
 
     /**
@@ -55,6 +61,7 @@ class TagsController extends AbstractController
      */
     public function addTag(Request $request)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
@@ -96,7 +103,7 @@ class TagsController extends AbstractController
 
                 $this->em->persist($tag);
                 $this->em->flush();
-                return new Response($this->serializer->serialize($tag, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($tag, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 if (!$oldTag->getSlug()) {
                     $oldTag->setSlug($this->request->get($request, 'slug', false));
@@ -115,6 +122,7 @@ class TagsController extends AbstractController
      */
     public function removeTag($id)
     {
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();

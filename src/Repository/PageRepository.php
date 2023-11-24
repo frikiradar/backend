@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Statickidz\GoogleTranslate;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Symfony\Component\Filesystem\Filesystem;
 use App\Service\FileUploaderService;
 
 /**
@@ -20,6 +19,9 @@ use App\Service\FileUploaderService;
  */
 class PageRepository extends ServiceEntityRepository
 {
+    private $em;
+    private $slugs;
+
     public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
     {
         parent::__construct($registry, Page::class);

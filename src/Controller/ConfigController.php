@@ -10,6 +10,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class ConfigController
@@ -18,6 +19,9 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
  */
 class ConfigController extends AbstractController
 {
+    private $configRepository;
+    private $serializer;
+
     public function __construct(ConfigRepository $configRepository, SerializerInterface $serializer)
     {
         $this->configRepository = $configRepository;
@@ -44,7 +48,7 @@ class ConfigController extends AbstractController
             } else {
                 $config = $configCache->get();
             }
-            return new Response($this->serializer->serialize($config, "json"));
+            return new JsonResponse($this->serializer->serialize($config, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(500, "No se puede obtener la configuración - Error: {$ex->getMessage()}");
         }

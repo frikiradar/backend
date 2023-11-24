@@ -16,6 +16,8 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  */
 class StoryRepository extends ServiceEntityRepository
 {
+    private $security;
+
     public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security)
     {
         parent::__construct($registry, Story::class);

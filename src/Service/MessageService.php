@@ -12,12 +12,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class MessageService extends AbstractController
 {
+    private $serializer;
+    private $notification;
+
     public function __construct(
-        EntityManagerInterface $em,
         SerializerInterface $serializer,
         NotificationService $notification
     ) {
-        $this->em = $em;
         $this->serializer = $serializer;
         $this->notification = $notification;
     }

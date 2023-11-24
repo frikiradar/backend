@@ -11,6 +11,7 @@ use App\Entity\Device;
 use App\Service\RequestService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
@@ -50,7 +51,7 @@ class DevicesController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $response = $user->getDevices();
-            return new Response($this->serializer->serialize($response, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($response, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los dispositivos - Error: {$ex->getMessage()}");
         }
@@ -94,7 +95,7 @@ class DevicesController extends AbstractController
                 curl_close($ch);
             }
 
-            return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al registrar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -138,7 +139,7 @@ class DevicesController extends AbstractController
             ];
         }
 
-        return new Response($this->serializer->serialize($response, "json"));
+        return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
     }
 
 
@@ -155,7 +156,7 @@ class DevicesController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($user, "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -176,7 +177,7 @@ class DevicesController extends AbstractController
             $this->em->persist($device);
             $this->em->flush();
 
-            return new Response($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']));
+            return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al acivar/desactivar el dispositivo - Error: {$ex->getMessage()}");
         }
@@ -198,9 +199,9 @@ class DevicesController extends AbstractController
                 $device->setToken(null);
                 $this->em->persist($device);
                 $this->em->flush();
-                return new Response($this->serializer->serialize($device, "json", ['groups' => 'default']));
+                return new JsonResponse($this->serializer->serialize($device, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
-                return new Response($this->serializer->serialize("Dispositivo no encontrado", "json"));
+                return new JsonResponse($this->serializer->serialize("Dispositivo no encontrado", "json"), Response::HTTP_OK, [], true);
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al desactivar el dispositivo - Error: {$ex->getMessage()}");
