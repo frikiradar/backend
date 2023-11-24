@@ -564,9 +564,6 @@
     "symfony/security-csrf": {
         "version": "v5.2.1"
     },
-    "symfony/security-guard": {
-        "version": "v5.2.1"
-    },
     "symfony/security-http": {
         "version": "v5.2.1"
     },
