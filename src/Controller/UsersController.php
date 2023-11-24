@@ -771,7 +771,7 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if ($user->getPassword() == $passwordHasher->hashPassword($user, $this->request->get($request, "old_password"))) {
+        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "old_password"))) {
             $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'new_password')));
 
             $this->em->persist($user);
@@ -914,7 +914,7 @@ class UsersController extends AbstractController
             if (!empty($note)) {
                 // Enviar email al administrador informando del motivo
                 $email = (new Email())
-                    ->from([$user->getEmail(), $user->getUsername()])
+                    ->from(new Address($user->getEmail(), $user->getUsername()))
                     ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
                     ->subject('Nuevo usuario reportado')
                     ->html("El usuario " . $user->getUserIdentifier() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note);
