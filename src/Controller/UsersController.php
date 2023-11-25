@@ -385,8 +385,8 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $latitude = $this->request->get($request, 'latitude', false);
-            $longitude = $this->request->get($request, 'longitude', false);
+            $latitude = $this->request->get($request, 'latitude');
+            $longitude = $this->request->get($request, 'longitude');
 
             $geolocation = new GeolocationService();
             $coords = $geolocation->geolocate($latitude, $longitude);
@@ -407,8 +407,12 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $city = $this->request->get($request, 'city', false);
-            $country = $this->request->get($request, 'country', false);
+            $city = $this->request->get($request, 'city');
+            $country = $this->request->get($request, 'country');
+
+            if ($city === null || $country === null) {
+                throw new HttpException(400, "El nombre de la ciudad y el país son obligatorios");
+            }
 
             if ($user->getCountry() == $country && $user->getCity() == $city) {
                 $coords = $user->getCoordinates();
