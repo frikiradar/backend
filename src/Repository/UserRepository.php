@@ -97,9 +97,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $latitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLatitude() : 0;
         $longitude = $fromUser->getCoordinates() ? $fromUser->getCoordinates()->getLongitude() : 0;
+        $point = 'Point(' . $longitude . ' ' . $latitude . ')';
 
         $dql = $this->createQueryBuilder('u')
-            ->select(array(
+            ->select([
                 'u.id',
                 'u.username',
                 'u.name',
@@ -129,12 +130,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.thumbnail',
                 'u.roles',
                 'u.public',
-                'u.coordinates',
                 "(SpDistance(
                     u.coordinates,
-                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                    StGeomFromText(:point)
                 ) * 111.045) distance"
-            ))
+            ])
             ->andWhere('u.id = :id');
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql->andWhere('u.active = 1');
@@ -147,9 +147,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         /**
          * @var User
          */
-        $user = $dql->setParameters(array(
-            'id' => $toUser->getId()
-        ))->getQuery()
+        $user = $dql->setParameters([
+            'id' => $toUser->getId(),
+            'point' => $point
+        ])->getQuery()
             ->getOneOrNullResult();
 
         if (!is_null($user)) {
@@ -160,7 +161,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
 
             $user['age'] = (int) $user['age'];
-            if (!$user['hide_location'] && $user['coordinates']) {
+            if (!$user['hide_location'] && $user['distance']) {
                 $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($user['distance']);
@@ -273,6 +274,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        $point = 'Point(' . $longitude . ' ' . $latitude . ')';
 
         $limit = 15;
         $offset = ($page - 1) * $limit;
@@ -296,9 +298,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.thumbnail',
                 "(SpDistance(
                     u.coordinates,
-                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                    StGeomFromText(:point)
                 ) * 111.045) distance"
-            ));
+            ))
+            ->setParameter('point', $point);
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
@@ -390,12 +393,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     {
         $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
         $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        $point = 'Point(' . $longitude . ' ' . $latitude . ')';
 
         $regex = '/^((saga|trilogia|trilogía|trilogy|series|collection)\s+)|(\s+(saga|trilogia|trilogía|trilogy|series|collection))|(\(\s*(saga|trilogia|trilogía|trilogy|series|collection)\s*\))$/i';
         $search = trim(preg_replace($regex, '', $search));
 
         $dql = $this->createQueryBuilder('u')
-            ->select(array(
+            ->select([
                 'u.id',
                 'u.username',
                 'u.name',
@@ -410,9 +414,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 'u.thumbnail',
                 "(SpDistance(
                     u.coordinates,
-                    StGeomFromText('Point(" . $longitude . " " . $latitude . ")')
+                    StGeomFromText(:point)
                 ) * 111.045) distance"
-            ));
+            ])
+            ->setParameter('point', $point);
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
@@ -446,8 +451,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('search', $search);
             }
 
-            $dql->orderBy('distance', 'ASC')
-                ->addOrderBy('u.last_login', 'DESC')
+            $dql->addOrderBy('u.last_login', 'DESC')
                 ->setParameter('id', $user->getId())
                 ->setParameter('minage', $user->getMinage() ?: 18)
                 ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)

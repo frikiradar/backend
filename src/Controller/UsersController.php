@@ -607,6 +607,23 @@ class UsersController extends AbstractController
         }
     }
 
+    #[Route('/v1/search-by-slug', name: 'search_by_slug', methods: ['POST'])]
+    public function searchBySlugAction(Request $request)
+    {
+        $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
+        $page = $this->request->get($request, "page");
+        $order = $this->request->get($request, "order");
+        $slug = $this->request->get($request, "slug");
+
+        try {
+            $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($slug, $user, $order, $page, true);
+            return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
+        }
+    }
+
     #[Route('/v1/search-usernames/{query}', name: 'search_usernames', methods: ['GET'])]
     public function searchUsernames($query)
     {
