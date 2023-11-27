@@ -27,7 +27,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
-
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 #[Route(path: '/api')]
 class UsersController extends AbstractController
@@ -1171,10 +1171,14 @@ class UsersController extends AbstractController
     }
 
     #[Route('/v1/remove-account', name: 'remove_account', methods: ['PUT'])]
-    public function removeAccountAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher)
+    public function removeAccountAction(Request $request, MailerInterface $mailer, UserPasswordHasherInterface $passwordHasher, AuthorizationCheckerInterface $security)
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+
+        if ($security->isGranted('ROLE_ADMIN')) {
+            return new HttpException(400, "No puedes eliminar tu cuenta porque eres administrador");
+        }
 
         if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "password"))) {
             try {
