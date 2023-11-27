@@ -636,7 +636,7 @@ class UsersController extends AbstractController
         }
     }
 
-    // TODO: Eliminar este endpoint, ahora usamos el de verify
+    // TODO: Eliminar este endpoint, ahora usamos el de verify 3.3.0
     #[Route('/v1/activation', name: 'activation-email', methods: ['GET'])]
     public function activationEmailAction(MailerInterface $mailer)
     {
@@ -1141,7 +1141,7 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación
+        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación 3.3.0
         // el método antiguo iba con password y el nuevo con código
         $password = $this->request->get($request, "password", false);
         $verificationCode = $this->request->get($request, "code", false);
@@ -1196,7 +1196,7 @@ class UsersController extends AbstractController
             return new HttpException(400, "No puedes eliminar tu cuenta porque eres administrador");
         }
 
-        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación
+        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación 3.3.0
         // el método antiguo iba con password y el nuevo con código
         $password = $this->request->get($request, "password", false);
         $verificationCode = $this->request->get($request, "code", false);
