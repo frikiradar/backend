@@ -673,8 +673,8 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "verification_code");
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
-        if (!is_null($user)) {
+
+        if ($verificationCode == $user->getVerificationCode()) {
             $user->setActive(true);
             $user->setVerificationCode(null);
             $this->em->persist($user);
@@ -1032,8 +1032,8 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "verification_code");
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
-        if (!is_null($user)) {
+
+        if ($user->getVerificationCode() == $verificationCode) {
             try {
                 $user->setVerificationCode(null);
                 $this->em->persist($user);
@@ -1098,8 +1098,8 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "verification_code");
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
-        if (!is_null($user)) {
+
+        if ($user->getVerificationCode() == $verificationCode) {
             try {
                 $user->setVerificationCode(null);
                 $this->em->persist($user);
@@ -1140,7 +1140,19 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "password"))) {
+        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación
+        // el método antiguo iba con password y el nuevo con código
+        $password = $this->request->get($request, "password", false);
+        $verificationCode = $this->request->get($request, "code", false);
+        $note = $this->request->get($request, "note", false);
+
+        if ($password) {
+            $checkPassword = $passwordHasher->isPasswordValid($user, $password);
+        } else {
+            $checkVerification = $user->getVerificationCode() == $verificationCode;
+        }
+
+        if ($checkPassword || $checkVerification) {
             try {
                 // ponemos usuario en disable
                 $user->setActive(false);
@@ -1150,13 +1162,13 @@ class UsersController extends AbstractController
                 $this->em->persist($user);
                 $this->em->flush();
 
-                if (!empty($this->request->get($request, 'note'))) {
+                if (!empty($note)) {
                     // Enviar email al administrador informando del motivo
                     $email = (new Email())
                         ->from(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->subject($user->getUserIdentifier() . ' ha desactivado su cuenta.')
-                        ->html("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'));
+                        ->html("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $note);
 
                     $mailer->send($email);
                 }
@@ -1180,7 +1192,19 @@ class UsersController extends AbstractController
             return new HttpException(400, "No puedes eliminar tu cuenta porque eres administrador");
         }
 
-        if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "password"))) {
+        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación
+        // el método antiguo iba con password y el nuevo con código
+        $password = $this->request->get($request, "password", false);
+        $verificationCode = $this->request->get($request, "code", false);
+        $note = $this->request->get($request, "note", false);
+
+        if ($password) {
+            $checkPassword = $passwordHasher->isPasswordValid($user, $password);
+        } else {
+            $checkVerification = $user->getVerificationCode() == $verificationCode;
+        }
+
+        if ($checkPassword || $checkVerification) {
             try {
                 // borramos archivos de chat
                 $this->em->getRepository(\App\Entity\Chat::class)->deleteChatsFiles($user);
@@ -1212,13 +1236,13 @@ class UsersController extends AbstractController
                 $this->em->remove($user);
                 $this->em->flush();
 
-                if (!empty($this->request->get($request, 'note'))) {
+                if (!empty($note)) {
                     // Enviar email al administrador informando del motivo
                     $email = (new Email())
                         ->from(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->subject($username . ' ha eliminado su cuenta.')
-                        ->html("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $this->request->get($request, 'note'));
+                        ->html("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $note);
 
                     $mailer->send($email);
                 }
