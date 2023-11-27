@@ -74,9 +74,9 @@ class LabCommandService
     {
         $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $toId));
         $email = (new Email())
-            ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+            ->from(new Address('hola@frikiradar.com', 'frikiradar'))
             ->to(new Address($user->getEmail(), $user->getUsername()))
-            ->subject('¡FrikiRadar te extraña 💔!')
+            ->subject('¡frikiradar te extraña 💔!')
             ->html($this->twig->render(
                 "emails/registration.html.twig",
                 [

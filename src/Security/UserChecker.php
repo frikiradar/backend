@@ -65,9 +65,9 @@ class UserChecker extends AbstractController implements UserCheckerInterface
             $user->setVerificationCode();
 
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
-                ->subject($user->getVerificationCode() . ' es tu código de activación de FrikiRadar')
+                ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
                 ->html($this->renderView(
                     "emails/registration.html.twig",
                     [

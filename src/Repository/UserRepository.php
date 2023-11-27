@@ -528,7 +528,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                             $this->em->flush();
 
                             $title = $fromUser->getUsername();
-                            $text = "💓Doki doki ¡El FrikiRadar ha detectado a alguien interesante cerca!";
+                            $text = "💓Doki doki ¡El frikiradar ha detectado a alguien interesante cerca!";
                             $url = "/profile/" . $fromUser->getId();
                             $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
                         }
@@ -714,8 +714,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         // Enviamos email avisando
         $email = (new Email())
-            ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
-            ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+            ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+            ->to(new Address('hola@frikiradar.com', 'frikiradar'))
             ->subject('Nuevo usuario baneado')
             ->html("<p>El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text . "</p>");
 

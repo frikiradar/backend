@@ -102,7 +102,7 @@ class ChatController extends AbstractController
                 // Enviamos email avisando
                 $email = (new Email())
                     ->from($fromUser->getEmail())
-                    ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                    ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject('Mensaje de usuario baneado')
                     ->html("El usuario baneado " . $fromUser->getName() . " ha escrito un mensaje: " . $text);
 
@@ -489,8 +489,8 @@ class ChatController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'FrikiRadar'))
-                ->to(new Address('hola@frikiradar.com', 'FrikiRadar'))
+                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Nuevo mensaje reportado')
                 ->html("El usuario " . $user->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Contenido del mensaje: " . $text);
 
