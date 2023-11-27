@@ -636,6 +636,7 @@ class UsersController extends AbstractController
         }
     }
 
+    // TODO: Eliminar este endpoint, ahora usamos el de verify
     #[Route('/v1/activation', name: 'activation-email', methods: ['GET'])]
     public function activationEmailAction(MailerInterface $mailer)
     {
@@ -1146,6 +1147,9 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
 
+        $checkPassword = false;
+        $checkVerification = false;
+
         if ($password) {
             $checkPassword = $passwordHasher->isPasswordValid($user, $password);
         } else {
@@ -1197,6 +1201,9 @@ class UsersController extends AbstractController
         $password = $this->request->get($request, "password", false);
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
+
+        $checkPassword = false;
+        $checkVerification = false;
 
         if ($password) {
             $checkPassword = $passwordHasher->isPasswordValid($user, $password);
