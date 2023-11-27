@@ -992,13 +992,16 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
+            $subject = $user->getVerificationCode() . ' es el código para verificar tu inicio de sesión';
+
             $email = (new Email())
                 ->from(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
-                ->subject($user->getVerificationCode() . ' es el código para verificar tu inicio de sesión')
+                ->subject($subject)
                 ->html($this->renderView(
-                    "emails/two-step.html.twig",
+                    "emails/verification-code.html.twig",
                     [
+                        'subject' => $subject,
                         'username' => $user->getUserIdentifier(),
                         'code' => $user->getVerificationCode()
                     ]
@@ -1039,6 +1042,72 @@ class UsersController extends AbstractController
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } catch (Exception $e) {
                 throw new HttpException(400, "Error al verificar tu sesión: " . $e);
+            }
+        } else {
+            throw new HttpException(400, "El código de verificación no es válido.");
+        }
+    }
+
+    #[Route('/v1/verify', name: 'send_verification', methods: ['GET'])]
+    public function sendVerificationAction(MailerInterface $mailer)
+    {
+        try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $user->setVerificationCode();
+            $this->em->persist($user);
+            $this->em->flush();
+
+            $subject = $user->getVerificationCode() . ' es el código para verificar tu cuenta';
+
+            $email = (new Email())
+                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($subject)
+                ->html($this->renderView(
+                    "emails/verification-code.html.twig",
+                    [
+                        'subject' => $subject,
+                        'username' => $user->getUserIdentifier(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
+
+            $mailer->send($email);
+
+            $response = [
+                'code' => 200,
+                'error' => false,
+                'data' => "Email enviado correctamente",
+            ];
+        } catch (Exception $ex) {
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Error al enviar el email de verificación - Error: {$ex->getMessage()}",
+            ];
+        }
+
+        return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
+    }
+
+
+    #[Route('/v1/verify', name: 'verify_code', methods: ['PUT'])]
+    public function verifyCodeAction(Request $request)
+    {
+        $verificationCode = $this->request->get($request, "verification_code");
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $user->getId(), 'verificationCode' => $verificationCode));
+        if (!is_null($user)) {
+            try {
+                $user->setVerificationCode(null);
+                $this->em->persist($user);
+                $this->em->flush();
+
+                return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+            } catch (Exception $e) {
+                throw new HttpException(400, "Error al verificar tu cuenta: " . $e);
             }
         } else {
             throw new HttpException(400, "El código de verificación no es válido.");
