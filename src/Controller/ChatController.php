@@ -178,9 +178,6 @@ class ChatController extends AbstractController
                     $chat->setTimeCreation();
                     $chat->setConversationId($conversationId);
                     $this->em->persist($chat);
-                    $fromUser->setLastLogin();
-                    $this->em->persist($fromUser);
-                    $this->em->flush();
                 }
 
 
