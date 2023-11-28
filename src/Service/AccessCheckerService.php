@@ -26,6 +26,12 @@ class AccessCheckerService extends AbstractController
             $user = $this->getUser();
         }
 
+        // Actualizamos la última IP y la última fecha de login
+        $user->setLastLogin();
+        $user->setLastIP();
+        $this->em->persist($user);
+        $this->em->flush();
+
         if ($this->em->getRepository(\App\Entity\User::class)->isBannedIpOrDevice($user)) {
             $user->setBanned(true);
             $user->setBanReason('Multicuenta no autorizada. La cuenta original ha sido baneada.');
