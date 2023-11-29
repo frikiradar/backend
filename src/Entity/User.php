@@ -256,6 +256,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups("default")]
     private ?array $languages = [];
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Ad::class)]
+    private Collection $ads;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -271,6 +274,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notifications = new ArrayCollection();
         $this->events = new ArrayCollection();
         $this->created_events = new ArrayCollection();
+        $this->ads = new ArrayCollection();
     }
 
     public function getUserIdentifier(): string
@@ -1524,6 +1528,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->languages = $languages;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ads>
+     */
+    public function getAds(): Collection
+    {
+        return $this->ads;
+    }
+
+    public function addAd(Ad $ad): static
+    {
+        if (!$this->ads->contains($ad)) {
+            $this->ads->add($ad);
+            $ad->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAd(Ad $ad): static
+    {
+        if ($this->ads->removeElement($ad)) {
+            // set the owning side to null (unless already changed)
+            if ($ad->getUser() === $this) {
+                $ad->setUser(null);
+            }
+        }
 
         return $this;
     }
