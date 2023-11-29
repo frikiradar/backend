@@ -6,9 +6,7 @@ use App\Repository\TagRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use ApiPlatform\Core\Annotation\ApiResource;
 
-#[ApiResource]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
 class Tag
 {

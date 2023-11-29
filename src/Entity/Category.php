@@ -3,12 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\CategoryRepository;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use ApiPlatform\Core\Annotation\ApiResource;
 
-#[ApiResource]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
 {
@@ -24,7 +21,6 @@ class Category
 
     public function __construct()
     {
-        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
