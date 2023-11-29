@@ -45,4 +45,19 @@ class AdRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function getActiveAds(): array
+    {
+        // cogemos todos los anuncios activos, para eso vemos que
+        // start_date sea menor o igual que hoy y end_date sea mayor o igual que hoy
+        // también puede ser que end_date sea null, en ese caso no hay fecha de fin
+        // o que start_date y end_date sea null, en ese caso el anuncio está siempre activo
+
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.start_date <= :today OR a.start_date IS NULL')
+            ->andWhere('a.end_date >= :today OR a.end_date IS NULL')
+            ->setParameter('today', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
 }
