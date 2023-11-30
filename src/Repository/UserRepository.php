@@ -26,13 +26,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     private $security;
     private $em;
     private $notification;
+    private $mailer;
 
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification, MailerInterface $mailer)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
         $this->em = $entityManager;
         $this->notification = $notification;
+        $this->mailer = $mailer;
     }
 
     // /**
@@ -663,7 +665,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $query->getResult();
     }
 
-    public function banUser(User $toUser, $reason, $days, $hours, MailerInterface $mailer)
+    public function banUser(User $toUser, $reason, $days, $hours)
     {
         $chat = new Chat();
         $fromUser = $this->findOneBy(array('username' => 'frikiradar'));
@@ -719,7 +721,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->subject('Nuevo usuario baneado')
             ->html("<p>El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text . "</p>");
 
-        if (0 === $mailer->send($email)) {
+        if (0 === $this->mailer->send($email)) {
             // throw new HttpException(400, "Error al enviar el email avisando el bug");
         }
     }
