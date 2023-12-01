@@ -308,7 +308,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 45;
+            $lastLogin = 7;
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
@@ -336,7 +336,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             )
-                ->andWhere('u.id <> :id')
                 ->andWhere('u.avatar IS NOT NULL')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
@@ -347,17 +346,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->setParameter('id', $user->getId())
                 ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
                 ->setParameter('lastlogin', $lastLogin);
         } else {
             $dql
-                ->andWhere("u.roles LIKE '%ROLE_DEMO%'")
-                ->andWhere('u.id <> :id')
-                ->setParameters(array(
-                    'id' => $user->getId()
-                ));
+                ->andWhere("u.roles LIKE '%ROLE_DEMO%'");
         }
+
+        $dql
+            ->andWhere("u.id <> :id")
+            ->setParameter('id', $user->getId());
 
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
