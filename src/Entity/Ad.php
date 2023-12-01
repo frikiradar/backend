@@ -44,6 +44,7 @@ class Ad
     private ?\DateTimeInterface $end_date = null;
 
     #[ORM\ManyToOne(inversedBy: 'ads')]
+    #[Groups('ads')]
     private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'ad', targetEntity: ClickAd::class, orphanRemoval: true)]
