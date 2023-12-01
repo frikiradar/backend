@@ -170,7 +170,7 @@ class UsersController extends AbstractController
 
                 $this->em->flush();
 
-                return new JsonResponse($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
+                return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
