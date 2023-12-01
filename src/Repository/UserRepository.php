@@ -714,7 +714,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         // Enviamos email avisando
         $email = (new Email())
-            ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+            ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
             ->to(new Address('hola@frikiradar.com', 'frikiradar'))
             ->subject('Nuevo usuario baneado')
             ->html("<p>El usuario <a href='https://frikiradar.app/" . urlencode($toUser->getUsername()) . "'>" . $toUser->getUsername() . "</a> ha sido baneado por el siguiente motivo: " . $text . "</p>");

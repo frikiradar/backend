@@ -36,7 +36,7 @@ class CronCommandService
             $users = $this->em->getRepository(\App\Entity\User::class)->getUsersByLastLogin($days);
             foreach ($users as $user) {
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($user->getEmail(), $user->getUsername()))
                     ->subject('¡frikiradar te extraña 💔!')
                     ->html($this->twig->render(

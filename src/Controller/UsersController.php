@@ -155,7 +155,7 @@ class UsersController extends AbstractController
                 $this->em->persist($user);
 
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($user->getEmail(), $user->getUsername()))
                     ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
                     ->html($this->renderView(
@@ -173,7 +173,7 @@ class UsersController extends AbstractController
                 return new JsonResponse($this->serializer->serialize($user, "json", ['datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject('Error de registro de usuario')
                     ->html("Datos del usuario:<br>" . $this->serializer->serialize($user, "json", ['groups' => 'default']) . "<br>" . $ex->getMessage());
@@ -648,7 +648,7 @@ class UsersController extends AbstractController
             $this->em->flush();
 
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
                 ->html($this->renderView(
@@ -704,7 +704,7 @@ class UsersController extends AbstractController
 
             try {
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($user->getEmail(), $user->getUsername()))
                     ->subject($user->getVerificationCode() . ' es el código para generar una nueva contraseña de frikiradar')
                     ->html($this->renderView(
@@ -829,7 +829,7 @@ class UsersController extends AbstractController
             if (!empty($newBlock->getNote())) {
                 // Enviar email al administrador informando del motivo
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject('Nuevo usuario bloqueado')
                     ->html("El usuario " . $user->getUserIdentifier() . " ha bloqueado al usuario <a href='https://frikiradar.app/" . urlencode($blockUser->getUsername()) . "'>" . $blockUser->getUsername() . "</a> por el siguiente motivo: " . $newBlock->getNote());
@@ -996,7 +996,7 @@ class UsersController extends AbstractController
             $subject = $user->getVerificationCode() . ' es el código para verificar tu inicio de sesión';
 
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($subject)
                 ->html($this->renderView(
@@ -1062,7 +1062,7 @@ class UsersController extends AbstractController
             $subject = $user->getVerificationCode() . ' es el código para verificar tu cuenta';
 
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($subject)
                 ->html($this->renderView(
@@ -1169,7 +1169,7 @@ class UsersController extends AbstractController
                 if (!empty($note)) {
                     // Enviar email al administrador informando del motivo
                     $email = (new Email())
-                        ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                        ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                         ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->subject($user->getUserIdentifier() . ' ha desactivado su cuenta.')
                         ->html("El usuario " . $user->getUserIdentifier() . " ha desactivado su cuenta por el siguiente motivo: " . $note);
@@ -1246,7 +1246,7 @@ class UsersController extends AbstractController
                 if (!empty($note)) {
                     // Enviar email al administrador informando del motivo
                     $email = (new Email())
-                        ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                        ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                         ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                         ->subject($username . ' ha eliminado su cuenta.')
                         ->html("El usuario " . $username . " ha eliminado su cuenta por el siguiente motivo: " . $note);

@@ -103,7 +103,7 @@ class DevicesController extends AbstractController
             $device = $this->request->get($request, "device");
 
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject('Aviso de inicio de sesión desde un dispositivo desconocido')
                 ->html($this->renderView(

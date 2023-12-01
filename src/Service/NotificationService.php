@@ -184,7 +184,7 @@ class NotificationService extends AbstractController
 
                 //Enviar email en lugar de notificación
                 $email = (new Email())
-                    ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($toUser->getEmail(), $toUser->getUsername()))
                     ->subject($title)
                     ->html($this->renderView(

@@ -487,7 +487,7 @@ class ChatController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $email = (new Email())
-                ->from(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Nuevo mensaje reportado')
                 ->html("El usuario " . $user->getUsername() . " ha reportado un mensaje en <a href='https://frikiradar.app/room/" . $room . "'>" . $room . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Contenido del mensaje: " . $text);
