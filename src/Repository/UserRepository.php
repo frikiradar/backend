@@ -308,7 +308,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 7;
+            $lastLogin = 15;
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
@@ -359,7 +359,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $recent = date('Y-m-d H:i:s', strtotime('-12 hours', strtotime(date("Y-m-d H:i:s"))));
+            $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
             $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :recent')
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
