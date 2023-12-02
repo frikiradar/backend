@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Chat;
+use App\Entity\Radar;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -336,12 +337,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             )
-                ->andWhere('u.avatar IS NOT NULL')
+                ->andWhere('u.avatar IS NOT NULL OR u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)')
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('u.active = 1')
                 ->andWhere('u.banned <> 1')
                 ->andWhere('u.coordinates IS NOT NULL')
-                ->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)")
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
@@ -515,9 +515,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['common_tags'] = [];
             }
 
-            /*if (!$this->security->isGranted('ROLE_DEMO')) {
+            if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
-                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 5 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
+                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 50 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
                     if (empty($this->em->getRepository(\App\Entity\Radar::class)->findById($fromUser->getId(), $u['id']))) {
                         $toUser = $this->findOneBy(array('id' => $u['id']));
                         if (in_array('ROLE_PREMIUM', $toUser->getRoles()) || in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
@@ -534,7 +534,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         }
                     }
                 }
-            }*/
+            }
         }
 
         return $users;
