@@ -186,6 +186,7 @@ class NotificationService extends AbstractController
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($toUser->getEmail(), $toUser->getUsername()))
+                    ->replyTo(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject($title)
                     ->html($this->renderView(
                         "emails/notification.html.twig",

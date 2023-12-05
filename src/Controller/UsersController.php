@@ -706,6 +706,7 @@ class UsersController extends AbstractController
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($user->getEmail(), $user->getUsername()))
+                    ->replyTo(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject($user->getVerificationCode() . ' es el código para generar una nueva contraseña de frikiradar')
                     ->html($this->renderView(
                         "emails/recover.html.twig",
