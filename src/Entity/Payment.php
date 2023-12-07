@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PaymentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
 class Payment
@@ -12,15 +13,19 @@ class Payment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups('payment')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('payment')]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('payment')]
     private ?string $description = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups('payment')]
     private ?string $method = null;
 
     #[ORM\ManyToOne(inversedBy: 'payments')]
@@ -28,15 +33,19 @@ class Payment
     private ?User $user = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups('payment')]
     private ?\DateTimeInterface $payment_date = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups('payment')]
     private ?\DateTimeInterface $expiration_date = null;
 
     #[ORM\Column]
+    #[Groups('payment')]
     private ?float $amount = null;
 
     #[ORM\Column(length: 5)]
+    #[Groups('payment')]
     private ?string $currency = null;
 
     #[ORM\Column(nullable: true)]
@@ -46,6 +55,7 @@ class Payment
     private ?array $purchase = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups('payment')]
     private ?string $status = null;
 
     public function getId(): ?int

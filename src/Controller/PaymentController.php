@@ -35,7 +35,7 @@ class PaymentController extends AbstractController
         $user = $this->getUser();
         $payments = $user->getPayments();
 
-        return $this->json($payments);
+        return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
     #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
