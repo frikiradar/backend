@@ -59,8 +59,8 @@ class PaymentController extends AbstractController
             }
             $payment->setAmount($this->request->get($request, 'amount'));
             $payment->setCurrency($this->request->get($request, 'currency'));
-            $payment->setProduct($this->request->get($request, 'product'));
-            $payment->setPurchase($this->request->get($request, 'purchase'));
+            $payment->setProduct(json_decode($this->request->get($request, 'product')));
+            $payment->setPurchase(json_decode($this->request->get($request, 'purchase')));
             $payment->setStatus('active');
 
             $this->paymentRepository->save($payment);
