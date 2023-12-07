@@ -176,8 +176,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
 
             $user['age'] = (int) $user['age'];
-            if (!$user['hide_location'] && $user['distance']) {
-                $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
+            if (!$user['hide_location']) {
+                $user['distance'] = round($user['distance'] ?? 10000, 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($user['distance']);
             }
@@ -316,7 +316,22 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     StGeomFromText(:point)
                 ) * 111.045) distance"
             ))
-            ->setParameter('point', $point);
+            ->setParameter('point', $point)
+            ->leftJoin('App:Tag', 't', 'WITH', 'u.id = t.user')
+            ->leftJoin('App:BlockUser', 'b', 'WITH', 'u.id = b.block_user AND b.from_user = :id')
+            ->leftJoin('App:BlockUser', 'bu', 'WITH', 'u.id = bu.from_user AND bu.block_user = :id')
+            ->leftJoin('App:HideUser', 'h', 'WITH', 'u.id = h.hide_user AND h.from_user = :id')
+            ->setParameter('id', $user->getId())
+            ->andWhere('u.avatar IS NOT NULL OR t.user IS NOT NULL')
+            ->andWhere('b.block_user IS NULL')
+            ->andWhere('bu.from_user IS NULL')
+            ->andWhere('h.hide_user IS NULL')
+            ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
+            ->andWhere('u.active = 1')
+            ->andWhere('u.banned <> 1')
+            ->andWhere('u.coordinates IS NOT NULL')
+            ->andWhere("u.id <> :id")
+            ->groupBy('u.id');
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
@@ -357,16 +372,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-            )
-                ->andWhere('u.avatar IS NOT NULL OR u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)')
-                ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
-                ->andWhere('u.active = 1')
-                ->andWhere('u.banned <> 1')
-                ->andWhere('u.coordinates IS NOT NULL')
-                ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
-                ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
-                ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
+            )->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
         } else {
             $dql
                 ->andWhere("u.roles LIKE '%ROLE_DEMO%'");
@@ -399,7 +405,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             $users = $this->enhanceUsers($users, $user, 'radar-list');
             usort($users, function ($a, $b) {
-                return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
+                return ($b['match'] ?? 0) <=> ($a['match'] ?? 0);
             });
 
             $offset = ($page - 1) * $limit;
@@ -445,7 +451,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql
-                ->where('u.avatar IS NOT NULL')
+                ->andWhere('u.avatar IS NOT NULL OR t.user IS NOT NULL')
                 ->andWhere('u.active = 1')
                 ->andWhere('u.banned <> 1')
                 ->andWhere('u.id <> :id')
@@ -475,12 +481,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         switch ($order) {
             case 'match':
                 usort($users, function ($a, $b) {
-                    return (isset($b['match']) ? $b['match'] : 0) <=> (isset($a['match']) ? $a['match'] : 0);
+                    return ($b['match']) ?? 0 <=> ($a['match'] ?? 0);
                 });
                 break;
             default:
                 usort($users, function ($b, $a) {
-                    return (isset($b['distance']) ? $b['distance'] : 0) <=> (isset($a['distance']) ? $a['distance'] : 0);
+                    return ($b['distance'] ?? 10000) <=> ($a['distance'] ?? 10000);
                 });
         }
 
@@ -503,8 +509,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['images'] = $toUser->getImages();
             }
             $users[$key]['age'] = (int) $u['age'];
-            if (!$u['hide_location'] && $u['distance']) {
-                $users[$key]['distance'] = round($u['distance'], 0, PHP_ROUND_HALF_UP);
+            if (!$u['hide_location']) {
+                $users[$key]['distance'] = round($u['distance'] ?? 10000, 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($users[$key]['distance']);
             }
