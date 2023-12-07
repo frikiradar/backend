@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Chat;
 use App\Entity\Radar;
 use App\Entity\User;
+use App\Service\GeolocationService;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -28,14 +29,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     private $em;
     private $notification;
     private $mailer;
+    private $geolocation;
 
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification, MailerInterface $mailer)
+    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security, EntityManagerInterface $entityManager, NotificationService $notification, MailerInterface $mailer, GeolocationService $geolocation)
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
         $this->em = $entityManager;
         $this->notification = $notification;
         $this->mailer = $mailer;
+        $this->geolocation = $geolocation;
     }
 
     // /**
@@ -176,8 +179,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
 
             $user['age'] = (int) $user['age'];
-            if (!$user['hide_location']) {
-                $user['distance'] = round($user['distance'] ?? 10000, 0, PHP_ROUND_HALF_UP);
+            if (!$user['hide_location'] && $user['distance']) {
+                $user['distance'] = round($user['distance'], 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($user['distance']);
             }
@@ -285,10 +288,18 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-    public function getRadarUsers(User $user, $page, $ratio, $options)
+    public function getRadarUsers(User $user, $page, $ratio, $options = null, $location = null)
     {
-        $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
-        $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        if ($options && $options['fake_location'] && $location) {
+            $city = $location['city'];
+            $country = $location['country'];
+            $coordinates = $this->geolocation->manualGeolocate($city, $country);
+            $latitude = $coordinates->getLatitude();
+            $longitude = $coordinates->getLongitude();
+        } else {
+            $latitude = $user->getCoordinates() ? $user->getCoordinates()->getLatitude() : 0;
+            $longitude = $user->getCoordinates() ? $user->getCoordinates()->getLongitude() : 0;
+        }
         $point = 'Point(' . $longitude . ' ' . $latitude . ')';
 
         $limit = 15;
@@ -334,7 +345,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->groupBy('u.id');
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
+        } else if (!$this->security->isGranted('ROLE_PREMIUM') || !$options['worldwide']) {
+            $dql->andHaving('distance <= 1000');
         }
+
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
@@ -385,23 +399,24 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
             $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
-            $users = $dql->andWhere('u.id NOT IN (SELECT IDENTITY(v.to_user) FROM App:ViewUser v WHERE v.from_user = :id) OR u.last_login > :recent')
+            $dql->leftJoin('App:ViewUser', 'v', 'WITH', 'u.id = v.to_user AND v.from_user = :id')
+                ->andWhere('v.to_user IS NULL OR u.last_login > :recent')
+                ->setParameter('recent', $recent)
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
-                ->getQuery()
-                ->setParameter('recent', $recent)
                 ->setFirstResult($offset)
-                ->setMaxResults($limit)
-                ->getResult();
+                ->setMaxResults($limit);
+
+            $users = $dql->getQuery()->getResult();
 
             $users = $this->enhanceUsers($users, $user, 'radar-cards');
             // shuffle($users);
             return array_slice($users, 0);
         } else {
-            $users = $dql->addOrderBy('u.last_login', 'DESC')
-                ->orderBy('distance', 'ASC')
-                ->getQuery()
-                ->getResult();
+            $dql->addOrderBy('u.last_login', 'DESC')
+                ->orderBy('distance', 'ASC');
+
+            $users = $dql->getQuery()->getResult();
 
             $users = $this->enhanceUsers($users, $user, 'radar-list');
             usort($users, function ($a, $b) {
@@ -509,7 +524,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['images'] = $toUser->getImages();
             }
             $users[$key]['age'] = (int) $u['age'];
-            if (!$u['hide_location']) {
+            if (!$u['hide_location'] && $u['distance']) {
                 $users[$key]['distance'] = round($u['distance'] ?? 10000, 0, PHP_ROUND_HALF_UP);
             } else {
                 unset($users[$key]['distance']);

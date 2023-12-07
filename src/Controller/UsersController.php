@@ -592,8 +592,9 @@ class UsersController extends AbstractController
         $page = $this->request->get($request, "page");
         $ratio = $this->request->get($request, "ratio") ?: -1;
         $options = $this->request->get($request, 'options', false);
+        $location = $this->request->get($request, 'location', false);
         try {
-            $users = $this->userRepository->getRadarUsers($user, $page, $ratio, $options);
+            $users = $this->userRepository->getRadarUsers($user, $page, $ratio, $options, $location);
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -1277,7 +1278,13 @@ class UsersController extends AbstractController
             if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
                 $referralUsername = $user->getReferral();
                 if (!empty($referralUsername)) {
-                    $friend = $this->userRepository->findOneBy(array('username' => $referralUsername));
+                    $referralUsername = ltrim($referralUsername, '@');
+                    if (strpos($referralUsername, '@') !== false) {
+                        $friend = $this->userRepository->findOneBy(array('email' => $referralUsername));
+                    } else {
+                        $friend = $this->userRepository->findOneBy(array('username' => $referralUsername));
+                    }
+
                     if ($friend->getPremiumExpiration()) {
                         $friendDatetime = $friend->getPremiumExpiration();
                     } else {
