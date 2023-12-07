@@ -321,7 +321,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
         }
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $lastLogin = 15;
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
@@ -344,6 +343,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                         "u.connection NOT LIKE '%Amistad%'"
                 );
             }
+            if ($options && $options['online'] == 'true') {
+                $dateTime = new \DateTime();
+                $dateTime->modify('-5 minutes');
+
+                $dql->andWhere('u.last_login >= :lastlogin')
+                    ->setParameter('lastlogin', $dateTime); // 15 minutos
+            } else {
+                $dql->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
+                    ->setParameter('lastlogin', 15); // 15 dias
+            }
             $dql->andWhere(
                 $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
@@ -357,9 +366,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)')
-                ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1)
-                ->setParameter('lastlogin', $lastLogin);
+                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
         } else {
             $dql
                 ->andWhere("u.roles LIKE '%ROLE_DEMO%'");

@@ -328,7 +328,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $roles[] = 'ROLE_MASTER';
         }
 
-        if ($this->getPremiumExpiration() > new \DateTime) {
+        if ($this->isPremium()) {
             $roles[] = 'ROLE_PREMIUM';
         } elseif (date("m-d") >= "02-12" && date("m-d") <= "02-18") {
             // San valentín
@@ -1617,5 +1617,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->premium_expiration = $premium_expiration;
 
         return $this;
+    }
+
+    public function isPremium(): bool
+    {
+        return $this->getPremiumExpiration() > new \DateTime;
     }
 }
