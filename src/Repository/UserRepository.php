@@ -345,7 +345,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->groupBy('u.id');
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
-        } else if (!$this->security->isGranted('ROLE_PREMIUM') || !$options['worldwide']) {
+        } else if ($options && !$options['worldwide']) {
             $dql->andHaving('distance <= 1000');
         }
 
