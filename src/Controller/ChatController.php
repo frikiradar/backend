@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
+use App\Repository\BlockUserRepository;
+use App\Repository\UserRepository;
+use App\Repository\ChatRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use App\Service\MessageService;
@@ -12,7 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,27 +28,33 @@ use Symfony\Component\Mime\Address;
 #[Route(path: '/api')]
 class ChatController extends AbstractController
 {
-    private $em;
     private $serializer;
     private $request;
     private $message;
     private $accessChecker;
     private $security;
+    private $userRepository;
+    private $chatRepository;
+    private $blockUserRepository;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         RequestService $request,
         MessageService $message,
         AccessCheckerService $accessChecker,
-        AuthorizationCheckerInterface $security
+        AuthorizationCheckerInterface $security,
+        UserRepository $userRepository,
+        ChatRepository $chatRepository,
+        BlockUserRepository $blockUserRepository
     ) {
-        $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
         $this->message = $message;
         $this->accessChecker = $accessChecker;
         $this->security = $security;
+        $this->userRepository = $userRepository;
+        $this->chatRepository = $chatRepository;
+        $this->blockUserRepository = $blockUserRepository;
     }
 
     #[Route('/v1/chat', name: 'put_chat', methods: ['PUT'])]
@@ -61,8 +69,8 @@ class ChatController extends AbstractController
 
         $cache = new FilesystemAdapter();
         $chat = new Chat();
-        $toUser = $this->em->getRepository(\App\Entity\User::class)->find($id);
-        if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser))) {
+        $toUser = $this->userRepository->find($id);
+        if (empty($this->blockUserRepository->isBlocked($fromUser, $toUser))) {
             if (!$fromUser->isBanned() && $id == 1 && !$this->security->isGranted('ROLE_DEMO')) {
                 throw new HttpException(400, "No se puede escribir al usuario frikiradar sin estar baneado - Error");
             }
@@ -85,14 +93,13 @@ class ChatController extends AbstractController
             $chat->setTimeCreation();
             $chat->setConversationId($conversationId);
 
-            $replyToChat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
-            if ($replyToChat && !$replyToChat->isModded()) {
+            $replyToChat = $this->chatRepository->findOneBy(array('id' => $this->request->get($request, 'replyto', false)));
+            if ($replyToChat) {
                 $chat->setReplyTo($replyToChat);
             }
-            $this->em->persist($chat);
+            $this->chatRepository->save($chat);
             $fromUser->setLastLogin();
-            $this->em->persist($fromUser);
-            $this->em->flush();
+            $this->userRepository->save($fromUser);
 
             $this->message->send($chat, $toUser, true);
 
@@ -124,8 +131,8 @@ class ChatController extends AbstractController
         try {
             $cache = new FilesystemAdapter();
             $chat = new Chat();
-            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($request->request->get("touser"));
-            if (empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
+            $toUser = $this->userRepository->find($request->request->get("touser"));
+            if (empty($this->blockUserRepository->isBlocked($fromUser, $toUser)) && $toUser->getUsername() !== 'frikiradar') {
                 $chat->setTouser($toUser);
                 $chat->setFromuser($fromUser);
 
@@ -177,8 +184,8 @@ class ChatController extends AbstractController
 
                     $chat->setTimeCreation();
                     $chat->setConversationId($conversationId);
-                    $this->em->persist($chat);
-                    $this->em->flush();
+
+                    $this->chatRepository->save($chat);
                 }
 
 
@@ -211,9 +218,8 @@ class ChatController extends AbstractController
         $fromUser = $this->getUser();
         $this->accessChecker->checkAccess($fromUser);
         try {
-            $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChatUsers($fromUser);
-            $this->em->persist($fromUser);
-            $this->em->flush();
+            $chats = $this->chatRepository->getChatUsers($fromUser);
+            $this->userRepository->save($fromUser);
             return new JsonResponse($this->serializer->serialize($chats, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los usuarios - Error: {$ex->getMessage()}");
@@ -233,31 +239,20 @@ class ChatController extends AbstractController
         $page = $this->request->get($request, "page");
         $lastId = $this->request->get($request, "lastid", false) ?: 0;
 
-        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+        $toUser = $this->userRepository->findOneBy(array('id' => $id));
 
-        $blocked = !empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser)) ? true : false;
+        $blocked = !empty($this->blockUserRepository->isBlocked($fromUser, $toUser)) ? true : false;
 
         if ($fromUser->getId() !== $toUser->getId()) {
             //marcamos como leidos los antiguos
-            $unreadChats = $this->em->getRepository(\App\Entity\Chat::class)->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
-            foreach ($unreadChats as $chat) {
-                if (!is_null($chat->getFromuser())) {
-                    $chat->setTimeRead(new \DateTime);
-                    $this->em->persist($chat);
-
-                    if ($fromUser->getId() !== $toUser->getId()) {
-                        $this->message->send($chat, $toUser);
-                    }
-                }
-            }
+            $this->chatRepository->markChatsAsRead($fromUser, $toUser);
         }
 
         // Borrar cachés de notificaciones de chat
         $cache->deleteItem('users.notifications.' . $fromUser->getId());
-        $this->em->persist($fromUser);
-        $this->em->flush();
+        $this->userRepository->save($fromUser);
 
-        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
+        $chats = $this->chatRepository->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
         foreach ($chats as $key => $chat) {
             if ((null !== $chat->getFromuser() && !$chat->getFromuser()->isActive()) || $blocked) {
                 if ($blocked) {
@@ -289,11 +284,10 @@ class ChatController extends AbstractController
         try {
             /** @var \App\Entity\User $toUser */
             $toUser = $this->getUser();
-            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
+            $chat = $this->chatRepository->findOneBy(array('id' => $id));
             if ($chat->getTouser()->getId() == $toUser->getId()) {
                 $chat->setTimeRead(new \DateTime);
-                $this->em->persist($chat);
-                $this->em->flush();
+                $this->chatRepository->save($chat);
 
                 $this->message->send($chat, $chat->getFromuser());
 
@@ -315,7 +309,7 @@ class ChatController extends AbstractController
     {
         /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
-        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, "touser")));
+        $toUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, "touser")));
 
         $chat = new Chat();
         $min = min($fromUser->getId(), $toUser->getId());
@@ -345,12 +339,11 @@ class ChatController extends AbstractController
             $user = $this->getUser();
             $id = $this->request->get($request, "id");
             $text = $this->request->get($request, "text");
-            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
-            if ($chat->getFromuser()->getId() == $user->getId() && !$chat->isModded()) {
+            $chat = $this->chatRepository->findOneBy(array('id' => $id));
+            if ($chat->getFromuser()->getId() == $user->getId()) {
                 $chat->setText($text);
                 $chat->setEdited(1);
-                $this->em->persist($chat);
-                $this->em->flush();
+                $this->chatRepository->save($chat);
 
                 if ($chat->getTouser()) {
                     $this->message->send($chat, $chat->getTouser());
@@ -379,8 +372,8 @@ class ChatController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $user->getId());
 
-            $message = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
-            if (!$message->isModded() && ($message->getFromuser()->getId() == $user->getId() || $this->security->isGranted('ROLE_MASTER'))) {
+            $message = $this->chatRepository->findOneBy(array('id' => $id));
+            if ($message->getFromuser()->getId() == $user->getId()) {
                 $conversationId = $message->getConversationId();
                 $image = $message->getImage();
                 if (!empty($image)) {
@@ -406,18 +399,8 @@ class ChatController extends AbstractController
                     }
                 }
 
-                if ($message->getFromuser()->getId() != $user->getId() && $this->security->isGranted('ROLE_MASTER')) {
-                    $message->setText("<em>Mensaje eliminado por un moderador</em>");
-                    $message->setModded(true);
-                    $message->setImage(null);
-                    $message->setAudio(null);
-                    $this->em->persist($message);
-                    $this->em->flush();
-                } else {
-                    $this->em->remove($message);
-                    $this->em->flush();
-                    $message->setDeleted(1);
-                }
+                $this->chatRepository->remove($message);
+                $message->setDeleted(1);
 
                 if ($message->getTouser()) {
                     $this->message->send($message, $message->getTouser());
@@ -445,8 +428,8 @@ class ChatController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-            $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
-            $this->em->getRepository(\App\Entity\Chat::class)->deleteChatUser($toUser, $fromUser);
+            $toUser = $this->userRepository->findOneBy(array('id' => $id));
+            $this->chatRepository->deleteChatUser($toUser, $fromUser);
 
             return new JsonResponse($this->serializer->serialize($id, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -463,8 +446,8 @@ class ChatController extends AbstractController
         $chatsConfig = $this->request->get($request, "chats_config");
         $config['chats'] = $chatsConfig;
         $user->setConfig($config);
-        $this->em->persist($user);
-        $this->em->flush();
+
+        $this->userRepository->save($user);
 
         return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }

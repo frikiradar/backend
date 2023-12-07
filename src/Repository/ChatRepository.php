@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use App\Entity\Chat;
+use App\Service\MessageService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,11 +18,13 @@ use Doctrine\Persistence\ManagerRegistry;
 class ChatRepository extends ServiceEntityRepository
 {
     private $em;
+    private $message;
 
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager)
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager, MessageService $message)
     {
         parent::__construct($registry, Chat::class);
         $this->em = $entityManager;
+        $this->message = $message;
     }
 
     // /**
@@ -52,6 +55,17 @@ class ChatRepository extends ServiceEntityRepository
         ;
     }
     */
+    public function save(Chat $chat): void
+    {
+        $this->_em->persist($chat);
+        $this->_em->flush();
+    }
+
+    public function remove(Chat $chat): void
+    {
+        $this->_em->remove($chat);
+        $this->_em->flush();
+    }
 
     public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0, $banned = false)
     {
@@ -253,5 +267,22 @@ class ChatRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug)
             ->getQuery()
             ->execute();
+    }
+
+    public function markChatsAsRead($fromUser, $toUser): void
+    {
+        $unreadChats = $this->findBy(['fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null]);
+        foreach ($unreadChats as $chat) {
+            if (!is_null($chat->getFromUser())) {
+                $chat->setTimeRead(new \DateTime);
+                $this->_em->persist($chat);
+
+                if ($fromUser->getId() !== $toUser->getId()) {
+                    $this->_em->getRepository(\App\Entity\Notification::class)->deleteNotification($fromUser, $toUser, 'chat', $chat->getId());
+                    $this->message->send($chat, $toUser);
+                }
+            }
+        }
+        $this->_em->flush();
     }
 }
