@@ -47,4 +47,16 @@ class ViewStoryRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function save(ViewStory $viewStory): void
+    {
+        $this->getEntityManager()->persist($viewStory);
+        $this->getEntityManager()->flush();
+    }
+
+    public function remove(ViewStory $viewStory): void
+    {
+        $this->getEntityManager()->remove($viewStory);
+        $this->getEntityManager()->flush();
+    }
 }

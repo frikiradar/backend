@@ -54,6 +54,18 @@ class DeviceRepository extends ServiceEntityRepository
     }
     */
 
+    public function save(Device $device): void
+    {
+        $this->em->persist($device);
+        $this->em->flush();
+    }
+
+    public function remove(Device $device): void
+    {
+        $this->em->remove($device);
+        $this->em->flush();
+    }
+
     public function set(User $user, string $id, string $name, string $token = "", string $platform = null)
     {
         $device = $this->findOneBy(array('token' => $token, 'user' => $user));

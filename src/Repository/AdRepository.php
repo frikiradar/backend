@@ -46,6 +46,18 @@ class AdRepository extends ServiceEntityRepository
     //        ;
     //    }
 
+    public function save(Ad $ad): void
+    {
+        $this->_em->persist($ad);
+        $this->_em->flush();
+    }
+
+    public function remove(Ad $ad): void
+    {
+        $this->_em->remove($ad);
+        $this->_em->flush();
+    }
+
     public function getActiveAds(): array
     {
         // cogemos todos los anuncios activos, para eso vemos que

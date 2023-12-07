@@ -47,4 +47,16 @@ class LikeStoryRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function save(LikeStory $likeStory): void
+    {
+        $this->getEntityManager()->persist($likeStory);
+        $this->getEntityManager()->flush();
+    }
+
+    public function remove(LikeStory $likeStory): void
+    {
+        $this->getEntityManager()->remove($likeStory);
+        $this->getEntityManager()->flush();
+    }
 }

@@ -47,4 +47,16 @@ class ViewUserRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function save(ViewUser $viewUser): void
+    {
+        $this->_em->persist($viewUser);
+        $this->_em->flush();
+    }
+
+    public function remove(ViewUser $viewUser): void
+    {
+        $this->_em->remove($viewUser);
+        $this->_em->flush();
+    }
 }

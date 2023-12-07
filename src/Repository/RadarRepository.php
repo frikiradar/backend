@@ -70,4 +70,10 @@ class RadarRepository extends ServiceEntityRepository
             ->setParameter('to_id', $toId);
         return $query->getOneOrNullResult();
     }
+
+    public function save(Radar $radar): void
+    {
+        $this->_em->persist($radar);
+        $this->_em->flush();
+    }
 }

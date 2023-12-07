@@ -8,8 +8,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Device;
+use App\Repository\DeviceRepository;
+use App\Repository\UserRepository;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Mailer\MailerInterface;
@@ -22,20 +23,23 @@ use Symfony\Component\Serializer\SerializerInterface;
 class DevicesController extends AbstractController
 {
     private $serializer;
-    private $em;
     private $request;
     private $security;
+    private $deviceRepository;
+    private $userRepository;
 
     public function __construct(
         SerializerInterface $serializer,
-        EntityManagerInterface $entityManager,
         RequestService $request,
-        AuthorizationCheckerInterface $security
+        AuthorizationCheckerInterface $security,
+        DeviceRepository $deviceRepository,
+        UserRepository $userRepository
     ) {
         $this->serializer = $serializer;
-        $this->em = $entityManager;
         $this->request = $request;
         $this->security = $security;
+        $this->deviceRepository = $deviceRepository;
+        $this->userRepository = $userRepository;
     }
 
     #[Route('/v1/devices', name: 'get_devices', methods: ['GET'])]
@@ -58,7 +62,7 @@ class DevicesController extends AbstractController
         try {
             $token = $this->request->get($request, "token") ?: "";
             $platform = $this->request->get($request, "platform", false);
-            $this->em->getRepository(\App\Entity\Device::class)->set(
+            $this->deviceRepository->set(
                 $this->getUser(),
                 $this->request->get($request, "id"),
                 $this->request->get($request, "name"),
@@ -140,10 +144,9 @@ class DevicesController extends AbstractController
         try {
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $user, 'id' => $id));
+            $device = $this->deviceRepository->findOneBy(array('user' => $user, 'id' => $id));
             $user->removeDevice($device);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -159,10 +162,9 @@ class DevicesController extends AbstractController
             /**
              * @var Device
              */
-            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $this->getUser(), 'id' => $id));
+            $device = $this->deviceRepository->findOneBy(array('user' => $this->getUser(), 'id' => $id));
             $device->setActive(!$device->isActive());
-            $this->em->persist($device);
-            $this->em->flush();
+            $this->deviceRepository->save($device);
 
             return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -178,12 +180,12 @@ class DevicesController extends AbstractController
             /**
              * @var Device
              */
-            $device = $this->em->getRepository(\App\Entity\Device::class)->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
+            $device = $this->deviceRepository->findOneBy(array('user' => $this->getUser(), 'device_id' => $uuid));
 
             if (!empty($device)) {
                 $device->setToken(null);
-                $this->em->persist($device);
-                $this->em->flush();
+                $this->deviceRepository->save($device);
+
                 return new JsonResponse($this->serializer->serialize($device, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 return new JsonResponse($this->serializer->serialize("Dispositivo no encontrado", "json"), Response::HTTP_OK, [], true);

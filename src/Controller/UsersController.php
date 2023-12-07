@@ -4,6 +4,12 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
+use App\Repository\BlockUserRepository;
+use App\Repository\HideUserRepository;
+use App\Repository\ViewUserRepository;
+use App\Repository\RadarRepository;
+use App\Repository\ChatRepository;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
@@ -11,7 +17,6 @@ use App\Entity\ViewUser;
 use App\Service\GeolocationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,23 +38,39 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 class UsersController extends AbstractController
 {
     private $serializer;
-    private $em;
+    private $userRepository;
+    private $blockUserRepository;
+    private $hideUserRepository;
+    private $viewUserRepository;
+    private $radarRepository;
+    private $chatRepository;
+
     private $request;
     private $accessChecker;
     private $jwtManager;
 
     public function __construct(
         SerializerInterface $serializer,
-        EntityManagerInterface $entityManager,
         RequestService $request,
         AccessCheckerService $accessChecker,
         JWTTokenManagerInterface $jwtManager,
+        UserRepository $userRepository,
+        BlockUserRepository $blockUserRepository,
+        HideUserRepository $hideUserRepository,
+        ViewUserRepository $viewUserRepository,
+        RadarRepository $radarRepository,
+        ChatRepository $chatRepository
     ) {
         $this->serializer = $serializer;
-        $this->em = $entityManager;
         $this->request = $request;
         $this->accessChecker = $accessChecker;
         $this->jwtManager = $jwtManager;
+        $this->userRepository = $userRepository;
+        $this->blockUserRepository = $blockUserRepository;
+        $this->hideUserRepository = $hideUserRepository;
+        $this->viewUserRepository = $viewUserRepository;
+        $this->radarRepository = $radarRepository;
+        $this->chatRepository = $chatRepository;
     }
 
     // USER URI's
@@ -69,9 +90,9 @@ class UsersController extends AbstractController
         $google_id = $payload['sub'];
 
         // Buscamos un usuario con el id de google y si no hay buscamos por el email
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['google_id' => $google_id]);
+        $user = $this->userRepository->findOneBy(['google_id' => $google_id]);
         if (is_null($user)) {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $payload['email']]);
+            $user = $this->userRepository->findOneBy(['email' => $payload['email']]);
             // si ya existía le seteamos el id de google
             if (!is_null($user)) {
                 $user->setGoogleId($google_id);
@@ -81,8 +102,6 @@ class UsersController extends AbstractController
         // el login con credential devuelve un objeto con el parámetro token que es la credencial
         if (!is_null($user)) {
             $user->setLastLogin();
-            $this->em->persist($user);
-            $this->em->flush();
 
             $token = $this->jwtManager->create($user);
 
@@ -109,7 +128,7 @@ class UsersController extends AbstractController
         $provider = $this->request->get($request, 'provider', false);
         $credential = $this->request->get($request, 'credential', false);
 
-        if (is_null($this->em->getRepository(\App\Entity\User::class)->findOneByUsernameOrEmail($username, $email))) {
+        if (is_null($this->userRepository->findOneByUsernameOrEmail($username, $email))) {
             $user = new User();
             $user->setUsername($username);
             $user->setName($username);
@@ -152,7 +171,7 @@ class UsersController extends AbstractController
             }
             try {
 
-                $this->em->persist($user);
+                $this->userRepository->save($user);
 
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
@@ -167,8 +186,6 @@ class UsersController extends AbstractController
                     ));
 
                 $mailer->send($email);
-
-                $this->em->flush();
 
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
@@ -195,8 +212,7 @@ class UsersController extends AbstractController
         $user->setImages($user->getImages());
 
         $user->setLastLogin();
-        $this->em->persist($user);
-        $this->em->flush();
+        $this->userRepository->save($user);
 
         return new JsonResponse($this->serializer->serialize($user, 'json', ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }
@@ -212,7 +228,7 @@ class UsersController extends AbstractController
         if (!is_numeric($id)) {
             $username = $id;
             $username = str_replace('+', ' ', $username);
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $username));
+            $user = $this->userRepository->findOneBy(array('username' => $username));
             $id = $user->getId();
         }
 
@@ -221,24 +237,23 @@ class UsersController extends AbstractController
             $userCache = $cache->getItem('users.get.' . $fromUser->getId() . '.' . $id);
             if (!$userCache->isHit()) {
                 $userCache->expiresAfter(5 * 60);
-                $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
-                $block = !empty($this->em->getRepository(\App\Entity\BlockUser::class)->isBlocked($fromUser, $toUser)) ? true : false;
+                $toUser = $this->userRepository->findOneBy(array('id' => $id));
+                $block = !empty($this->blockUserRepository->isBlocked($fromUser, $toUser)) ? true : false;
                 if (!$block) {
-                    $user = $this->em->getRepository(\App\Entity\User::class)->findOneUser($fromUser, $toUser);
+                    $user = $this->userRepository->findOneUser($fromUser, $toUser);
                     if ($user['active']) {
                         $user['images'] = $toUser->getImages();
                     }
 
-                    $radar = $this->em->getRepository(\App\Entity\Radar::class)->isRadarNotified($toUser, $fromUser);
+                    $radar = $this->radarRepository->isRadarNotified($toUser, $fromUser);
                     if (!is_null($radar)) {
                         $radar->setTimeRead(new \DateTime);
-                        $this->em->persist($radar);
-                        $this->em->flush();
+                        $this->radarRepository->save($radar);
                     }
 
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 } else {
-                    $user = $this->em->getRepository(\App\Entity\User::class)->findBlockUser($toUser);
+                    $user = $this->userRepository->findBlockUser($toUser);
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                 }
 
@@ -261,16 +276,16 @@ class UsersController extends AbstractController
 
         if (!is_numeric($id)) {
             $username = $id;
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $username));
+            $user = $this->userRepository->findOneBy(array('username' => $username));
             $id = $user->getId();
         }
 
         try {
             $userCache = $cache->getItem('users.get.' . $id);
             if (!$userCache->isHit()) {
-                $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+                $toUser = $this->userRepository->findOneBy(array('id' => $id));
                 if (!is_null($toUser)) {
-                    $user = $this->em->getRepository(\App\Entity\User::class)->findPublicUser($toUser);
+                    $user = $this->userRepository->findPublicUser($toUser);
                     $user = $this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], AbstractObjectNormalizer::SKIP_NULL_VALUES => true]);
                     $userCache->set($user);
                     $cache->save($userCache);
@@ -292,12 +307,12 @@ class UsersController extends AbstractController
     public function checkUsernameAction(string $username)
     {
         try {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $username));
+            $user = $this->userRepository->findOneBy(array('username' => $username));
 
             if (empty($user)) {
                 return new JsonResponse($this->serializer->serialize($username, "json"), Response::HTTP_OK, [], true);
             } else {
-                $username = $this->em->getRepository(\App\Entity\User::class)->getSuggestionUsername($username);
+                $username = $this->userRepository->getSuggestionUsername($username);
                 return new JsonResponse($this->serializer->serialize($username, "json"), Response::HTTP_OK, [], true);
             }
         } catch (Exception $ex) {
@@ -312,9 +327,9 @@ class UsersController extends AbstractController
         $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL);
 
         if ($isEmail) {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $login]);
+            $user = $this->userRepository->findOneBy(['email' => $login]);
         } else {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['username' => $login]);
+            $user = $this->userRepository->findOneBy(['username' => $login]);
         }
 
         if (empty($user)) {
@@ -365,8 +380,7 @@ class UsersController extends AbstractController
 
                 $user->setMailing($this->request->get($request, 'mailing'));
 
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
 
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags'], 'datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } else {
@@ -391,8 +405,7 @@ class UsersController extends AbstractController
             $geolocation = new GeolocationService();
             $coords = $geolocation->geolocate($latitude, $longitude);
             $user->setCoordinates($coords);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($coords, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -422,8 +435,7 @@ class UsersController extends AbstractController
                 $user->setCountry($country);
                 $user->setCity($city);
                 $user->setCoordinates($coords);
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
             }
 
             return new JsonResponse($this->serializer->serialize($coords, "json"), Response::HTTP_OK, [], true);
@@ -468,7 +480,6 @@ class UsersController extends AbstractController
             }
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $thumbnail);
             $user->setThumbnail($src);
-            $this->em->persist($user);
 
             $files = glob("/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/avatar/" . $id . "/*.jpg");
             usort($files, function ($a, $b) {
@@ -485,8 +496,8 @@ class UsersController extends AbstractController
             }
             $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
             $user->setAvatar($src);
-            $this->em->persist($user);
-            $this->em->flush();
+
+            $this->userRepository->save($user);
 
             $user->setImages($user->getImages());
 
@@ -518,8 +529,7 @@ class UsersController extends AbstractController
 
             $user->setThumbnail($thumbnail);
             $user->setAvatar($src);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             $user->setImages($user->getImages());
 
@@ -556,8 +566,7 @@ class UsersController extends AbstractController
             if (strpos($user->getAvatar(), $filename) !== false) {
                 $user->setAvatar(null);
                 $user->setThumbnail(null);
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
             }
             $user->setImages($user->getImages());
 
@@ -580,7 +589,7 @@ class UsersController extends AbstractController
         $ratio = $this->request->get($request, "ratio") ?: -1;
         $options = $this->request->get($request, 'options', false);
         try {
-            $users = $this->em->getRepository(\App\Entity\User::class)->getRadarUsers($user, $page, $ratio, $options);
+            $users = $this->userRepository->getRadarUsers($user, $page, $ratio, $options);
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -599,7 +608,7 @@ class UsersController extends AbstractController
         $query = $this->request->get($request, "query");
 
         try {
-            $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($query, $user, $order, $page);
+            $users = $this->userRepository->searchUsers($query, $user, $order, $page);
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -617,7 +626,7 @@ class UsersController extends AbstractController
         $slug = $this->request->get($request, "slug");
 
         try {
-            $users = $this->em->getRepository(\App\Entity\User::class)->searchUsers($slug, $user, $order, $page, true);
+            $users = $this->userRepository->searchUsers($slug, $user, $order, $page, true);
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los resultados de búsqueda - Error: {$ex->getMessage()}");
@@ -628,7 +637,7 @@ class UsersController extends AbstractController
     public function searchUsernames($query)
     {
         try {
-            $usernames = $this->em->getRepository(\App\Entity\User::class)->searchUsernames($query);
+            $usernames = $this->userRepository->searchUsernames($query);
 
             return new JsonResponse($this->serializer->serialize($usernames, "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -644,8 +653,7 @@ class UsersController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setVerificationCode();
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
@@ -678,8 +686,7 @@ class UsersController extends AbstractController
         if ($verificationCode == $user->getVerificationCode()) {
             $user->setActive(true);
             $user->setVerificationCode(null);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
@@ -692,15 +699,14 @@ class UsersController extends AbstractController
     public function requestEmailAction(Request $request, MailerInterface $mailer)
     {
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('email' => $this->request->get($request, 'username')));
+            $user = $this->userRepository->findOneBy(array('email' => $this->request->get($request, 'username')));
         } else {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $this->request->get($request, 'username')));
+            $user = $this->userRepository->findOneBy(array('username' => $this->request->get($request, 'username')));
         }
 
         if (!is_null($user)) {
             $user->setVerificationCode();
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             try {
                 $email = (new Email())
@@ -734,16 +740,15 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "verification_code");
 
         if (preg_match('#^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,6}$#', $this->request->get($request, 'username'))) {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('email' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
+            $user = $this->userRepository->findOneBy(array('email' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
         } else {
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
+            $user = $this->userRepository->findOneBy(array('username' => $this->request->get($request, 'username'), 'verificationCode' => $verificationCode));
         }
 
         if (!is_null($user)) {
             $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'password')));
             $user->setVerificationCode(null);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
@@ -761,8 +766,7 @@ class UsersController extends AbstractController
         if ($passwordHasher->isPasswordValid($user, $this->request->get($request, "old_password"))) {
             $user->setPassword($passwordHasher->hashPassword($user, $this->request->get($request, 'new_password')));
 
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
@@ -780,8 +784,7 @@ class UsersController extends AbstractController
         if ($user->getEmail() == $this->request->get($request, "old_email")) {
             $user->setEmail($this->request->get($request, 'new_email'));
 
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } else {
@@ -798,8 +801,7 @@ class UsersController extends AbstractController
             $user = $this->getUser();
             $user->setUsername($this->request->get($request, 'new_username'));
 
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -814,15 +816,14 @@ class UsersController extends AbstractController
         try {
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $blockUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $blockUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, 'user')));
 
             $newBlock = new BlockUser();
             $newBlock->setDate(new \DateTime);
             $newBlock->setFromUser($user);
             $newBlock->setBlockUser($blockUser);
             $newBlock->setNote($this->request->get($request, 'note', false));
-            $this->em->persist($newBlock);
-            $this->em->flush();
+            $this->blockUserRepository->save($newBlock);
 
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $blockUser->getId());
@@ -851,16 +852,15 @@ class UsersController extends AbstractController
         try {
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $blockUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+            $blockUser = $this->userRepository->findOneBy(array('id' => $id));
 
-            $block = $this->em->getRepository(\App\Entity\BlockUser::class)->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
-            $this->em->remove($block);
-            $this->em->flush();
+            $block = $this->blockUserRepository->findOneBy(array('block_user' => $blockUser, 'from_user' => $this->getUser()));
+            $this->blockUserRepository->remove($block);
 
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $blockUser->getId());
 
-            $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($user);
+            $users = $this->blockUserRepository->getBlockUsers($user);
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -872,7 +872,7 @@ class UsersController extends AbstractController
     #[Route('/v1/blocks', name: 'blocks', methods: ['GET'])]
     public function getBlocksAction()
     {
-        $users = $this->em->getRepository(\App\Entity\BlockUser::class)->getBlockUsers($this->getUser());
+        $users = $this->blockUserRepository->getBlockUsers($this->getUser());
 
         return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
@@ -883,7 +883,7 @@ class UsersController extends AbstractController
         try {
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $reportUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $reportUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, 'user')));
             $note = $this->request->get($request, 'note', false);
 
             if (!empty($note)) {
@@ -909,15 +909,14 @@ class UsersController extends AbstractController
     {
         try {
             $fromUser = $this->getUser();
-            $hideUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
+            $hideUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, 'user')));
 
-            if (empty($this->em->getRepository(\App\Entity\HideUser::class)->isHide($fromUser, $hideUser))) {
+            if (empty($this->hideUserRepository->isHide($fromUser, $hideUser))) {
                 $newHide = new HideUser();
                 $newHide->setDate(new \DateTime);
                 $newHide->setFromUser($fromUser);
                 $newHide->setHideUser($hideUser);
-                $this->em->persist($newHide);
-                $this->em->flush();
+                $this->hideUserRepository->save($newHide);
 
                 return new JsonResponse($this->serializer->serialize("Usuario ocultado correctamente", "json"), Response::HTTP_OK, [], true);
             } else {
@@ -933,13 +932,12 @@ class UsersController extends AbstractController
     public function removeHideAction(int $id)
     {
         try {
-            $hideUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+            $hideUser = $this->userRepository->findOneBy(array('id' => $id));
 
-            $hide = $this->em->getRepository(\App\Entity\HideUser::class)->findOneBy(array('hide_user' => $hideUser, 'from_user' => $this->getUser()));
-            $this->em->remove($hide);
-            $this->em->flush();
+            $hide = $this->hideUserRepository->findOneBy(array('hide_user' => $hideUser, 'from_user' => $this->getUser()));
+            $this->hideUserRepository->remove($hide);
 
-            $users = $this->em->getRepository(\App\Entity\HideUser::class)->getHideUsers($this->getUser());
+            $users = $this->hideUserRepository->getHideUsers($this->getUser());
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -951,7 +949,7 @@ class UsersController extends AbstractController
     #[Route('/v1/hides', name: 'hides', methods: ['GET'])]
     public function getHidesAction()
     {
-        $users = $this->em->getRepository(\App\Entity\HideUser::class)->getHideUsers($this->getUser());
+        $users = $this->hideUserRepository->getHideUsers($this->getUser());
 
         return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
@@ -963,14 +961,13 @@ class UsersController extends AbstractController
         try {
             $fromUser = $this->getUser();
             if ($fromUser->getUserIdentifier() !== 'frikiradar') {
-                $viewUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $this->request->get($request, 'user')));
+                $viewUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, 'user')));
 
                 $newView = new ViewUser();
                 $newView->setDate(new \DateTime);
                 $newView->setFromUser($fromUser);
                 $newView->setToUser($viewUser);
-                $this->em->persist($newView);
-                $this->em->flush();
+                $this->viewUserRepository->save($newView);
             }
 
             $data = [
@@ -991,8 +988,7 @@ class UsersController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setVerificationCode();
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             $subject = $user->getVerificationCode() . ' es el código para verificar tu inicio de sesión';
 
@@ -1038,8 +1034,7 @@ class UsersController extends AbstractController
         if ($user->getVerificationCode() == $verificationCode) {
             try {
                 $user->setVerificationCode(null);
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
 
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } catch (Exception $e) {
@@ -1057,8 +1052,7 @@ class UsersController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $user->setVerificationCode();
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
             $subject = $user->getVerificationCode() . ' es el código para verificar tu cuenta';
 
@@ -1104,8 +1098,7 @@ class UsersController extends AbstractController
         if ($user->getVerificationCode() == $verificationCode) {
             try {
                 $user->setVerificationCode(null);
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
 
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } catch (Exception $e) {
@@ -1120,12 +1113,11 @@ class UsersController extends AbstractController
     #[Route('/unsubscribe/{code}', name: 'unsubscribe_mailing', methods: ['GET'])]
     public function unsubscribeMailing(string $code)
     {
-        $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('mailing_code' => $code));
+        $user = $this->userRepository->findOneBy(array('mailing_code' => $code));
         if ($user) {
             $user->setMailing(false);
             $user->setMailingCode();
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
             $data = [
                 'code' => 200,
                 'message' => "Te has desuscrito correctamente de nuestros emails.",
@@ -1164,8 +1156,7 @@ class UsersController extends AbstractController
                 // borramos sus dispositivos
                 $user->removeDevices();
 
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
 
                 if (!empty($note)) {
                     // Enviar email al administrador informando del motivo
@@ -1215,7 +1206,7 @@ class UsersController extends AbstractController
         if ($checkPassword || $checkVerification) {
             try {
                 // borramos archivos de chat
-                $this->em->getRepository(\App\Entity\Chat::class)->deleteChatsFiles($user);
+                $this->chatRepository->deleteChatsFiles($user);
 
                 // borramos archivos de historias
                 $folder = "/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/" . $user->getId() . "/";
@@ -1241,8 +1232,7 @@ class UsersController extends AbstractController
 
                 $username = $user->getUserIdentifier();
                 // Eliminamos usuario
-                $this->em->remove($user);
-                $this->em->flush();
+                $this->userRepository->remove($user);
 
                 if (!empty($note)) {
                     // Enviar email al administrador informando del motivo

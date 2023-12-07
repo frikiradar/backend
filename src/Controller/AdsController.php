@@ -2,12 +2,15 @@
 // src/Controller/AdsController.php
 namespace App\Controller;
 
+use App\Entity\ClickAd;
+use App\Repository\AdRepository;
+use App\Repository\ClickAdRepository;
+use App\Repository\ViewAdRepository;
 use App\Service\FileUploaderService;
 use App\Service\RequestService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -15,24 +18,30 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route(path: '/api')]
 class AdsController extends AbstractController
 {
-    private $em;
     private $serializer;
     private $request;
+    private $adRepository;
+    private $clickAdRepository;
+    private $viewAdRepository;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        RequestService $request
+        RequestService $request,
+        AdRepository $adRepository,
+        ClickAdRepository $clickAdRepository,
+        ViewAdRepository $viewAdRepository
     ) {
-        $this->em = $entityManager;
         $this->serializer = $serializer;
         $this->request = $request;
+        $this->adRepository = $adRepository;
+        $this->clickAdRepository = $clickAdRepository;
+        $this->viewAdRepository = $viewAdRepository;
     }
 
     #[Route('/v1/ads', name: 'get_ads', methods: ['GET'])]
     public function getAdsAction()
     {
-        $ads = $this->em->getRepository(\App\Entity\Ad::class)->getActiveAds();
+        $ads = $this->adRepository->getActiveAds();
 
         return new JsonResponse($this->serializer->serialize($ads, "json", ['groups' => ['ads']]), Response::HTTP_OK, [], true);
     }
@@ -69,8 +78,7 @@ class AdsController extends AbstractController
             $ad->setImageUrl($src);
         }
 
-        $this->em->persist($ad);
-        $this->em->flush();
+        $this->adRepository->save($ad);
 
         return new JsonResponse($this->serializer->serialize($ad, "json"), Response::HTTP_OK, [], true);
     }
@@ -88,7 +96,7 @@ class AdsController extends AbstractController
         $endDate = $this->request->get($request, 'end_date', false);
         $imageFile = $request->files->get('image');
 
-        $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id, 'user' => $user]);
+        $ad = $this->adRepository->findOneBy(['id' => $id, 'user' => $user]);
 
         if (!$ad) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
@@ -121,8 +129,7 @@ class AdsController extends AbstractController
             $ad->setImageUrl($src);
         }
 
-        $this->em->persist($ad);
-        $this->em->flush();
+        $this->adRepository->save($ad);
 
         return new JsonResponse($this->serializer->serialize($ad, "json"), Response::HTTP_OK, [], true);
     }
@@ -133,14 +140,13 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id, 'user' => $user]);
+        $ad = $this->adRepository->findOneBy(['id' => $id, 'user' => $user]);
 
         if (!$ad) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $this->em->remove($ad);
-        $this->em->flush();
+        $this->adRepository->remove($ad);
 
         return new JsonResponse(['message' => 'Ad deleted'], Response::HTTP_OK);
     }
@@ -151,7 +157,7 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id, 'user' => $user]);
+        $ad = $this->adRepository->findOneBy(['id' => $id, 'user' => $user]);
 
         if (!$ad) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
@@ -166,19 +172,18 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id]);
+        $ad = $this->adRepository->findOneBy(['id' => $id]);
 
         if (!$ad) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $clickAd = new \App\Entity\ClickAd();
+        $clickAd = new ClickAd();
         $clickAd->setAd($ad);
         $clickAd->setUser($user);
         $clickAd->setDate();
 
-        $this->em->persist($clickAd);
-        $this->em->flush();
+        $this->clickAdRepository->save($clickAd);
 
         return new JsonResponse(['message' => 'Ad clicked'], Response::HTTP_OK);
     }
@@ -189,7 +194,7 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id]);
+        $ad = $this->adRepository->findOneBy(['id' => $id]);
 
         if (!$ad) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
@@ -200,8 +205,7 @@ class AdsController extends AbstractController
         $viewAd->setUser($user);
         $viewAd->setDate();
 
-        $this->em->persist($viewAd);
-        $this->em->flush();
+        $this->viewAdRepository->save($viewAd);
 
         return new JsonResponse(['message' => 'Ad viewed'], Response::HTTP_OK);
     }
@@ -214,7 +218,7 @@ class AdsController extends AbstractController
 
         /** @var \App\Entity\Ad $ad */
         try {
-            $ad = $this->em->getRepository(\App\Entity\Ad::class)->findOneBy(['id' => $id]);
+            $ad = $this->adRepository->findOneBy(['id' => $id]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
         }
@@ -223,15 +227,16 @@ class AdsController extends AbstractController
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $clicks = $this->em->getRepository(\App\Entity\ClickAd::class)->findBy(['ad' => $ad]);
-        $views = $this->em->getRepository(\App\Entity\ViewAd::class)->findBy(['ad' => $ad]);
+        $clicks = $this->clickAdRepository->findBy(['ad' => $ad]);
+        $views = $this->viewAdRepository->findBy(['ad' => $ad]);
 
         $startDate = $ad->getStartDate() ?? $ad->getCreationDate();
         $endDate = $ad->getEndDate() ?? new \DateTime();
+
         $period = new \DatePeriod(
             $startDate,
             new \DateInterval('P1D'),
-            $endDate->modify('+1 day')
+            (new \DateTime())->setTimestamp($endDate->getTimestamp())->modify('+1 day')
         );
 
         $adData = [];
@@ -260,7 +265,8 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $ads = $this->em->getRepository(\App\Entity\Ad::class)->findBy(['user' => $id]);
+        /** @var \App\Entity\Ad $ads */
+        $ads = $this->adRepository->findBy(['user' => $id]);
 
         if ($ads->getUser() !== $user || !$this->isGranted('ROLE_ADMIN')) {
             return new JsonResponse(['error' => 'Ad not found'], Response::HTTP_NOT_FOUND);

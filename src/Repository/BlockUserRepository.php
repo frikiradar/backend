@@ -72,4 +72,16 @@ class BlockUserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function save(BlockUser $blockUser): void
+    {
+        $this->_em->persist($blockUser);
+        $this->_em->flush();
+    }
+
+    public function remove(BlockUser $blockUser): void
+    {
+        $this->_em->remove($blockUser);
+        $this->_em->flush();
+    }
 }

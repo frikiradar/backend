@@ -53,6 +53,18 @@ class StoryRepository extends ServiceEntityRepository
     }
     */
 
+    public function save(Story $story): void
+    {
+        $this->getEntityManager()->persist($story);
+        $this->getEntityManager()->flush();
+    }
+
+    public function remove(Story $story): void
+    {
+        $this->getEntityManager()->remove($story);
+        $this->getEntityManager()->flush();
+    }
+
     public function getStories(User $user)
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));

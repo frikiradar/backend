@@ -2,11 +2,13 @@
 // src/Controller/ChatController.php
 namespace App\Controller;
 
+use App\Repository\ChatRepository;
+use App\Repository\NotificationRepository;
+use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,12 +18,16 @@ use Symfony\Component\Serializer\SerializerInterface;
 class NotificationsController extends AbstractController
 {
     private $serializer;
-    private $em;
+    private $userRepository;
+    private $notificationRepository;
+    private $chatRepository;
 
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, NotificationRepository $notificationRepository, ChatRepository $chatRepository)
     {
         $this->serializer = $serializer;
-        $this->em = $entityManager;
+        $this->userRepository = $userRepository;
+        $this->notificationRepository = $notificationRepository;
+        $this->chatRepository = $chatRepository;
     }
 
 
@@ -34,16 +40,15 @@ class NotificationsController extends AbstractController
         try {
             $notificationsCache = $cache->getItem('users.notifications.' . $user->getId());
             if (!$notificationsCache->isHit()) {
-                $countGeneral = $this->em->getRepository(\App\Entity\Notification::class)->countUnread($user);
-                $countChats = $this->em->getRepository(\App\Entity\Chat::class)->countUnread($user);
+                $countGeneral = $this->notificationRepository->countUnread($user);
+                $countChats = $this->chatRepository->countUnread($user);
                 $notifications = ["notifications" => (int) $countGeneral, "chats" => (int) $countChats];
 
                 $notificationsCache->set($notifications);
                 $cache->save($notificationsCache);
 
                 $user = $this->getUser();
-                $this->em->persist($user);
-                $this->em->flush();
+                $this->userRepository->save($user);
             } else {
                 $notifications = $notificationsCache->get();
             }
@@ -63,7 +68,7 @@ class NotificationsController extends AbstractController
         try {
             $notificationsCache = $cache->getItem('users.notifications-list.' . $user->getId());
             if (!$notificationsCache->isHit()) {
-                $notifications = $this->em->getRepository(\App\Entity\Notification::class)->findBy(['user' => $user], ['id' => 'DESC'], 25);
+                $notifications = $this->notificationRepository->findBy(['user' => $user], ['id' => 'DESC'], 25);
                 $notifications = $this->serializer->serialize($notifications, "json", ['groups' => ['notification']]);
                 $notificationsCache->set($notifications);
                 $cache->save($notificationsCache);
@@ -84,11 +89,10 @@ class NotificationsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
+            $notification = $this->notificationRepository->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
                 $notification->setTimeRead(new \DateTime);
-                $this->em->persist($notification);
-                $this->em->flush();
+                $this->notificationRepository->save($notification);
 
                 $cache->deleteItem('users.notifications.' . $user->getId());
                 $cache->deleteItem('users.notifications-list.' . $user->getId());
@@ -109,11 +113,10 @@ class NotificationsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
+            $notification = $this->notificationRepository->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
                 $notification->setTimeRead(null);
-                $this->em->persist($notification);
-                $this->em->flush();
+                $this->notificationRepository->save($notification);
 
                 $cache->deleteItem('users.notifications.' . $user->getId());
                 $cache->deleteItem('users.notifications-list.' . $user->getId());
@@ -134,10 +137,9 @@ class NotificationsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
-            $notification = $this->em->getRepository(\App\Entity\Notification::class)->findOneBy(array('id' => $id));
+            $notification = $this->notificationRepository->findOneBy(array('id' => $id));
             if ($notification->getUser()->getId() == $user->getId()) {
-                $this->em->remove($notification);
-                $this->em->flush();
+                $this->notificationRepository->remove($notification);
 
                 $cache->deleteItem('users.notifications.' . $user->getId());
                 $cache->deleteItem('users.notifications-list.' . $user->getId());
@@ -162,11 +164,7 @@ class NotificationsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         try {
-            $notifications = $user->getNotifications();
-            foreach ($notifications as $notification) {
-                $this->em->remove($notification);
-            }
-            $this->em->flush();
+            $this->notificationRepository->removeNotifications($user);
 
             $cache->deleteItem('users.notifications.' . $user->getId());
             $cache->deleteItem('users.notifications-list.' . $user->getId());

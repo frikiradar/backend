@@ -4,10 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Category;
 use App\Entity\Tag;
+use App\Repository\CategoryRepository;
+use App\Repository\PageRepository;
 use App\Repository\TagRepository;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,23 +23,26 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class TagsController extends AbstractController
 {
     private $tagRepository;
+    private $categoryRepository;
+    private $pageRepository;
     private $request;
     private $serializer;
     private $accessChecker;
-    private $em;
 
     public function __construct(
         TagRepository $tagRepository,
+        CategoryRepository $categoryRepository,
+        PageRepository $pageRepository,
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
-        EntityManagerInterface $entityManager
     ) {
         $this->tagRepository = $tagRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->pageRepository = $pageRepository;
         $this->request = $request;
         $this->serializer = $serializer;
         $this->accessChecker = $accessChecker;
-        $this->em = $entityManager;
     }
 
 
@@ -63,8 +67,8 @@ class TagsController extends AbstractController
             $name = $this->request->get($request, 'name');
             $slug = $this->request->get($request, 'slug', false);
             $categoryName = $this->request->get($request, 'category');
-            $category = $this->em->getRepository(\App\Entity\Category::class)->findOneBy(array('name' => $categoryName));
-            $oldTag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
+            $category = $this->categoryRepository->findOneBy(array('name' => $categoryName));
+            $oldTag = $this->tagRepository->findOneBy(array('name' => $name, 'user' => $user->getId(), 'category' => !empty($category) ? $category->getId() : null));
 
             if (empty($oldTag)) {
                 $tag = new Tag();
@@ -77,7 +81,7 @@ class TagsController extends AbstractController
 
                     if (empty($slug) && in_array($categoryName, ['games', 'films'])) {
                         // Creamos página
-                        $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
+                        $page = $this->pageRepository->setPage($tag);
                         if (!empty($page)) {
                             $tag->setSlug($page->getSlug());
                         } else {
@@ -90,17 +94,15 @@ class TagsController extends AbstractController
                     $newCategory = new Category();
                     $newCategory->setName($categoryName);
                     $tag->setCategory($newCategory);
-                    $this->em->persist($newCategory);
+                    $this->categoryRepository->save($newCategory);
                 }
 
-                $this->em->persist($tag);
-                $this->em->flush();
+                $this->tagRepository->save($tag);
                 return new JsonResponse($this->serializer->serialize($tag, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
                 if (!$oldTag->getSlug()) {
                     $oldTag->setSlug($this->request->get($request, 'slug', false));
-                    $this->em->persist($oldTag);
-                    $this->em->flush();
+                    $this->tagRepository->save($oldTag);
                 }
                 throw new HttpException(400, "Error al añadir tag. Ya estaba añadida.");
             }
@@ -121,14 +123,13 @@ class TagsController extends AbstractController
         try {
             if (!is_numeric($id)) { // TODO: Eliminar medida provisional
                 $username = $id;
-                $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('name' => $username, 'user' => $user));
+                $tag = $this->tagRepository->findOneBy(array('name' => $username, 'user' => $user));
             } else {
-                $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('id' => $id));
+                $tag = $this->tagRepository->findOneBy(array('id' => $id));
             }
 
             if ($tag->getUser()->getId() == $user->getId()) {
-                $this->em->remove($tag);
-                $this->em->flush();
+                $this->tagRepository->remove($tag);
 
                 $data = [
                     'code' => 200,

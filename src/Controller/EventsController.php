@@ -4,6 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Chat;
 use App\Entity\Event;
+use App\Repository\ChatRepository;
+use App\Repository\EventRepository;
+use App\Repository\PageRepository;
+use App\Repository\UserRepository;
 use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use App\Service\MessageService;
@@ -13,7 +17,6 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Service\NotificationService;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,29 +28,38 @@ use Symfony\Component\Serializer\SerializerInterface;
 class EventsController extends AbstractController
 {
     private $serializer;
-    private $em;
     private $request;
     private $notification;
     private $accessChecker;
     private $message;
     private $security;
+    private $userRepository;
+    private $eventRepository;
+    private $chatRepository;
+    private $pageRepository;
 
     public function __construct(
         SerializerInterface $serializer,
-        EntityManagerInterface $entityManager,
         RequestService $request,
         NotificationService $notification,
         AccessCheckerService $accessChecker,
         MessageService $message,
-        AuthorizationCheckerInterface $security
+        AuthorizationCheckerInterface $security,
+        UserRepository $userRepository,
+        EventRepository $eventRepository,
+        ChatRepository $chatRepository,
+        PageRepository $pageRepository
     ) {
         $this->serializer = $serializer;
-        $this->em = $entityManager;
         $this->request = $request;
         $this->notification = $notification;
         $this->accessChecker = $accessChecker;
         $this->message = $message;
         $this->security = $security;
+        $this->userRepository = $userRepository;
+        $this->eventRepository = $eventRepository;
+        $this->chatRepository = $chatRepository;
+        $this->pageRepository = $pageRepository;
     }
 
 
@@ -76,15 +88,15 @@ class EventsController extends AbstractController
 
         $official = $request->request->get("official");
         if ($official && $this->security->isGranted('ROLE_ADMIN')) {
-            $creator = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
+            /** @var \App\Entity\User $creator */
+            $creator = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
         } else {
+            /** @var \App\Entity\User $creator */
             $creator = $this->getUser();
         }
 
         try {
-            /**
-             * @var Event
-             */
+            /** @var \App\Entity\Event $event */
             $event = new Event();
             $event->setTitle($title);
             $event->setDescription($description);
@@ -113,12 +125,12 @@ class EventsController extends AbstractController
             $event->setRecursion(false);
             $event->setType($type);
             $event->setStatus('active');
-            if ($creator->getUsername() !== 'frikiradar') {
+            if ($creator->getUserIdentifier() !== 'frikiradar') {
                 $event->addParticipant($creator);
             }
 
             if ($userId) {
-                $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $userId));
+                $user = $this->userRepository->findOneBy(array('id' => $userId));
                 $event->setUser($user);
             }
 
@@ -136,8 +148,7 @@ class EventsController extends AbstractController
                 $event->setImage($src);
             }
 
-            $this->em->persist($event);
-            $this->em->flush();
+            $this->eventRepository->save($event);
 
             if (isset($user) || $slug) {
                 // Mensaje de chat especial citas
@@ -161,8 +172,7 @@ class EventsController extends AbstractController
                 $chat->setText($text);
                 $chat->setConversationId($conversationId);
                 $chat->setEvent($event);
-                $this->em->persist($chat);
-                $this->em->flush();
+                $this->chatRepository->save($chat);
 
                 if (isset($user)) {
                     $this->message->send($chat, $user, true);
@@ -202,7 +212,7 @@ class EventsController extends AbstractController
         try {
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             if ($event->getCreator()->getId() === $user->getId() || $this->security->isGranted('ROLE_ADMIN')) {
                 $event->setTitle($title);
                 $event->setDescription($description);
@@ -249,8 +259,7 @@ class EventsController extends AbstractController
                     $event->setImage($src);
                 }
 
-                $this->em->persist($event);
-                $this->em->flush();
+                $this->eventRepository->save($event);
 
                 return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
             } else {
@@ -268,9 +277,9 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($fromUser);
 
         try {
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             if ($event->getSlug()) {
-                $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $event->getSlug()));
+                $page = $this->pageRepository->findOneBy(array('slug' => $event->getSlug()));
                 $event->setPage($page);
             }
 
@@ -288,9 +297,9 @@ class EventsController extends AbstractController
             $cache->deleteItem('public-event.get.' . $id);
             $eventCache = $cache->getItem('public-event.get.' . $id);
             if (!$eventCache->isHit()) {
-                $event = $this->em->getRepository(\App\Entity\Event::class)->findPublicEvent($id);
+                $event = $this->eventRepository->findPublicEvent($id);
                 if ($event['slug']) {
-                    $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $event['slug']));
+                    $page = $this->pageRepository->findOneBy(array('slug' => $event['slug']));
                     $event['page'] = $page;
                 }
 
@@ -318,7 +327,7 @@ class EventsController extends AbstractController
             /**
              * @var Event
              */
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             if ($event->getCreator()->getId() === $user->getId()) {
                 $image = $event->getImage();
                 if ($image && !strpos($image, '/avatar/')) {
@@ -328,7 +337,7 @@ class EventsController extends AbstractController
 
                 $participants = $event->getParticipants();
                 // Avisamos a los usuarios del evento eliminado
-                $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
+                $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
                 $title = 'Evento eliminado.';
                 $text = 'El evento ' . $event->getTitle() . ' ha sido eliminado.';
                 $url = "/tabs/events";
@@ -336,11 +345,10 @@ class EventsController extends AbstractController
                     $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
                 }
 
-                $this->em->remove($event);
-                $this->em->flush();
+                $this->eventRepository->remove($event);
 
                 $slug = 'event-' . $id;
-                $this->em->getRepository(\App\Entity\Chat::class)->deleteChatSlug($slug);
+                $this->chatRepository->deleteChatSlug($slug);
 
                 $data = [
                     'code' => 200,
@@ -367,17 +375,16 @@ class EventsController extends AbstractController
             /**
              * @var Event
              */
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             if ($event->getCreator()->getId() === $user->getId()) {
 
                 $event->setStatus('cancelled');
 
-                $this->em->persist($event);
-                $this->em->flush();
+                $this->eventRepository->save($event);
 
                 // Avisamos a los usuarios del evento cancelado
                 $participants = $event->getParticipants();
-                $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
+                $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
                 $title = 'Evento cancelado.';
                 $text = 'El evento ' . $event->getTitle() . ' ha sido cancelado.';
                 $url = "/event/" . $event->getId();
@@ -401,7 +408,7 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $events = $this->em->getRepository(\App\Entity\Event::class)->findUserEvents($user);
+            $events = $this->eventRepository->findUserEvents($user);
             return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
@@ -415,7 +422,7 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $events = $this->em->getRepository(\App\Entity\Event::class)->findSuggestedEvents($user);
+            $events = $this->eventRepository->findSuggestedEvents($user);
             return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
@@ -429,7 +436,7 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $events = $this->em->getRepository(\App\Entity\Event::class)->findOnlineEvents($user);
+            $events = $this->eventRepository->findOnlineEvents($user);
             return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
@@ -443,7 +450,7 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $events = $this->em->getRepository(\App\Entity\Event::class)->findNearEvents($user);
+            $events = $this->eventRepository->findNearEvents($user);
             return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
@@ -457,7 +464,7 @@ class EventsController extends AbstractController
         $this->accessChecker->checkAccess($user);
 
         try {
-            $events = $this->em->getRepository(\App\Entity\Event::class)->findSlugEvents($slug);
+            $events = $this->eventRepository->findSlugEvents($slug);
             return new JsonResponse($this->serializer->serialize($events, "json", ['groups' => ['default']]), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al obtener los eventos - Error: {$ex->getMessage()}");
@@ -476,10 +483,9 @@ class EventsController extends AbstractController
             /**
              * @var Event
              */
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             $event->addParticipant($user);
-            $this->em->persist($event);
-            $this->em->flush();
+            $this->eventRepository->save($event);
 
             $slug = 'event-' . $id;
             foreach ($user->getDevices() as $device) {
@@ -519,10 +525,9 @@ class EventsController extends AbstractController
             /**
              * @var Event
              */
-            $event = $this->em->getRepository(\App\Entity\Event::class)->findOneBy(array('id' => $id));
+            $event = $this->eventRepository->findOneBy(array('id' => $id));
             $event->removeParticipant($user);
-            $this->em->persist($event);
-            $this->em->flush();
+            $this->eventRepository->save($event);
 
             $slug = 'event-' . $id;
             foreach ($user->getDevices() as $device) {
@@ -560,15 +565,14 @@ class EventsController extends AbstractController
         $id = $this->request->get($request, "id");
 
         try {
-            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
+            $chat = $this->chatRepository->findOneBy(array('id' => $id));
 
             /**
              * @var Event
              */
             $event = $chat->getEvent();
             $event->addParticipant($user);
-            $this->em->persist($event);
-            $this->em->flush();
+            $this->eventRepository->save($event);
 
             $chat->setEvent($event);
 
@@ -592,7 +596,7 @@ class EventsController extends AbstractController
         $id = $this->request->get($request, "id");
 
         try {
-            $chat = $this->em->getRepository(\App\Entity\Chat::class)->findOneBy(array('id' => $id));
+            $chat = $this->chatRepository->findOneBy(array('id' => $id));
 
             /**
              * @var Event
@@ -601,8 +605,7 @@ class EventsController extends AbstractController
             if ($event->getCreator()->getId() === $user->getId() || $event->getUser()->getId() === $user->getId()) {
                 $event->setStatus('cancelled');
 
-                $this->em->persist($event);
-                $this->em->flush();
+                $this->eventRepository->save($event);
                 $chat->setEvent($event);
 
                 $this->message->send($chat, $user);

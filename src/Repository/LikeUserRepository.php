@@ -53,6 +53,18 @@ class LikeUserRepository extends ServiceEntityRepository
     }
     */
 
+    public function save(LikeUser $likeUser): void
+    {
+        $this->getEntityManager()->persist($likeUser);
+        $this->getEntityManager()->flush();
+    }
+
+    public function remove(LikeUser $likeUser): void
+    {
+        $this->getEntityManager()->remove($likeUser);
+        $this->getEntityManager()->flush();
+    }
+
     public function getLikeUsers(User $fromUser, $param, $page = null)
     {
         $dql = "SELECT IDENTITY(" . ($param == "delivered" ? "l.to_user)" : "l.from_user)") . " fromuser, l.date" . ($param == "delivered" ? " " : ", l.time_read ") .

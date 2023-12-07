@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -259,6 +260,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Ad::class)]
     private Collection $ads;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Payment::class, orphanRemoval: true)]
+    private Collection $payments;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $premium_expiration = null;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -275,6 +282,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->events = new ArrayCollection();
         $this->created_events = new ArrayCollection();
         $this->ads = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getUserIdentifier(): string
@@ -318,6 +326,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles = $this->roles;
         if (in_array('ROLE_ADMIN', $roles)) {
             $roles[] = 'ROLE_MASTER';
+        }
+
+        if ($this->getPremiumExpiration() > new \DateTime) {
+            $roles[] = 'ROLE_PREMIUM';
+        } elseif (date("m-d") >= "02-12" && date("m-d") <= "02-18") {
+            // San valentín
+            $roles[] = 'ROLE_PREMIUM';
         }
 
         // guarantee every user at least has ROLE_USER
@@ -1558,6 +1573,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $ad->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            // set the owning side to null (unless already changed)
+            if ($payment->getUser() === $this) {
+                $payment->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPremiumExpiration(): ?\DateTimeInterface
+    {
+        return $this->premium_expiration;
+    }
+
+    public function setPremiumExpiration(?\DateTimeInterface $premium_expiration): static
+    {
+        $this->premium_expiration = $premium_expiration;
 
         return $this;
     }

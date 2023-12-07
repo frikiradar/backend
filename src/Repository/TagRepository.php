@@ -52,6 +52,18 @@ class TagRepository extends ServiceEntityRepository
     }
      */
 
+    public function save(Tag $tag): void
+    {
+        $this->getEntityManager()->persist($tag);
+        $this->getEntityManager()->flush();
+    }
+
+    public function remove(Tag $tag): void
+    {
+        $this->getEntityManager()->remove($tag);
+        $this->getEntityManager()->flush();
+    }
+
     public function searchTags(string $query, string $category)
     {
         $dql = $this->createQueryBuilder('t')

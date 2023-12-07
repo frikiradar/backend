@@ -54,6 +54,18 @@ class EventRepository extends ServiceEntityRepository
     }
     */
 
+    public function save(Event $event): void
+    {
+        $this->em->persist($event);
+        $this->em->flush();
+    }
+
+    public function remove(Event $event): void
+    {
+        $this->em->remove($event);
+        $this->em->flush();
+    }
+
     public function findPublicEvent(int $id)
     {
         $dql = $this->createQueryBuilder('e')

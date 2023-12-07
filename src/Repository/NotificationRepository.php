@@ -7,6 +7,8 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+use function Clue\StreamFilter\remove;
+
 /**
  * @method Notification|null find($id, $lockMode = null, $lockVersion = null)
  * @method Notification|null findOneBy(array $criteria, array $orderBy = null)
@@ -48,6 +50,27 @@ class NotificationRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function save(Notification $notification): void
+    {
+        $this->em->persist($notification);
+        $this->em->flush();
+    }
+
+    public function remove(Notification $notification): void
+    {
+        $this->em->remove($notification);
+        $this->em->flush();
+    }
+
+    public function removeNotifications(User $user): void
+    {
+        $notifications = $user->getNotifications();
+        foreach ($notifications as $notification) {
+            $this->em->remove($notification);
+        }
+        $this->em->flush();
+    }
 
     public function countUnread(User $toUser)
     {

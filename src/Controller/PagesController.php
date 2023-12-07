@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
+use App\Repository\PageRepository;
+use App\Repository\TagRepository;
 use App\Service\AccessCheckerService;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,18 +24,21 @@ class PagesController extends AbstractController
     private $request;
     private $serializer;
     private $accessChecker;
-    private $em;
+    private $pageRepository;
+    private $tagRepository;
 
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
-        EntityManagerInterface $entityManager
+        PageRepository $pageRepository,
+        TagRepository $tagRepository
     ) {
         $this->request = $request;
         $this->serializer = $serializer;
         $this->accessChecker = $accessChecker;
-        $this->em = $entityManager;
+        $this->pageRepository = $pageRepository;
+        $this->tagRepository = $tagRepository;
     }
 
 
@@ -47,7 +51,7 @@ class PagesController extends AbstractController
         $limit = $this->request->get($request, "limit", false) ?? null;
 
         try {
-            $pages = $this->em->getRepository(\App\Entity\Page::class)->findPages($user, $limit);
+            $pages = $this->pageRepository->findPages($user, $limit);
 
             return new JsonResponse($this->serializer->serialize($pages, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -64,10 +68,10 @@ class PagesController extends AbstractController
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
-                $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $slug));
+                $page = $this->pageRepository->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $likes = $this->em->getRepository(\App\Entity\Tag::class)->countTag($page->getSlug(), $page->getName(), $page->getCategory());
+                    $likes = $this->tagRepository->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     if (isset($likes['total'])) {
                         $page->setLikes($likes['total']);
                     }
@@ -95,10 +99,10 @@ class PagesController extends AbstractController
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);
             if (!$pageCache->isHit()) {
-                $page = $this->em->getRepository(\App\Entity\Page::class)->findOneBy(array('slug' => $slug));
+                $page = $this->pageRepository->findOneBy(array('slug' => $slug));
 
                 if (isset($page)) {
-                    $likes = $this->em->getRepository(\App\Entity\Tag::class)->countTag($page->getSlug(), $page->getName(), $page->getCategory());
+                    $likes = $this->tagRepository->countTag($page->getSlug(), $page->getName(), $page->getCategory());
                     $page->setLikes($likes['total']);
                     $pageCache->expiresAfter(3600 * 1);
                     $pageCache->set($page);
@@ -122,8 +126,8 @@ class PagesController extends AbstractController
         $user = $this->getUser();
         $this->accessChecker->checkAccess($user);
         try {
-            $tag = $this->em->getRepository(\App\Entity\Tag::class)->findOneBy(array('id' => $this->request->get($request, 'id')));
-            $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
+            $tag = $this->tagRepository->findOneBy(array('id' => $this->request->get($request, 'id')));
+            $page = $this->pageRepository->setPage($tag);
 
             if ($page) {
                 $cache = new FilesystemAdapter();

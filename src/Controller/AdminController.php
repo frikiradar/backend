@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Chat;
+use App\Repository\ChatRepository;
+use App\Repository\UserRepository;
 use App\Service\NotificationService;
 use App\Service\RequestService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,19 +23,22 @@ class AdminController extends AbstractController
 {
     private $request;
     private $serializer;
-    private $em;
     private $notification;
+    private $userRepository;
+    private $chatRepository;
 
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,
-        EntityManagerInterface $entityManager,
-        NotificationService $notification
+        NotificationService $notification,
+        UserRepository $userRepository,
+        ChatRepository $chatRepository
     ) {
         $this->request = $request;
         $this->serializer = $serializer;
-        $this->em = $entityManager;
         $this->notification = $notification;
+        $this->userRepository = $userRepository;
+        $this->chatRepository = $chatRepository;
     }
 
     #[Route('/v1/topic-message', name: 'topic_message', methods: ['PUT'])]
@@ -43,7 +47,7 @@ class AdminController extends AbstractController
         $chat = new Chat();
 
         try {
-            $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
+            $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
             $topic = $this->request->get($request, 'topic');
             $title = $this->request->get($request, 'title') ?: "❤ ¡Información importante! 🎏";
             $text = $this->request->get($request, 'message');
@@ -56,8 +60,7 @@ class AdminController extends AbstractController
             $chat->setText($title . "\r\n\r\n" . $text);
             $chat->setTimeCreation();
             $chat->setConversationId('frikiradar');
-            $this->em->persist($chat);
-            $this->em->flush();
+            $this->chatRepository->save($chat);
 
             $this->notification->pushTopic($fromUser, $topic, $title, $text, $url);
 
@@ -70,20 +73,12 @@ class AdminController extends AbstractController
     #[Route('/v1/banned-messages/{id}', name: 'get_banned_messages', methods: ['GET'])]
     public function getBannedMessagesAction(int $id)
     {
-        $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
-        $toUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+        $fromUser = $this->userRepository->findOneBy(array('id' => 1));
+        $toUser = $this->userRepository->findOneBy(array('id' => $id));
 
         //marcamos como leidos los antiguos
-        $unreadChats = $this->em->getRepository(\App\Entity\Chat::class)->findBy(array('fromuser' => $toUser->getId(), 'touser' => $fromUser->getId(), 'time_read' => null));
-        foreach ($unreadChats as $chat) {
-            if (!is_null($chat->getFromUser())) {
-                $chat->setTimeRead(new \DateTime);
-                $this->em->persist($chat);
-            }
-        }
-        $this->em->flush();
-
-        $chats = $this->em->getRepository(\App\Entity\Chat::class)->getChat($fromUser, $toUser, true, 1, 0, true);
+        $this->chatRepository->markChatsAsRead($toUser, $fromUser);
+        $chats = $this->chatRepository->getChat($fromUser, $toUser, true, 1, 0, true);
 
         return new JsonResponse($this->serializer->serialize($chats, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
@@ -91,11 +86,11 @@ class AdminController extends AbstractController
     #[Route('/v1/banned-message', name: 'banned_message', methods: ['PUT'])]
     public function put(Request $request)
     {
-        $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => 1));
+        $fromUser = $this->userRepository->findOneBy(array('id' => 1));
         $id = $this->request->get($request, "touser");
 
         $chat = new Chat();
-        $toUser = $this->em->getRepository(\App\Entity\User::class)->find($id);
+        $toUser = $this->userRepository->find($id);
 
         $chat->setTouser($toUser);
         $chat->setFromuser($fromUser);
@@ -107,8 +102,7 @@ class AdminController extends AbstractController
         $chat->setText($text);
         $chat->setTimeCreation();
         $chat->setConversationId($conversationId);
-        $this->em->persist($chat);
-        $this->em->flush();
+        $this->chatRepository->save($chat);
 
         $title = $fromUser->getUsername();
         $url = "/login/banned-account";
@@ -122,11 +116,11 @@ class AdminController extends AbstractController
     public function ban(Request $request)
     {
         try {
-            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($this->request->get($request, "touser"));
+            $toUser = $this->userRepository->find($this->request->get($request, "touser"));
             $reason = $this->request->get($request, 'message');
             $days = $this->request->get($request, 'days', false);
             $hours = $this->request->get($request, 'hours', false);
-            $this->em->getRepository(\App\Entity\User::class)->banUser($toUser, $reason, $days, $hours);
+            $this->userRepository->banUser($toUser, $reason, $days, $hours);
 
             return new JsonResponse($this->serializer->serialize("Baneo realizado correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -137,7 +131,7 @@ class AdminController extends AbstractController
     #[Route('/v1/bans', name: 'bans', methods: ['GET'])]
     public function getBansAction()
     {
-        $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
+        $users = $this->userRepository->getBanUsers();
 
         return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
     }
@@ -146,18 +140,15 @@ class AdminController extends AbstractController
     public function removeBanAction(int $id)
     {
         try {
-            /**
-             * @var User
-             */
-            $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $id));
+            /** @var \App\Entity\User $user */
+            $user = $this->userRepository->findOneBy(array('id' => $id));
 
             $user->setBanned(0);
             $user->setBanReason(null);
             $user->setBanEnd(null);
-            $this->em->persist($user);
-            $this->em->flush();
+            $this->userRepository->save($user);
 
-            $users = $this->em->getRepository(\App\Entity\User::class)->getBanUsers();
+            $users = $this->userRepository->getBanUsers();
 
             return new JsonResponse($this->serializer->serialize($users, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -171,8 +162,8 @@ class AdminController extends AbstractController
         $chat = new Chat();
 
         try {
-            $fromUser = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('username' => 'frikiradar'));
-            $toUser = $this->em->getRepository(\App\Entity\User::class)->find($this->request->get($request, "touser"));
+            $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
+            $toUser = $this->userRepository->find($this->request->get($request, "touser"));
             $title = "⚠️ Aviso de moderación";
             $text = $this->request->get($request, 'message');
             $url = "/chat/" . $fromUser->getId();
@@ -183,8 +174,7 @@ class AdminController extends AbstractController
             $chat->setText($title . "\r\n\r\n" . $text);
             $chat->setTimeCreation();
             $chat->setConversationId('1_' . $toUser->getId());
-            $this->em->persist($chat);
-            $this->em->flush();
+            $this->chatRepository->save($chat);
 
             $this->notification->set($fromUser, $toUser, $title, $text, $url, "chat");
 

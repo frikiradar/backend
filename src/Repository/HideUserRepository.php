@@ -71,4 +71,16 @@ class HideUserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function save(HideUser $hideUser): void
+    {
+        $this->_em->persist($hideUser);
+        $this->_em->flush();
+    }
+
+    public function remove(HideUser $hideUser): void
+    {
+        $this->_em->remove($hideUser);
+        $this->_em->flush();
+    }
 }

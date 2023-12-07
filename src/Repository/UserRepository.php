@@ -67,6 +67,18 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
      */
 
+    public function save(User $user): void
+    {
+        $this->_em->persist($user);
+        $this->_em->flush();
+    }
+
+    public function remove(User $user): void
+    {
+        $this->_em->remove($user);
+        $this->_em->flush();
+    }
+
     public function loadUserByIdentifier(string $identifier): ?User
     {
         return $this->createQueryBuilder('u')
