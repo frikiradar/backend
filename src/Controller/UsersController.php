@@ -17,6 +17,8 @@ use App\Entity\ViewUser;
 use App\Service\GeolocationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
+use App\Service\NotificationService;
+use DateInterval;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,10 +46,10 @@ class UsersController extends AbstractController
     private $viewUserRepository;
     private $radarRepository;
     private $chatRepository;
-
     private $request;
     private $accessChecker;
     private $jwtManager;
+    private $notification;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -59,7 +61,8 @@ class UsersController extends AbstractController
         HideUserRepository $hideUserRepository,
         ViewUserRepository $viewUserRepository,
         RadarRepository $radarRepository,
-        ChatRepository $chatRepository
+        ChatRepository $chatRepository,
+        NotificationService $notification
     ) {
         $this->serializer = $serializer;
         $this->request = $request;
@@ -71,6 +74,7 @@ class UsersController extends AbstractController
         $this->viewUserRepository = $viewUserRepository;
         $this->radarRepository = $radarRepository;
         $this->chatRepository = $chatRepository;
+        $this->notification = $notification;
     }
 
     // USER URI's
@@ -1255,6 +1259,46 @@ class UsersController extends AbstractController
             }
         } else {
             throw new HttpException(400, "La contraseña no es correcta");
+        }
+    }
+
+    #[Route('/v1/premium', name: 'premium', methods: ['PUT'])]
+    public function setPremiumAction(Request $request)
+    {
+        $premium_expiration = $this->request->get($request, "premium_expiration", true);
+        $premiumExpiration = new \DateTime($premium_expiration);
+        try {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $user->setPremiumExpiration($premiumExpiration);
+            $user->setVerified(true);
+            $this->userRepository->save($user);
+
+            if (count($user->getPayments()) == 0 && $user->getMeet() == "friend") {
+                $referralUsername = $user->getReferral();
+                if (!empty($referralUsername)) {
+                    $friend = $this->userRepository->findOneBy(array('username' => $referralUsername));
+                    if ($friend->getPremiumExpiration()) {
+                        $friendDatetime = $friend->getPremiumExpiration();
+                    } else {
+                        $friendDatetime = new \DateTime;
+                    }
+
+                    $friendDatetime = (new \DateTime())->setTimestamp($friendDatetime->getTimestamp())->add(new DateInterval('P30D'));
+                    $friend->setPremiumExpiration($friendDatetime);
+
+                    $this->userRepository->save($friend);
+
+                    $title = "¡Amigo reclutado!";
+                    $text = "Has conseguido 1 mes de frikiradar ILIMITADO. Gracias a tu amigo " . $user->getName() . " ¡Esperamos que lo disfrutes!";
+                    $url = "/tabs/radar";
+                    $this->notification->push($user, $friend, $title, $text, $url, "premium");
+                }
+            }
+
+            return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
     }
 }
