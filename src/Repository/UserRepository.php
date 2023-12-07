@@ -439,21 +439,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setParameter('point', $point);
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
+            // $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
 
             $dql
-                ->andHaving('age BETWEEN :minage AND :maxage')
-                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
-                ->andWhere(
-                    in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
-                        "u.connection NOT LIKE '%Amistad%'"
-                )
-                ->andWhere(
-                    $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
-                        'u.orientation IN (:orientation)' : ($user->getOrientation() ?
-                            'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
-                )
-                ->andWhere('u.avatar IS NOT NULL')
+                ->where('u.avatar IS NOT NULL OR u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t)')
                 ->andWhere('u.active = 1')
                 ->andWhere('u.banned <> 1')
                 ->andWhere('u.id <> :id')
@@ -461,21 +450,32 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(b.block_user) FROM App:BlockUser b WHERE b.from_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(bu.from_user) FROM App:BlockUser bu WHERE bu.block_user = :id)')
                 ->andWhere('u.id NOT IN (SELECT IDENTITY(h.hide_user) FROM App:HideUser h WHERE h.from_user = :id)');
+            /*->andHaving('age BETWEEN :minage AND :maxage')
+                ->andWhere($user->getLovegender() ? 'u.gender IN (:lovegender)' : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->andWhere(
+                        in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
+                            "u.connection NOT LIKE '%Amistad%'"
+                    )
+                ->andWhere(
+                        $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
+                            'u.orientation IN (:orientation)' : ($user->getOrientation() ?
+                                'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
+                    )*/
 
             if (!$isSlug) {
-                $dql->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.name LIKE :search) OR u.name LIKE :search OR u.username LIKE :search")
+                $dql->andWhere("u.id IN (SELECT IDENTITY(t1.user) FROM App:Tag t1 WHERE t1.name LIKE :search) OR u.name LIKE :search OR u.username LIKE :search")
                     ->setParameter('search', '%' . $search . '%');
             } else {
-                $dql->andWhere("u.id IN (SELECT IDENTITY(t.user) FROM App:Tag t WHERE t.slug = :search)")
+                $dql->andWhere("u.id IN (SELECT IDENTITY(t1.user) FROM App:Tag t1 WHERE t1.slug = :search)")
                     ->setParameter('search', $search);
             }
 
             $dql->addOrderBy('u.last_login', 'DESC')
-                ->setParameter('id', $user->getId())
-                ->setParameter('minage', $user->getMinage() ?: 18)
+                ->setParameter('id', $user->getId());
+            /*->setParameter('minage', $user->getMinage() ?: 18)
                 ->setParameter('maxage', ($user->getMaxage() ?: 150) + 0.9999)
                 ->setParameter('lovegender', $user->getLovegender() ?: 1)
-                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
+                ->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);*/
         } else {
             $dql->andWhere("u.roles LIKE '%ROLE_DEMO%'");
         }
