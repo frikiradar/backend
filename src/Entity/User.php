@@ -264,6 +264,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $payments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups("default")]
     private ?\DateTimeInterface $premium_expiration = null;
 
     public function __construct()
