@@ -1360,16 +1360,18 @@ class UsersController extends AbstractController
                     $this->paymentRepository->save($payment);
 
                     break;
-                    /*case 'INITIAL_PURCHASE':
-                $expiration = $event["purchase_date"];
-                $expiration = new \DateTime($expiration);
-                $user->setPremiumExpiration($expiration);
-                $this->userRepository->save($user);
-                break;*/
-                    /*case 'CANCELLATION':
-                $user->setPremiumExpiration(null);
-                $this->userRepository->save($user);
-                break;*/
+                case 'INITIAL_PURCHASE':
+                    // No debería ser necesario porque se hace en el endpoint de premium
+                    /*$expiration = $event["purchase_date"];
+                    $expiration = new \DateTime($expiration);
+                    $user->setPremiumExpiration($expiration);
+                    $this->userRepository->save($user);*/
+                    break;
+                case 'CANCELLATION':
+                    // No debería ser necesario porque se cancela directamente si la fecha de expiración es menor que la actual
+                    /*$user->setPremiumExpiration(null);
+                    $this->userRepository->save($user);*/
+                    break;
             }
 
             // es un webhook
