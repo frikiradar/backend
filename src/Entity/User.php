@@ -331,6 +331,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         if ($this->isPremium()) {
             $roles[] = 'ROLE_PREMIUM';
+        } elseif (in_array('ROLE_PATREON', $roles)) {
+            $roles[] = 'ROLE_PREMIUM';
         } elseif (date("m-d") >= "02-12" && date("m-d") <= "02-18") {
             // San valentín
             $roles[] = 'ROLE_PREMIUM';

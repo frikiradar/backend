@@ -13,7 +13,9 @@ use App\Repository\ChatRepository;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
+use App\Entity\Payment;
 use App\Entity\ViewUser;
+use App\Repository\PaymentRepository;
 use App\Service\GeolocationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
@@ -50,6 +52,7 @@ class UsersController extends AbstractController
     private $accessChecker;
     private $jwtManager;
     private $notification;
+    private $paymentRepository;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -62,7 +65,8 @@ class UsersController extends AbstractController
         ViewUserRepository $viewUserRepository,
         RadarRepository $radarRepository,
         ChatRepository $chatRepository,
-        NotificationService $notification
+        NotificationService $notification,
+        PaymentRepository $paymentRepository
     ) {
         $this->serializer = $serializer;
         $this->request = $request;
@@ -75,6 +79,7 @@ class UsersController extends AbstractController
         $this->radarRepository = $radarRepository;
         $this->chatRepository = $chatRepository;
         $this->notification = $notification;
+        $this->paymentRepository = $paymentRepository;
     }
 
     // USER URI's
@@ -1304,6 +1309,73 @@ class UsersController extends AbstractController
             }
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
+        }
+    }
+
+    #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
+    public function premiumWebhook(Request $request)
+    {
+        try {
+            $event = $this->request->get($request, "event", true);
+            $event = json_decode($event, true);
+            $userId = $event["app_user_id"];
+            $type = $event["type"];
+            if ($type == 'TEST') {
+                $user = $this->userRepository->findOneBy(array('id' => 2));
+            } else {
+                $user = $this->userRepository->findOneBy(array('id' => $userId));
+            }
+
+            switch ($type) {
+                case 'RENEWAL':
+                case 'TEST':
+                    $expiration = $event["expiration_at_ms"];
+                    $expiration = new \DateTime($expiration);
+                    $user->setPremiumExpiration($expiration);
+                    $this->userRepository->save($user);
+
+                    // metemos el pago en la base de datos
+                    $payment = new Payment();
+                    $payment->setTitle($event["product_id"]);
+                    $payment->setDescription("Renovación de suscripción a frikiradar UNLIMITED");
+                    $payment->setMethod($event["store"]);
+                    $payment->setUser($user);
+                    $payment_date = $event["purchased_at_ms"];
+                    if ($payment_date) {
+                        $payment->setPaymentDate(new \DateTime($payment_date));
+                    } else {
+                        $payment->setPaymentDate();
+                    }
+
+                    $payment->setExpirationDate($expiration);
+                    $payment->setAmount($event['amount']);
+                    $payment->setCurrency($event['currency']);
+                    $payment->setPurchase($event);
+                    $payment->setStatus('active');
+
+                    $this->paymentRepository->save($payment);
+
+                    break;
+                    /*case 'INITIAL_PURCHASE':
+                $expiration = $event["purchase_date"];
+                $expiration = new \DateTime($expiration);
+                $user->setPremiumExpiration($expiration);
+                $this->userRepository->save($user);
+                break;*/
+                    /*case 'CANCELLATION':
+                $user->setPremiumExpiration(null);
+                $this->userRepository->save($user);
+                break;*/
+            }
+
+            // es un webhook
+            $data = [
+                'code' => 200,
+                'message' => "Webhook recibido correctamente",
+            ];
+            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
