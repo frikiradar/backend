@@ -1319,7 +1319,6 @@ class UsersController extends AbstractController
     {
         try {
             $event = $this->request->get($request, "event", true);
-            $event = json_decode($event, true);
             $userId = $event["app_user_id"];
             $type = $event["type"];
             if ($type == 'TEST') {
