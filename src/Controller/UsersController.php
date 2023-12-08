@@ -1302,7 +1302,7 @@ class UsersController extends AbstractController
                     $this->userRepository->save($friend);
 
                     $title = "¡Amigo reclutado!";
-                    $text = "Has conseguido 1 mes de frikiradar UNLIMITED. Gracias a tu amigo " . $user->getName() . " ¡Esperamos que lo disfrutes!";
+                    $text = "Has conseguido 1 mes de frikiradar UNLIMITED gratuito. Gracias a tu amigo " . $user->getName() . " ¡Esperamos que lo disfrutes!";
                     $url = "/tabs/radar";
                     $this->notification->push($user, $friend, $title, $text, $url, "premium");
                 }
