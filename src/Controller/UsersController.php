@@ -1352,7 +1352,7 @@ class UsersController extends AbstractController
                     }
 
                     $payment->setExpirationDate($expiration);
-                    $payment->setAmount($event['amount']);
+                    $payment->setAmount($event['price']);
                     $payment->setCurrency($event['currency']);
                     $payment->setPurchase($event);
                     $payment->setStatus('active');
