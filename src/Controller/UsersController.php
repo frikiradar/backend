@@ -1290,7 +1290,7 @@ class UsersController extends AbstractController
                         $friend = $this->userRepository->findOneBy(array('username' => $referralUsername));
                     }
 
-                    if ($friend->getPremiumExpiration()) {
+                    if ($friend->getPremiumExpiration() >= new \DateTime) {
                         $friendDatetime = $friend->getPremiumExpiration();
                     } else {
                         $friendDatetime = new \DateTime;
