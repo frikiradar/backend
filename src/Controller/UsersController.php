@@ -1331,7 +1331,8 @@ class UsersController extends AbstractController
                 case 'RENEWAL':
                 case 'TEST':
                     $expiration = $event["expiration_at_ms"];
-                    $expiration = new \DateTime($expiration);
+                    $expiration = $expiration / 1000;
+                    $expiration = (new \DateTime())->setTimestamp($expiration);
                     $user->setPremiumExpiration($expiration);
                     $this->userRepository->save($user);
 
@@ -1343,7 +1344,9 @@ class UsersController extends AbstractController
                     $payment->setUser($user);
                     $payment_date = $event["purchased_at_ms"];
                     if ($payment_date) {
-                        $payment->setPaymentDate(new \DateTime($payment_date));
+                        $payment_date = $payment_date / 1000;
+                        $payment_date = (new \DateTime())->setTimestamp($payment_date);
+                        $payment->setPaymentDate($payment_date);
                     } else {
                         $payment->setPaymentDate();
                     }
