@@ -473,6 +473,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('b.from_user IS NULL')
                 ->andWhere('h.from_user IS NULL')
+                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->setParameter('lovegender', $user->getLovegender() ?: 1)
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->setParameter('lastlogin', 15); // 15 dias;
 
