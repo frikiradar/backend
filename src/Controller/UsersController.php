@@ -1339,7 +1339,7 @@ class UsersController extends AbstractController
                     // metemos el pago en la base de datos
                     $payment = new Payment();
                     $payment->setTitle($event["product_id"]);
-                    $payment->setDescription("Renovación de suscripción a frikiradar UNLIMITED");
+                    $payment->setDescription("Renovación automática de suscripción a frikiradar UNLIMITED");
                     $payment->setMethod($event["store"]);
                     $payment->setUser($user);
                     $payment_date = $event["purchased_at_ms"];
