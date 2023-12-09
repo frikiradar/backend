@@ -19,6 +19,7 @@ class ViewAd
     private ?Ad $ad = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
