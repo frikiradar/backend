@@ -278,7 +278,6 @@ class ChatRepository extends ServiceEntityRepository
                 $this->_em->persist($chat);
 
                 if ($fromUser->getId() !== $toUser->getId()) {
-                    $this->_em->getRepository(\App\Entity\Notification::class)->deleteNotification($fromUser, $toUser, 'chat', $chat->getId());
                     $this->message->send($chat, $toUser);
                 }
             }
