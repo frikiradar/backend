@@ -168,7 +168,8 @@ class NotificationService extends AbstractController
             $sendEmail = true;
         }
 
-        if ($sendEmail && $today->diff($toUser->getLastLogin())->format('%a') >= 1) {
+        $lastLogin = $toUser->getLastLogin() ?? new \DateTime;
+        if ($sendEmail && $today->diff($lastLogin)->format('%a') >= 1) {
             if ($toUser->isMailing()) {
                 switch ($type) {
                     case 'chat':
