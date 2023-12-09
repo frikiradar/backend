@@ -521,6 +521,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         foreach ($users as $key => $u) {
             $users[$key]['avatar'] = $u['avatar'] ?: $this->getDefaultAvatar($u['username']);
+            $users[$key]['thumbnail'] = $u['thumbnail'] ?: $this->getDefaultThumbnail($u['username']);
             if ($type == 'radar-cards') {
                 $toUser = $this->findOneBy(array('id' => $u['id']));
                 $users[$key]['images'] = $toUser->getImages();
@@ -793,6 +794,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return "https://api.frikiradar.com/images/avatar/" . $letter . ".png";
         } else {
             return "https://api.frikiradar.com/images/avatar/default.png";
+        }
+    }
+
+    public function getDefaultThumbnail($username)
+    {
+        $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $letter = strtoupper($username[0]);
+        if (in_array($letter, $letters)) {
+            return "https://api.frikiradar.com/images/avatar/thumbnail/" . $letter . ".png";
+        } else {
+            return "https://api.frikiradar.com/images/avatar/thumbnail/default.png";
         }
     }
 
