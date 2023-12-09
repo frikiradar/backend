@@ -45,7 +45,8 @@ class PaymentController extends AbstractController
     public function setPayment(Request $request)
     {
         try {
-            $payment = new Payment();
+            // Desactivamos de momento para revenuecat
+            /*$payment = new Payment();
             $payment->setTitle($this->request->get($request, 'title'));
             $payment->setDescription($this->request->get($request, 'description'));
             $payment->setMethod($this->request->get($request, 'method'));
@@ -66,7 +67,7 @@ class PaymentController extends AbstractController
             $payment->setPurchase(json_decode($this->request->get($request, 'purchase'), true));
             $payment->setStatus('active');
 
-            $this->paymentRepository->save($payment);
+            $this->paymentRepository->save($payment);*/
 
             return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
