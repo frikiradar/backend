@@ -220,6 +220,13 @@ class UsersController extends AbstractController
         $user = $this->getUser();
         $user->setImages($user->getImages());
 
+        // Asegurarse de que los roles siempre se devuelvan como un array
+        $roles = $user->getRoles();
+        if (is_object($roles)) {
+            $roles = (array) $roles;
+        }
+        $user->setRoles($roles);
+
         $user->setLastLogin();
         $this->userRepository->save($user);
 
