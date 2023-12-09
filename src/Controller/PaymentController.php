@@ -117,7 +117,7 @@ class PaymentController extends AbstractController
                     }
 
                     $payment->setExpirationDate($expiration);
-                    $payment->setAmount($event['price'] ?? 0);
+                    $payment->setAmount($event['price_in_purchased_currency'] ?? 0);
                     $payment->setCurrency($event['currency'] ?? '');
                     $payment->setPurchase($event);
                     $payment->setStatus('active');
@@ -139,7 +139,7 @@ class PaymentController extends AbstractController
                     }
 
                     $payment->setExpirationDate($expiration);
-                    $payment->setAmount($event['price'] ?? 0);
+                    $payment->setAmount($event['price_in_purchased_currency'] ?? 0);
                     $payment->setCurrency($event['currency'] ?? '');
                     $payment->setPurchase($event);
                     $payment->setStatus('active');
