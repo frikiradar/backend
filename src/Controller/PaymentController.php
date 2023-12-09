@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Payment;
 use App\Repository\PaymentRepository;
+use App\Repository\UserRepository;
 use App\Service\RequestService;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -20,10 +21,12 @@ class PaymentController extends AbstractController
     private $paymentRepository;
     private $request;
     private $serializer;
+    private $userRepository;
 
-    public function __construct(PaymentRepository $paymentRepository, RequestService $request, SerializerInterface $serializer)
+    public function __construct(PaymentRepository $paymentRepository, UserRepository $userRepository, RequestService $request, SerializerInterface $serializer)
     {
         $this->paymentRepository = $paymentRepository;
+        $this->userRepository = $userRepository;
         $this->request = $request;
         $this->serializer = $serializer;
     }
@@ -68,6 +71,96 @@ class PaymentController extends AbstractController
             return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
+        }
+    }
+
+    #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
+    public function revenueCatWebhook(Request $request)
+    {
+        try {
+            $event = $this->request->get($request, "event", true);
+            $userId = $event["app_user_id"];
+            $type = $event["type"];
+            if ($type == 'TEST') {
+                $user = $this->userRepository->findOneBy(array('id' => 1));
+            } else {
+                $user = $this->userRepository->findOneBy(array('id' => $userId));
+            }
+
+            $expiration = $event["expiration_at_ms"];
+            $expiration = $expiration / 1000;
+            $expiration = (new \DateTime())->setTimestamp($expiration);
+
+            $payment_date = $event["purchased_at_ms"];
+            if ($payment_date) {
+                $payment_date = $payment_date / 1000;
+                $payment_date = (new \DateTime())->setTimestamp($payment_date);
+            }
+
+            switch ($type) {
+                case 'RENEWAL':
+                case 'TEST':
+                    // actualizamos la fecha de expiración
+                    $user->setPremiumExpiration($expiration);
+                    $this->userRepository->save($user);
+
+                    // metemos el pago en la base de datos
+                    $payment = new Payment();
+                    $payment->setTitle($event["product_id"]);
+                    $payment->setDescription("Renovación automática de suscripción a frikiradar UNLIMITED");
+                    $payment->setMethod($event["store"]);
+                    $payment->setUser($user);
+                    if ($payment_date) {
+                        $payment->setPaymentDate($payment_date);
+                    } else {
+                        $payment->setPaymentDate();
+                    }
+
+                    $payment->setExpirationDate($expiration);
+                    $payment->setAmount($event['price'] ?? 0);
+                    $payment->setCurrency($event['currency'] ?? '');
+                    $payment->setPurchase($event);
+                    $payment->setStatus('active');
+
+                    $this->paymentRepository->save($payment);
+
+                    break;
+                case 'INITIAL_PURCHASE':
+                    // metemos el pago en la base de datos
+                    $payment = new Payment();
+                    $payment->setTitle($event["product_id"]);
+                    $payment->setDescription("Suscripción a frikiradar UNLIMITED");
+                    $payment->setMethod($event["store"]);
+                    $payment->setUser($user);
+                    if ($payment_date) {
+                        $payment->setPaymentDate($payment_date);
+                    } else {
+                        $payment->setPaymentDate();
+                    }
+
+                    $payment->setExpirationDate($expiration);
+                    $payment->setAmount($event['price'] ?? 0);
+                    $payment->setCurrency($event['currency'] ?? '');
+                    $payment->setPurchase($event);
+                    $payment->setStatus('active');
+
+                    $this->paymentRepository->save($payment);
+                    break;
+                case 'CANCELLATION':
+                    // No debería ser necesario porque se cancela directamente si la fecha de expiración es menor que la actual
+                    /*$user->setPremiumExpiration(null);
+                    $this->userRepository->save($user);*/
+                    break;
+            }
+
+            // es un webhook
+            $data = [
+                'code' => 200,
+                'message' => "Webhook recibido correctamente",
+            ];
+            return new JsonResponse($data, 200);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
     }
 }

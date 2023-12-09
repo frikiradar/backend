@@ -13,7 +13,6 @@ use App\Repository\ChatRepository;
 use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
-use App\Entity\Payment;
 use App\Entity\ViewUser;
 use App\Repository\PaymentRepository;
 use App\Service\GeolocationService;
@@ -52,7 +51,6 @@ class UsersController extends AbstractController
     private $accessChecker;
     private $jwtManager;
     private $notification;
-    private $paymentRepository;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -66,7 +64,6 @@ class UsersController extends AbstractController
         RadarRepository $radarRepository,
         ChatRepository $chatRepository,
         NotificationService $notification,
-        PaymentRepository $paymentRepository
     ) {
         $this->serializer = $serializer;
         $this->request = $request;
@@ -79,7 +76,6 @@ class UsersController extends AbstractController
         $this->radarRepository = $radarRepository;
         $this->chatRepository = $chatRepository;
         $this->notification = $notification;
-        $this->paymentRepository = $paymentRepository;
     }
 
     // USER URI's
@@ -662,37 +658,6 @@ class UsersController extends AbstractController
         }
     }
 
-    // TODO: Eliminar este endpoint, ahora usamos el de verify 3.3.0
-    #[Route('/v1/activation', name: 'activation-email', methods: ['GET'])]
-    public function activationEmailAction(MailerInterface $mailer)
-    {
-        try {
-            /** @var \App\Entity\User $user */
-            $user = $this->getUser();
-            $user->setVerificationCode();
-            $this->userRepository->save($user);
-
-            $email = (new Email())
-                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                ->to(new Address($user->getEmail(), $user->getUsername()))
-                ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
-                ->html($this->renderView(
-                    "emails/registration.html.twig",
-                    [
-                        'username' => $this->getUser()->getUserIdentifier(),
-                        'code' => $user->getVerificationCode()
-                    ]
-                ));
-
-            $mailer->send($email);
-
-            return new JsonResponse($this->serializer->serialize("Email enviado correctamente", "json"), Response::HTTP_OK, [], true);
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al enviar el email de activación - Error: {$ex->getMessage()}");
-        }
-    }
-
-
     #[Route('/v1/activation', name: 'activation', methods: ['PUT'])]
     public function activationAction(Request $request)
     {
@@ -1151,20 +1116,13 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación 3.3.0
-        // el método antiguo iba con password y el nuevo con código
-        $password = $this->request->get($request, "password", false);
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
 
         $checkPassword = false;
         $checkVerification = false;
 
-        if ($password) {
-            $checkPassword = $passwordHasher->isPasswordValid($user, $password);
-        } else {
-            $checkVerification = $user->getVerificationCode() == $verificationCode;
-        }
+        $checkVerification = $user->getVerificationCode() == $verificationCode;
 
         if ($checkPassword || $checkVerification) {
             try {
@@ -1205,20 +1163,13 @@ class UsersController extends AbstractController
             return new HttpException(400, "No puedes eliminar tu cuenta porque eres administrador");
         }
 
-        // TODO: quitar el password cuando todos los usuarios tengan el código de verificación 3.3.0
-        // el método antiguo iba con password y el nuevo con código
-        $password = $this->request->get($request, "password", false);
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
 
         $checkPassword = false;
         $checkVerification = false;
 
-        if ($password) {
-            $checkPassword = $passwordHasher->isPasswordValid($user, $password);
-        } else {
-            $checkVerification = $user->getVerificationCode() == $verificationCode;
-        }
+        $checkVerification = $user->getVerificationCode() == $verificationCode;
 
         if ($checkPassword || $checkVerification) {
             try {
@@ -1316,77 +1267,6 @@ class UsersController extends AbstractController
             }
 
             return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
-        }
-    }
-
-    #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
-    public function premiumWebhook(Request $request)
-    {
-        try {
-            $event = $this->request->get($request, "event", true);
-            $userId = $event["app_user_id"];
-            $type = $event["type"];
-            if ($type == 'TEST') {
-                $user = $this->userRepository->findOneBy(array('id' => 2));
-            } else {
-                $user = $this->userRepository->findOneBy(array('id' => $userId));
-            }
-
-            switch ($type) {
-                case 'RENEWAL':
-                case 'TEST':
-                    $expiration = $event["expiration_at_ms"];
-                    $expiration = $expiration / 1000;
-                    $expiration = (new \DateTime())->setTimestamp($expiration);
-                    $user->setPremiumExpiration($expiration);
-                    $this->userRepository->save($user);
-
-                    // metemos el pago en la base de datos
-                    $payment = new Payment();
-                    $payment->setTitle($event["product_id"]);
-                    $payment->setDescription("Renovación automática de suscripción a frikiradar UNLIMITED");
-                    $payment->setMethod($event["store"]);
-                    $payment->setUser($user);
-                    $payment_date = $event["purchased_at_ms"];
-                    if ($payment_date) {
-                        $payment_date = $payment_date / 1000;
-                        $payment_date = (new \DateTime())->setTimestamp($payment_date);
-                        $payment->setPaymentDate($payment_date);
-                    } else {
-                        $payment->setPaymentDate();
-                    }
-
-                    $payment->setExpirationDate($expiration);
-                    $payment->setAmount($event['price'] ?? 0);
-                    $payment->setCurrency($event['currency'] ?? 'EUR');
-                    $payment->setPurchase($event);
-                    $payment->setStatus('active');
-
-                    $this->paymentRepository->save($payment);
-
-                    break;
-                case 'INITIAL_PURCHASE':
-                    // No debería ser necesario porque se hace en el endpoint de premium
-                    /*$expiration = $event["purchase_date"];
-                    $expiration = new \DateTime($expiration);
-                    $user->setPremiumExpiration($expiration);
-                    $this->userRepository->save($user);*/
-                    break;
-                case 'CANCELLATION':
-                    // No debería ser necesario porque se cancela directamente si la fecha de expiración es menor que la actual
-                    /*$user->setPremiumExpiration(null);
-                    $this->userRepository->save($user);*/
-                    break;
-            }
-
-            // es un webhook
-            $data = [
-                'code' => 200,
-                'message' => "Webhook recibido correctamente",
-            ];
-            return new JsonResponse($data, 200);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
