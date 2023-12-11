@@ -871,7 +871,7 @@ class UsersController extends AbstractController
             if (!empty($note)) {
                 // Enviar email al administrador informando del motivo
                 $email = (new Email())
-                    ->from(new Address($user->getEmail(), $user->getUsername()))
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject('Nuevo usuario reportado')
                     ->html("El usuario " . $user->getUserIdentifier() . " ha reportado al usuario <a href='https://frikiradar.app/" . urlencode($reportUser->getUsername()) . "'>" . $reportUser->getUsername() . "</a> por el siguiente motivo: " . $note);
