@@ -328,15 +328,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ) * 111.045) distance"
             ))
             ->setParameter('point', $point)
-            ->leftJoin('App:Tag', 't', 'WITH', 'u.id = t.user')
             ->leftJoin('App:BlockUser', 'b', 'WITH', 'u.id = b.block_user AND b.from_user = :id')
             ->leftJoin('App:BlockUser', 'bu', 'WITH', 'u.id = bu.from_user AND bu.block_user = :id')
             ->leftJoin('App:HideUser', 'h', 'WITH', 'u.id = h.hide_user AND h.from_user = :id')
+            ->leftJoin('App:Device', 'd', 'WITH', 'u.id = d.user')
             ->setParameter('id', $user->getId())
-            ->andWhere('u.avatar IS NOT NULL OR t.user IS NOT NULL')
+            ->andWhere('u.avatar IS NOT NULL')
             ->andWhere('b.block_user IS NULL')
             ->andWhere('bu.from_user IS NULL')
             ->andWhere('h.hide_user IS NULL')
+            ->andWhere('(d.active = 1 AND d.token IS NOT NULL) OR u.mailing = 1')
             ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
             ->andWhere('u.active = 1')
             ->andWhere('u.banned <> 1')
@@ -377,10 +378,10 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $dateTime->modify('-5 minutes');
 
                 $dql->andWhere('u.last_login >= :lastlogin')
-                    ->setParameter('lastlogin', $dateTime); // 15 minutos
+                    ->setParameter('lastlogin', $dateTime); // 5 minutos
             } else {
                 $dql->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                    ->setParameter('lastlogin', 15); // 15 dias
+                    ->setParameter('lastlogin', 60); // 60 dias
             }
             $dql->andWhere(
                 $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
@@ -398,10 +399,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
         if ($ratio === -1) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
+            // $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
+            $week = date('Y-m-d H:i:s', strtotime('-7 days', strtotime(date("Y-m-d H:i:s"))));
             $dql->leftJoin('App:ViewUser', 'v', 'WITH', 'u.id = v.to_user AND v.from_user = :id')
                 ->andWhere('v.to_user IS NULL OR u.last_login > :recent')
-                ->setParameter('recent', $recent)
+                ->setParameter('recent', $week)
                 ->orderBy('distance', 'ASC')
                 ->addOrderBy('u.last_login', 'DESC')
                 ->setFirstResult($offset)
