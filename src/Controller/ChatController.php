@@ -194,7 +194,7 @@ class ChatController extends AbstractController
                 } elseif (isset($image)) {
                     $chat->setText('📷 ' . $text);
                 } elseif (isset($audio)) {
-                    $chat->setText('🎤 ' . $fromUser->getName() . ' te ha enviado un audio.');
+                    $chat->setText('🎤 Mensaje de audio de ' . $fromUser->getName());
                 }
 
                 $this->message->send($chat, $toUser, true);
