@@ -12,6 +12,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -41,6 +44,7 @@ class PaymentController extends AbstractController
         return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
+    // TODO: Borrar en 3.4
     #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
     public function setPayment(Request $request)
     {
@@ -76,7 +80,7 @@ class PaymentController extends AbstractController
     }
 
     #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
-    public function revenueCatWebhook(Request $request)
+    public function revenueCatWebhook(Request $request, MailerInterface $mailer)
     {
         try {
             $event = $this->request->get($request, "event", true);
@@ -108,7 +112,8 @@ class PaymentController extends AbstractController
                     // metemos el pago en la base de datos
                     $payment = new Payment();
                     $payment->setTitle($event["product_id"]);
-                    $payment->setDescription("Renovación automática de suscripción a frikiradar UNLIMITED");
+                    $description = ($type == 'TEST' ? "[TEST] " : "") . "Renovación automática de suscripción a frikiradar UNLIMITED";
+                    $payment->setDescription($description);
                     $payment->setMethod($event["store"]);
                     $payment->setUser($user);
                     if ($payment_date) {
@@ -130,7 +135,8 @@ class PaymentController extends AbstractController
                     // metemos el pago en la base de datos
                     $payment = new Payment();
                     $payment->setTitle($event["product_id"]);
-                    $payment->setDescription("Suscripción a frikiradar UNLIMITED");
+                    $description = "Suscripción a frikiradar UNLIMITED";
+                    $payment->setDescription($description);
                     $payment->setMethod($event["store"]);
                     $payment->setUser($user);
                     if ($payment_date) {
@@ -153,6 +159,24 @@ class PaymentController extends AbstractController
                     $this->userRepository->save($user);*/
                     break;
             }
+
+            // Enviar un email a hola@frikiradar con los datos del pago
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->subject($description)
+                ->html(
+                    "Usuario: <a href='https://frikiradar.app/" . urlencode($user->getUsername()) . "' target='_blank'>" . $user->getUsername() . "</a><br/>" .
+                        "Email: " . $user->getEmail() . "<br/>" .
+                        "Descripción: " . $description . "<br/>" .
+                        "Producto: " . $event["product_id"] . "<br/>" .
+                        "Fecha de pago: " . ($payment_date ? $payment_date->format('d/m/Y H:i:s') : 'No disponible') . "<br/>" .
+                        "Fecha de expiración: " . $expiration->format('d/m/Y H:i:s') . "<br/>" .
+                        "Método de pago: " . $event["store"] . "<br/>" .
+                        "Precio: " . $event['price_in_purchased_currency'] . " " . $event['currency'] . "<br/>"
+                );
+
+            $mailer->send($email);
 
             // es un webhook
             $data = [
