@@ -338,7 +338,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('bu.from_user IS NULL')
             ->andWhere('h.hide_user IS NULL')
             ->andWhere('(d.active = 1 AND d.token IS NOT NULL) OR u.mailing = 1')
-            ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
             ->andWhere('u.active = 1')
             ->andWhere('u.banned <> 1')
             ->andWhere('u.coordinates IS NOT NULL')
@@ -351,6 +350,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'");
+
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
