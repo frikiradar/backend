@@ -17,7 +17,7 @@ class Device
     private $id;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'devices')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[MaxDepth(1)]
     private $user;
 
