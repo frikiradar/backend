@@ -1119,12 +1119,11 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
 
-        $checkPassword = false;
         $checkVerification = false;
 
         $checkVerification = $user->getVerificationCode() == $verificationCode;
 
-        if ($checkPassword || $checkVerification) {
+        if ($checkVerification) {
             try {
                 // ponemos usuario en disable
                 $user->setActive(false);
@@ -1166,12 +1165,11 @@ class UsersController extends AbstractController
         $verificationCode = $this->request->get($request, "code", false);
         $note = $this->request->get($request, "note", false);
 
-        $checkPassword = false;
         $checkVerification = false;
 
         $checkVerification = $user->getVerificationCode() == $verificationCode;
 
-        if ($checkPassword || $checkVerification) {
+        if ($checkVerification) {
             try {
                 // borramos archivos de chat
                 $this->chatRepository->deleteChatsFiles($user);
