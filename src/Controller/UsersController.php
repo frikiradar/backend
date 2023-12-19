@@ -1217,6 +1217,15 @@ class UsersController extends AbstractController
                 ];
                 return new JsonResponse($data, 200);
             } catch (Exception $ex) {
+                // enviamos email al administrador informando del error
+                $email = (new Email())
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                    ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->subject($username . ' ha intentado eliminar su cuenta.')
+                    ->html("El usuario " . $username . " ha intentado eliminar su cuenta por el siguiente motivo: " . $note . "<br><br>El error ha sido: " . $ex->getMessage());
+
+                $mailer->send($email);
+
                 throw new HttpException(400, "Error al eliminar la cuenta - Error: {$ex->getMessage()}");
             }
         } else {
