@@ -30,7 +30,7 @@ class Ad
     #[Groups('ads')]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 512, nullable: true)]
     #[Groups('ads')]
     private ?string $description = null;
 
