@@ -208,10 +208,8 @@ class ChatRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('c')
             ->delete()
-            ->where('c.touser = :toUser AND c.fromuser = :fromUser')
-            ->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
-            ->setParameter('toUser', $toUser->getId())
-            ->setParameter('fromUser', $fromUser->getId())
+            ->where('c.conversationId = :conversationId')
+            ->setParameter('conversationId', $conversationId)
             ->getQuery()
             ->execute();
     }
