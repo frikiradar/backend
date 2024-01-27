@@ -56,7 +56,7 @@ class UserLikesController extends AbstractController
             $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
             $cache->deleteItem('users.get.' . $toUser->getId());
 
-            $like = $this->likeUserRepository->findOneBy(array('to_user' => $toUser, 'from_user' => $fromUser()));
+            $like = $this->likeUserRepository->findOneBy(array('to_user' => $toUser, 'from_user' => $fromUser));
 
             if (empty($like)) {
                 $newLike = new LikeUser();
