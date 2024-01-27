@@ -56,7 +56,7 @@ class UserLikesController extends AbstractController
             $cache->deleteItem('users.get.' . $fromUser->getId() . '.' . $toUser->getId());
             $cache->deleteItem('users.get.' . $toUser->getId());
 
-            $like = $this->likeUserRepository->findOneBy(array('to_user' => $toUser, 'from_user' => $this->getUser()));
+            $like = $this->likeUserRepository->findOneBy(array('to_user' => $toUser, 'from_user' => $fromUser()));
 
             if (empty($like)) {
                 $newLike = new LikeUser();
@@ -64,11 +64,11 @@ class UserLikesController extends AbstractController
                 $newLike->setToUser($toUser);
                 $this->likeUserRepository->save($newLike);
 
-                $title = $newLike->getFromUser()->getUsername();
-                $text = "Te ha entregado su kokoro ❤️, ya puedes comenzar a chatear.";
-                $url = "/profile/" . $newLike->getFromUser()->getId();
+                $title = $fromUser->getUsername();
+                $text = "Te ha entregado su kokoro ❤️. Haz click aquí para ver su perfil.";
+                $url = "/profile/" . $fromUser->getId();
 
-                $this->notification->set($newLike->getFromuser(), $newLike->getTouser(), $title, $text, $url, "like");
+                $this->notification->set($fromUser, $toUser, $title, $text, $url, "like");
             }
 
             $user = $this->userRepository->findOneUser($fromUser, $toUser);
