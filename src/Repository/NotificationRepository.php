@@ -7,8 +7,6 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-use function Clue\StreamFilter\remove;
-
 /**
  * @method Notification|null find($id, $lockMode = null, $lockVersion = null)
  * @method Notification|null findOneBy(array $criteria, array $orderBy = null)
@@ -17,6 +15,7 @@ use function Clue\StreamFilter\remove;
  */
 class NotificationRepository extends ServiceEntityRepository
 {
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Notification::class);
@@ -53,13 +52,22 @@ class NotificationRepository extends ServiceEntityRepository
 
     public function save(Notification $notification): void
     {
-        $this->em->persist($notification);
-        $this->em->flush();
+        $this->getEntityManager()->persist($notification);
+        $this->getEntityManager()->flush();
     }
 
     public function remove(Notification $notification): void
     {
-        $this->em->remove($notification);
+        $this->getEntityManager()->remove($notification);
+        $this->getEntityManager()->flush();
+    }
+
+    public function readNotifications(User $user): void
+    {
+        $notifications = $user->getNotifications();
+        foreach ($notifications as $notification) {
+            $notification->setTimeRead(new \DateTime);
+        }
         $this->em->flush();
     }
 
@@ -67,7 +75,7 @@ class NotificationRepository extends ServiceEntityRepository
     {
         $notifications = $user->getNotifications();
         foreach ($notifications as $notification) {
-            $this->em->remove($notification);
+            $this->getEntityManager()->remove($notification);
         }
         $this->em->flush();
     }

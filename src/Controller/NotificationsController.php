@@ -130,6 +130,29 @@ class NotificationsController extends AbstractController
         }
     }
 
+    // REad all notifications
+    #[Route('/v1/read-notifications', name: 'read_notifications', methods: ['GET'])]
+    public function readNotifications()
+    {
+        $cache = new FilesystemAdapter();
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        try {
+            $this->notificationRepository->readNotifications($user);
+
+            $cache->deleteItem('users.notifications.' . $user->getId());
+            $cache->deleteItem('users.notifications-list.' . $user->getId());
+
+            $data = [
+                'code' => 200,
+                'message' => "Notificaciones marcadas como leídas correctamente",
+            ];
+            return new JsonResponse($data, 200);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "No se pueden marcar como leídas las notificaciones - Error: {$ex->getMessage()}");
+        }
+    }
+
     #[Route('/v1/remove-notification/{id}', name: 'remove_notification', methods: ['DELETE'])]
     public function removeNotification(int $id)
     {
