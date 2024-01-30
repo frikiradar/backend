@@ -68,7 +68,7 @@ class NotificationRepository extends ServiceEntityRepository
         foreach ($notifications as $notification) {
             $notification->setTimeRead(new \DateTime);
         }
-        $this->em->flush();
+        $this->getEntityManager()->flush();
     }
 
     public function removeNotifications(User $user): void
@@ -77,7 +77,7 @@ class NotificationRepository extends ServiceEntityRepository
         foreach ($notifications as $notification) {
             $this->getEntityManager()->remove($notification);
         }
-        $this->em->flush();
+        $this->getEntityManager()->flush();
     }
 
     public function countUnread(User $toUser)
