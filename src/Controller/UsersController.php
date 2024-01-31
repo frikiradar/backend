@@ -156,8 +156,8 @@ class UsersController extends AbstractController
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
-                $user->setVerificationCode();
                 $user->setActive(false);
+                $user->setVerificationCode();
             } else {
                 $user->setPassword(password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT));
                 switch ($provider) {
@@ -179,19 +179,21 @@ class UsersController extends AbstractController
 
                 $this->userRepository->save($user);
 
-                $email = (new Email())
-                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                    ->to(new Address($user->getEmail(), $user->getUsername()))
-                    ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
-                    ->html($this->renderView(
-                        "emails/registration.html.twig",
-                        [
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ));
+                if (empty($provider)) {
+                    $email = (new Email())
+                        ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                        ->to(new Address($user->getEmail(), $user->getUsername()))
+                        ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
+                        ->html($this->renderView(
+                            "emails/registration.html.twig",
+                            [
+                                'username' => $user->getUsername(),
+                                'code' => $user->getVerificationCode()
+                            ]
+                        ));
 
-                $mailer->send($email);
+                    $mailer->send($email);
+                }
 
                 return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => 'default', 'datetime_format' => 'Y-m-d']), Response::HTTP_OK, [], true);
             } catch (Exception $ex) {
