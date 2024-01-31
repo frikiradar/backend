@@ -276,7 +276,7 @@ class StoriesController extends AbstractController
                 $newLike->setDate();
                 $this->likeStoryRepository->save($newLike);
 
-                if ($user->getId() !== $story->getUser()->getId()) {
+                if ($user->getId() !== $story->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
                     $title = $user->getName();
                     $text = "A " . $user->getName() . " le ha gustado tu historia.";
                     $url = "/tabs/explore/story/" . $story->getId();
@@ -397,7 +397,7 @@ class StoriesController extends AbstractController
                 $comment->addLike($user);
                 $this->commentRepository->save($comment);
 
-                if ($user->getId() !== $comment->getUser()->getId()) {
+                if ($user->getId() !== $comment->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
                     $title = $user->getName();
                     $text = "A " . $user->getName() . " le ha gustado tu comentario.";
                     $url = "/tabs/explore/story/" . $comment->getStory()->getId();
