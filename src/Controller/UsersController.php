@@ -150,13 +150,13 @@ class UsersController extends AbstractController
             $user->setMeet($meet);
             $user->setReferral($referral);
             $user->setMailing($mailing ?? true);
-            $user->setVerificationCode();
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
             $user->setLanguages(["es"]);
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
+                $user->setVerificationCode();
                 $user->setActive(false);
             } else {
                 $user->setPassword(password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT));
