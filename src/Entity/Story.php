@@ -30,7 +30,7 @@ class Story
     private $time_creation;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stories')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Groups('story')]
     private $user;
 
