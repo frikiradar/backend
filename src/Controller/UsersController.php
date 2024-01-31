@@ -142,7 +142,6 @@ class UsersController extends AbstractController
             $user->setLovegender(!empty($lovegender) ? $lovegender : []);
             $user->setRegisterDate();
             $user->setRegisterIp();
-            $user->setActive(false);
             $user->setBanned(false);
             $user->setPublic(true);
             $user->setHideLikes(true);
@@ -158,6 +157,7 @@ class UsersController extends AbstractController
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
+                $user->setActive(false);
             } else {
                 $user->setPassword(password_hash(bin2hex(random_bytes(10)), PASSWORD_DEFAULT));
                 switch ($provider) {
@@ -168,6 +168,7 @@ class UsersController extends AbstractController
                         if ($payload['email'] == $email) {
                             $user->setEmail($email);
                             $user->setGoogleId($payload['sub']);
+                            $user->setActive(true);
                         } else {
                             throw new HttpException(400, "Error: Ha ocurrido un error al registrar el usuario. Vuelve a intentarlo en unos minutos.");
                         }
