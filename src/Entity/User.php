@@ -267,6 +267,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups("default")]
     private ?\DateTimeInterface $premium_expiration = null;
 
+    #[ORM\Column(length: 2, nullable: true)]
+    private ?string $ip_country = null;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -1625,5 +1628,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isPremium(): bool
     {
         return $this->getPremiumExpiration() > new \DateTime;
+    }
+
+    public function getIpCountry(): ?string
+    {
+        return $this->ip_country;
+    }
+
+    public function setIpCountry(?string $ip_country): static
+    {
+        $this->ip_country = $ip_country;
+
+        return $this;
     }
 }
