@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\ChatRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
+use App\Service\AccessCheckerService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -21,13 +22,20 @@ class NotificationsController extends AbstractController
     private $userRepository;
     private $notificationRepository;
     private $chatRepository;
+    private $accessChecker;
 
-    public function __construct(SerializerInterface $serializer, UserRepository $userRepository, NotificationRepository $notificationRepository, ChatRepository $chatRepository)
-    {
+    public function __construct(
+        SerializerInterface $serializer,
+        UserRepository $userRepository,
+        NotificationRepository $notificationRepository,
+        ChatRepository $chatRepository,
+        AccessCheckerService $accessChecker,
+    ) {
         $this->serializer = $serializer;
         $this->userRepository = $userRepository;
         $this->notificationRepository = $notificationRepository;
         $this->chatRepository = $chatRepository;
+        $this->accessChecker = $accessChecker;
     }
 
 
@@ -65,6 +73,7 @@ class NotificationsController extends AbstractController
         $cache = new FilesystemAdapter();
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+        $this->accessChecker->checkAccess($user);
         try {
             $notificationsCache = $cache->getItem('users.notifications-list.' . $user->getId());
             if (!$notificationsCache->isHit()) {

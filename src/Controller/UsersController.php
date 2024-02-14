@@ -47,7 +47,6 @@ class UsersController extends AbstractController
     private $radarRepository;
     private $chatRepository;
     private $request;
-    private $accessChecker;
     private $jwtManager;
     private $notification;
     private $geoService;
@@ -55,7 +54,6 @@ class UsersController extends AbstractController
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,
-        AccessCheckerService $accessChecker,
         JWTTokenManagerInterface $jwtManager,
         UserRepository $userRepository,
         BlockUserRepository $blockUserRepository,
@@ -68,7 +66,6 @@ class UsersController extends AbstractController
     ) {
         $this->serializer = $serializer;
         $this->request = $request;
-        $this->accessChecker = $accessChecker;
         $this->jwtManager = $jwtManager;
         $this->userRepository = $userRepository;
         $this->blockUserRepository = $blockUserRepository;
@@ -229,7 +226,6 @@ class UsersController extends AbstractController
         }
         $this->userRepository->save($user);
 
-        // $this->accessChecker->checkAccess($user);
         $user->setImages($user->getImages());
 
         return new JsonResponse($this->serializer->serialize($user, 'json', ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
