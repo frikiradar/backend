@@ -229,7 +229,7 @@ class UsersController extends AbstractController
         }
         $this->userRepository->save($user);
 
-        $this->accessChecker->checkAccess($user);
+        // $this->accessChecker->checkAccess($user);
         $user->setImages($user->getImages());
 
         return new JsonResponse($this->serializer->serialize($user, 'json', ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
