@@ -44,7 +44,7 @@ class AdsController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $country = $user->getIpCountry();
-        $ads = $this->adRepository->getActiveAds($country);
+        $ads = $this->adRepository->getActiveAds($country ?? 'ES');
 
         return new JsonResponse($this->serializer->serialize($ads, "json", ['groups' => ['ads']]), Response::HTTP_OK, [], true);
     }
