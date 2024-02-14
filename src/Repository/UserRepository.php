@@ -365,7 +365,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('maxage', 150.9999);
             }
             if (!$options || ($options && $options['identity'] === true)) {
-                $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                $dql->andWhere($user->getLovegender()
+                    ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL OR u.connection LIKE '%Amistad%' OR u.connection IS NULL)"
+                    : 'u.gender <> :lovegender OR u.gender IS NULL')
                     ->setParameter('lovegender', $user->getLovegender() ?: 1);
             }
             if (!$options || ($options && $options['connection'] === true)) {
