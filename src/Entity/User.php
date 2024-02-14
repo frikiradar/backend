@@ -332,9 +332,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $roles[] = 'ROLE_MASTER';
         }
 
-        if ($this->isPremium()) {
+        if ($this->isPremium() && !in_array('ROLE_PREMIUM', $roles)) {
             $roles[] = 'ROLE_PREMIUM';
-        } elseif (in_array('ROLE_PATREON', $roles)) {
+        }
+
+        if (in_array('ROLE_PATREON', $roles) && !in_array('ROLE_PREMIUM', $roles)) {
+            $roles[] = 'ROLE_PREMIUM';
+        }
+
+        // si es san valentín, osea entre el 12 y el 18 de febrero
+        $today = new \DateTime;
+        if ($today->format("m-d") >= "02-12" && $today->format("m-d") <= "02-18" && !in_array('ROLE_PREMIUM', $roles)) {
             $roles[] = 'ROLE_PREMIUM';
         }
 
