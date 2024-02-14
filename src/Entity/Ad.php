@@ -53,6 +53,9 @@ class Ad
     #[ORM\OneToMany(mappedBy: 'ad', targetEntity: ViewAd::class, orphanRemoval: true)]
     private Collection $viewAds;
 
+    #[ORM\Column(length: 2, nullable: true)]
+    private ?string $country = null;
+
     public function __construct()
     {
         $this->clickAds = new ArrayCollection();
@@ -216,6 +219,18 @@ class Ad
                 $viewAd->setAd(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
 
         return $this;
     }

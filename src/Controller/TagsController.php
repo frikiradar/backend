@@ -7,7 +7,6 @@ use App\Entity\Tag;
 use App\Repository\CategoryRepository;
 use App\Repository\PageRepository;
 use App\Repository\TagRepository;
-use App\Service\AccessCheckerService;
 use App\Service\RequestService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,6 @@ class TagsController extends AbstractController
     private $pageRepository;
     private $request;
     private $serializer;
-    private $accessChecker;
 
     public function __construct(
         TagRepository $tagRepository,
@@ -35,14 +33,12 @@ class TagsController extends AbstractController
         PageRepository $pageRepository,
         SerializerInterface $serializer,
         RequestService $request,
-        AccessCheckerService $accessChecker,
     ) {
         $this->tagRepository = $tagRepository;
         $this->categoryRepository = $categoryRepository;
         $this->pageRepository = $pageRepository;
         $this->request = $request;
         $this->serializer = $serializer;
-        $this->accessChecker = $accessChecker;
     }
 
 
@@ -59,7 +55,6 @@ class TagsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
         $cache->deleteItem('users.get.' . $user->getId());
@@ -116,7 +111,6 @@ class TagsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
         $cache->deleteItem('users.get.' . $user->getId());

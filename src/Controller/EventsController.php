@@ -8,7 +8,6 @@ use App\Repository\ChatRepository;
 use App\Repository\EventRepository;
 use App\Repository\PageRepository;
 use App\Repository\UserRepository;
-use App\Service\AccessCheckerService;
 use App\Service\FileUploaderService;
 use App\Service\MessageService;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +29,6 @@ class EventsController extends AbstractController
     private $serializer;
     private $request;
     private $notification;
-    private $accessChecker;
     private $message;
     private $security;
     private $userRepository;
@@ -42,7 +40,6 @@ class EventsController extends AbstractController
         SerializerInterface $serializer,
         RequestService $request,
         NotificationService $notification,
-        AccessCheckerService $accessChecker,
         MessageService $message,
         AuthorizationCheckerInterface $security,
         UserRepository $userRepository,
@@ -53,7 +50,6 @@ class EventsController extends AbstractController
         $this->serializer = $serializer;
         $this->request = $request;
         $this->notification = $notification;
-        $this->accessChecker = $accessChecker;
         $this->message = $message;
         $this->security = $security;
         $this->userRepository = $userRepository;
@@ -273,9 +269,6 @@ class EventsController extends AbstractController
     #[Route('/v1/event/{id}', name: 'get_event_id', methods: ['GET'])]
     public function getEventAction(int $id)
     {
-        $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
-
         try {
             $event = $this->eventRepository->findOneBy(array('id' => $id));
             if ($event->getSlug()) {
@@ -321,7 +314,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             /**
@@ -368,7 +360,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
 
         try {
@@ -405,7 +396,6 @@ class EventsController extends AbstractController
     public function getMyEventsAction()
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $events = $this->eventRepository->findUserEvents($user);
@@ -419,7 +409,6 @@ class EventsController extends AbstractController
     public function getSuggestedEventsAction()
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $events = $this->eventRepository->findSuggestedEvents($user);
@@ -433,7 +422,6 @@ class EventsController extends AbstractController
     public function getOnlineEventsAction()
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $events = $this->eventRepository->findOnlineEvents($user);
@@ -447,7 +435,6 @@ class EventsController extends AbstractController
     public function getNearEventsAction()
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $events = $this->eventRepository->findNearEvents($user);
@@ -461,7 +448,6 @@ class EventsController extends AbstractController
     public function getSlugEvents(string $slug)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $events = $this->eventRepository->findSlugEvents($slug);
@@ -476,7 +462,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
 
         try {
@@ -519,7 +504,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             /**
@@ -561,7 +545,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
 
         try {
@@ -592,7 +575,6 @@ class EventsController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $id = $this->request->get($request, "id");
 
         try {

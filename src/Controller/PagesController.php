@@ -46,7 +46,6 @@ class PagesController extends AbstractController
     public function getPages(Request $request)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         $limit = $this->request->get($request, "limit", false) ?? null;
 
@@ -62,8 +61,6 @@ class PagesController extends AbstractController
     #[Route('/v1/page/{slug}', name: 'page', methods: ['GET'])]
     public function getPage(string $slug)
     {
-        $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $cache = new FilesystemAdapter();
         try {
             $pageCache = $cache->getItem('page.get.' . $slug);

@@ -80,8 +80,6 @@ class StoriesController extends AbstractController
     #[Route('/v1/stories-slug/{slug}', name: 'get_stories_slug', methods: ['GET'])]
     public function getStoriesSlugAction(string $slug)
     {
-        $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $stories = $this->storyRepository->getStoriesBySlug($slug);
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
@@ -90,8 +88,6 @@ class StoriesController extends AbstractController
     #[Route('/v1/all-stories', name: 'get_all_stories', methods: ['GET'])]
     public function getAllStoriesAction()
     {
-        $user = $this->getUser();
-        // $this->accessChecker->checkAccess($user);
         $stories = $this->storyRepository->getAllStories();
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
@@ -122,8 +118,6 @@ class StoriesController extends AbstractController
     #[Route('/v1/story/{id}', name: 'get_story', methods: ['GET'])]
     public function getStoryAction(int $id)
     {
-        $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $story = $this->storyRepository->findOneBy(array('id' => $id));
             if (!is_null($story)) {
@@ -264,7 +258,6 @@ class StoriesController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $story = $this->storyRepository->findOneBy(array('id' => $this->request->get($request, 'story')));
             $like = $this->likeStoryRepository->findOneBy(array('story' => $story, 'user' => $user));
@@ -300,7 +293,6 @@ class StoriesController extends AbstractController
     public function removeLikeAction(int $id)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             $story = $this->storyRepository->findOneBy(array('id' => $id));
@@ -379,7 +371,6 @@ class StoriesController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             /**
              * @var Comment
@@ -422,7 +413,6 @@ class StoriesController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
 
         try {
             /**

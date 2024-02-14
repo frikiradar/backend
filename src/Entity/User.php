@@ -336,15 +336,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $roles[] = 'ROLE_PREMIUM';
         } elseif (in_array('ROLE_PATREON', $roles)) {
             $roles[] = 'ROLE_PREMIUM';
-        } elseif (date("m-d") >= "02-12" && date("m-d") <= "02-18") {
-            // San valentín
-            $roles[] = 'ROLE_PREMIUM';
         }
 
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        $roles = array_unique($roles);
+        // Asegurarse de que los roles siempre se devuelvan como un array
+        if (is_object($roles)) {
+            $roles = (array) $roles;
+        }
+
+        return $roles;
     }
 
     public function setRoles(array $roles): self

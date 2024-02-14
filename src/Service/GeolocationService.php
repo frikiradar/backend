@@ -5,6 +5,7 @@ namespace App\Service;
 use LongitudeOne\Spatial\PHP\Types\Geometry\Point;
 use Geocoder\Query\GeocodeQuery;
 use GuzzleHttp\Client as GuzzleClient;
+use ipinfo\ipinfo\IPinfo;
 
 class GeolocationService
 {
@@ -42,5 +43,17 @@ class GeolocationService
         }
 
         return $coords;
+    }
+
+    public function getIpCountry($ip)
+    {
+        $httpClient = new GuzzleClient();
+        $provider = new \Geocoder\Provider\GeoPlugin\GeoPlugin($httpClient);
+        $geocoder = new \Geocoder\StatefulGeocoder($provider, 'en');
+
+        $result = $geocoder->geocodeQuery(GeocodeQuery::create($ip));
+        $country = $result->first()->getCountry()->getCode();
+
+        return $country;
     }
 }

@@ -41,7 +41,10 @@ class AdsController extends AbstractController
     #[Route('/v1/ads', name: 'get_ads', methods: ['GET'])]
     public function getAdsAction()
     {
-        $ads = $this->adRepository->getActiveAds();
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $country = $user->getIpCountry();
+        $ads = $this->adRepository->getActiveAds($country);
 
         return new JsonResponse($this->serializer->serialize($ads, "json", ['groups' => ['ads']]), Response::HTTP_OK, [], true);
     }

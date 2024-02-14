@@ -62,6 +62,8 @@ class ChatController extends AbstractController
     {
         /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
+        $fromUser->setLastLogin();
+        $this->userRepository->save($fromUser);
         $id = $this->request->get($request, "touser");
         if ($fromUser->isBanned() && $id !== 1) {
             $this->accessChecker->checkAccess($fromUser);
@@ -127,6 +129,8 @@ class ChatController extends AbstractController
     {
         /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
+        $fromUser->setLastLogin();
+        $this->userRepository->save($fromUser);
         $this->accessChecker->checkAccess($fromUser);
         try {
             $cache = new FilesystemAdapter();
@@ -216,7 +220,6 @@ class ChatController extends AbstractController
     {
         /** @var \App\Entity\User $fromUser */
         $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
         try {
             $chats = $this->chatRepository->getChatUsers($fromUser);
             $this->userRepository->save($fromUser);
@@ -284,6 +287,9 @@ class ChatController extends AbstractController
         try {
             /** @var \App\Entity\User $toUser */
             $toUser = $this->getUser();
+            $toUser->setLastLogin();
+            $this->userRepository->save($toUser);
+
             $chat = $this->chatRepository->findOneBy(array('id' => $id));
             if ($chat->getTouser()->getId() == $toUser->getId()) {
                 $chat->setTimeRead(new \DateTime);
@@ -367,6 +373,8 @@ class ChatController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+        $user->setLastLogin();
+        $this->userRepository->save($user);
         $this->accessChecker->checkAccess($user);
         try {
             $cache = new FilesystemAdapter();

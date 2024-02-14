@@ -27,13 +27,16 @@ class LabCommandService
     private $em;
     private $mailer;
     private $twig;
+    private $geoService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         NotificationService $notification,
+        GeolocationService $geoService,
     ) {
         $this->em = $entityManager;
         $this->notification = $notification;
+        $this->geoService = $geoService;
     }
 
     public function setIo($i, $o)
@@ -213,23 +216,30 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['films', 'games']);
-        foreach ($tags as $a) {
-            $tag = $a['tag'];
-            $slug = $tag->getSlug();
-            if (!isset($slug)) {
-                try {
-                    $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
-                    if ($page) {
-                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
-                    } else {
-                        $this->o->writeln("Error al generar página para: " . $tag->getName());
-                    }
-                } catch (Exception $ex) {
-                    $this->o->writeln("Error al generar página: " . $page->getName() . " - " . $ex->getMessage());
+
+        // recorremos todos los usuarios y le seteamos el país según su ultima ip
+        /**
+         * @var User[]
+         */
+        $users = $this->em->getRepository(\App\Entity\User::class)->findAll();
+        foreach ($users as $user) {
+            $active = $user->isActive();
+            $ip = $user->getLastIP();
+            $country = $user->getIpCountry();
+            if ($active && $ip && !$country) {
+                $country = $this->geoService->getIpCountry($ip);
+                if ($country) {
+                    $user->setIpCountry($country);
+                    $this->em->persist($user);
+                    $this->em->flush();
+                    $this->o->writeln("Usuario: " . $user->getId() . " - " . $user->getUsername() . " - " . $country);
+                } else {
+                    $user->setIpCountry("ES");
+                    $this->em->persist($user);
+                    $this->em->flush();
+                    $this->o->writeln("No se ha podido obtener el país de la ip: " . $ip);
                 }
             }
-            sleep(10);
         }
     }
 }

@@ -14,7 +14,6 @@ use App\Service\FileUploaderService;
 use App\Entity\BlockUser;
 use App\Entity\HideUser;
 use App\Entity\ViewUser;
-use App\Repository\PaymentRepository;
 use App\Service\GeolocationService;
 use App\Service\RequestService;
 use App\Service\AccessCheckerService;
@@ -51,6 +50,7 @@ class UsersController extends AbstractController
     private $accessChecker;
     private $jwtManager;
     private $notification;
+    private $geoService;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -64,6 +64,7 @@ class UsersController extends AbstractController
         RadarRepository $radarRepository,
         ChatRepository $chatRepository,
         NotificationService $notification,
+        GeolocationService $geoService
     ) {
         $this->serializer = $serializer;
         $this->request = $request;
@@ -76,6 +77,7 @@ class UsersController extends AbstractController
         $this->radarRepository = $radarRepository;
         $this->chatRepository = $chatRepository;
         $this->notification = $notification;
+        $this->geoService = $geoService;
     }
 
     // USER URI's
@@ -217,17 +219,14 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $user->setImages($user->getImages());
-
         $user->setLastLogin();
+        $user->setLastIP();
+        $ipCountry = $this->geoService->getIpCountry($user->getLastIP());
+        $user->setIpCountry($ipCountry ?? 'ES');
         $this->userRepository->save($user);
 
-        // Asegurarse de que los roles siempre se devuelvan como un array
-        $roles = $user->getRoles();
-        if (is_object($roles)) {
-            $roles = (array) $roles;
-        }
-        $user->setRoles($roles);
+        $this->accessChecker->checkAccess($user);
+        $user->setImages($user->getImages());
 
         return new JsonResponse($this->serializer->serialize($user, 'json', ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
     }
@@ -237,7 +236,6 @@ class UsersController extends AbstractController
     public function getUserAction($id)
     {
         $fromUser = $this->getUser();
-        $this->accessChecker->checkAccess($fromUser);
         $cache = new FilesystemAdapter();
 
         if (!is_numeric($id)) {
@@ -360,7 +358,6 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             if ($this->request->get($request, 'id') == $user->getId()) {
                 $cache = new FilesystemAdapter();
@@ -412,13 +409,11 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $latitude = $this->request->get($request, 'latitude');
             $longitude = $this->request->get($request, 'longitude');
 
-            $geolocation = new GeolocationService();
-            $coords = $geolocation->geolocate($latitude, $longitude);
+            $coords = $this->geoService->geolocate($latitude, $longitude);
             $user->setCoordinates($coords);
             $this->userRepository->save($user);
 
@@ -433,7 +428,6 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $city = $this->request->get($request, 'city');
             $country = $this->request->get($request, 'country');
@@ -445,8 +439,7 @@ class UsersController extends AbstractController
             if ($user->getCountry() == $country && $user->getCity() == $city) {
                 $coords = $user->getCoordinates();
             } else {
-                $geolocation = new GeolocationService();
-                $coords = $geolocation->manualGeolocate($city, $country);
+                $coords = $this->geoService->manualGeolocate($city, $country);
                 $user->setCountry($country);
                 $user->setCity($city);
                 $user->setCoordinates($coords);
@@ -465,7 +458,6 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $avatar = $request->files->get('avatar');
 
         $id = $user->getId();
@@ -528,7 +520,6 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
@@ -560,7 +551,6 @@ class UsersController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         try {
             $cache = new FilesystemAdapter();
             $cache->deleteItem('users.get.' . $user->getId() . '.' . $user->getId());
@@ -596,7 +586,6 @@ class UsersController extends AbstractController
     public function getRadarUsers(Request $request)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         ini_set('max_execution_time', 60);
         ini_set('memory_limit', '512M');
 
@@ -618,7 +607,6 @@ class UsersController extends AbstractController
     public function searchAction(Request $request)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
         $query = $this->request->get($request, "query");
@@ -636,7 +624,6 @@ class UsersController extends AbstractController
     public function searchBySlugAction(Request $request)
     {
         $user = $this->getUser();
-        $this->accessChecker->checkAccess($user);
         $page = $this->request->get($request, "page");
         $order = $this->request->get($request, "order");
         $slug = $this->request->get($request, "slug");

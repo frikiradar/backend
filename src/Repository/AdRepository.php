@@ -58,7 +58,7 @@ class AdRepository extends ServiceEntityRepository
         $this->_em->flush();
     }
 
-    public function getActiveAds(): array
+    public function getActiveAds(String $country): array
     {
         // cogemos todos los anuncios activos, para eso vemos que
         // start_date sea menor o igual que hoy y end_date sea mayor o igual que hoy
@@ -68,7 +68,9 @@ class AdRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('a')
             ->andWhere('a.start_date <= :today OR a.start_date IS NULL')
             ->andWhere('a.end_date >= :today OR a.end_date IS NULL')
+            ->andWhere('a.country = :country OR a.country IS NULL')
             ->setParameter('today', new \DateTime())
+            ->setParameter('country', $country)
             ->getQuery()
             ->getResult();
     }
