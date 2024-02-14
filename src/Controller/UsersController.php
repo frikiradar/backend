@@ -220,9 +220,13 @@ class UsersController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $user->setLastLogin();
+        $oldIp = $user->getLastIp();
         $user->setLastIP();
-        $ipCountry = $this->geoService->getIpCountry($user->getLastIP());
-        $user->setIpCountry($ipCountry ?? 'ES');
+        $newIp = $user->getLastIp();
+        if ($oldIp != $newIp) {
+            $ipCountry = $this->geoService->getIpCountry($newIp);
+            $user->setIpCountry($ipCountry ?? 'ES');
+        }
         $this->userRepository->save($user);
 
         $this->accessChecker->checkAccess($user);
