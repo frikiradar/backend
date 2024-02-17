@@ -26,6 +26,9 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
 
 #[Route(path: '/api')]
 class StoriesController extends AbstractController
@@ -465,6 +468,37 @@ class StoriesController extends AbstractController
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al eliminar el comentario - Error: {$ex->getMessage()}");
+        }
+    }
+
+    #[Route('/v1/report-story', name: 'report_story', methods: ['PUT'])]
+    public function putReportStoryAction(Request $request, MailerInterface $mailer)
+    {
+        try {
+            /**
+             * @var Story
+             */
+            $story = $this->request->get($request, 'story', true);
+            $note = $this->request->get($request, 'note', false);
+
+            $username = $story['user']['username'];
+            $text = $story['text'];
+            $id = $story['id'];
+
+            // Enviar email al administrador informando del motivo
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->subject('Historia reportada')
+                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='https://frikiradar.app/tabs/explore/story/" . $id . "'>" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
+
+            $mailer->send($email);
+
+            return new JsonResponse($this->serializer->serialize("Historia reportada correctamente", "json"), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al reportar la historia - Error: {$ex->getMessage()}");
         }
     }
 }
