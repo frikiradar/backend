@@ -193,15 +193,8 @@ class PaymentController extends AbstractController
     public function paypalWebhook(Request $request, MailerInterface $mailer)
     {
         try {
-
-
-            $event = json_decode($request->getContent(), true);
-            $payment = new Payment();
-            $payment->setPurchase($event);
-            $payment->setStatus('active');
-
-            $this->paymentRepository->save($payment);
-
+            $event = $request->getContent();
+            $event = json_decode($event, true);
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
             $expiration = $event["resource"]["billing_info"]["next_billing_time"];
