@@ -188,4 +188,53 @@ class PaymentController extends AbstractController
             throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
     }
+
+    #[Route('/paypal', name: 'paypal', methods: ['POST'])]
+    public function paypalWebhook(Request $request, MailerInterface $mailer)
+    {
+        try {
+            $bodyReceived = $request->getContent();
+            $headers = getallheaders();
+            $headers = array_change_key_case($headers, CASE_UPPER);
+    
+            $paypalAuthAlgo = 'sha256';
+            $paypalTransmissionId = $headers['PAYPAL-TRANSMISSION-ID'];
+            $paypalTransmissionTime = $headers['PAYPAL-TRANSMISSION-TIME'];
+            $paypalCertUrl = $headers['PAYPAL-CERT-URL'];
+            $paypalAuthVersion = $headers['PAYPAL-AUTH-ALGO'];
+            $paypalTransmissionSig = $headers['PAYPAL-TRANSMISSION-SIG'];
+    
+            $expectedSignature = hash_hmac($paypalAuthAlgo, $paypalTransmissionId . "|" . $paypalTransmissionTime . "|" . $paypalCertUrl . "|" . $bodyReceived, 'ENEKWLMh8lae33y1Dbyl3r-ylpaDl2y_tBRUSUAa1nrU0h341mUJ9ILNZ42cdjsm1uzo5yKLnunrxko7');
+    
+            if ($expectedSignature == $paypalTransmissionSig) {
+                // Aquí puedes manejar el evento recibido
+                // Por ejemplo, puedes enviar un correo electrónico o actualizar la base de datos
+                // evento de billing plan activated
+                $eventType = $bodyReceived['event_type'];
+                switch ($eventType) {
+                    case 'PAYMENT.SALE.COMPLETED':
+
+                        break;
+                    case 'BILLING.SUBSCRIPTION.ACTIVATED':
+
+                        break;
+                    case 'BILLING.SUBSCRIPTION.CANCELLED':
+
+                        break;
+                }
+
+
+
+                $data = [
+                    'code' => 200,
+                    'message' => "Webhook recibido correctamente",
+                ];
+                return new JsonResponse($data, 200);
+            } else {
+                throw new HttpException(400, "Error al validar la firma del webhook de PayPal");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al procesar el webhook de PayPal - Error: {$ex->getMessage()}");
+        }
+    }
 }
