@@ -193,25 +193,30 @@ class PaymentController extends AbstractController
     public function paypalWebhook(Request $request, MailerInterface $mailer)
     {
         try {
-            $bodyReceived = $request->getContent();
+            $event = json_decode($request->getContent(), true);
             $headers = getallheaders();
             $headers = array_change_key_case($headers, CASE_UPPER);
-    
+
             $paypalAuthAlgo = 'sha256';
             $paypalTransmissionId = $headers['PAYPAL-TRANSMISSION-ID'];
             $paypalTransmissionTime = $headers['PAYPAL-TRANSMISSION-TIME'];
             $paypalCertUrl = $headers['PAYPAL-CERT-URL'];
             $paypalAuthVersion = $headers['PAYPAL-AUTH-ALGO'];
             $paypalTransmissionSig = $headers['PAYPAL-TRANSMISSION-SIG'];
-    
-            $expectedSignature = hash_hmac($paypalAuthAlgo, $paypalTransmissionId . "|" . $paypalTransmissionTime . "|" . $paypalCertUrl . "|" . $bodyReceived, 'ENEKWLMh8lae33y1Dbyl3r-ylpaDl2y_tBRUSUAa1nrU0h341mUJ9ILNZ42cdjsm1uzo5yKLnunrxko7');
-    
+
+            $expectedSignature = hash_hmac($paypalAuthAlgo, $paypalTransmissionId . $paypalTransmissionTime, file_get_contents($paypalCertUrl));
             if ($expectedSignature == $paypalTransmissionSig) {
-                // Aquí puedes manejar el evento recibido
-                // Por ejemplo, puedes enviar un correo electrónico o actualizar la base de datos
-                // evento de billing plan activated
-                $eventType = $bodyReceived['event_type'];
-                switch ($eventType) {
+                $user = $this->userRepository->findOneBy(array('id' => 1));
+
+                $expiration = $event["resource"]["billing_info"]["next_billing_time"];
+                $expiration = (new \DateTime())->setTimestamp($expiration);
+
+                $payment_date = $event["resource"]["create_time"];
+                if ($payment_date) {
+                    $payment_date = (new \DateTime())->setTimestamp($payment_date);
+                }
+
+                /*switch ($type) {
                     case 'PAYMENT.SALE.COMPLETED':
 
                         break;
@@ -221,9 +226,46 @@ class PaymentController extends AbstractController
                     case 'BILLING.SUBSCRIPTION.CANCELLED':
 
                         break;
+                }*/
+
+                // metemos el pago en la base de datos
+                $payment = new Payment();
+                $payment->setTitle($event["id"]);
+                $description = "Suscripción a frikiradar UNLIMITED";
+                $payment->setDescription($description);
+                $payment->setMethod('PAYPAL');
+                $payment->setUser($user);
+                if ($payment_date) {
+                    $payment->setPaymentDate($payment_date);
+                } else {
+                    $payment->setPaymentDate();
                 }
 
+                $payment->setExpirationDate($expiration);
+                $payment->setAmount($event['resource']['billing_info']['outstanding_balance']['value'] ?? 0);
+                $payment->setCurrency($event['resource']['billing_info']['outstanding_balance']['currency_code'] ?? '');
+                $payment->setPurchase($event);
+                $payment->setStatus('active');
 
+                $this->paymentRepository->save($payment);
+
+                // Enviar un email a hola@frikiradar con los datos del pago
+                $email = (new Email())
+                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                    ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                    ->subject($description)
+                    ->html(
+                        "Usuario: <a href='https://frikiradar.app/" . urlencode($user->getUsername()) . "' target='_blank'>" . $user->getUsername() . "</a><br/>" .
+                            "Email: " . $user->getEmail() . "<br/>" .
+                            "Descripción: " . $description . "<br/>" .
+                            "Producto: " . $event["id"] . "<br/>" .
+                            "Fecha de pago: " . ($payment_date ? $payment_date->format('d/m/Y H:i:s') : 'No disponible') . "<br/>" .
+                            "Fecha de expiración: " . $expiration->format('d/m/Y H:i:s') . "<br/>" .
+                            "Método de pago: " . "PAYPAL" . "<br/>" .
+                            "Precio: " . $event['resource']['billing_info']['outstanding_balance']['value'] . " " . $event['resource']['billing_info']['outstanding_balance']['currency_code'] . "<br/>"
+                    );
+
+                $mailer->send($email);
 
                 $data = [
                     'code' => 200,
