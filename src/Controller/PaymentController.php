@@ -152,11 +152,9 @@ class PaymentController extends AbstractController
 
                     $this->paymentRepository->save($payment);
                     break;
-                case 'CANCELLATION':
-                    // No debería ser necesario porque se cancela directamente si la fecha de expiración es menor que la actual
-                    /*$user->setPremiumExpiration(null);
-                    $this->userRepository->save($user);*/
-                    break;
+                default:
+                    // Ignoramos el resto de eventos pero no devolvemos error.
+                    $description = "Suscripción a frikiradar UNLIMITED - " . $type;
             }
 
             // Enviar un email a hola@frikiradar con los datos del pago
