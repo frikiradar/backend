@@ -39,18 +39,17 @@ class PaymentController extends AbstractController
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $payments = $user->getPayments();
+        // recogemos solo los payments con status 'active'
+        $payments = $this->paymentRepository->findBy(array('user' => $user, 'status' => 'active'), array('payment_date' => 'DESC'));
 
         return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
-    // TODO: Borrar en 3.4
     #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
     public function setPayment(Request $request)
     {
         try {
-            // Desactivamos de momento para revenuecat
-            /*$payment = new Payment();
+            $payment = new Payment();
             $payment->setTitle($this->request->get($request, 'title'));
             $payment->setDescription($this->request->get($request, 'description'));
             $payment->setMethod($this->request->get($request, 'method'));
@@ -69,9 +68,9 @@ class PaymentController extends AbstractController
             $payment->setCurrency($this->request->get($request, 'currency'));
             $payment->setProduct(json_decode($this->request->get($request, 'product'), true));
             $payment->setPurchase(json_decode($this->request->get($request, 'purchase'), true));
-            $payment->setStatus('active');
+            $payment->setStatus($this->request->get($request, 'status', false) ?? 'pending');
 
-            $this->paymentRepository->save($payment);*/
+            $this->paymentRepository->save($payment);
 
             return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
@@ -262,6 +261,17 @@ class PaymentController extends AbstractController
             ];
             return new JsonResponse($data, 200);
         } catch (Exception $ex) {
+            // Enviamos email con el error
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->subject("Error al procesar el webhook de PayPal")
+                ->html(
+                    "Error al procesar el webhook de PayPal - Error: {$ex->getMessage()}"
+                );
+
+            $mailer->send($email);
+
             throw new HttpException(400, "Error al procesar el webhook de PayPal - Error: {$ex->getMessage()}");
         }
     }
