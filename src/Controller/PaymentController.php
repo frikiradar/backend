@@ -229,7 +229,7 @@ class PaymentController extends AbstractController
             $payment->setExpirationDate($expiration);
             $payment->setAmount($event['resource']['billing_info']['outstanding_balance']['value'] ?? 0);
             $payment->setCurrency($event['resource']['billing_info']['outstanding_balance']['currency_code'] ?? '');
-            $payment->setPurchase($event);
+            // $payment->setPurchase($event);
             $payment->setStatus('active');
 
             $this->paymentRepository->save($payment);
