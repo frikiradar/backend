@@ -190,8 +190,7 @@ class PaymentController extends AbstractController
     public function paypalWebhook(Request $request, MailerInterface $mailer)
     {
         try {
-            $event = $request->getContent();
-            $event = json_decode($event, true);
+            $event = json_decode($request->getContent(), true);
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
             $expiration = $event["resource"]["billing_info"]["next_billing_time"];
