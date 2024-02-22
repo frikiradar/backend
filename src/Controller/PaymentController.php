@@ -191,6 +191,8 @@ class PaymentController extends AbstractController
     {
         try {
             $event = json_decode($request->getContent(), true);
+            $json = json_encode($event, JSON_PRETTY_PRINT);
+            $event = json_decode($json, true);
             $type = $event["event_type"];
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
