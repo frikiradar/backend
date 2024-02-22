@@ -45,8 +45,7 @@ class PaymentController extends AbstractController
         return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
-    // Obtener el último método de pago utilizado por el usuario
-    #[Route('/v1/last-payment', name: 'payment_method', methods: ['GET'])]
+    #[Route('/v1/payment', name: 'last_payment', methods: ['GET'])]
     public function getLastPayment()
     {
         /** @var \App\Entity\User $user */
