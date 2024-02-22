@@ -153,8 +153,11 @@ class PaymentController extends AbstractController
                     $this->paymentRepository->save($payment);
                     break;
                 default:
-                    // Ignoramos el resto de eventos pero no devolvemos error.
-                    $description = "Suscripción a frikiradar UNLIMITED - " . $type;
+                    $data = [
+                        'code' => 200,
+                        'message' => "Webhook recibido correctamente",
+                    ];
+                    return new JsonResponse($data, 200);
             }
 
             // Enviar un email a hola@frikiradar con los datos del pago
@@ -194,44 +197,42 @@ class PaymentController extends AbstractController
             $type = $event["event_type"];
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
-            $expirationText = $event["resource"]["billing_info"]["next_billing_time"];
-            $expiration = $event["resource"]["billing_info"]["next_billing_time"] ? strtotime($event["resource"]["billing_info"]["next_billing_time"]) : null;
-            $paymentDateText = $event["resource"]["create_time"];
-            $payment_date = $event["resource"]["create_time"] ? strtotime($event["resource"]["create_time"]) : null;
-
             switch ($type) {
                 case 'BILLING.SUBSCRIPTION.ACTIVATED':
                     $description = "Suscripción a frikiradar UNLIMITED";
-                    $price = $event['resource']['billing_info']['outstanding_balance']['value'] ?? 0;
-                    $currency = $event['resource']['billing_info']['outstanding_balance']['currency_code'] ?? '';
+                    $expiration = $event["resource"]["billing_info"]["next_billing_time"];
+                    $payment_date = $event["resource"]["billing_info"]["last_payment"]["time"];
+                    $price = $event['resource']['billing_info']['last_payment']['amount']['value'] ?? 0;
+                    $currency = $event['resource']['billing_info']['last_payment']['amount']['currency_code'] ?? '';
                     break;
                 default:
-                    // Ignoramos el resto de eventos pero no devolvemos error.
-                    $description = "Suscripción a frikiradar UNLIMITED - " . $type;
-                    $price = 0;
-                    $currency = '';
+                    $data = [
+                        'code' => 200,
+                        'message' => "Webhook recibido correctamente",
+                    ];
+                    return new JsonResponse($data, 200);
             }
 
             // metemos el pago en la base de datos
-            /*$payment = new Payment();
+            $payment = new Payment();
             $payment->setTitle($event["id"]);
             $description = "Suscripción a frikiradar UNLIMITED";
             $payment->setDescription($description);
             $payment->setMethod('PAYPAL');
             $payment->setUser($user);
             if ($payment_date) {
-                $payment->setPaymentDate($payment_date);
+                $payment->setPaymentDate(new \DateTime(strtotime($payment_date)));
             } else {
                 $payment->setPaymentDate();
             }
 
-            $payment->setExpirationDate($expiration);
-            $payment->setAmount($event['resource']['billing_info']['outstanding_balance']['value'] ?? 0);
-            $payment->setCurrency($event['resource']['billing_info']['outstanding_balance']['currency_code'] ?? '');
-            // $payment->setPurchase($event);
+            $payment->setExpirationDate(new \DateTime(strtotime($expiration)));
+            $payment->setAmount($price);
+            $payment->setCurrency($currency);
+            $payment->setPurchase($event);
             $payment->setStatus('active');
 
-            $this->paymentRepository->save($payment);*/
+            $this->paymentRepository->save($payment);
 
             // Enviar un email a hola@frikiradar con los datos del pago
             $email = (new Email())
@@ -242,11 +243,13 @@ class PaymentController extends AbstractController
                     "Usuario: <a href='https://frikiradar.app/" . urlencode($user->getUsername()) . "' target='_blank'>" . $user->getUsername() . "</a><br/>" .
                         "Email: " . $user->getEmail() . "<br/>" .
                         "Descripción: " . $description . "<br/>" .
-                        "Producto: " . $event["id"] . "<br/>" .
-                        "Fecha de pago: " . ($paymentDateText ?? 'No disponible') . "<br/>" .
-                        "Fecha de expiración: " . ($expirationText ?? 'No disponible') . "<br/>" .
+                        "ID de suscripción: " . $event["resource"]["id"] . "<br/>" .
+                        "Plan: " . $event["resource"]["plan_id"] . "<br/>" .
+                        "Fecha de pago: " . ($payment_date ?? 'No disponible') . "<br/>" .
+                        "Fecha de expiración: " . ($expiration ?? 'No disponible') . "<br/>" .
                         "Método de pago: " . "PAYPAL" . "<br/>" .
-                        "Precio: " . $price . " " . $currency . "<br/>"
+                        "Precio: " . $price . " " . $currency . "<br/>" .
+                        "Evento: " . $event . "<br/>"
                 );
 
 
