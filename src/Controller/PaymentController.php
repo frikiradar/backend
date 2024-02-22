@@ -191,7 +191,7 @@ class PaymentController extends AbstractController
     {
         try {
             $event = json_decode($request->getContent(), true);
-            $user = $this->userRepository->findOneBy(array('id' => 1));
+            /*$user = $this->userRepository->findOneBy(array('id' => 1));
 
             $expiration = $event["resource"]["billing_info"]["next_billing_time"];
             $expiration = (new \DateTime())->setTimestamp($expiration);
@@ -199,7 +199,7 @@ class PaymentController extends AbstractController
             $payment_date = $event["resource"]["create_time"];
             if ($payment_date) {
                 $payment_date = (new \DateTime())->setTimestamp($payment_date);
-            }
+            }*/
 
             /*switch ($type) {
                     case 'PAYMENT.SALE.COMPLETED':
@@ -214,7 +214,7 @@ class PaymentController extends AbstractController
                 }*/
 
             // metemos el pago en la base de datos
-            $payment = new Payment();
+            /*$payment = new Payment();
             $payment->setTitle($event["id"]);
             $description = "Suscripción a frikiradar UNLIMITED";
             $payment->setDescription($description);
@@ -248,6 +248,17 @@ class PaymentController extends AbstractController
                         "Fecha de expiración: " . $expiration->format('d/m/Y H:i:s') . "<br/>" .
                         "Método de pago: " . "PAYPAL" . "<br/>" .
                         "Precio: " . $event['resource']['billing_info']['outstanding_balance']['value'] . " " . $event['resource']['billing_info']['outstanding_balance']['currency_code'] . "<br/>"
+                );
+
+            $mailer->send($email);*/
+
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->subject("Test de webhook de PayPal")
+                ->html(
+                    "Mensaje test de webhook de paypal<br/>" .
+                        "Evento: " . json_encode($event) . "<br/>"
                 );
 
             $mailer->send($email);
