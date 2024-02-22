@@ -50,10 +50,10 @@ class PaymentController extends AbstractController
     {
         try {
             $payment = new Payment();
-            $payment->setTitle($this->request->get($request, 'title'));
-            $payment->setDescription($this->request->get($request, 'description'));
             $payment->setMethod($this->request->get($request, 'method'));
             $payment->setUser($this->getUser());
+            $payment->setTitle($this->request->get($request, 'title', false));
+            $payment->setDescription($this->request->get($request, 'description', false));
             $payment_date = $this->request->get($request, 'payment_date', false);
             if ($payment_date) {
                 $payment->setPaymentDate(new \DateTime($payment_date));
@@ -64,11 +64,10 @@ class PaymentController extends AbstractController
             if ($expiration_date) {
                 $payment->setExpirationDate(new \DateTime($expiration_date));
             }
-            $payment->setAmount($this->request->get($request, 'amount'));
-            $payment->setCurrency($this->request->get($request, 'currency'));
-            $payment->setProduct(json_decode($this->request->get($request, 'product'), true));
-            $payment->setPurchase(json_decode($this->request->get($request, 'purchase'), true));
-            $payment->setStatus($this->request->get($request, 'status', false) ?? 'pending');
+            $payment->setAmount($this->request->get($request, 'amount', false));
+            $payment->setCurrency($this->request->get($request, 'currency', false));
+            $payment->setPaypalId($this->request->get($request, 'paypal_id', false));
+            $payment->setStatus($this->request->get($request, 'status', false) ?? 'pending'); // por defecto 'pending
 
             $this->paymentRepository->save($payment);
 
@@ -195,7 +194,9 @@ class PaymentController extends AbstractController
         try {
             $event = json_decode($request->getContent(), true);
             $type = $event["event_type"];
-            $user = $this->userRepository->findOneBy(array('id' => 1));
+
+            $payment = $this->paymentRepository->findOneBy(['paypal_id' => $event["resource"]["id"], 'status' => 'pending']);
+            $user = $payment->getUser();
 
             switch ($type) {
                 case 'BILLING.SUBSCRIPTION.ACTIVATED':
@@ -212,14 +213,14 @@ class PaymentController extends AbstractController
                     ];
                     return new JsonResponse($data, 200);
             }
+            // actualizamos la fecha de expiración
+            $user->setPremiumExpiration((new \DateTime())->setTimestamp(strtotime($expiration)));
+            $this->userRepository->save($user);
 
-            // metemos el pago en la base de datos
-            /*$payment = new Payment();
-            $payment->setTitle($event["resource"]["id"]);
+            $payment->setTitle($event["resource"]["plan_id"]);
             $description = "Suscripción a frikiradar UNLIMITED";
             $payment->setDescription($description);
-            $payment->setMethod('PAYPAL');
-            $payment->setUser($user);
+
             if ($payment_date) {
                 $payment->setPaymentDate((new \DateTime())->setTimestamp(strtotime($payment_date)));
             } else {
@@ -232,7 +233,7 @@ class PaymentController extends AbstractController
             $payment->setPurchase($event);
             $payment->setStatus('active');
 
-            $this->paymentRepository->save($payment);*/
+            $this->paymentRepository->save($payment);
 
             // Enviar un email a hola@frikiradar con los datos del pago
             $email = (new Email())
@@ -247,21 +248,9 @@ class PaymentController extends AbstractController
                         "Plan: " . $event["resource"]["plan_id"] . "<br/>" .
                         "Fecha de pago: " . ($payment_date ?? 'No disponible') . "<br/>" .
                         "Fecha de expiración: " . ($expiration ?? 'No disponible') . "<br/>" .
-                        "Método de pago: " . "PAYPAL" . "<br/>" .
-                        "Precio: " . $price . " " . $currency . "<br/>" .
-                        "Evento: " . $event . "<br/>"
+                        "Método de pago: PAYPAL<br/>" .
+                        "Precio: " . $price . " " . $currency . "<br/>"
                 );
-
-
-            /*$email = (new Email())
-                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
-                ->subject("Test de webhook de PayPal")
-                ->html(
-                    "Mensaje test de webhook de paypal<br/>" .
-                        "Evento: " . $array . "<br/>"
-                );*/
-
 
             $mailer->send($email);
 
