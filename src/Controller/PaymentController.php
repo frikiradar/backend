@@ -190,9 +190,7 @@ class PaymentController extends AbstractController
     public function paypalWebhook(Request $request, MailerInterface $mailer)
     {
         try {
-            $event = json_decode($request->getContent(), true);
-            $json = json_encode($event, JSON_PRETTY_PRINT);
-            $event = json_decode($json, true);
+            $event = json_decode($request->getContent(), true)[0];
             $type = $event["event_type"];
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
