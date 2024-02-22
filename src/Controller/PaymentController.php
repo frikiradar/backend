@@ -214,7 +214,7 @@ class PaymentController extends AbstractController
             }
 
             // metemos el pago en la base de datos
-            $payment = new Payment();
+            /*$payment = new Payment();
             $payment->setTitle($event["resource"]["id"]);
             $description = "Suscripción a frikiradar UNLIMITED";
             $payment->setDescription($description);
@@ -232,7 +232,7 @@ class PaymentController extends AbstractController
             $payment->setPurchase($event);
             $payment->setStatus('active');
 
-            $this->paymentRepository->save($payment);
+            $this->paymentRepository->save($payment);*/
 
             // Enviar un email a hola@frikiradar con los datos del pago
             $email = (new Email())
