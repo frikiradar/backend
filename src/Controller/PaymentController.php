@@ -215,18 +215,18 @@ class PaymentController extends AbstractController
 
             // metemos el pago en la base de datos
             $payment = new Payment();
-            $payment->setTitle($event["id"]);
+            $payment->setTitle($event["resource"]["id"]);
             $description = "Suscripción a frikiradar UNLIMITED";
             $payment->setDescription($description);
             $payment->setMethod('PAYPAL');
             $payment->setUser($user);
             if ($payment_date) {
-                $payment->setPaymentDate(new \DateTime(strtotime($payment_date)));
+                $payment->setPaymentDate((new \DateTime())->setTimestamp(strtotime($payment_date)));
             } else {
                 $payment->setPaymentDate();
             }
 
-            $payment->setExpirationDate(new \DateTime(strtotime($expiration)));
+            $payment->setExpirationDate((new \DateTime())->setTimestamp(strtotime($expiration)));
             $payment->setAmount($price);
             $payment->setCurrency($currency);
             $payment->setPurchase($event);
