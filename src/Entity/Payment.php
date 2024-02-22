@@ -71,7 +71,7 @@ class Payment
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
         $this->title = $title;
 
@@ -83,7 +83,7 @@ class Payment
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -95,7 +95,7 @@ class Payment
         return $this->method;
     }
 
-    public function setMethod(string $method): static
+    public function setMethod(?string $method): static
     {
         $this->method = $method;
 
@@ -135,7 +135,7 @@ class Payment
         return $this->expiration_date;
     }
 
-    public function setExpirationDate(\DateTimeInterface $expiration_date): static
+    public function setExpirationDate(?\DateTimeInterface $expiration_date): static
     {
         $this->expiration_date = $expiration_date;
 
@@ -147,7 +147,7 @@ class Payment
         return $this->amount;
     }
 
-    public function setAmount(float $amount): static
+    public function setAmount(?float $amount): static
     {
         $this->amount = $amount;
 
@@ -159,7 +159,7 @@ class Payment
         return $this->currency;
     }
 
-    public function setCurrency(string $currency): static
+    public function setCurrency(?string $currency): static
     {
         $this->currency = $currency;
 
@@ -195,7 +195,7 @@ class Payment
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(?string $status): static
     {
         $this->status = $status;
 
