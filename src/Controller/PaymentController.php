@@ -40,7 +40,7 @@ class PaymentController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         // recogemos solo los payments con status 'active'
-        $payments = $this->paymentRepository->findBy(array('user' => $user, 'status' => 'active'), array('payment_date' => 'DESC'));
+        $payments = $this->paymentRepository->findBy(array('user' => $user, 'status' => 'active'), array('payment_date' => 'ASC'));
 
         return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
