@@ -16,15 +16,15 @@ class Payment
     #[Groups('payment')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups('payment')]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups('payment')]
     private ?string $description = null;
 
-    #[ORM\Column(length: 70)]
+    #[ORM\Column(length: 70, nullable: true)]
     #[Groups('payment')]
     private ?string $method = null;
 
@@ -36,15 +36,15 @@ class Payment
     #[Groups('payment')]
     private ?\DateTimeInterface $payment_date = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Groups('payment')]
     private ?\DateTimeInterface $expiration_date = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     #[Groups('payment')]
     private ?float $amount = null;
 
-    #[ORM\Column(length: 5)]
+    #[ORM\Column(length: 5, nullable: true)]
     #[Groups('payment')]
     private ?string $currency = null;
 
@@ -54,7 +54,7 @@ class Payment
     #[ORM\Column(nullable: true)]
     private ?array $purchase = null;
 
-    #[ORM\Column(length: 70)]
+    #[ORM\Column(length: 70, nullable: true)]
     #[Groups('payment')]
     private ?string $status = null;
 
