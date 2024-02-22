@@ -58,6 +58,9 @@ class Payment
     #[Groups('payment')]
     private ?string $status = null;
 
+    #[ORM\Column(length: 70, nullable: true)]
+    private ?string $paypal_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -195,6 +198,18 @@ class Payment
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPaypalId(): ?string
+    {
+        return $this->paypal_id;
+    }
+
+    public function setPaypalId(?string $paypal_id): static
+    {
+        $this->paypal_id = $paypal_id;
 
         return $this;
     }
