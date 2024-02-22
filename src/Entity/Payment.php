@@ -59,6 +59,7 @@ class Payment
     private ?string $status = null;
 
     #[ORM\Column(length: 70, nullable: true)]
+    #[Groups('payment')]
     private ?string $paypal_id = null;
 
     public function getId(): ?int
