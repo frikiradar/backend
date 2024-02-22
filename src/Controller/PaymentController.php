@@ -191,12 +191,13 @@ class PaymentController extends AbstractController
     {
         try {
             $event = json_decode($request->getContent(), true);
-            $array = print_r($event, true);
-            /*$type = $event["event_type"];
+            $type = $event["event_type"];
             $user = $this->userRepository->findOneBy(array('id' => 1));
 
-            $expiration = $event["resource"]["billing_info"]["next_billing_time"] ? (new \DateTime())->setTimestamp($event["resource"]["billing_info"]["next_billing_time"]) : null;
-            $payment_date = $event["resource"]["create_time"] ? (new \DateTime())->setTimestamp($event["resource"]["create_time"]) : null;
+            $expirationText = $event["resource"]["billing_info"]["next_billing_time"];
+            $expiration = $event["resource"]["billing_info"]["next_billing_time"] ? strtotime($event["resource"]["billing_info"]["next_billing_time"]) : null;
+            $paymentDateText = $event["resource"]["create_time"];
+            $payment_date = $event["resource"]["create_time"] ? strtotime($event["resource"]["create_time"]) : null;
 
             switch ($type) {
                 case 'BILLING.SUBSCRIPTION.ACTIVATED':
@@ -209,7 +210,7 @@ class PaymentController extends AbstractController
                     $description = "Suscripción a frikiradar UNLIMITED - " . $type;
                     $price = 0;
                     $currency = '';
-            }*/
+            }
 
             // metemos el pago en la base de datos
             /*$payment = new Payment();
@@ -233,7 +234,7 @@ class PaymentController extends AbstractController
             $this->paymentRepository->save($payment);*/
 
             // Enviar un email a hola@frikiradar con los datos del pago
-            /*$email = (new Email())
+            $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject($description)
@@ -242,21 +243,21 @@ class PaymentController extends AbstractController
                         "Email: " . $user->getEmail() . "<br/>" .
                         "Descripción: " . $description . "<br/>" .
                         "Producto: " . $event["id"] . "<br/>" .
-                        "Fecha de pago: " . ($payment_date ? $payment_date->format('d/m/Y H:i:s') : 'No disponible') . "<br/>" .
-                        "Fecha de expiración: " . ($expiration ? $expiration->format('d/m/Y H:i:s') : 'No disponible') . "<br/>" .
+                        "Fecha de pago: " . ($paymentDateText ?? 'No disponible') . "<br/>" .
+                        "Fecha de expiración: " . ($expirationText ?? 'No disponible') . "<br/>" .
                         "Método de pago: " . "PAYPAL" . "<br/>" .
                         "Precio: " . $price . " " . $currency . "<br/>"
-                );*/
+                );
 
 
-            $email = (new Email())
+            /*$email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject("Test de webhook de PayPal")
                 ->html(
                     "Mensaje test de webhook de paypal<br/>" .
                         "Evento: " . $array . "<br/>"
-                );
+                );*/
 
 
             $mailer->send($email);
