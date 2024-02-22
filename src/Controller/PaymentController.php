@@ -45,6 +45,18 @@ class PaymentController extends AbstractController
         return new JsonResponse($this->serializer->serialize($payments, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
+    // Obtener el último método de pago utilizado por el usuario
+    #[Route('/v1/last-payment', name: 'payment_method', methods: ['GET'])]
+    public function getLastPayment()
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        // recogemos solo el último payment con status 'active'
+        $payment = $this->paymentRepository->findOneBy(array('user' => $user, 'status' => 'active'), array('payment_date' => 'DESC'));
+
+        return new JsonResponse($this->serializer->serialize($payment, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
+    }
+
     #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
     public function setPayment(Request $request)
     {
