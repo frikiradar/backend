@@ -82,7 +82,7 @@ class PaymentController extends AbstractController
 
             $this->paymentRepository->save($payment);
 
-            return new JsonResponse($this->serializer->serialize($this->getUser(), "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+            return new JsonResponse($this->serializer->serialize($payment, "json", ['groups' => 'payment']), Response::HTTP_CREATED, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
         }
