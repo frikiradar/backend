@@ -56,7 +56,7 @@ class PaymentController extends AbstractController
         return new JsonResponse($this->serializer->serialize($payment, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
-    /*#[Route('/v1/payment', name: 'payment', methods: ['POST'])]
+    #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
     public function setPayment(Request $request)
     {
         try {
@@ -86,7 +86,7 @@ class PaymentController extends AbstractController
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
         }
-    }*/
+    }
 
     #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
     public function revenueCatWebhook(Request $request, MailerInterface $mailer)
