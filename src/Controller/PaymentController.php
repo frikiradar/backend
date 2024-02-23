@@ -222,13 +222,13 @@ class PaymentController extends AbstractController
                 case 'BILLING.SUBSCRIPTION.ACTIVATED':
                     $paypalId = $event["resource"]["id"];
                     $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'pending']);
-                    if ($payment) {
+                    if (!empty($payment)) {
                         $user = $payment->getUser();
                         $description = "Suscripción a frikiradar UNLIMITED";
                     } else {
                         // comprobamos si es una renovación
                         $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'active']);
-                        if ($payment) {
+                        if (!empty($payment)) {
                             $user = $payment->getUser();
                             $description = "Renovación automática de suscripción a frikiradar UNLIMITED";
                             $payment = new Payment();
