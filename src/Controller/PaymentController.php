@@ -88,6 +88,18 @@ class PaymentController extends AbstractController
         }
     }
 
+    #[Route('/v1/payment/{id}', name: 'delete_payment', methods: ['DELETE'])]
+    public function deletePayment($id)
+    {
+        $payment = $this->paymentRepository->findOneBy(array('id' => $id, 'user' => $this->getUser()));
+        if ($payment) {
+            $this->paymentRepository->remove($payment);
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        } else {
+            throw new HttpException(404, "No se ha encontrado el pago con ID: {$id}");
+        }
+    }
+
     #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
     public function revenueCatWebhook(Request $request, MailerInterface $mailer)
     {
