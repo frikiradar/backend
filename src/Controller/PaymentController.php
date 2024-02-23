@@ -56,7 +56,7 @@ class PaymentController extends AbstractController
         return new JsonResponse($this->serializer->serialize($payment, "json", ['groups' => 'payment']), Response::HTTP_OK, [], true);
     }
 
-    #[Route('/v1/payment', name: 'payment', methods: ['POST'])]
+    /*#[Route('/v1/payment', name: 'payment', methods: ['POST'])]
     public function setPayment(Request $request)
     {
         try {
@@ -86,7 +86,7 @@ class PaymentController extends AbstractController
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al añadir el pago - Error: {$ex->getMessage()}");
         }
-    }
+    }*/
 
     #[Route('/revenuecat', name: 'revenuecat', methods: ['POST'])]
     public function revenueCatWebhook(Request $request, MailerInterface $mailer)
@@ -206,16 +206,46 @@ class PaymentController extends AbstractController
             $event = json_decode($request->getContent(), true);
             $type = $event["event_type"];
 
-            $payment = $this->paymentRepository->findOneBy(['paypal_id' => $event["resource"]["id"], 'status' => 'pending']);
-            $user = $payment->getUser();
-
             switch ($type) {
                 case 'BILLING.SUBSCRIPTION.ACTIVATED':
-                    $description = "Suscripción a frikiradar UNLIMITED";
+                    $paypalId = $event["resource"]["id"];
+                    $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'pending']);
+                    if ($payment) {
+                        $user = $payment->getUser();
+                        $description = "Suscripción a frikiradar UNLIMITED";
+                    } else {
+                        // comprobamos si es una renovación
+                        $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'active']);
+                        if ($payment) {
+                            $user = $payment->getUser();
+                            $description = "Renovación automática de suscripción a frikiradar UNLIMITED";
+                            $payment = new Payment();
+                        } else {
+                            throw new HttpException(400, "No se ha encontrado el pago con ID de PayPal: {$paypalId}");
+                        }
+                    }
                     $expiration = $event["resource"]["billing_info"]["next_billing_time"];
                     $payment_date = $event["resource"]["billing_info"]["last_payment"]["time"];
                     $price = $event['resource']['billing_info']['last_payment']['amount']['value'] ?? 0;
                     $currency = $event['resource']['billing_info']['last_payment']['amount']['currency_code'] ?? '';
+                    $payment->setTitle($event["resource"]["plan_id"]);
+                    $payment->setDescription($description);
+
+                    if ($payment_date) {
+                        $payment->setPaymentDate((new \DateTime())->setTimestamp(strtotime($payment_date)));
+                    } else {
+                        $payment->setPaymentDate();
+                    }
+
+                    $payment->setUser($user);
+                    $payment->setExpirationDate((new \DateTime())->setTimestamp(strtotime($expiration)));
+                    $payment->setAmount($price);
+                    $payment->setCurrency($currency);
+                    $payment->setPurchase($event);
+                    $payment->setStatus('active');
+
+                    $this->paymentRepository->save($payment);
+
                     break;
                 default:
                     $data = [
@@ -224,27 +254,7 @@ class PaymentController extends AbstractController
                     ];
                     return new JsonResponse($data, 200);
             }
-            // actualizamos la fecha de expiración
-            $user->setPremiumExpiration((new \DateTime())->setTimestamp(strtotime($expiration)));
-            $this->userRepository->save($user);
 
-            $payment->setTitle($event["resource"]["plan_id"]);
-            $description = "Suscripción a frikiradar UNLIMITED";
-            $payment->setDescription($description);
-
-            if ($payment_date) {
-                $payment->setPaymentDate((new \DateTime())->setTimestamp(strtotime($payment_date)));
-            } else {
-                $payment->setPaymentDate();
-            }
-
-            $payment->setExpirationDate((new \DateTime())->setTimestamp(strtotime($expiration)));
-            $payment->setAmount($price);
-            $payment->setCurrency($currency);
-            $payment->setPurchase($event);
-            $payment->setStatus('active');
-
-            $this->paymentRepository->save($payment);
 
             // Enviar un email a hola@frikiradar con los datos del pago
             $email = (new Email())
