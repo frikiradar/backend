@@ -233,7 +233,10 @@ class PaymentController extends AbstractController
                             $description = "Renovación automática de suscripción a frikiradar UNLIMITED";
                             $payment = new Payment();
                         } else {
-                            throw new HttpException(400, "No se ha encontrado el pago con ID de PayPal: {$paypalId}");
+                            // Es un test
+                            $user = $this->userRepository->findOneBy(array('id' => 1));
+                            $description = "[TEST] Suscripción a frikiradar UNLIMITED";
+                            $payment = new Payment();
                         }
                     }
                     $expiration = $event["resource"]["billing_info"]["next_billing_time"];
