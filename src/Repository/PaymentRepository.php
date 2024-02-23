@@ -51,4 +51,10 @@ class PaymentRepository extends ServiceEntityRepository
         $this->_em->persist($payment);
         $this->_em->flush();
     }
+
+    public function remove(Payment $payment): void
+    {
+        $this->_em->remove($payment);
+        $this->_em->flush();
+    }
 }
