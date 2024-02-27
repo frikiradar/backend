@@ -188,7 +188,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $user['last_login'] = (!$user['hide_connection'] && $today->diff($user['last_login'])->format('%a') <= 7) ? $user['last_login'] : null;
             }
             if (empty($toUser->getConnection())) {
-                $user['connection'] = 'Amistad';
+                $user['connection'] = ['friends'];
             }
             $user['tags'] = $toUser->getTags();
             $user['stories'] = $toUser->getStories();
@@ -352,7 +352,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'");
 
-            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['Amistad'];
+            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['friends', 'Amistad'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
                     ->andHaving('age BETWEEN :minage AND :maxage')
@@ -370,8 +370,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
             if (!$options || ($options && $options['connection'] === true)) {
                 $dql->andWhere(
-                    in_array('Amistad', $connection) ? "u.connection LIKE '%Amistad%' OR u.connection IS NULL" :
-                        "u.connection NOT LIKE '%Amistad%'"
+                    (in_array('Amistad', $connection) || in_array('friends', $connection)) ? "u.connection LIKE '%Amistad%' OR u.connection LIKE '%friends%' OR u.connection IS NULL" :
+                        "u.connection NOT LIKE '%Amistad%' AND u.connection NOT LIKE '%friends%'"
                 );
             }
             if ($options && $options['online'] == 'true') {
@@ -385,7 +385,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('lastlogin', 60); // 60 dias
             }
             $dql->andWhere(
-                $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) ?
+                $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) && !in_array('friends', $connection) ?
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             )->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
@@ -654,7 +654,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!is_array($connection)) {
             $connection = [];
         }
-        if (in_array('Amistad', $connection)) {
+        if (in_array('Amistad', $connection) || in_array('friends', $connection)) {
             return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
         } else {
             switch ($orientation) {
