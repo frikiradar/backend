@@ -316,6 +316,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $ip_country = null;
 
     #[ORM\Column(length: 2)]
+    #[Groups("default")]
     private ?string $language = 'es';
 
     public function __construct()
