@@ -152,7 +152,7 @@ class UsersController extends AbstractController
             $user->setMailing($mailing ?? true);
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
-            $user->setLanguages(["es"]);
+            $user->setLanguages([$language ?? "es"]);
             $user->setLanguage($language ?? "es");
             if (empty($provider)) {
                 $user->setEmail($email);
