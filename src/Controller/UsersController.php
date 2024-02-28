@@ -131,6 +131,7 @@ class UsersController extends AbstractController
         $birthday = \DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]);
         $provider = $this->request->get($request, 'provider', false);
         $credential = $this->request->get($request, 'credential', false);
+        $language = $this->request->get($request, 'language', false);
 
         if (is_null($this->userRepository->findOneByUsernameOrEmail($username, $email))) {
             $user = new User();
@@ -152,6 +153,7 @@ class UsersController extends AbstractController
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
             $user->setLanguages(["es"]);
+            $user->setLanguage($language ?? "es");
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
@@ -389,7 +391,7 @@ class UsersController extends AbstractController
                 $user->setHideConnection($this->request->get($request, 'hide_connection'));
                 $user->setHideLikes($this->request->get($request, 'hide_likes'));
                 $user->setPublic($this->request->get($request, 'public'));
-
+                $user->setLanguage($this->request->get($request, 'language'));
                 $user->setMailing($this->request->get($request, 'mailing'));
 
                 $this->userRepository->save($user);

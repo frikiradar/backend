@@ -350,6 +350,30 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
+            $genderMap = [
+                "woman" => "Mujer",
+                "man" => "Hombre",
+                "transgender-woman" => "Mujer transgénero",
+                "transgender-man" => "Hombre transgénero",
+                "agender" => "Agénero",
+                "androgynous" => "Andrógino",
+                "genderfluid" => "Género fluido",
+                "bigender" => "Bigénero",
+                "non-binary" => "No-binario",
+                "non-conforming" => "No conforme",
+                "pangender" => "Pangénero",
+                "polygender" => "Poligénero",
+                "intergender" => "Intergénero",
+            ];
+
+            $gender = $user->getGender();
+            $gender = $genderMap[$gender] ?? $gender;
+
+            $lovegender = $user->getLovegender();
+            foreach ($lovegender as $key => $value) {
+                $lovegender[$key] = $genderMap[$value] ?? $value;
+            }
+
             $dql->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'");
 
             $connection = !empty($user->getConnection()) ? $user->getConnection() : ['friends', 'Amistad'];
@@ -365,8 +389,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('maxage', 150.9999);
             }
             if (!$options || ($options && $options['identity'] === true)) {
-                $dql->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
-                    ->setParameter('lovegender', $user->getLovegender() ?: 1);
+                $dql->andWhere($lovegender ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $gender . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                    ->setParameter('lovegender', $lovegender ?: 1);
             }
             if (!$options || ($options && $options['connection'] === true)) {
                 $dql->andWhere(
@@ -385,7 +409,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('lastlogin', 60); // 60 dias
             }
             $dql->andWhere(
-                $user->getOrientation() == "Homosexual" && !in_array('Amistad', $connection) && !in_array('friends', $connection) ?
+                ($user->getOrientation() == "Homosexual" || $user->getOrientation() == 'homosexual') && !in_array('Amistad', $connection) && !in_array('friends', $connection) ?
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             )->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
@@ -468,6 +492,30 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->groupBy('u.id');
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
+            $genderMap = [
+                "woman" => "Mujer",
+                "man" => "Hombre",
+                "transgender-woman" => "Mujer transgénero",
+                "transgender-man" => "Hombre transgénero",
+                "agender" => "Agénero",
+                "androgynous" => "Andrógino",
+                "genderfluid" => "Género fluido",
+                "bigender" => "Bigénero",
+                "non-binary" => "No-binario",
+                "non-conforming" => "No conforme",
+                "pangender" => "Pangénero",
+                "polygender" => "Poligénero",
+                "intergender" => "Intergénero",
+            ];
+
+            $gender = $user->getGender();
+            $gender = $genderMap[$gender] ?? $gender;
+
+            $lovegender = $user->getLovegender();
+            foreach ($lovegender as $key => $value) {
+                $lovegender[$key] = $genderMap[$value] ?? $value;
+            }
+
             $dql
                 ->andWhere('u.avatar IS NOT NULL OR t.user IS NOT NULL')
                 ->andWhere('u.active = 1')
@@ -476,8 +524,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'")
                 ->andWhere('b.from_user IS NULL')
                 ->andWhere('h.from_user IS NULL')
-                ->andWhere($user->getLovegender() ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $user->getGender() . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
-                ->setParameter('lovegender', $user->getLovegender() ?: 1)
+                ->andWhere($lovegender ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $gender . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
+                ->setParameter('lovegender', $lovegender ?: 1)
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
                 ->setParameter('lastlogin', 15); // 15 dias;
 
@@ -655,19 +703,21 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $connection = [];
         }
         if (in_array('Amistad', $connection) || in_array('friends', $connection)) {
-            return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+            return ["heterosexual", "homosexual", "bisexual", "pansexual", "queer", "demisexual", "sapiosexual", "asexual"];
         } else {
             switch ($orientation) {
                 case "Heterosexual":
-                    return ["Heterosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+                case "heterosexual":
+                    return ["hetereosexual", "bisexual", "pansexual", "queer", "demisexual", "sapiosexual", "asexual"];
                     break;
 
                 case "Homosexual":
-                    return ["Homosexual", "Bisexual", "Pansexual"];
+                case "homosexual":
+                    return ["homosexual", "bisexual", "pansexual"];
                     break;
 
                 default:
-                    return ["Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Queer", "Demisexual", "Sapiosexual", "Asexual"];
+                    return ["heterosexual", "homosexual", "bisexual", "pansexual", "queer", "demisexual", "sapiosexual", "asexual"];
             }
         }
     }

@@ -23,6 +23,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['default', 'message', 'like', 'story', 'notification', 'ads'])]
     private $id;
 
+    private $genderMap = [
+        "Mujer" => "woman",
+        "Hombre" => "man",
+        "Mujer transgénero" => "transgender-woman",
+        "Hombre transgénero" => "transgender-man",
+        "Agénero" => "agender",
+        "Andrógino" => "androgynous",
+        "Género fluido" => "genderfluid",
+        "Bigénero" => "bigender",
+        "No-binario" => "non-binary",
+        "No conforme" => "non-conforming",
+        "Pangénero" => "pangender",
+        "Poligénero" => "polygender",
+        "Intergénero" => "intergender",
+    ];
+
+    private $relationshipMap = [
+        "Monógama" => "monogamy",
+        "No-monógama" => "non-monogamy",
+    ];
+
+    private $orientationMap = [
+        "Heterosexual" => "heterosexual",
+        "Homosexual" => "homosexual",
+        "Bisexual" => "bisexual",
+        "Pansexual" => "pansexual",
+        "Queer" => "queer",
+        "Demisexual" => "demisexual",
+        "Sapiosexual" => "sapiosexual",
+        "Asexual" => "asexual",
+    ];
+
+    private $pronounMap = [
+        "El" => "hehim",
+        "Ella" => "sheher",
+        "Elle" => "theythem",
+    ];
+
+    private $statusMap = [
+        "Soltero" => "single",
+        "Saliendo con alguien" => "in-a-relationship",
+        "Pareja estable" => "stable-couple",
+        "Casado" => "married",
+    ];
+
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Assert\Regex(
         pattern: "/^[a-zA-Z0-9._-]+$/",
@@ -270,6 +315,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 2, nullable: true)]
     private ?string $ip_country = null;
 
+    #[ORM\Column(length: 2)]
+    private ?string $language = 'es';
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -447,26 +495,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getGender(): ?string
     {
+        if (isset($this->genderMap[$this->gender])) {
+            $this->gender = $this->genderMap[$this->gender];
+        }
+
         return $this->gender;
     }
 
     public function setGender(?string $gender): self
     {
         $genders = [
-            "Mujer",
-            "Hombre",
-            "Mujer transgénero",
-            "Hombre transgénero",
-            "Agénero",
-            "Andrógino",
-            "Género fluido",
-            "Bigénero",
-            "No-binario",
-            "No conforme",
-            "Pangénero",
-            "Poligénero",
-            "Intergénero"
+            "woman",
+            "man",
+            "transgender-woman",
+            "transgender-man",
+            "agender",
+            "androgynous",
+            "genderfluid",
+            "bigender",
+            "non-binary",
+            "non-conforming",
+            "pangender",
+            "polygender",
+            "intergender",
         ];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        if (isset($this->genderMap[$gender])) {
+            $gender = $this->genderMap[$gender];
+        }
 
         if (in_array($gender, $genders)) {
             $this->gender = $gender;
@@ -547,12 +604,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRelationship(): ?string
     {
+        if (isset($this->relationshipMap[$this->relationship])) {
+            $this->relationship = $this->relationshipMap[$this->relationship];
+        }
+
         return $this->relationship;
     }
 
     public function setRelationship(?string $relationship): self
     {
-        $relationsips = ["Monógama", "No-monógama"];
+        $relationsips = ["monogamy", "non-monogamy"];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        if (isset($this->relationshipMap[$relationship])) {
+            $relationship = $this->relationshipMap[$relationship];
+        }
 
         if (in_array($relationship, $relationsips)) {
             $this->relationship = $relationship;
@@ -565,21 +631,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getOrientation(): ?string
     {
+        if (isset($this->orientationMap[$this->orientation])) {
+            $this->orientation = $this->orientationMap[$this->orientation];
+        }
+
         return $this->orientation;
     }
 
     public function setOrientation(?string $orientation): self
     {
         $orientations = [
-            "Heterosexual",
-            "Homosexual",
-            "Bisexual",
-            "Pansexual",
-            "Queer",
-            "Demisexual",
-            "Sapiosexual",
-            "Asexual"
+            "heterosexual",
+            "homosexual",
+            "bisexual",
+            "pansexual",
+            "queer",
+            "demisexual",
+            "sapiosexual",
+            "asexual"
         ];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        if (isset($this->orientationMap[$orientation])) {
+            $orientation = $this->orientationMap[$orientation];
+        }
 
         if (in_array($orientation, $orientations)) {
             $this->orientation = $orientation;
@@ -592,12 +667,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPronoun(): ?string
     {
+        if (isset($this->pronounMap[$this->pronoun])) {
+            $this->pronoun = $this->pronounMap[$this->pronoun];
+        }
+
         return $this->pronoun;
     }
 
     public function setPronoun(?string $pronoun): self
     {
-        $pronouns = ["El", "Ella", "Elle", "Elli"];
+        $pronouns = ["hehim", "sheher", "theythem"];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        if (isset($this->pronounMap[$pronoun])) {
+            $pronoun = $this->pronounMap[$pronoun];
+        }
 
         if (in_array($pronoun, $pronouns)) {
             $this->pronoun = $pronoun;
@@ -610,12 +694,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getStatus(): ?string
     {
+        if (isset($this->statusMap[$this->status])) {
+            $this->status = $this->statusMap[$this->status];
+        }
+
         return $this->status;
     }
 
     public function setStatus(?string $status): self
     {
-        $statuses = ["Soltero", "Saliendo con alguien", "Pareja estable", "Casado"];
+        $statuses = ["single", "in-a-relationship", "stable-couple", "married"];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        if (isset($this->statusMap[$status])) {
+            $status = $this->statusMap[$status];
+        }
 
         if (in_array($status, $statuses)) {
             $this->status = $status;
@@ -628,6 +721,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getLovegender(): ?array
     {
+        foreach ($this->lovegender as $key => $l) {
+            if (isset($this->genderMap[$l])) {
+                $this->lovegender[$key] = $this->genderMap[$l];
+            }
+        }
+
         return $this->lovegender;
     }
 
@@ -638,20 +737,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $genders = [
-            "Mujer",
-            "Hombre",
-            "Mujer transgénero",
-            "Hombre transgénero",
-            "Agénero",
-            "Andrógino",
-            "Género fluido",
-            "Bigénero",
-            "No-binario",
-            "No conforme",
-            "Pangénero",
-            "Poligénero",
-            "Intergénero"
+            "woman",
+            "man",
+            "transgender-woman",
+            "transgender-man",
+            "agender",
+            "androgynous",
+            "genderfluid",
+            "bigender",
+            "non-binary",
+            "non-conforming",
+            "pangender",
+            "polygender",
+            "intergender",
         ];
+
+        foreach ($lovegender as $key => $l) {
+            if (isset($this->genderMap[$l])) {
+                $lovegender[$key] = $this->genderMap[$l];
+            }
+        }
 
         foreach ($lovegender as $key => $l) {
             if (!in_array($l, $genders)) {
@@ -700,11 +805,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             return $this;
         }
         $connections = [
-            "Amistad",
-            "Sexo ocasional",
-            "Amistad con derechos",
-            "Pareja formal"
+            "friends",
+            "casual-sex",
+            "friends-with-benefits",
+            "formal-relationship",
         ];
+
+        // equivalencia español-inglés guardamos siempre tag ingles
+        foreach ($connection as $key => $c) {
+            if ($c === "Amistad") {
+                $connection[$key] = "friends";
+            } elseif ($c === "Sexo ocasional") {
+                $connection[$key] = "casual-sex";
+            } elseif ($c === "Amistad con derechos") {
+                $connection[$key] = "friends-with-benefits";
+            } elseif ($c === "Pareja formal") {
+                $connection[$key] = "formal-relationship";
+            }
+        }
 
         foreach ($connection as $key => $c) {
             if (!in_array($c, $connections)) {
@@ -1649,6 +1767,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIpCountry(?string $ip_country): static
     {
         $this->ip_country = $ip_country;
+
+        return $this;
+    }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
+
+    public function setLanguage(string $language): static
+    {
+        $this->language = $language;
 
         return $this;
     }
