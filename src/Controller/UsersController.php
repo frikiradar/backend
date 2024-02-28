@@ -391,7 +391,7 @@ class UsersController extends AbstractController
                 $user->setHideConnection($this->request->get($request, 'hide_connection'));
                 $user->setHideLikes($this->request->get($request, 'hide_likes'));
                 $user->setPublic($this->request->get($request, 'public'));
-                $user->setLanguage($this->request->get($request, 'language'));
+                $user->setLanguage($this->request->get($request, 'language', false) ?? 'es');
                 $user->setMailing($this->request->get($request, 'mailing'));
 
                 $this->userRepository->save($user);
