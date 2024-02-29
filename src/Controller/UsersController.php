@@ -1270,4 +1270,19 @@ class UsersController extends AbstractController
             throw new HttpException(400, "Error al añadir los días premium - Error: {$ex->getMessage()}");
         }
     }
+
+    #[Route('/v1/tutorial-config', name: 'tutorial_config', methods: ['PUT'])]
+    public function tutorialConfigAction(Request $request)
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $config = $user->getConfig();
+        $tutorialConfig = $this->request->get($request, "tutorial_config");
+        $config['tutorial'] = $tutorialConfig;
+        $user->setConfig($config);
+
+        $this->userRepository->save($user);
+
+        return new JsonResponse($this->serializer->serialize($user, "json", ['groups' => ['default', 'tags']]), Response::HTTP_OK, [], true);
+    }
 }
