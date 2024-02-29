@@ -290,7 +290,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function getRadarUsers(User $user, $page, $ratio, $options = null, $location = null)
     {
-        if ($options && $options['fake_location'] && $location["city"] !== "" && $location["country"] !== "") {
+        if ($options && $options['fake_location'] && $location["country"] !== "") {
             $city = $location['city'];
             $country = $location['country'];
             $coordinates = $this->geolocation->manualGeolocate($city, $country);
