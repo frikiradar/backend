@@ -972,7 +972,7 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
             $language = $user->getLanguage();
 
-            $subject = $user->getVerificationCode() . $language == "es" ? ' es el código para verificar tu inicio de sesión' : ' is the code to verify your login';
+            $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu inicio de sesión' : ' is the code to verify your login');
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
@@ -1037,7 +1037,7 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
             $language = $user->getLanguage();
 
-            $subject = $user->getVerificationCode() . $language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account';
+            $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
