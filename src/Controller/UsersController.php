@@ -967,15 +967,16 @@ class UsersController extends AbstractController
             $user = $this->getUser();
             $user->setVerificationCode();
             $this->userRepository->save($user);
+            $language = $user->getLanguage();
 
-            $subject = $user->getVerificationCode() . ' es el código para verificar tu inicio de sesión';
+            $subject = $user->getVerificationCode() . $language == "es" ? ' es el código para verificar tu inicio de sesión' : ' is the code to verify your login';
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($subject)
                 ->html($this->renderView(
-                    "emails/verification-code-" . $user->getLanguage() . ".html.twig",
+                    "emails/verification-code-" . $language . ".html.twig",
                     [
                         'subject' => $subject,
                         'username' => $user->getUserIdentifier(),
@@ -1031,15 +1032,16 @@ class UsersController extends AbstractController
             $user = $this->getUser();
             $user->setVerificationCode();
             $this->userRepository->save($user);
+            $language = $user->getLanguage();
 
-            $subject = $user->getVerificationCode() . ' es el código para verificar tu cuenta';
+            $subject = $user->getVerificationCode() . $language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account';
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($subject)
                 ->html($this->renderView(
-                    "emails/verification-code-" . $user->getLanguage() . ".html.twig",
+                    "emails/verification-code-" . $language . ".html.twig",
                     [
                         'subject' => $subject,
                         'username' => $user->getUserIdentifier(),
