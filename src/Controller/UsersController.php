@@ -1039,7 +1039,7 @@ class UsersController extends AbstractController
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->subject($subject)
                 ->html($this->renderView(
-                    "emails/verification-code.html.twig",
+                    "emails/verification-code-" . $user->getLanguage() . ".html.twig",
                     [
                         'subject' => $subject,
                         'username' => $user->getUserIdentifier(),
