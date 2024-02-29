@@ -105,14 +105,15 @@ class DevicesController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $device = $this->request->get($request, "device");
+            $language = $user->getLanguage();
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
                 ->replyTo(new Address('hola@frikiradar.com', 'frikiradar'))
-                ->subject('Aviso de inicio de sesión desde un dispositivo desconocido')
+                ->subject($language == 'es' ? 'Aviso de inicio de sesión desde un dispositivo desconocido' : 'Unknown device login warning')
                 ->html($this->renderView(
-                    "emails/unknown-device.html.twig",
+                    "emails/unknown-device-" . $language . ".html.twig",
                     [
                         'username' => $user->getUsername(),
                         'device' => $device['device_name']

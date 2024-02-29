@@ -76,12 +76,13 @@ class LabCommandService
     public function email($toId, MailerInterface $mailer)
     {
         $user = $this->em->getRepository(\App\Entity\User::class)->findOneBy(array('id' => $toId));
+        $language = $user->getLanguage();
         $email = (new Email())
             ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
             ->to(new Address($user->getEmail(), $user->getUsername()))
-            ->subject('¡frikiradar te extraña 💔!')
+            ->subject($language == 'es' ? '¡frikiradar te extraña 💔!' : 'frikiradar misses you 💔!')
             ->html($this->twig->render(
-                "emails/registration.html.twig",
+                "emails/registration-" . $language . ".html.twig",
                 [
                     'username' => $user->getUsername(),
                     'code' => 'ABCDEF'

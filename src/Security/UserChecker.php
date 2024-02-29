@@ -63,13 +63,15 @@ class UserChecker extends AbstractController implements UserCheckerInterface
         if (!$user->isActive() && !$user->getVerificationCode()) {
             //Generamos y enviamos por email
             $user->setVerificationCode();
+            $verificationCode = $user->getVerificationCode();
+            $language = $user->getLanguage();
 
             $email = (new Email())
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address($user->getEmail(), $user->getUsername()))
-                ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
+                ->subject($verificationCode . ($language == 'es' ? ' es tu código de activación de frikiradar' : ' is your frikiradar activation code'))
                 ->html($this->renderView(
-                    "emails/registration.html.twig",
+                    "emails/registration-" . $language . ".html.twig",
                     [
                         'username' => $user->getUserIdentifier(),
                         'code' => $user->getVerificationCode()

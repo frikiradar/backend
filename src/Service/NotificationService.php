@@ -171,16 +171,18 @@ class NotificationService extends AbstractController
         $lastLogin = $toUser->getLastLogin() ?? new \DateTime;
         if ($sendEmail && $today->diff($lastLogin)->format('%a') >= 1) {
             if ($toUser->isMailing()) {
+                $language = $toUser->getLanguage();
+
                 switch ($type) {
                     case 'chat':
-                        $title = 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en frikiradar';
+                        $title = $language == 'es' ? 'Nuevo mensaje de chat de ' . $fromUser->getName() . ' en frikiradar' : 'New chat message from ' . $fromUser->getName() . ' in frikiradar';
                         break;
                     case 'like':
-                        $title = 'Nuevo kokoro recibido de ' . $fromUser->getName() . ' en frikiradar';
+                        $title = $language == 'es' ? 'Nuevo kokoro recibido de ' . $fromUser->getName() . ' en frikiradar' : 'New kokoro received from ' . $fromUser->getName() . ' in frikiradar';
                         $text = $fromUser->getName() . ' te ha entregado su kokoro ❤';
                         break;
                     default:
-                        $title = $title . ' en frikiradar';
+                        $title = $language ? $title . ' en frikiradar' : $title . ' in frikiradar';
                 }
 
                 //Enviar email en lugar de notificación
@@ -190,7 +192,7 @@ class NotificationService extends AbstractController
                     ->replyTo(new Address('hola@frikiradar.com', 'frikiradar'))
                     ->subject($title)
                     ->html($this->renderView(
-                        "emails/notification.html.twig",
+                        "emails/notification-" . $language . ".html.twig",
                         [
                             'username' => $toUser->getUsername(),
                             'title' => $title,

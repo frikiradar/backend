@@ -131,7 +131,7 @@ class UsersController extends AbstractController
         $birthday = \DateTime::createFromFormat('Y-m-d', explode('T', $this->request->get($request, 'birthday'))[0]);
         $provider = $this->request->get($request, 'provider', false);
         $credential = $this->request->get($request, 'credential', false);
-        $language = $this->request->get($request, 'language', false);
+        $language = $this->request->get($request, 'language', false) ?? "es";
 
         if (is_null($this->userRepository->findOneByUsernameOrEmail($username, $email))) {
             $user = new User();
@@ -152,8 +152,8 @@ class UsersController extends AbstractController
             $user->setMailing($mailing ?? true);
             $user->setMailingCode();
             $user->setRoles(['ROLE_USER']);
-            $user->setLanguages([$language ?? "es"]);
-            $user->setLanguage($language ?? "es");
+            $user->setLanguages([$language]);
+            $user->setLanguage($language);
             if (empty($provider)) {
                 $user->setEmail($email);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
@@ -184,9 +184,9 @@ class UsersController extends AbstractController
                     $email = (new Email())
                         ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                         ->to(new Address($user->getEmail(), $user->getUsername()))
-                        ->subject($user->getVerificationCode() . ' es tu código de activación de frikiradar')
+                        ->subject($user->getVerificationCode() . ($language == 'es' ? ' es tu código de activación de frikiradar' : ' is your frikiradar activation code'))
                         ->html($this->renderView(
-                            "emails/registration.html.twig",
+                            "emails/registration-" . $language . ".html.twig",
                             [
                                 'username' => $user->getUsername(),
                                 'code' => $user->getVerificationCode()
@@ -687,13 +687,16 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
 
             try {
+                $language = $user->getLanguage();
+                $verificationCode = $user->getVerificationCode();
+
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                     ->to(new Address($user->getEmail(), $user->getUsername()))
                     ->replyTo(new Address('hola@frikiradar.com', 'frikiradar'))
-                    ->subject($user->getVerificationCode() . ' es el código para generar una nueva contraseña de frikiradar')
+                    ->subject($verificationCode . ($language == 'es' ?  ' es el código para generar una nueva contraseña de frikiradar' : ' is the code to generate a new password of frikiradar'))
                     ->html($this->renderView(
-                        "emails/recover.html.twig",
+                        "emails/recover-" . $language . ".html.twig",
                         [
                             'username' => $user->getUsername(),
                             'code' => $user->getVerificationCode()
