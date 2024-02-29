@@ -678,6 +678,10 @@ class UsersController extends AbstractController
             $user = $this->userRepository->findOneBy(array('username' => $this->request->get($request, 'username')));
         }
 
+        if ($user->getUsername() == "frikiradar") {
+            throw new HttpException(400, "No puedes recuperar la contraseña de este usuario");
+        }
+
         if (!is_null($user)) {
             $user->setVerificationCode();
             $this->userRepository->save($user);
