@@ -113,6 +113,8 @@ class PaymentController extends AbstractController
                 $user = $this->userRepository->findOneBy(array('id' => $userId));
             }
 
+            $language = $user->getLanguage();
+
             $expiration = $event["expiration_at_ms"];
             $expiration = $expiration / 1000;
             $expiration = (new \DateTime())->setTimestamp($expiration);
@@ -133,7 +135,7 @@ class PaymentController extends AbstractController
                     // metemos el pago en la base de datos
                     $payment = new Payment();
                     $payment->setTitle($event["product_id"]);
-                    $description = ($type == 'TEST' ? "[TEST] " : "") . "Renovación automática de suscripción a frikiradar UNLIMITED";
+                    $description = ($type == 'TEST' ? "[TEST] " : "") . ($language == 'es' ? "Renovación automática de suscripción a frikiradar UNLIMITED" : "Automatic renewal of frikiradar UNLIMITED subscription");
                     $payment->setDescription($description);
                     $payment->setMethod($event["store"]);
                     $payment->setUser($user);
@@ -156,7 +158,7 @@ class PaymentController extends AbstractController
                     // metemos el pago en la base de datos
                     $payment = new Payment();
                     $payment->setTitle($event["product_id"]);
-                    $description = "Suscripción a frikiradar UNLIMITED";
+                    $description = $language == 'es' ? "Suscripción a frikiradar UNLIMITED" : "Subscription to frikiradar UNLIMITED";
                     $payment->setDescription($description);
                     $payment->setMethod($event["store"]);
                     $payment->setUser($user);
@@ -224,18 +226,21 @@ class PaymentController extends AbstractController
                     $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'pending']);
                     if (!empty($payment)) {
                         $user = $payment->getUser();
-                        $description = "Suscripción a frikiradar UNLIMITED";
+                        $language = $user->getLanguage();
+                        $description = $language == 'es' ? "Suscripción a frikiradar UNLIMITED" : "Subscription to frikiradar UNLIMITED";
                     } else {
                         // comprobamos si es una renovación
                         $payment = $this->paymentRepository->findOneBy(['paypal_id' => $paypalId, 'status' => 'active']);
                         if (!empty($payment)) {
                             $user = $payment->getUser();
-                            $description = "Renovación automática de suscripción a frikiradar UNLIMITED";
+                            $language = $user->getLanguage();
+                            $description = $language == 'es' ? "Renovación automática de suscripción a frikiradar UNLIMITED" : "Automatic renewal of frikiradar UNLIMITED subscription";
                             $payment = new Payment();
                         } else {
                             // Es un test
                             $user = $this->userRepository->findOneBy(array('id' => 1));
-                            $description = "[TEST] Suscripción a frikiradar UNLIMITED";
+                            $language = $user->getLanguage();
+                            $description = "[TEST] " . ($language == 'es' ? "Suscripción a frikiradar UNLIMITED" : "Subscription to frikiradar UNLIMITED");
                             $payment = new Payment();
                         }
                     }

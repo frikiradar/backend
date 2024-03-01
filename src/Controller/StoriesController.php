@@ -168,7 +168,8 @@ class StoriesController extends AbstractController
                 $url = "/tabs/explore/story/" . $story->getId();
                 foreach ($mentions as $mention) {
                     $toUser = $this->userRepository->findOneBy(array('username' => $mention));
-                    $title = $fromUser->getName() . ' te ha mencionado en una historia.';
+                    $language = $toUser->getLanguage();
+                    $title = $fromUser->getName() . ($language == 'es' ? ' te ha mencionado en una historia.' : ' has mentioned you in a story.');
                     $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
                 }
             }
@@ -274,7 +275,13 @@ class StoriesController extends AbstractController
 
                 if ($user->getId() !== $story->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
                     $title = $user->getName();
-                    $text = "A " . $user->getName() . " le ha gustado tu historia.";
+                    $language = $story->getUser()->getLanguage();
+                    if ($language == 'es') {
+                        $text = "A " . $user->getName() . " le ha gustado tu historia.";
+                    } else {
+                        $text = $user->getName() . " has liked your story.";
+                    }
+
                     $url = "/tabs/explore/story/" . $story->getId();
 
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");

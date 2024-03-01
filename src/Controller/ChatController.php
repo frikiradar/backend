@@ -192,13 +192,14 @@ class ChatController extends AbstractController
                     $this->chatRepository->save($chat);
                 }
 
+                $language = $toUser->getLanguage();
 
                 if (empty($text) && isset($image)) {
-                    $chat->setText('📷 ' . $fromUser->getName() . ' te ha enviado una imagen.');
+                    $chat->setText('📷 ' . $fromUser->getName() . ($language == 'es' ? ' te ha enviado una imagen.' : ' sent you an image.'));
                 } elseif (isset($image)) {
                     $chat->setText('📷 ' . $text);
                 } elseif (isset($audio)) {
-                    $chat->setText('🎤 Mensaje de audio de ' . $fromUser->getName());
+                    $chat->setText('🎤 ' . ($language == 'es' ? 'Mensaje de audio de ' : 'Audio message from ') . $fromUser->getName());
                 }
 
                 $this->message->send($chat, $toUser, true);
@@ -256,11 +257,14 @@ class ChatController extends AbstractController
         $this->userRepository->save($fromUser);
 
         $chats = $this->chatRepository->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
+
+        $language = $fromUser->getLanguage();
+
         foreach ($chats as $key => $chat) {
             if ((null !== $chat->getFromuser() && !$chat->getFromuser()->isActive()) || $blocked) {
                 if ($blocked) {
-                    $chats[$key]->getFromuser()->setUsername('Usuario desconocido');
-                    $chats[$key]->getFromuser()->setName('Usuario desconocido');
+                    $chats[$key]->getFromuser()->setUsername($language == 'es' ? 'Usuario desconocido' : 'Unknown user');
+                    $chats[$key]->getFromuser()->setName($language == 'es' ? 'Usuario desconocido' : 'Unknown user');
                     $chats[$key]->getFromuser()->setAvatar(null);
                 }
                 $chats[$key]->getFromuser()->setActive(false);
@@ -268,8 +272,8 @@ class ChatController extends AbstractController
             }
             if ((null !== $chat->getTouser() && !$chat->getTouser()->isActive()) || $blocked) {
                 if ($blocked) {
-                    $chats[$key]->getTouser()->setUsername('Usuario desconocido');
-                    $chats[$key]->getTouser()->setName('Usuario desconocido');
+                    $chats[$key]->getTouser()->setUsername($language == 'es' ? 'Usuario desconocido' : 'Unknown user');
+                    $chats[$key]->getTouser()->setName($language == 'es' ? 'Usuario desconocido' : 'Unknown user');
                     $chats[$key]->getTouser()->setAvatar(null);
                 }
                 $chats[$key]->getTouser()->setActive(false);

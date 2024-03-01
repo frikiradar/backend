@@ -156,14 +156,20 @@ class EventsController extends AbstractController
                 $chat->setFromuser($creator);
                 $chat->setTimeCreation();
 
+                $language = $user->getLanguage();
+
                 if (isset($user)) {
                     $min = min($chat->getFromuser()->getId(), $chat->getTouser()->getId());
                     $max = max($chat->getFromuser()->getId(), $chat->getTouser()->getId());
                     $conversationId = $min . "_" . $max;
-                    $text = "¡" . $creator->getName() . " te ha invitado a una cita!";
+                    if ($language === 'es') {
+                        $text = "¡" . $creator->getName() . " te ha invitado a una cita!";
+                    } else {
+                        $text = $creator->getName() . " has invited you to a date!";
+                    }
                 } else {
                     $conversationId = $slug;
-                    $text = "Nuevo evento creado";
+                    $text = $language == 'es' ? "Nuevo evento creado" : "New event created";
                 }
                 $chat->setText($text);
                 $chat->setConversationId($conversationId);
@@ -221,7 +227,7 @@ class EventsController extends AbstractController
                 $event->setUrl($url);
                 if ($type === 'offline') {
                     $event->setCountry($country);
-                    if (in_array(strtolower($city), ['cdmx', 'df'])) {
+                    if (in_array(strtolower($city), ['cdmx', 'df', 'mexico city'])) {
                         $city = "Ciudad de México";
                     }
 
@@ -327,11 +333,18 @@ class EventsController extends AbstractController
                     unlink($file);
                 }
 
+                $language = $user->getLanguage();
+
                 $participants = $event->getParticipants();
                 // Avisamos a los usuarios del evento eliminado
                 $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
-                $title = 'Evento eliminado.';
-                $text = 'El evento ' . $event->getTitle() . ' ha sido eliminado.';
+                $title = $language == 'es' ? 'Evento eliminado.' : 'Event deleted.';
+                if ($language === 'es') {
+                    $text = 'El evento ' . $event->getTitle() . ' ha sido eliminado.';
+                } else {
+                    $text = 'The event ' . $event->getTitle() . ' has been deleted.';
+                }
+
                 $url = "/tabs/events";
                 foreach ($participants as $participant) {
                     $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
@@ -376,8 +389,16 @@ class EventsController extends AbstractController
                 // Avisamos a los usuarios del evento cancelado
                 $participants = $event->getParticipants();
                 $fromUser = $this->userRepository->findOneBy(array('username' => 'frikiradar'));
-                $title = 'Evento cancelado.';
-                $text = 'El evento ' . $event->getTitle() . ' ha sido cancelado.';
+
+                $language = $user->getLanguage();
+
+                $title = $language == 'es' ? 'Evento cancelado.' : 'Event cancelled.';
+                if ($language === 'es') {
+                    $text = 'El evento ' . $event->getTitle() . ' ha sido cancelado.';
+                } else {
+                    $text = 'The event ' . $event->getTitle() . ' has been cancelled.';
+                }
+
                 $url = "/event/" . $event->getId();
                 foreach ($participants as $participant) {
                     $this->notification->set($fromUser, $participant, $title, $text, $url, 'event');
@@ -556,11 +577,12 @@ class EventsController extends AbstractController
             $event = $chat->getEvent();
             $event->addParticipant($user);
             $this->eventRepository->save($event);
+            $language = $event->getCreator()->getLanguage();
 
             $chat->setEvent($event);
 
             $this->message->send($chat, $user);
-            $chat->setText($user->getName() . " ha aceptado tu invitación de cita.");
+            $chat->setText($user->getName() . ($language == 'es' ? " ha aceptado tu invitación de cita." : " has accepted your date invitation."));
             $url = "/chat/" + $user->getId();
             $this->message->send($chat, $event->getCreator(), true, $url);
 
@@ -590,8 +612,10 @@ class EventsController extends AbstractController
                 $this->eventRepository->save($event);
                 $chat->setEvent($event);
 
+                $language = $event->getCreator()->getLanguage();
+
                 $this->message->send($chat, $user);
-                $chat->setText($user->getName() . " ha rechazado tu invitación de cita.");
+                $chat->setText($user->getName() . ($language == 'es' ? " ha rechazado tu invitación de cita." : " has declined your date invitation."));
 
                 $url = "/chat/" + $user->getId();
                 $this->message->send($chat, $event->getCreator(), true, $url);

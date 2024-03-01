@@ -65,7 +65,8 @@ class UserLikesController extends AbstractController
                 $this->likeUserRepository->save($newLike);
 
                 $title = $fromUser->getUsername();
-                $text = "Te ha entregado su kokoro ❤️. Haz click aquí para ver su perfil.";
+                $language = $toUser->getLanguage();
+                $text = $language == 'es' ? "Te ha entregado su kokoro ❤️. Haz click aquí para ver su perfil." : "Has received a kokoro ❤️. Click here to see the profile.";
                 $url = "/profile/" . $fromUser->getId();
 
                 $this->notification->set($fromUser, $toUser, $title, $text, $url, "like");
