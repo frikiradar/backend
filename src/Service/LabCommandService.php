@@ -223,23 +223,33 @@ class LabCommandService
          * @var User[]
          */
         $users = $this->em->getRepository(\App\Entity\User::class)->findAll();
+        $count = 0;
         foreach ($users as $user) {
-            $active = $user->isActive();
-            $ip = $user->getLastIP();
-            $country = $user->getIpCountry();
-            if ($active && $ip && !$country) {
-                $country = $this->geoService->getIpCountry($ip);
-                if ($country) {
-                    $user->setIpCountry($country);
-                    $this->em->persist($user);
-                    $this->em->flush();
-                    $this->o->writeln("Usuario: " . $user->getId() . " - " . $user->getUsername() . " - " . $country);
-                } else {
-                    $user->setIpCountry("ES");
-                    $this->em->persist($user);
-                    $this->em->flush();
-                    $this->o->writeln("No se ha podido obtener el país de la ip: " . $ip);
-                }
+            $count++;
+            $gender = $user->getGender();
+            $lovegender = $user->getLoveGender();
+            $relationship = $user->getRelationship();
+            $orientation = $user->getOrientation();
+            $pronoun = $user->getPronoun();
+            $status = $user->getStatus();
+            $connection = $user->getConnection();
+
+            // mostramos la información
+            $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $gender . " - " . implode(', ', $lovegender) . " - " . $relationship . " - " . $orientation . " - " . $pronoun . " - " . $status . " - " . implode(', ', $connection));
+            // machacamos la información
+
+            $user->setGender($gender);
+            $user->setLoveGender($lovegender);
+            $user->setRelationship($relationship);
+            $user->setOrientation($orientation);
+            $user->setPronoun($pronoun);
+            $user->setStatus($status);
+            $user->setConnection($connection);
+            $this->em->persist($user);
+
+            // flush por cada 1000 usuarios
+            if ($count % 1000 == 0) {
+                $this->em->flush();
             }
         }
     }

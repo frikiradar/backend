@@ -68,6 +68,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         "Casado" => "married",
     ];
 
+    private $connectionMap = [
+        "Amistad" => "friends",
+        "Sexo ocasional" => "casual-sex",
+        "Amistad con derechos" => "friends-with-benefits",
+        "Pareja formal" => "formal-relationship",
+    ];
+
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Assert\Regex(
         pattern: "/^[a-zA-Z0-9._-]+$/",
@@ -722,6 +729,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getLovegender(): ?array
     {
+        if (empty($this->lovegender)) {
+            return [];
+        }
         foreach ($this->lovegender as $key => $l) {
             if (isset($this->genderMap[$l])) {
                 $this->lovegender[$key] = $this->genderMap[$l];
@@ -796,6 +806,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getConnection()
     {
+        if (empty($this->connection)) {
+            return [];
+        }
+
+        foreach ($this->connection as $key => $c) {
+            if (isset($this->connectionMap[$c])) {
+                $this->connection[$key] = $this->connectionMap[$c];
+            }
+        }
+
         return $this->connection;
     }
 
@@ -814,14 +834,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         // equivalencia español-inglés guardamos siempre tag ingles
         foreach ($connection as $key => $c) {
-            if ($c === "Amistad") {
-                $connection[$key] = "friends";
-            } elseif ($c === "Sexo ocasional") {
-                $connection[$key] = "casual-sex";
-            } elseif ($c === "Amistad con derechos") {
-                $connection[$key] = "friends-with-benefits";
-            } elseif ($c === "Pareja formal") {
-                $connection[$key] = "formal-relationship";
+            if (isset($this->connectionMap[$c])) {
+                $connection[$key] = $this->connectionMap[$c];
             }
         }
 

@@ -350,33 +350,12 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $genderMap = [
-                "woman" => "Mujer",
-                "man" => "Hombre",
-                "transgender-woman" => "Mujer transgénero",
-                "transgender-man" => "Hombre transgénero",
-                "agender" => "Agénero",
-                "androgynous" => "Andrógino",
-                "genderfluid" => "Género fluido",
-                "bigender" => "Bigénero",
-                "non-binary" => "No-binario",
-                "non-conforming" => "No conforme",
-                "pangender" => "Pangénero",
-                "polygender" => "Poligénero",
-                "intergender" => "Intergénero",
-            ];
-
-            $gender = $user->getGender();
-            $gender = $genderMap[$gender] ?? $gender;
-
             $lovegender = $user->getLovegender();
-            foreach ($lovegender as $key => $value) {
-                $lovegender[$key] = $genderMap[$value] ?? $value;
-            }
+            $gender = $user->getGender();
 
             $dql->andWhere("u.roles NOT LIKE '%ROLE_DEMO%'");
 
-            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['friends', 'Amistad'];
+            $connection = !empty($user->getConnection()) ? $user->getConnection() : ['friends'];
             if (!$options || ($options && $options['range'] === true)) {
                 $dql
                     ->andHaving('age BETWEEN :minage AND :maxage')
@@ -394,8 +373,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             }
             if (!$options || ($options && $options['connection'] === true)) {
                 $dql->andWhere(
-                    (in_array('Amistad', $connection) || in_array('friends', $connection)) ? "u.connection LIKE '%Amistad%' OR u.connection LIKE '%friends%' OR u.connection IS NULL" :
-                        "u.connection NOT LIKE '%Amistad%' AND u.connection NOT LIKE '%friends%'"
+                    in_array('friends', $connection) ? "u.connection LIKE '%friends%' OR u.connection IS NULL" :
+                        "u.connection NOT LIKE '%friends%'"
                 );
             }
             if ($options && $options['online'] == 'true') {
@@ -409,7 +388,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                     ->setParameter('lastlogin', 60); // 60 dias
             }
             $dql->andWhere(
-                ($user->getOrientation() == "Homosexual" || $user->getOrientation() == 'homosexual') && !in_array('Amistad', $connection) && !in_array('friends', $connection) ?
+                $user->getOrientation() == 'homosexual' && !in_array('friends', $connection) ?
                     'u.orientation IN (:orientation)' : ($user->getOrientation() ?
                         'u.orientation IN (:orientation) OR u.orientation IS NULL' : 'u.orientation <> :orientation OR u.orientation IS NULL')
             )->setParameter('orientation', $user->getOrientation() ? $this->orientation2Genre($user->getOrientation(), $user->getConnection()) : 1);
@@ -492,29 +471,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->groupBy('u.id');
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $genderMap = [
-                "woman" => "Mujer",
-                "man" => "Hombre",
-                "transgender-woman" => "Mujer transgénero",
-                "transgender-man" => "Hombre transgénero",
-                "agender" => "Agénero",
-                "androgynous" => "Andrógino",
-                "genderfluid" => "Género fluido",
-                "bigender" => "Bigénero",
-                "non-binary" => "No-binario",
-                "non-conforming" => "No conforme",
-                "pangender" => "Pangénero",
-                "polygender" => "Poligénero",
-                "intergender" => "Intergénero",
-            ];
-
             $gender = $user->getGender();
-            $gender = $genderMap[$gender] ?? $gender;
-
             $lovegender = $user->getLovegender();
-            foreach ($lovegender as $key => $value) {
-                $lovegender[$key] = $genderMap[$value] ?? $value;
-            }
 
             $dql
                 ->andWhere('u.avatar IS NOT NULL OR t.user IS NOT NULL')
@@ -702,16 +660,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         if (!is_array($connection)) {
             $connection = [];
         }
-        if (in_array('Amistad', $connection) || in_array('friends', $connection)) {
+        if (in_array('friends', $connection)) {
             return ["heterosexual", "homosexual", "bisexual", "pansexual", "queer", "demisexual", "sapiosexual", "asexual"];
         } else {
             switch ($orientation) {
-                case "Heterosexual":
                 case "heterosexual":
                     return ["hetereosexual", "bisexual", "pansexual", "queer", "demisexual", "sapiosexual", "asexual"];
                     break;
 
-                case "Homosexual":
                 case "homosexual":
                     return ["homosexual", "bisexual", "pansexual"];
                     break;
