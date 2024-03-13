@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ViewAd;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Schema\View;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -21,28 +22,40 @@ class ViewAdRepository extends ServiceEntityRepository
         parent::__construct($registry, ViewAd::class);
     }
 
-//    /**
-//     * @return ViewAd[] Returns an array of ViewAd objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('v.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    //    /**
+    //     * @return ViewAd[] Returns an array of ViewAd objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('v')
+    //            ->andWhere('v.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('v.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
 
-//    public function findOneBySomeField($value): ?ViewAd
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    //    public function findOneBySomeField($value): ?ViewAd
+    //    {
+    //        return $this->createQueryBuilder('v')
+    //            ->andWhere('v.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
+
+    public function save(ViewAd $viewAd): void
+    {
+        $this->_em->persist($viewAd);
+        $this->_em->flush();
+    }
+
+    public function remove(ViewAd $viewAd): void
+    {
+        $this->_em->remove($viewAd);
+        $this->_em->flush();
+    }
 }
