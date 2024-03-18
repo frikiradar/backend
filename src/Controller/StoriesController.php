@@ -508,4 +508,34 @@ class StoriesController extends AbstractController
             throw new HttpException(400, "Error al reportar la historia - Error: {$ex->getMessage()}");
         }
     }
+
+    #[Route('/v1/report-comment', name: 'report_comment', methods: ['PUT'])]
+    public function putReportCommentAction(Request $request, MailerInterface $mailer)
+    {
+        try {
+            $commentId = $this->request->get($request, 'comment', true);
+            $note = $this->request->get($request, 'note', false);
+
+            $comment = $this->commentRepository->findOneBy(array('id' => $commentId));
+            $story = $comment->getStory();
+            $username = $comment->getUser()->getUsername();
+            $text = $comment->getText();
+            $id = $comment->getId();
+
+            // Enviar email al administrador informando del motivo
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address('hola@frikiradar.com', 'frikiradar'))
+                ->subject('Comentario reportado')
+                ->html("El usuario " . $user->getUsername() . " ha reportado un comentario de la historia <a href='https://frikiradar.app/tabs/explore/story/" . $story->getId() . "'>" . $story->getId() . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto del comentario: " . $text);
+
+            $mailer->send($email);
+
+            return new JsonResponse($this->serializer->serialize("Comentario reportado correctamente", "json"), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al reportar el comentario - Error: {$ex->getMessage()}");
+        }
+    }
 }

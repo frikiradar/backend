@@ -6,7 +6,7 @@ use App\Entity\Story;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @method Story|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,7 +18,7 @@ class StoryRepository extends ServiceEntityRepository
 {
     private $security;
 
-    public function __construct(ManagerRegistry $registry, AuthorizationCheckerInterface $security)
+    public function __construct(ManagerRegistry $registry, Security $security)
     {
         parent::__construct($registry, Story::class);
         $this->security = $security;
@@ -101,12 +101,24 @@ class StoryRepository extends ServiceEntityRepository
 
     public function getAllStories()
     {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            $dql = "SELECT s FROM App:Story s WHERE s.time_creation > :yesterday AND s.user NOT IN (SELECT u.id FROM App:User u WHERE u.banned = 1 OR u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s 
+            LEFT JOIN App:User u WITH s.user = u.id
+            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
+            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            WHERE s.time_creation > :yesterday 
+            AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
+            AND (ba.block_user != :id OR ba.block_user IS NULL)
+            AND (bb.from_user != :id OR bb.from_user IS NULL)
+            ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
-                ->setParameter('yesterday', $yesterday);
+                ->setParameter('yesterday', $yesterday)
+                ->setParameter('id', $user->getId());
         } else {
             $dql = "SELECT s FROM App:Story s WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
