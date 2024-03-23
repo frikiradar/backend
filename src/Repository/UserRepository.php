@@ -402,16 +402,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setParameter('id', $user->getId());
 
         if ($ratio === -1) {
-            // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-            // $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
-            $week = date('Y-m-d H:i:s', strtotime('-7 days', strtotime(date("Y-m-d H:i:s"))));
-            $dql->leftJoin('App:ViewUser', 'v', 'WITH', 'u.id = v.to_user AND v.from_user = :id')
-                ->andWhere('v.to_user IS NULL OR u.last_login > :recent')
-                ->setParameter('recent', $week)
+            $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days', strtotime(date("Y-m-d H:i:s"))));
+            $dql
+                ->andWhere('u.last_login > :recent')
+                ->setParameter('recent', $twoWeeksAgo)
+                ->andWhere('MOD(u.id, :random) = 0')
+                ->setParameter('random', rand(1, 10)) // puedes ajustar estos números según tus necesidades
                 ->orderBy('distance', 'ASC')
-                ->addOrderBy('u.last_login', 'DESC')
-                ->setFirstResult($offset)
-                ->setMaxResults($limit);
+                ->addOrderBy('RAND()');
 
             $users = $dql->getQuery()->getResult();
 
