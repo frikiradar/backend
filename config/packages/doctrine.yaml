@@ -48,6 +48,8 @@ doctrine:
         point: LongitudeOne\Spatial\ORM\Query\AST\Functions\MySql\Point
         spdistance: LongitudeOne\Spatial\ORM\Query\AST\Functions\MySql\SpDistance
         stgeomfromtext: LongitudeOne\Spatial\ORM\Query\AST\Functions\Standard\StGeomFromText
+        date: App\DoctrineExtensions\Query\Mysql\Date
+        floor: App\DoctrineExtensions\Query\Mysql\Floor
         round: App\DoctrineExtensions\Query\Mysql\Round
         rand: App\DoctrineExtensions\Query\Mysql\Rand
 

@@ -402,14 +402,17 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->setParameter('id', $user->getId());
 
         if ($ratio === -1) {
-            $twoWeeksAgo = date('Y-m-d H:i:s', strtotime('-14 days', strtotime(date("Y-m-d H:i:s"))));
-            $dql
-                ->andWhere('u.last_login > :recent')
-                ->setParameter('recent', $twoWeeksAgo)
-                ->andWhere('MOD(u.id, :random) = 0')
-                ->setParameter('random', rand(1, 10)) // puedes ajustar estos números según tus necesidades
-                ->orderBy('distance', 'ASC')
-                ->addOrderBy('RAND()');
+            // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+            // $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
+            $twoWeeks = date('Y-m-d H:i:s', strtotime('-30 days', strtotime(date("Y-m-d H:i:s"))));
+            $dql->andWhere('u.last_login > :recent')
+                ->setParameter('recent', $twoWeeks)
+                ->addSelect("FLOOR((SpDistance(u.coordinates, StGeomFromText(:point)) * 111.045) / 50) * 50 as grouped_distance, DATE(u.last_login) as grouped_last_login")
+                ->orderBy('grouped_distance', 'ASC')
+                ->addOrderBy('grouped_last_login', 'DESC')
+                ->addOrderBy('RAND()')
+                ->setFirstResult($offset)
+                ->setMaxResults($limit);
 
             $users = $dql->getQuery()->getResult();
 
