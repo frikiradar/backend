@@ -239,7 +239,6 @@ class ChatController extends AbstractController
         $cache = new FilesystemAdapter();
         $cache->deleteItem('users.chat.' . $fromUser->getId());
 
-        $read = $this->request->get($request, "read");
         $page = $this->request->get($request, "page");
         $lastId = $this->request->get($request, "lastid", false) ?: 0;
 
@@ -251,7 +250,7 @@ class ChatController extends AbstractController
         $cache->deleteItem('users.notifications.' . $fromUser->getId());
         $this->userRepository->save($fromUser);
 
-        $chats = $this->chatRepository->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
+        $chats = $this->chatRepository->getChat($fromUser, $toUser, $page, $lastId, $fromUser->isBanned());
 
         if ($fromUser->getId() !== $toUser->getId()) {
             //marcamos como leidos los antiguos

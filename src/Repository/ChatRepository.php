@@ -67,7 +67,7 @@ class ChatRepository extends ServiceEntityRepository
         $this->_em->flush();
     }
 
-    public function getChat(User $fromUser, User $toUser, $read = false, $page = 1, $lastId = 0, $banned = false)
+    public function getChat(User $fromUser, User $toUser, $page = 1, $lastId = 0, $banned = false)
     {
         $limit = 25;
         $offset = ($page - 1) * $limit;
@@ -80,7 +80,6 @@ class ChatRepository extends ServiceEntityRepository
         }
 
         return $dql->orWhere('c.fromuser = :toUser AND c.touser = :fromUser')
-            ->andWhere($read == true ? '1=1' : 'c.time_read IS NULL')
             ->andWhere('c.id > :lastId')
             ->setParameter('fromUser', $fromUser->getId())
             ->setParameter('toUser', $toUser->getId())

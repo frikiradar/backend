@@ -78,7 +78,7 @@ class AdminController extends AbstractController
 
         //marcamos como leidos los antiguos
         $this->chatRepository->markChatsAsRead($toUser, $fromUser);
-        $chats = $this->chatRepository->getChat($fromUser, $toUser, true, 1, 0, true);
+        $chats = $this->chatRepository->getChat($fromUser, $toUser, 1, 0, true);
 
         return new JsonResponse($this->serializer->serialize($chats, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
     }
