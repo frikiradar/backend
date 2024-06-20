@@ -247,16 +247,16 @@ class ChatController extends AbstractController
 
         $blocked = !empty($this->blockUserRepository->isBlocked($fromUser, $toUser)) ? true : false;
 
-        if ($fromUser->getId() !== $toUser->getId()) {
-            //marcamos como leidos los antiguos
-            $this->chatRepository->markChatsAsRead($fromUser, $toUser);
-        }
-
         // Borrar cachés de notificaciones de chat
         $cache->deleteItem('users.notifications.' . $fromUser->getId());
         $this->userRepository->save($fromUser);
 
         $chats = $this->chatRepository->getChat($fromUser, $toUser, $read, $page, $lastId, $fromUser->isBanned());
+
+        if ($fromUser->getId() !== $toUser->getId()) {
+            //marcamos como leidos los antiguos
+            $this->chatRepository->markChatsAsRead($fromUser, $toUser);
+        }
 
         $language = $fromUser->getLanguage();
 
