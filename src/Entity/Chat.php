@@ -73,6 +73,7 @@ class Chat
     #[Groups('message')]
     private $mentions = [];
 
+    #[ORM\Column(type: "string", length: 70, nullable: true)]
     #[Groups('message')]
     private $tmp_id;
 
