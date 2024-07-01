@@ -293,7 +293,7 @@ class ChatController extends AbstractController
             $toUser->setLastLogin();
             $this->userRepository->save($toUser);
 
-            $chat = $this->chatRepository->findOneBy(array('id' => $id));
+            $chat = $this->chatRepository->findOneBy(['id' => $id]) ?? $this->chatRepository->findOneBy(['tmp_id' => $id]);
             if ($chat->getTouser()->getId() == $toUser->getId()) {
                 $chat->setTimeRead(new \DateTime);
                 $this->chatRepository->save($chat);
