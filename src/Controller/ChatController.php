@@ -285,7 +285,7 @@ class ChatController extends AbstractController
 
 
     #[Route('/v1/read-chat/{id}', name: 'read_chat', methods: ['GET'])]
-    public function markAsReadAction(int $id)
+    public function markAsReadAction(string|int $id)
     {
         try {
             /** @var \App\Entity\User $toUser */
