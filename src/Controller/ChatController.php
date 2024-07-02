@@ -252,10 +252,10 @@ class ChatController extends AbstractController
 
         $chats = $this->chatRepository->getChat($fromUser, $toUser, $page, $lastId, $fromUser->isBanned());
 
-        if ($fromUser->getId() !== $toUser->getId()) {
+        /*if ($fromUser->getId() !== $toUser->getId()) {
             //marcamos como leidos los antiguos
             $this->chatRepository->markChatsAsRead($fromUser, $toUser);
-        }
+        }*/
 
         $language = $fromUser->getLanguage();
 
