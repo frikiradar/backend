@@ -51,7 +51,7 @@ class AdminController extends AbstractController
             $topic = $this->request->get($request, 'topic');
             $title = $this->request->get($request, 'title') ?: "❤ ¡Información importante! 🎏";
             $text = $this->request->get($request, 'message');
-            $url = "/chat/" . $fromUser->getId();
+            $url = "/tabs/chat/" . $fromUser->getId();
 
             $chat->setFromuser($fromUser);
             if ($topic == 'test') {
@@ -166,7 +166,7 @@ class AdminController extends AbstractController
             $toUser = $this->userRepository->find($this->request->get($request, "touser"));
             $title = "⚠️ Aviso de moderación";
             $text = $this->request->get($request, 'message');
-            $url = "/chat/" . $fromUser->getId();
+            $url = "/tabs/chat/" . $fromUser->getId();
 
             $chat->setFromuser($fromUser);
             $chat->setTouser($toUser);

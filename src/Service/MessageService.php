@@ -32,7 +32,7 @@ class MessageService extends AbstractController
             $title = $fromUser->getName();
             $text = $chat->getText();
             if (!$url) {
-                $url = '/chat/' . $chat->getFromuser()->getId();
+                $url = '/tabs/chat/' . $chat->getFromuser()->getId();
             }
             $type = 'chat';
             $this->notification->set($fromUser, $toUser, $title, $text, $url, $type, $message);
