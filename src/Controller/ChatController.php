@@ -298,8 +298,6 @@ class ChatController extends AbstractController
                 $chat->setTimeRead(new \DateTime);
                 $this->chatRepository->save($chat);
 
-                $this->message->send($chat, $chat->getFromuser());
-
                 // Borrar cachés de notificaciones de chat
                 $cache = new FilesystemAdapter();
                 $cache->deleteItem('users.notifications.' . $toUser->getId());
@@ -311,33 +309,6 @@ class ChatController extends AbstractController
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al marcar como leido - Error: {$ex->getMessage()}");
         }
-    }
-
-    #[Route('/v1/writing-chat', name: 'writing_chat', methods: ['PUT'])]
-    public function writingAction(Request $request)
-    {
-        /** @var \App\Entity\User $fromUser */
-        $fromUser = $this->getUser();
-        $toUser = $this->userRepository->findOneBy(array('id' => $this->request->get($request, "touser")));
-
-        $chat = new Chat();
-        $min = min($fromUser->getId(), $toUser->getId());
-        $max = max($fromUser->getId(), $toUser->getId());
-
-        $conversationId = $min . "_" . $max;
-
-        $chat->setTouser($toUser);
-        $chat->setFromuser($fromUser);
-        $chat->setConversationId($conversationId);
-        $chat->setWriting(true);
-
-        $this->message->send($chat, $toUser);
-
-        $data = [
-            'code' => 200,
-            'message' => "Escribiendo en chat",
-        ];
-        return new JsonResponse($data, 200);
     }
 
     #[Route('/v1/update-message', name: 'update_message', methods: ['PUT'])]
@@ -354,12 +325,12 @@ class ChatController extends AbstractController
                 $chat->setEdited(1);
                 $this->chatRepository->save($chat);
 
-                if ($chat->getTouser()) {
+                /*if ($chat->getTouser()) {
                     $this->message->send($chat, $chat->getTouser());
                     if (null !== ($chat->getTouser()) && $chat->getTouser()->getId() !== $chat->getFromuser()->getId()) {
                         $this->message->send($chat, $chat->getFromuser());
                     }
-                }
+                }*/
 
                 return new JsonResponse($this->serializer->serialize($chat, "json", ['groups' => 'message', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]), Response::HTTP_OK, [], true);
             } else {
@@ -413,12 +384,12 @@ class ChatController extends AbstractController
                 $this->chatRepository->remove($message);
                 $message->setDeleted(1);
 
-                if ($message->getTouser()) {
+                /*if ($message->getTouser()) {
                     $this->message->send($message, $message->getTouser());
                     if (!empty($message->getTouser()) && $message->getTouser()->getId() !== $message->getFromuser()->getId()) {
                         $this->message->send($message, $message->getFromuser());
                     }
-                }
+                }*/
 
                 return new JsonResponse($this->serializer->serialize($message, "json", ['groups' => 'message']), Response::HTTP_OK, [], true);
             } else {
