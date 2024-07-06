@@ -68,6 +68,7 @@ class NotificationService extends AbstractController
             $tag = $type . '_' . $title;
 
             $notification = Notification::fromArray([
+                'id' => $fromUser->getId() . rand(1000, 9999),
                 'title' => $title,
                 'body' => $text,
                 'image' => $fromUser->getAvatar()
