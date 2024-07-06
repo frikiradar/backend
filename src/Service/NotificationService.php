@@ -66,10 +66,8 @@ class NotificationService extends AbstractController
         $today = new \DateTime;
         if (count($tokens) > 0) {
             $tag = $type . '_' . $title;
-            $id = $fromUser->getId() . rand(1000, 9999);
 
             $notification = Notification::fromArray([
-                'id' => $id,
                 'title' => $title,
                 'body' => $text,
                 'image' => $fromUser->getAvatar()
@@ -95,7 +93,6 @@ class NotificationService extends AbstractController
                 'ttl' => '3600s',
                 'priority' => 'high',
                 'notification' => [
-                    'id' => $id,
                     'title' => $title,
                     'body' => $text,
                     'sound' => "default",
