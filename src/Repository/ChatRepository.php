@@ -105,6 +105,7 @@ class ChatRepository extends ServiceEntityRepository
 
     public function getChatUsers(User $fromUser)
     {
+        $language = $fromUser->getLanguage();
         $dql = "SELECT c.id, IDENTITY(c.fromuser) fromuser, IDENTITY(c.touser) touser, c.text text, c.time_creation time_creation, c.time_read time_read, c.conversationId conversationId FROM App:Chat c WHERE c.id IN(SELECT MAX(d.id) FROM App:Chat d WHERE (d.fromuser = :id OR d.touser = :id) OR (d.fromuser = 1 AND (d.touser = :id OR d.touser IS NULL)) AND d.text IS NOT NULL GROUP BY d.conversationId) ORDER BY c.id DESC";
 
         $query = $this->getEntityManager()->createQuery($dql)->setParameter('id', $fromUser->getId());
@@ -140,11 +141,19 @@ class ChatRepository extends ServiceEntityRepository
                     } else {
                         $chats[$key]['user'] = [
                             'id' => $userId,
-                            'username' => 'Usuario desconocido',
-                            'name' => 'Usuario desconocido',
+                            'username' => $language == 'es' ? 'Usuario desconocido' : 'Unknown user',
+                            'name' => $language == 'es' ? 'Usuario desconocido' : 'Unknown user',
                             'avatar' => null,
                             'thumbnail' => null
                         ];
+                    }
+
+                    if (empty($chat['text']) && isset($chat['image'])) {
+                        $chats[$key]['text'] = '📷 ' . $fromUser->getName() . ($language == 'es' ? ' te ha enviado una imagen.' : ' sent you an image.');
+                    } elseif (isset($image)) {
+                        $chats[$key]['text'] = '📷 ' . $chat['text'];
+                    } elseif (isset($audio)) {
+                        $chats[$key]['text'] = '🎤 ' . ($language == 'es' ? 'Mensaje de audio de ' : 'Audio message from ') . $fromUser->getName();
                     }
                 }
             } else {

@@ -583,7 +583,7 @@ class EventsController extends AbstractController
 
             $this->message->send($chat, $user);
             $chat->setText($user->getName() . ($language == 'es' ? " ha aceptado tu invitación de cita." : " has accepted your date invitation."));
-            $url = "/tabs/chat/" + $user->getId();
+            $url = "/chat/" + $user->getId();
             $this->message->send($chat, $event->getCreator(), true, $url);
 
             return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
@@ -617,7 +617,7 @@ class EventsController extends AbstractController
                 $this->message->send($chat, $user);
                 $chat->setText($user->getName() . ($language == 'es' ? " ha rechazado tu invitación de cita." : " has declined your date invitation."));
 
-                $url = "/tabs/chat/" + $user->getId();
+                $url = "/chat/" + $user->getId();
                 $this->message->send($chat, $event->getCreator(), true, $url);
 
                 return new JsonResponse($this->serializer->serialize($event, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);

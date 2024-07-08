@@ -720,7 +720,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             $date->add(new \DateInterval('P' . ($days ?: 0) . 'DT' . ($hours ?: 0) . 'H'));
         }
 
-        $url = "/tabs/chat/" . $fromUser->getId();
+        $url = "/chat/" . $fromUser->getId();
 
         $toUser->setBanned(true);
         $toUser->setBanReason($reason);
