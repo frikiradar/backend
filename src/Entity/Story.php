@@ -61,6 +61,9 @@ class Story
     #[ORM\Column(length: 20, options: ['default' => 'story'])]
     private ?string $type = null;
 
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $color = null;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -256,6 +259,18 @@ class Story
     public function setType(?string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): static
+    {
+        $this->color = $color;
 
         return $this;
     }
