@@ -98,6 +98,10 @@ class PageRepository extends ServiceEntityRepository
             return $this->slugs[$b->getSlug()] <=> $this->slugs[$a->getSlug()];
         });
 
+        foreach ($pages as $page) {
+            $page->setLikes($this->slugs[$page->getSlug()]);
+        }
+
         return $pages;
     }
 

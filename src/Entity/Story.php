@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\StoryRepository;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -49,6 +50,16 @@ class Story
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups('story')]
     private $mentions = [];
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups('story')]
+    private ?string $slug = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $time_end = null;
+
+    #[ORM\Column(length: 20, options: ['default' => 'story'])]
+    private ?string $type = null;
 
     public function __construct()
     {
@@ -209,6 +220,42 @@ class Story
     public function setMentions(?array $mentions): self
     {
         $this->mentions = $mentions;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getTimeEnd(): ?\DateTimeInterface
+    {
+        return $this->time_end;
+    }
+
+    public function setTimeEnd(?\DateTimeInterface $time_end): static
+    {
+        $this->time_end = $time_end;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }
