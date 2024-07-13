@@ -149,6 +149,7 @@ class StoriesController extends AbstractController
 
             $story->setText($text);
             $story->setUser($fromUser);
+            $story->setType('story');
             $mentions = array_unique(json_decode($request->request->get("mentions"), true));
             if ($mentions) {
                 $story->setMentions($mentions);
