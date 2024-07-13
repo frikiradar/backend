@@ -105,6 +105,58 @@ class PageRepository extends ServiceEntityRepository
         return $pages;
     }
 
+    public function findOtherPages(User $user, $limit = null, $pageNumber = null)
+    {
+        // aqui obtendremos las páginas a las que no ha dado like
+        $userTags = $user->getTags();
+        $userSlugs = [];
+        foreach ($userTags as $tag) {
+            if ($tag->getSlug()) {
+                $userSlugs[] = $tag->getSlug();
+            }
+        }
+
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->createQueryBuilder('t')
+            ->select(array(
+                't.slug',
+                'COUNT(t) total'
+            ))
+            ->andWhere('t.slug NOT IN (:slugs)')
+            ->groupBy('t.slug')
+            ->orderBy('total', 'DESC')
+            ->setParameter('slugs', $userSlugs)
+            // ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $slugs = [];
+        foreach ($tags as $tag) {
+            $slugs[$tag['slug']] = $tag['total'];
+        }
+        $this->slugs = $slugs;
+
+        // cortamos los resultados ($this->slugs) por página
+        $offset = $pageNumber !== null ? ($pageNumber - 1) * $limit : null;
+        $slugs = array_slice($slugs, $offset, $limit);
+
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.slug IN (:slugs)')
+            ->andWhere('p.cover IS NOT NULL')
+            ->setParameter('slugs', array_keys($slugs));
+
+        $pages = $queryBuilder->getQuery()->getResult();
+
+        usort($pages, function ($a, $b) {
+            return $this->slugs[$b->getSlug()] <=> $this->slugs[$a->getSlug()];
+        });
+
+        foreach ($pages as $page) {
+            $page->setLikes($this->slugs[$page->getSlug()]);
+        }
+
+        return $pages;
+    }
+
     public function getGamesApi($name)
     {
         $name = strtolower($name);

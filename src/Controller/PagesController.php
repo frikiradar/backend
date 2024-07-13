@@ -58,6 +58,23 @@ class PagesController extends AbstractController
         }
     }
 
+    #[Route('/v1/other-pages', name: 'other_pages', methods: ['GET'])]
+    public function getOtherPages(Request $request)
+    {
+        $user = $this->getUser();
+
+        $limit = $this->request->get($request, "limit", false) ?? null;
+        $page = $this->request->get($request, "page", false) ?? null;
+
+        try {
+            $pages = $this->pageRepository->findOtherPages($user, $limit, $page);
+
+            return new JsonResponse($this->serializer->serialize($pages, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
+        }
+    }
+
     #[Route('/v1/page/{slug}', name: 'page', methods: ['GET'])]
     public function getPage(string $slug)
     {
