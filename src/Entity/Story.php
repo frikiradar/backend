@@ -54,6 +54,9 @@ class Story
     #[Groups('story')]
     private ?bool $like = false;
 
+    #[Groups('story')]
+    private ?bool $viewed = false;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $time_end = null;
 
@@ -282,6 +285,28 @@ class Story
     public function setLike(bool $like): self
     {
         $this->like = $like;
+        return $this;
+    }
+
+    public function isViewedByUser(User $user): ?bool
+    {
+        foreach ($this->getViewStories() as $viewStory) {
+            if ($viewStory->getUser()->getId() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getViewed(): ?bool
+    {
+        return $this->viewed;
+    }
+
+    public function setViewed(bool $viewed): self
+    {
+        $this->viewed = $viewed;
         return $this;
     }
 }

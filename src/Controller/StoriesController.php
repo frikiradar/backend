@@ -300,6 +300,7 @@ class StoriesController extends AbstractController
 
             $story = $this->storyRepository->findOneBy(array('id' => $this->request->get($request, 'story')));
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -324,6 +325,7 @@ class StoriesController extends AbstractController
 
             $story = $this->storyRepository->findOneBy(array('id' => $id));
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 

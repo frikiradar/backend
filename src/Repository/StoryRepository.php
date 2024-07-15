@@ -81,6 +81,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($stories as $story) {
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
         }
 
         return $stories;
@@ -106,6 +107,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($stories as $story) {
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
         }
 
         return $stories;
@@ -128,6 +130,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($stories as $story) {
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
         }
 
         return $stories;
@@ -165,6 +168,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($stories as $story) {
             $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
         }
 
         return $stories;
@@ -201,6 +205,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($posts as $post) {
             $post->setLike($post->isLikedByUser($user));
+            $post->setViewed($post->isViewedByUser($user));
         }
 
         return $posts;
@@ -226,6 +231,7 @@ class StoryRepository extends ServiceEntityRepository
 
         foreach ($posts as $post) {
             $post->setLike($post->isLikedByUser($user));
+            $post->setViewed($post->isViewedByUser($user));
         }
 
         return $posts;
