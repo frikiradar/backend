@@ -146,34 +146,25 @@ class StoriesController extends AbstractController
             $story = new Story();
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
+            $color = $request->request->get("color");
 
             $story->setText($text);
+            $story->setColor($color);
             $story->setUser($fromUser);
             $story->setType('story');
-            $mentions = array_unique(json_decode($request->request->get("mentions"), true));
-            if ($mentions) {
-                $story->setMentions($mentions);
+
+            if ($imageFile) {
+                $filename = microtime(true);
+                $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
+                $server = "https://app.frikiradar.com";
+                $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
+                $image = $uploader->uploadImage($imageFile, false, 80);
+                $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                $story->setImage($src);
             }
 
-            $filename = microtime(true);
-            $absolutePath = '/var/www/vhosts/frikiradar.com/app.frikiradar.com/images/stories/';
-            $server = "https://app.frikiradar.com";
-            $uploader = new FileUploaderService($absolutePath . $fromUser->getId() . "/", $filename);
-            $image = $uploader->uploadImage($imageFile, false, 80);
-            $src = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
-            $story->setImage($src);
             $story->setTimeCreation();
             $this->storyRepository->save($story);
-
-            if (count((array) $mentions) > 0) {
-                $url = "/tabs/explore/story/" . $story->getId();
-                foreach ($mentions as $mention) {
-                    $toUser = $this->userRepository->findOneBy(array('username' => $mention));
-                    $language = $toUser->getLanguage();
-                    $title = $fromUser->getName() . ($language == 'es' ? ' te ha mencionado en una historia.' : ' has mentioned you in a story.');
-                    $this->notification->set($fromUser, $toUser, $title, $text, $url, 'story');
-                }
-            }
 
             $data = [
                 'code' => 200,
