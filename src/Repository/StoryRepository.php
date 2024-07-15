@@ -65,28 +65,6 @@ class StoryRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function getStories(User $user)
-    {
-        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s
-            WHERE (s.user IN(SELECT IDENTITY(l.to_user) FROM App:LikeUser l WHERE IDENTITY(l.from_user) = :id) OR s.user = 1 OR s.user = :id)
-            AND s.time_creation > :yesterday
-            AND s.type = 'story'
-            ORDER BY s.time_creation ASC";
-        $query = $this->getEntityManager()
-            ->createQuery($dql)
-            ->setParameter('id', $user->getId())
-            ->setParameter('yesterday', $yesterday);
-        $stories = $query->getResult();
-
-        foreach ($stories as $story) {
-            $story->setLike($story->isLikedByUser($user));
-            $story->setViewed($story->isViewedByUser($user));
-        }
-
-        return $stories;
-    }
-
     public function getStoriesBySlug(string $slug)
     {
         /** @var User $user */
@@ -137,7 +115,7 @@ class StoryRepository extends ServiceEntityRepository
     }
 
 
-    public function getAllStories()
+    public function getStories()
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -193,10 +171,7 @@ class StoryRepository extends ServiceEntityRepository
                 ->createQuery($dql)
                 ->setParameter('id', $user->getId());
         } else {
-            $dql = "SELECT s FROM App:Story s
-            WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
-            AND s.type = 'post'
-            ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
         }
@@ -216,16 +191,13 @@ class StoryRepository extends ServiceEntityRepository
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
         $dql = "SELECT s FROM App:Story s
-            WHERE s.time_creation > :yesterday
             AND s.type = 'post'
             AND s.slug = :slug
             ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
-            ->setParameter('slug', $slug)
-            ->setParameter('yesterday', $yesterday);
+            ->setParameter('slug', $slug);
 
         $posts = $query->getResult();
 
