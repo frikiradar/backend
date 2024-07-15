@@ -51,6 +51,9 @@ class Story
     #[Groups('story')]
     private ?string $slug = null;
 
+    #[Groups('story')]
+    private ?bool $like = false;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $time_end = null;
 
@@ -257,6 +260,28 @@ class Story
     {
         $this->color = $color;
 
+        return $this;
+    }
+
+    public function isLikedByUser(User $user): ?bool
+    {
+        foreach ($this->getLikeStories() as $likeStory) {
+            if ($likeStory->getUser()->getId() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getLike(): ?bool
+    {
+        return $this->like;
+    }
+
+    public function setLike(bool $like): self
+    {
+        $this->like = $like;
         return $this;
     }
 }

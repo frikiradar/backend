@@ -73,18 +73,34 @@ class StoryRepository extends ServiceEntityRepository
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
             ->setParameter('yesterday', $yesterday);
-        return $query->getResult();
+        $stories = $query->getResult();
+
+        foreach ($stories as $story) {
+            $story->setLike($story->isLikedByUser($user));
+        }
+
+        return $stories;
     }
 
     public function getStoriesBySlug(string $slug)
     {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
         $dql = "SELECT s FROM App:Story s WHERE s.text LIKE :slug AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('slug', '%' . $slug . '%')
             ->setParameter('yesterday', $yesterday);
-        return $query->getResult();
+
+        $stories = $query->getResult();
+
+        foreach ($stories as $story) {
+            $story->setLike($story->isLikedByUser($user));
+        }
+
+        return $stories;
     }
 
     public function getUserStories(User $user)
@@ -95,7 +111,14 @@ class StoryRepository extends ServiceEntityRepository
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
             ->setParameter('yesterday', $yesterday);
-        return $query->getResult();
+
+        $stories = $query->getResult();
+
+        foreach ($stories as $story) {
+            $story->setLike($story->isLikedByUser($user));
+        }
+
+        return $stories;
     }
 
 
@@ -125,6 +148,12 @@ class StoryRepository extends ServiceEntityRepository
                 ->createQuery($dql);
         }
 
-        return $query->getResult();
+        $stories = $query->getResult();
+
+        foreach ($stories as $story) {
+            $story->setLike($story->isLikedByUser($user));
+        }
+
+        return $stories;
     }
 }

@@ -164,6 +164,7 @@ class StoriesController extends AbstractController
             }
 
             $story->setTimeCreation();
+            $story->setTimeEnd(new \DateTime('+1 day'));
             $this->storyRepository->save($story);
 
             $data = [
@@ -281,6 +282,7 @@ class StoriesController extends AbstractController
             }
 
             $story = $this->storyRepository->findOneBy(array('id' => $this->request->get($request, 'story')));
+            $story->setLike($story->isLikedByUser($user));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
@@ -304,6 +306,7 @@ class StoriesController extends AbstractController
             }
 
             $story = $this->storyRepository->findOneBy(array('id' => $id));
+            $story->setLike($story->isLikedByUser($user));
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
