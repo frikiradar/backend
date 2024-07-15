@@ -163,11 +163,13 @@ class StoriesController extends AbstractController
             $imageFile = $request->files->get('image');
             $text = $request->request->get("text");
             $color = $request->request->get("color");
+            $slug = $request->request->get("slug");
 
             $story->setText($text);
             $story->setColor($color);
             $story->setUser($fromUser);
             $story->setType('story');
+            $story->setSlug($slug);
 
             if ($imageFile) {
                 $filename = microtime(true);
