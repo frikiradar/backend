@@ -68,7 +68,11 @@ class StoryRepository extends ServiceEntityRepository
     public function getStories(User $user)
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE (s.user IN(SELECT IDENTITY(l.to_user) FROM App:LikeUser l WHERE IDENTITY(l.from_user) = :id) OR s.user = 1 OR s.user = :id) AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
+        $dql = "SELECT s FROM App:Story s
+            WHERE (s.user IN(SELECT IDENTITY(l.to_user) FROM App:LikeUser l WHERE IDENTITY(l.from_user) = :id) OR s.user = 1 OR s.user = :id)
+            AND s.time_creation > :yesterday
+            AND s.type = 'story'
+            ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
@@ -88,10 +92,14 @@ class StoryRepository extends ServiceEntityRepository
         $user = $this->security->getUser();
 
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE s.text LIKE :slug AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
+        $dql = "SELECT s FROM App:Story s
+            WHERE s.time_creation > :yesterday
+            AND s.type = 'story'
+            AND s.slug = :slug
+            ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
-            ->setParameter('slug', '%' . $slug . '%')
+            ->setParameter('slug', $slug)
             ->setParameter('yesterday', $yesterday);
 
         $stories = $query->getResult();
@@ -106,7 +114,11 @@ class StoryRepository extends ServiceEntityRepository
     public function getUserStories(User $user)
     {
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
-        $dql = "SELECT s FROM App:Story s WHERE s.user = :id AND s.time_creation > :yesterday ORDER BY s.time_creation ASC";
+        $dql = "SELECT s FROM App:Story s
+            WHERE s.user = :id
+            AND s.time_creation > :yesterday
+            AND s.type = 'story'
+            ORDER BY s.time_creation ASC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
@@ -134,6 +146,7 @@ class StoryRepository extends ServiceEntityRepository
             LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
             LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
             WHERE s.time_creation > :yesterday 
+            AND s.type = 'story'
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
             AND (ba.block_user != :id OR ba.block_user IS NULL)
             AND (bb.from_user != :id OR bb.from_user IS NULL)
@@ -155,5 +168,66 @@ class StoryRepository extends ServiceEntityRepository
         }
 
         return $stories;
+    }
+
+    public function getPosts()
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        if (!$this->security->isGranted('ROLE_DEMO')) {
+            $dql = "SELECT s FROM App:Story s 
+            LEFT JOIN App:User u WITH s.user = u.id
+            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
+            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            AND s.type = 'post'
+            AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
+            AND (ba.block_user != :id OR ba.block_user IS NULL)
+            AND (bb.from_user != :id OR bb.from_user IS NULL)
+            ORDER BY s.time_creation ASC";
+            $query = $this->getEntityManager()
+                ->createQuery($dql)
+                ->setParameter('id', $user->getId());
+        } else {
+            $dql = "SELECT s FROM App:Story s
+            WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
+            AND s.type = 'post'
+            ORDER BY s.time_creation ASC";
+            $query = $this->getEntityManager()
+                ->createQuery($dql);
+        }
+
+        $posts = $query->getResult();
+
+        foreach ($posts as $post) {
+            $post->setLike($post->isLikedByUser($user));
+        }
+
+        return $posts;
+    }
+
+    public function getPostsBySlug(string $slug)
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+        $dql = "SELECT s FROM App:Story s
+            WHERE s.time_creation > :yesterday
+            AND s.type = 'post'
+            AND s.slug = :slug
+            ORDER BY s.time_creation ASC";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('slug', $slug)
+            ->setParameter('yesterday', $yesterday);
+
+        $posts = $query->getResult();
+
+        foreach ($posts as $post) {
+            $post->setLike($post->isLikedByUser($user));
+        }
+
+        return $posts;
     }
 }

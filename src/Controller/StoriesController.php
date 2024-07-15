@@ -88,6 +88,23 @@ class StoriesController extends AbstractController
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
+    #[Route('/v1/posts', name: 'get_posts', methods: ['GET'])]
+    public function getPostsAction()
+    {
+        $user = $this->getUser();
+        $posts = $this->storyRepository->getPosts($user);
+
+        return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
+    }
+
+    #[Route('/v1/posts-slug/{slug}', name: 'get_posts_slug', methods: ['GET'])]
+    public function getPostsSlugAction(string $slug)
+    {
+        $posts = $this->storyRepository->getPostsBySlug($slug);
+
+        return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
+    }
+
     #[Route('/v1/all-stories', name: 'get_all_stories', methods: ['GET'])]
     public function getAllStoriesAction()
     {
