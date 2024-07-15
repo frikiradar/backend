@@ -18,7 +18,7 @@ class Story
     #[Groups('story')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups('story')]
     private $image;
 
@@ -46,10 +46,6 @@ class Story
     #[ORM\OneToMany(targetEntity: ViewStory::class, mappedBy: 'story', orphanRemoval: true)]
     #[Groups('story')]
     private $viewStories;
-
-    #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups('story')]
-    private $mentions = [];
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups('story')]
@@ -81,7 +77,7 @@ class Story
         return $this->image;
     }
 
-    public function setImage(string $image): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
 
@@ -211,18 +207,6 @@ class Story
                 $viewStory->setStory(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getMentions(): ?array
-    {
-        return $this->mentions;
-    }
-
-    public function setMentions(?array $mentions): self
-    {
-        $this->mentions = $mentions;
 
         return $this;
     }
