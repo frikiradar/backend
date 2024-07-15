@@ -58,6 +58,7 @@ class Story
     private ?string $type = null;
 
     #[ORM\Column(length: 7, nullable: true)]
+    #[Groups('story')]
     private ?string $color = null;
 
     public function __construct()
