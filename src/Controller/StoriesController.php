@@ -164,11 +164,11 @@ class StoriesController extends AbstractController
             $text = $request->request->get("text");
             $color = $request->request->get("color");
             $slug = $request->request->get("slug");
+            $type = $request->request->get("type") ?? 'story';
 
             $story->setText($text);
             $story->setColor($color);
             $story->setUser($fromUser);
-            $story->setType('story');
             $story->setSlug($slug);
 
             if ($imageFile) {
@@ -182,7 +182,11 @@ class StoriesController extends AbstractController
             }
 
             $story->setTimeCreation();
-            $story->setTimeEnd(new \DateTime('+1 day'));
+
+            if ($type == 'story') {
+                $story->setTimeEnd(new \DateTime('+1 day'));
+            }
+            $story->setType($type);
             $this->storyRepository->save($story);
 
             $data = [
