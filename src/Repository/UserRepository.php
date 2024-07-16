@@ -345,7 +345,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->groupBy('u.id');
         if ($ratio > -1) {
             $dql->andHaving($ratio ? 'distance <= ' . $ratio : 'distance >= ' . $ratio);
-        } else if ($options && !$options['worldwide']) {
+        } else if ($options && !$options['worldwide'] && !$this->security->isGranted('ROLE_DEMO')) {
             $dql->andHaving('distance <= 1000');
         }
 
@@ -401,7 +401,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere("u.id <> :id")
             ->setParameter('id', $user->getId());
 
-        if ($ratio === -1) {
+        if ($ratio === -1 && !$this->security->isGranted('ROLE_DEMO')) {
             // $today = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
             // $recent = date('Y-m-d H:i:s', strtotime('-48 hours', strtotime(date("Y-m-d H:i:s"))));
             $twoWeeks = date('Y-m-d H:i:s', strtotime('-30 days', strtotime(date("Y-m-d H:i:s"))));
@@ -554,6 +554,11 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 $users[$key]['match'] = 0;
                 $users[$key]['common_tags'] = [];
             }
+
+            $users[$key]['viewed'] = !empty($this->em->getRepository(\App\Entity\ViewUser::class)->findOneBy([
+                'from_user' => $fromUser,
+                'to_user' => $this->findOneBy(array('id' => $u['id']))
+            ])) ? true : false;
 
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
