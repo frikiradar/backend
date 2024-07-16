@@ -169,7 +169,7 @@ class StoryRepository extends ServiceEntityRepository
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
             AND (ba.block_user != :id OR ba.block_user IS NULL)
             AND (bb.from_user != :id OR bb.from_user IS NULL)
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('id', $user->getId());
@@ -177,7 +177,7 @@ class StoryRepository extends ServiceEntityRepository
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
             AND s.type = 'post'
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
         }
