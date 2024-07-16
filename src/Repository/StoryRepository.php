@@ -137,7 +137,10 @@ class StoryRepository extends ServiceEntityRepository
                 ->setParameter('yesterday', $yesterday)
                 ->setParameter('id', $user->getId());
         } else {
-            $dql = "SELECT s FROM App:Story s WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s
+            WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
+            AND s.type = 'story'
+            ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
         }
@@ -171,7 +174,10 @@ class StoryRepository extends ServiceEntityRepository
                 ->createQuery($dql)
                 ->setParameter('id', $user->getId());
         } else {
-            $dql = "SELECT s FROM App:Story s WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%') ORDER BY s.time_creation ASC";
+            $dql = "SELECT s FROM App:Story s
+            WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
+            AND s.type = 'post'
+            ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
         }
