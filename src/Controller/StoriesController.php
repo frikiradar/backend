@@ -72,25 +72,28 @@ class StoriesController extends AbstractController
     }
 
     #[Route('/v1/stories', name: 'get_stories', methods: ['GET'])]
-    public function getStoriesAction()
+    public function getStoriesAction(Request $request)
     {
-        $stories = $this->storyRepository->getStories();
+        $page = $this->request->get($request, "page", false);
+        $stories = $this->storyRepository->getStories($page);
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     #[Route('/v1/stories-slug/{slug}', name: 'get_stories_slug', methods: ['GET'])]
-    public function getStoriesSlugAction(string $slug)
+    public function getStoriesSlugAction(string $slug, Request $request)
     {
-        $stories = $this->storyRepository->getStoriesBySlug($slug);
+        $page = $this->request->get($request, "page", false);
+        $stories = $this->storyRepository->getStoriesBySlug($slug, $page);
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     #[Route('/v1/posts-slug/{slug}', name: 'get_posts_slug', methods: ['GET'])]
-    public function getPostsSlugAction(string $slug)
+    public function getPostsSlugAction(string $slug, Request $request)
     {
-        $posts = $this->storyRepository->getPostsBySlug($slug);
+        $page = $this->request->get($request, "page", false);
+        $posts = $this->storyRepository->getPostsBySlug($slug, $page);
 
         return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
@@ -105,9 +108,11 @@ class StoriesController extends AbstractController
     }
 
     #[Route('/v1/posts', name: 'posts', methods: ['GET'])]
-    public function getPostsAction()
+    public function getPostsAction(Request $request)
     {
-        $posts = $this->storyRepository->getPosts();
+        $page = $this->request->get($request, "page", false);
+
+        $posts = $this->storyRepository->getPosts($page);
 
         return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
