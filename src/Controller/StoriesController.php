@@ -74,7 +74,7 @@ class StoriesController extends AbstractController
     #[Route('/v1/stories', name: 'get_stories', methods: ['GET'])]
     public function getStoriesAction(Request $request)
     {
-        $page = $this->request->get($request, "page", false);
+        $page = $this->request->get($request, "page", false) ?? 1;
         $stories = $this->storyRepository->getStories($page);
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
@@ -83,7 +83,7 @@ class StoriesController extends AbstractController
     #[Route('/v1/stories-slug/{slug}', name: 'get_stories_slug', methods: ['GET'])]
     public function getStoriesSlugAction(string $slug, Request $request)
     {
-        $page = $this->request->get($request, "page", false);
+        $page = $this->request->get($request, "page", false) ?? 1;
         $stories = $this->storyRepository->getStoriesBySlug($slug, $page);
 
         return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
@@ -92,7 +92,7 @@ class StoriesController extends AbstractController
     #[Route('/v1/posts-slug/{slug}', name: 'get_posts_slug', methods: ['GET'])]
     public function getPostsSlugAction(string $slug, Request $request)
     {
-        $page = $this->request->get($request, "page", false);
+        $page = $this->request->get($request, "page", false) ?? 1;
         $posts = $this->storyRepository->getPostsBySlug($slug, $page);
 
         return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
@@ -110,7 +110,7 @@ class StoriesController extends AbstractController
     #[Route('/v1/posts', name: 'posts', methods: ['GET'])]
     public function getPostsAction(Request $request)
     {
-        $page = $this->request->get($request, "page", false);
+        $page = $this->request->get($request, "page", false) ?? 1;
 
         $posts = $this->storyRepository->getPosts($page);
 
