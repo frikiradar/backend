@@ -197,7 +197,7 @@ class StoryRepository extends ServiceEntityRepository
             LEFT JOIN App:User u WITH s.user = u.id
             LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
             LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
-            AND s.type = 'post'
+            WHERE s.type = 'post'
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
             AND (ba.block_user != :id OR ba.block_user IS NULL)
             AND (bb.from_user != :id OR bb.from_user IS NULL)
