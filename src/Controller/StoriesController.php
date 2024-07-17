@@ -212,13 +212,7 @@ class StoriesController extends AbstractController
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
 
-            $viewed = false;
-            foreach ($story->getViewStories() as $view) {
-                if ($view->getUser()->getId() == $user->getId()) {
-                    $viewed = true;
-                }
-            }
-            if (!$viewed && $story->getUser()->getId() !== $user->getId()) {
+            if ($story->getUser()->getId() !== $user->getId() && !$story->isViewedByUser($user)) {
                 $view = new ViewStory();
                 $view->setDate(new \DateTime);
                 $view->setStory($story);
