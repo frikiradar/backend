@@ -291,12 +291,16 @@ class StoriesController extends AbstractController
                     $title = $user->getName();
                     $language = $story->getUser()->getLanguage();
                     if ($language == 'es') {
-                        $text = "A " . $user->getName() . " le ha gustado tu historia.";
+                        $text = "A " . $user->getName() . " le ha gustado tu publicación.";
                     } else {
-                        $text = $user->getName() . " has liked your story.";
+                        $text = $user->getName() . " has liked your post.";
                     }
 
-                    $url = "/tabs/explore/story/" . $story->getId();
+                    if ($story->getType() == 'story') {
+                        $url = "/tabs/explore/story/" . $story->getId();
+                    } else {
+                        $url = "/tabs/explore/post/" . $story->getId();
+                    }
 
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
                 }
@@ -367,17 +371,32 @@ class StoriesController extends AbstractController
 
                 $this->commentRepository->save($comment);
 
-                $url = "/tabs/explore/story/" . $story->getId();
+                if ($story->getType() == 'story') {
+                    $url = "/tabs/explore/story/" . $story->getId();
+                } else {
+                    $url = "/tabs/explore/post/" . $story->getId();
+                }
+
                 if (count((array) $mentions) > 0) {
                     foreach ($mentions as $mention) {
                         $toUser = $this->userRepository->findOneBy(array('username' => $mention));
                         if ($toUser->getId() !== $user->getId()) {
-                            $title = $user->getUserIdentifier() . ' te ha mencionado en una historia.';
+                            $language = $toUser->getLanguage();
+                            if ($language == 'es') {
+                                $title = $user->getUserIdentifier() . ' te ha mencionado en una publicación.';
+                            } else {
+                                $title = $user->getUserIdentifier() . ' has mentioned you in a post.';
+                            }
                             $this->notification->set($user, $toUser, $title, $text, $url, 'story');
                         }
                     }
                 } elseif ($user->getId() !== $story->getUser()->getId()) {
-                    $title = $user->getName() . ' ha comentado tu historia.';
+                    $language = $story->getUser()->getLanguage();
+                    if ($language == 'es') {
+                        $title = $user->getName() . ' ha comentado tu publicación.';
+                    } else {
+                        $title = $user->getName() . ' has commented on your post.';
+                    }
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
                 }
 
@@ -417,9 +436,19 @@ class StoriesController extends AbstractController
                 $this->commentRepository->save($comment);
 
                 if ($user->getId() !== $comment->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
+                    $language = $comment->getUser()->getLanguage();
                     $title = $user->getName();
-                    $text = "A " . $user->getName() . " le ha gustado tu comentario.";
-                    $url = "/tabs/explore/story/" . $comment->getStory()->getId();
+                    if ($language == 'es') {
+                        $text = "A " . $user->getName() . " le ha gustado tu comentario.";
+                    } else {
+                        $text = $user->getName() . " has liked your comment.";
+                    }
+
+                    if ($comment->getStory()->getType() == 'story') {
+                        $url = "/tabs/explore/story/" . $comment->getStory()->getId();
+                    } else {
+                        $url = "/tabs/explore/post/" . $comment->getStory()->getId();
+                    }
 
                     $this->notification->set($user, $comment->getUser(), $title, $text, $url, "story");
                 }
@@ -510,6 +539,12 @@ class StoriesController extends AbstractController
             $text = $story['text'];
             $id = $story['id'];
 
+            if ($story->getType() == 'story') {
+                $url = "/tabs/explore/story/" . $id;
+            } else {
+                $url = "/tabs/explore/post/" . $id;
+            }
+
             // Enviar email al administrador informando del motivo
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
@@ -517,7 +552,7 @@ class StoriesController extends AbstractController
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Historia reportada')
-                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='https://frikiradar.app/tabs/explore/story/" . $id . "'>" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
+                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='" . $url . "'" . $id . "'>" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
 
             $mailer->send($email);
 
@@ -540,6 +575,12 @@ class StoriesController extends AbstractController
             $text = $comment->getText();
             $id = $comment->getId();
 
+            if ($story->getType() == 'story') {
+                $url = "/tabs/explore/story/" . $id;
+            } else {
+                $url = "/tabs/explore/post/" . $id;
+            }
+
             // Enviar email al administrador informando del motivo
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
@@ -547,7 +588,7 @@ class StoriesController extends AbstractController
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Comentario reportado')
-                ->html("El usuario " . $user->getUsername() . " ha reportado un comentario de la historia <a href='https://frikiradar.app/tabs/explore/story/" . $story->getId() . "'>" . $story->getId() . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto del comentario: " . $text);
+                ->html("El usuario " . $user->getUsername() . " ha reportado un comentario de la historia <a href='" . $url . "'>" . $story->getId() . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto del comentario: " . $text);
 
             $mailer->send($email);
 
