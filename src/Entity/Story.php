@@ -61,6 +61,7 @@ class Story
     private ?\DateTimeInterface $time_end = null;
 
     #[ORM\Column(length: 20, options: ['default' => 'story'])]
+    #[Groups('story')]
     private ?string $type = null;
 
     #[ORM\Column(length: 7, nullable: true)]
