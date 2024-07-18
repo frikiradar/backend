@@ -69,8 +69,8 @@ class StoryRepository extends ServiceEntityRepository
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $storiesPerPage = 15; // Número de historias por página
-        $firstResult = ($page - 1) * $storiesPerPage; // Calcula el primer resultado de la página actual
+        // $storiesPerPage = 15; // Número de historias por página
+        // $firstResult = ($page - 1) * $storiesPerPage; // Calcula el primer resultado de la página actual
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
@@ -89,9 +89,9 @@ class StoryRepository extends ServiceEntityRepository
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
                 ->setParameter('slug', $slug)
-                ->setParameter('id', $user->getId())
-                ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
-                ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
+                ->setParameter('id', $user->getId());
+            // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
+            // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         } else {
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
@@ -100,9 +100,9 @@ class StoryRepository extends ServiceEntityRepository
             ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
-                ->setParameter('slug', $slug)
-                ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
-                ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
+                ->setParameter('slug', $slug);
+            // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
+            // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         }
 
         $stories = $query->getResult();
@@ -143,8 +143,8 @@ class StoryRepository extends ServiceEntityRepository
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $storiesPerPage = 15; // Número de historias por página
-        $firstResult = ($page - 1) * $storiesPerPage; // Calcula el primer resultado de la página actual
+        // $storiesPerPage = 15; // Número de historias por página
+        // $firstResult = ($page - 1) * $storiesPerPage; // Calcula el primer resultado de la página actual
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
@@ -161,18 +161,18 @@ class StoryRepository extends ServiceEntityRepository
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
-                ->setParameter('id', $user->getId())
-                ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
-                ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
+                ->setParameter('id', $user->getId());
+            // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
+            // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         } else {
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
             AND s.type = 'story'
             ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
-                ->createQuery($dql)
-                ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
-                ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
+                ->createQuery($dql);
+            // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
+            // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         }
 
         $stories = $query->getResult();
