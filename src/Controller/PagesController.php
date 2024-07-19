@@ -100,7 +100,13 @@ class PagesController extends AbstractController
                 $page = $this->pageRepository->findOneBy(array('slug' => $slug));
 
                 if (!isset($page)) {
-                    $page = $this->pageRepository->setPage($this->tagRepository->findOneBy(array('slug' => $slug)));
+                    $name = $this->pageRepository->slugToName($slug);
+                    $tag = $this->tagRepository->findOneBy(array('name' => $name));
+                    if (!isset($tag)) {
+                        throw new HttpException(404, "Página no encontrada");
+                    }
+
+                    $page = $this->pageRepository->setPage($tag);
                 }
 
                 $likes = $this->tagRepository->countTag($page->getSlug(), $page->getName(), $page->getCategory());

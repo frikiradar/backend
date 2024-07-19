@@ -686,4 +686,16 @@ class PageRepository extends ServiceEntityRepository
 
         return $slug;
     }
+
+    public function slugToName($slug)
+    {
+        $name = trim($slug);
+        $name = str_replace('-dot-', '.', $name);
+        $name = str_replace('and', '&', $name);
+        $name = str_replace('half', '½', $name);
+        $name = preg_replace('/[^a-zA-Z0-9\s]/', '', $name);
+        $name = ucwords($name);
+
+        return $name;
+    }
 }
