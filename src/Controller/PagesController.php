@@ -99,18 +99,18 @@ class PagesController extends AbstractController
             if (!$pageCache->isHit()) {
                 $page = $this->pageRepository->findOneBy(array('slug' => $slug));
 
-                if (isset($page)) {
-                    $likes = $this->tagRepository->countTag($page->getSlug(), $page->getName(), $page->getCategory());
-                    if (isset($likes['total'])) {
-                        $page->setLikes($likes['total']);
-                    }
-
-                    $pageCache->expiresAfter(3600 * 1);
-                    $pageCache->set($page);
-                    $cache->save($pageCache);
-                } else {
-                    throw new HttpException(404, "Página no encontrada");
+                if (!isset($page)) {
+                    $page = $this->pageRepository->setPage($this->tagRepository->findOneBy(array('slug' => $slug)));
                 }
+
+                $likes = $this->tagRepository->countTag($page->getSlug(), $page->getName(), $page->getCategory());
+                if (isset($likes['total'])) {
+                    $page->setLikes($likes['total']);
+                }
+
+                $pageCache->expiresAfter(3600 * 1);
+                $pageCache->set($page);
+                $cache->save($pageCache);
             } else {
                 $page = $pageCache->get();
             }

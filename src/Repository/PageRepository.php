@@ -606,6 +606,9 @@ class PageRepository extends ServiceEntityRepository
                 case 'films':
                     $result = $this->getFilmsApi($name);
                     break;
+                default:
+                    $result = [];
+                    break;
             }
 
             if (!empty($result)) {
@@ -644,9 +647,7 @@ class PageRepository extends ServiceEntityRepository
                     }
                 }
             } else {
-                // De momento no vamos a crear paginas vacías
-                // return false;
-                /*if (empty($page)) {
+                if (empty($page)) {
                     $page = new Page();
                     $page->setName($name);
                     $page->setSlug($slug);
@@ -659,7 +660,7 @@ class PageRepository extends ServiceEntityRepository
                     } catch (\Exception $ex) {
                         return false;
                     }
-                }*/
+                }
             }
         }
 
