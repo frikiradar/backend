@@ -76,14 +76,14 @@ class StoryRepository extends ServiceEntityRepository
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
             $dql = "SELECT s FROM App:Story s 
             LEFT JOIN App:User u WITH s.user = u.id
-            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
-            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            LEFT JOIN App:BlockUser ba WITH (
+                (s.user = ba.block_user AND ba.from_user = :currentUser) OR
+                (s.user = ba.from_user AND ba.block_user = :currentUser)
+            )
             WHERE s.time_creation > :yesterday 
             AND s.type = 'story'
             AND s.slug = :slug
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            AND (ba.block_user != :id OR ba.block_user IS NULL)
-            AND (bb.from_user != :id OR bb.from_user IS NULL)
             ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
@@ -150,13 +150,13 @@ class StoryRepository extends ServiceEntityRepository
             $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
             $dql = "SELECT s FROM App:Story s 
             LEFT JOIN App:User u WITH s.user = u.id
-            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
-            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            LEFT JOIN App:BlockUser ba WITH (
+                (s.user = ba.block_user AND ba.from_user = :currentUser) OR
+                (s.user = ba.from_user AND ba.block_user = :currentUser)
+            )
             WHERE s.time_creation > :yesterday 
             AND s.type = 'story'
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            AND (ba.block_user != :id OR ba.block_user IS NULL)
-            AND (bb.from_user != :id OR bb.from_user IS NULL)
             ORDER BY s.time_creation ASC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
@@ -189,24 +189,25 @@ class StoryRepository extends ServiceEntityRepository
     {
         /** @var User $user */
         $user = $this->security->getUser();
+        $page = max(1, $page); // Asegura que el número de página sea al menos 1
         $postsPerPage = 15; // Número de posts por página
         $firstResult = ($page - 1) * $postsPerPage; // Calcula el primer resultado de la página actual
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql = "SELECT s FROM App:Story s 
             LEFT JOIN App:User u WITH s.user = u.id
-            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
-            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            LEFT JOIN App:BlockUser ba WITH (
+                (s.user = ba.block_user AND ba.from_user = :currentUser) OR
+                (s.user = ba.from_user AND ba.block_user = :currentUser)
+            )
             WHERE s.type = 'post'
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            AND (ba.block_user != :id OR ba.block_user IS NULL)
-            AND (bb.from_user != :id OR bb.from_user IS NULL)
             ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
-                ->setParameter('id', $user->getId())
-                ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
-                ->setMaxResults($postsPerPage); // Limita el número de resultados a $postsPerPage
+                ->setParameter('currentUser', $user)
+                ->setFirstResult($firstResult)
+                ->setMaxResults($postsPerPage);
         } else {
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
@@ -238,13 +239,13 @@ class StoryRepository extends ServiceEntityRepository
         if (!$this->security->isGranted('ROLE_DEMO')) {
             $dql = "SELECT s FROM App:Story s 
             LEFT JOIN App:User u WITH s.user = u.id
-            LEFT JOIN App:BlockUser ba WITH s.user = ba.from_user
-            LEFT JOIN App:BlockUser bb WITH s.user = bb.block_user
+            LEFT JOIN App:BlockUser ba WITH (
+                (s.user = ba.block_user AND ba.from_user = :currentUser) OR
+                (s.user = ba.from_user AND ba.block_user = :currentUser)
+            )
             WHERE s.type = 'post'
             AND s.slug = :slug
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            AND (ba.block_user != :id OR ba.block_user IS NULL)
-            AND (bb.from_user != :id OR bb.from_user IS NULL)
             ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)

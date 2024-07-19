@@ -98,15 +98,6 @@ class StoriesController extends AbstractController
         return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
-    # TODO: Obsoleto con version 4.0, eliminar
-    #[Route('/v1/all-stories', name: 'get_all_stories', methods: ['GET'])]
-    public function getAllStoriesAction()
-    {
-        $stories = $this->storyRepository->getStories();
-
-        return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
-    }
-
     #[Route('/v1/posts', name: 'posts', methods: ['GET'])]
     public function getPostsAction(Request $request)
     {
