@@ -89,7 +89,7 @@ class StoryRepository extends ServiceEntityRepository
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
                 ->setParameter('slug', $slug)
-                ->setParameter('id', $user->getId());
+                ->setParameter('currentUser', $user->getId());
             // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
             // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         } else {
@@ -161,7 +161,7 @@ class StoryRepository extends ServiceEntityRepository
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
-                ->setParameter('id', $user->getId());
+                ->setParameter('currentUser', $user->getId());
             // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
             // ->setMaxResults($storiesPerPage); // Limita el número de resultados a $storiesPerPage
         } else {
@@ -250,7 +250,7 @@ class StoryRepository extends ServiceEntityRepository
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('slug', $slug)
-                ->setParameter('id', $user->getId())
+                ->setParameter('currentUser', $user->getId())
                 ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
                 ->setMaxResults($postsPerPage); // Limita el número de resultados a $postsPerPage
         } else {
