@@ -75,6 +75,21 @@ class PagesController extends AbstractController
         }
     }
 
+    // Buscar páginas por nombre
+    #[Route('/v1/pages-search', name: 'search_pages', methods: ['GET'])]
+    public function searchPages(Request $request)
+    {
+        $query = $this->request->get($request, "query", false) ?? null;
+
+        try {
+            $pages = $this->pageRepository->searchPages($query);
+
+            return new JsonResponse($this->serializer->serialize($pages, "json", ['groups' => 'default']), Response::HTTP_OK, [], true);
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Error al obtener las páginas - Error: {$ex->getMessage()}");
+        }
+    }
+
     #[Route('/v1/page/{slug}', name: 'page', methods: ['GET'])]
     public function getPage(string $slug)
     {

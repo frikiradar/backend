@@ -157,6 +157,51 @@ class PageRepository extends ServiceEntityRepository
         return $pages;
     }
 
+    public function searchPages(string $query)
+    {
+        // Buscamos etiquetas que contengan el nombre
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->createQueryBuilder('t')
+            ->select(array(
+                't.name',
+                't.slug',
+                'COUNT(t) likes'
+            ))
+            ->where('t.name LIKE :name')
+            ->groupBy('t.name')
+            ->orderBy('likes', 'DESC')
+            ->setParameter('name', '%' . $query . '%')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        // Buscamos los tags en las páginas medainte el slug y añadimos la información extra
+        $pages = $this->em->getRepository(\App\Entity\Page::class)->createQueryBuilder('p')
+            ->select(array(
+                'p.name',
+                'p.slug',
+                'p.cover',
+            ))
+            ->where('p.slug IN (:slugs)')
+            ->andWhere('p.cover IS NOT NULL')
+            ->setParameter('slugs', array_column($tags, 'slug'))
+            ->getQuery()
+            ->getResult();
+
+        foreach ($tags as $key => $tag) {
+            foreach ($pages as $page) {
+                if ($tag['slug'] == $page['slug']) {
+                    $tags[$key]['name'] = $page['name'];
+                    $tags[$key]['cover'] = $page['cover'];
+                    $tags[$key]['slug'] = $page['slug'];
+                } else {
+                    $tags[$key]['slug'] = $this->nameToSlug($tag['name']);
+                }
+            }
+        }
+
+        return $tags;
+    }
+
     public function getGamesApi($name)
     {
         $name = strtolower($name);
