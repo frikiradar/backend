@@ -130,6 +130,16 @@ class StoriesController extends AbstractController
         }
     }
 
+    #[Route('/v1/user-posts/{id}', name: 'get_user_posts', methods: ['GET'])]
+    public function getUserPostsAction(int $id, Request $request)
+    {
+        $page = $this->request->get($request, "page", false) ?? 1;
+        $user = $this->userRepository->findOneBy(array('id' => $id));
+        $posts = $this->storyRepository->getUserPosts($user, $page);
+
+        return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
+    }
+
     #[Route('/v1/story/{id}', name: 'get_story', methods: ['GET'])]
     public function getStoryAction(int $id)
     {

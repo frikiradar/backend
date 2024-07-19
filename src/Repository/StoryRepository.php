@@ -275,4 +275,30 @@ class StoryRepository extends ServiceEntityRepository
 
         return $posts;
     }
+
+    public function getUserPosts(User $user, $page = 1)
+    {
+        $page = max(1, $page);
+        $postsPerPage = 15;
+        $firstResult = ($page - 1) * $postsPerPage;
+
+        $dql = "SELECT s FROM App:Story s
+            WHERE s.user = :id
+            AND s.type = 'post'
+            ORDER BY s.time_creation DESC";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('id', $user->getId())
+            ->setFirstResult($firstResult)
+            ->setMaxResults($postsPerPage);
+
+        $posts = $query->getResult();
+
+        foreach ($posts as $post) {
+            $post->setLike($post->isLikedByUser($user));
+            $post->setViewed($post->isViewedByUser($user));
+        }
+
+        return $posts;
+    }
 }
