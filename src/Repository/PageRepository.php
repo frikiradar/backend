@@ -71,11 +71,13 @@ class PageRepository extends ServiceEntityRepository
         $tags = $this->em->getRepository(\App\Entity\Tag::class)->createQueryBuilder('t')
             ->select(array(
                 't.slug',
-                'COUNT(t) total'
+                'COUNT(t) likes'
             ))
+            ->join('t.user', 'u')
             ->andWhere('t.slug IN (:slugs)')
+            ->andWhere('u.active = TRUE')
             ->groupBy('t.slug')
-            ->orderBy('total', 'DESC')
+            ->orderBy('likes', 'DESC')
             ->setParameter('slugs', $userSlugs)
             ->setMaxResults($limit)
             ->getQuery()
@@ -83,7 +85,7 @@ class PageRepository extends ServiceEntityRepository
 
         $slugs = [];
         foreach ($tags as $tag) {
-            $slugs[$tag['slug']] = $tag['total'];
+            $slugs[$tag['slug']] = $tag['likes'];
         }
         $this->slugs = $slugs;
 
@@ -119,19 +121,20 @@ class PageRepository extends ServiceEntityRepository
         $tags = $this->em->getRepository(\App\Entity\Tag::class)->createQueryBuilder('t')
             ->select(array(
                 't.slug',
-                'COUNT(t) total'
+                'COUNT(t) likes'
             ))
+            ->join('t.user', 'u')
             ->andWhere('t.slug NOT IN (:slugs)')
+            ->andWhere('u.active = TRUE')
             ->groupBy('t.slug')
-            ->orderBy('total', 'DESC')
+            ->orderBy('likes', 'DESC')
             ->setParameter('slugs', $userSlugs)
-            // ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
 
         $slugs = [];
         foreach ($tags as $tag) {
-            $slugs[$tag['slug']] = $tag['total'];
+            $slugs[$tag['slug']] = $tag['likes'];
         }
         $this->slugs = $slugs;
 
@@ -141,7 +144,6 @@ class PageRepository extends ServiceEntityRepository
 
         $queryBuilder = $this->createQueryBuilder('p')
             ->where('p.slug IN (:slugs)')
-            ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_keys($slugs));
 
         $pages = $queryBuilder->getQuery()->getResult();
@@ -164,13 +166,17 @@ class PageRepository extends ServiceEntityRepository
             ->select(array(
                 't.name',
                 't.slug',
-                'COUNT(t) likes'
+                'c.name AS category',
+                'COUNT(t) AS likes'
             ))
+            ->join('t.user', 'u')
+            ->leftJoin('t.category', 'c') // Añade un LEFT JOIN para la relación category
             ->where('t.name LIKE :name')
-            ->groupBy('t.name')
+            ->andWhere('u.active = TRUE')
+            ->groupBy('t.slug', 'c.name') // Asegúrate de agrupar también por los campos de las entidades relacionadas si son parte de la selección
             ->orderBy('likes', 'DESC')
             ->setParameter('name', '%' . $query . '%')
-            ->setMaxResults(5)
+            ->setMaxResults(15)
             ->getQuery()
             ->getResult();
 
@@ -188,14 +194,18 @@ class PageRepository extends ServiceEntityRepository
             ->getResult();
 
         foreach ($tags as $key => $tag) {
+            $found = false;
             foreach ($pages as $page) {
                 if ($tag['slug'] == $page['slug']) {
                     $tags[$key]['name'] = $page['name'];
                     $tags[$key]['cover'] = $page['cover'];
                     $tags[$key]['slug'] = $page['slug'];
-                } else {
-                    $tags[$key]['slug'] = $this->nameToSlug($tag['name']);
+                    $found = true;
+                    break;
                 }
+            }
+            if (!$found) {
+                $tags[$key]['slug'] = $this->nameToSlug($tag['name']);
             }
         }
 

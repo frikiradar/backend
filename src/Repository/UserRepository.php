@@ -486,7 +486,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->andWhere($lovegender ? "u.gender IN (:lovegender) AND (u.lovegender LIKE '%" . $gender . "%' OR u.lovegender IS NULL)" : 'u.gender <> :lovegender OR u.gender IS NULL')
                 ->setParameter('lovegender', $lovegender ?: 1)
                 ->andWhere('DATE_DIFF(CURRENT_DATE(), u.last_login) <= :lastlogin')
-                ->setParameter('lastlogin', 15); // 15 dias;
+                ->setParameter('lastlogin', 60); // 60 dias;
 
             if (!$isSlug) {
                 $dql->andWhere('t.name LIKE :search OR u.name LIKE :search OR u.username LIKE :search')
