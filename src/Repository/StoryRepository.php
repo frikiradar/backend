@@ -281,6 +281,9 @@ class StoryRepository extends ServiceEntityRepository
 
     public function getUserPosts(User $user, $page = 1)
     {
+        /** @var User $user */
+        $me = $this->security->getUser();
+
         $page = max(1, $page);
         $postsPerPage = 15;
         $firstResult = ($page - 1) * $postsPerPage;
@@ -298,8 +301,8 @@ class StoryRepository extends ServiceEntityRepository
         $posts = $query->getResult();
 
         foreach ($posts as $post) {
-            $post->setLike($post->isLikedByUser($user));
-            $post->setViewed($post->isViewedByUser($user));
+            $post->setLike($post->isLikedByUser($me));
+            $post->setViewed($post->isViewedByUser($me));
         }
 
         return $posts;
