@@ -111,23 +111,9 @@ class StoriesController extends AbstractController
     #[Route('/v1/user-stories/{id}', name: 'get_user_stories', methods: ['GET'])]
     public function getUserStoriesAction(int $id)
     {
-        $cache = new FilesystemAdapter();
-        try {
-            $storiesCache = $cache->getItem('stories.get.' . $id);
-            if (!$storiesCache->isHit()) {
-                $storiesCache->expiresAfter(3600 * 24);
-                $user = $this->userRepository->findOneBy(array('id' => $id));
-                $stories = $this->storyRepository->getUserStories($user);
-                $stories = $this->serializer->serialize($stories, "json", ['groups' => ['story']]);
-                $storiesCache->set($stories);
-                $cache->save($storiesCache);
-            } else {
-                $stories = $storiesCache->get();
-            }
-            return new Response($stories);
-        } catch (Exception $ex) {
-            throw new HttpException(400, "Error al obtener las historias del usuario - Error: {$ex->getMessage()}");
-        }
+        $user = $this->userRepository->findOneBy(array('id' => $id));
+        $stories = $this->storyRepository->getUserStories($user);
+        return new JsonResponse($this->serializer->serialize($stories, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }
 
     #[Route('/v1/user-posts/{id}', name: 'get_user_posts', methods: ['GET'])]

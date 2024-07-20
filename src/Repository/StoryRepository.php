@@ -84,7 +84,7 @@ class StoryRepository extends ServiceEntityRepository
             AND s.type = 'story'
             AND s.slug = :slug
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
@@ -97,7 +97,7 @@ class StoryRepository extends ServiceEntityRepository
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
             AND s.type = 'story'
             AND s.slug = :slug
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('slug', $slug);
@@ -117,12 +117,15 @@ class StoryRepository extends ServiceEntityRepository
 
     public function getUserStories(User $user)
     {
+        /** @var User $user */
+        $me = $this->security->getUser();
+
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
         $dql = "SELECT s FROM App:Story s
             WHERE s.user = :id
             AND s.time_creation > :yesterday
             AND s.type = 'story'
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $user->getId())
@@ -131,8 +134,8 @@ class StoryRepository extends ServiceEntityRepository
         $stories = $query->getResult();
 
         foreach ($stories as $story) {
-            $story->setLike($story->isLikedByUser($user));
-            $story->setViewed($story->isViewedByUser($user));
+            $story->setLike($story->isLikedByUser($me));
+            $story->setViewed($story->isViewedByUser($me));
         }
 
         return $stories;
@@ -157,7 +160,7 @@ class StoryRepository extends ServiceEntityRepository
             WHERE s.time_creation > :yesterday 
             AND s.type = 'story'
             AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql)
                 ->setParameter('yesterday', $yesterday)
@@ -168,7 +171,7 @@ class StoryRepository extends ServiceEntityRepository
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
             AND s.type = 'story'
-            ORDER BY s.time_creation ASC";
+            ORDER BY s.time_creation DESC";
             $query = $this->getEntityManager()
                 ->createQuery($dql);
             // ->setFirstResult($firstResult) // Establece el primer resultado de la consulta
