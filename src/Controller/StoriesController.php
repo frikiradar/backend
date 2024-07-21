@@ -289,9 +289,9 @@ class StoriesController extends AbstractController
                     }
 
                     if ($story->getType() == 'story') {
-                        $url = "/tabs/explore/story/" . $story->getId();
+                        $url = "/story/" . $story->getId();
                     } else {
-                        $url = "/tabs/explore/post/" . $story->getId();
+                        $url = "/post/" . $story->getId();
                     }
 
                     $this->notification->set($user, $story->getUser(), $title, $text, $url, "story");
@@ -364,9 +364,9 @@ class StoriesController extends AbstractController
                 $this->commentRepository->save($comment);
 
                 if ($story->getType() == 'story') {
-                    $url = "/tabs/explore/story/" . $story->getId();
+                    $url = "/story/" . $story->getId();
                 } else {
-                    $url = "/tabs/explore/post/" . $story->getId();
+                    $url = "/post/" . $story->getId();
                 }
 
                 if (count((array) $mentions) > 0) {
@@ -437,9 +437,9 @@ class StoriesController extends AbstractController
                     }
 
                     if ($comment->getStory()->getType() == 'story') {
-                        $url = "/tabs/explore/story/" . $comment->getStory()->getId();
+                        $url = "/story/" . $comment->getStory()->getId();
                     } else {
-                        $url = "/tabs/explore/post/" . $comment->getStory()->getId();
+                        $url = "/post/" . $comment->getStory()->getId();
                     }
 
                     $this->notification->set($user, $comment->getUser(), $title, $text, $url, "story");
@@ -532,9 +532,9 @@ class StoriesController extends AbstractController
             $id = $story['id'];
 
             if ($story->getType() == 'story') {
-                $url = "/tabs/explore/story/" . $id;
+                $url = "/story/" . $id;
             } else {
-                $url = "/tabs/explore/post/" . $id;
+                $url = "/post/" . $id;
             }
 
             // Enviar email al administrador informando del motivo
@@ -568,9 +568,9 @@ class StoriesController extends AbstractController
             $id = $comment->getId();
 
             if ($story->getType() == 'story') {
-                $url = "/tabs/explore/story/" . $id;
+                $url = "/story/" . $id;
             } else {
-                $url = "/tabs/explore/post/" . $id;
+                $url = "/post/" . $id;
             }
 
             // Enviar email al administrador informando del motivo
