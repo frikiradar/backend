@@ -855,4 +855,41 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return false;
         }
     }
+
+    // sacamos la lista de usuarios (entity completa sin dql, con doctrine) que han dado like a un usuario o que le gusta el slug, lo tiene en sus tags
+    public function getInterestedUsers($fromUser, $slug)
+    {
+        return $this->createQueryBuilder('u')
+            ->select([
+                'u.id',
+                'u.username',
+                'u.name',
+                'u.description',
+                'u.active',
+                'u.verified',
+                'u.banned',
+                'u.avatar',
+                'u.thumbnail',
+                'u.roles',
+                'u.language',
+                'CASE WHEN l.to_user IS NOT NULL THEN \'like\' ELSE \'slug\' END AS interestType'
+            ])
+            ->leftJoin('App:LikeUser', 'l', 'WITH', 'u.id = l.from_user AND l.to_user = :fromUser')
+            ->leftJoin('App:Tag', 't', 'WITH', 'u.id = t.user AND t.slug = :slug')
+            ->leftJoin('App:BlockUser', 'ba', 'WITH', '(u.id = ba.block_user AND ba.from_user = :currentUser) OR (u.id = ba.from_user AND ba.block_user = :currentUser)')
+            ->andWhere('(l.to_user = :fromUser OR t.slug = :slug)')
+            ->andWhere('u.active = 1')
+            ->andWhere('u.public = 1')
+            ->andWhere('u.banned <> 1')
+            ->andWhere('u.id <> :fromUser')
+            ->andWhere('ba.id IS NULL')
+            ->groupBy('u.id')
+            ->setParameters([
+                'fromUser' => $fromUser,
+                'slug' => $slug,
+                'currentUser' => $fromUser
+            ])
+            ->getQuery()
+            ->getResult();
+    }
 }

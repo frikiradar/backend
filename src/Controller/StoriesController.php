@@ -184,7 +184,51 @@ class StoriesController extends AbstractController
                 $story->setTimeEnd(new \DateTime('+1 day'));
             }
             $story->setType($type);
+
             $this->storyRepository->save($story);
+
+            if ($type === 'story') {
+                $url = "/story/" . $story->getId();
+            } else {
+                $url = "/post/" . $story->getId();
+            }
+
+            // notificamos a personas interesadas: bien porque le han dado kokoro al usuario o porque tiene intereses en el slug
+            $users = $this->userRepository->getInterestedUsers($fromUser, $slug);
+            foreach ($users as $userData) {
+                $userId = $userData['id']; // Obten el ID del usuario del array
+                $toUser = $this->userRepository->find($userId); // Obten la entidad User
+
+                if ($toUser && $toUser->getId() !== $fromUser->getId()) {
+                    $language = $userData['language'];
+
+                    $title = $fromUser->getName();
+                    if ($userData['interestType'] === 'slug') {
+                        if ($type === 'story') {
+                            $text = $language == 'es'
+                                ? " compartió una historia sobre " . $slug
+                                : " shared a story about " . $slug;
+                        } elseif ($type === 'post') {
+                            $text = $language == 'es'
+                                ? " compartió un post sobre " . $slug
+                                : " shared a post about " . $slug;
+                        }
+                    } else { // 'like'
+                        if ($type === 'story') {
+                            $text = $language == 'es'
+                                ? " compartió una historia que te podría interesar."
+                                : " shared a story you might be interested in.";
+                        } elseif ($type === 'post') {
+                            $text = $language == 'es'
+                                ? " compartió un post que te podría interesar."
+                                : " shared a post you might be interested in.";
+                        }
+                    }
+
+                    // Asegúrate de que $toUser es una instancia de App\Entity\User
+                    $this->notification->set($fromUser, $toUser, $title, $text, $url, "suggestions");
+                }
+            }
 
             $data = [
                 'code' => 200,
