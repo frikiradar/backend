@@ -216,12 +216,12 @@ class StoriesController extends AbstractController
                     } else { // 'like'
                         if ($type === 'story') {
                             $text = $language == 'es'
-                                ? $fromUser->getName() . " a quien le has dado kokoro, compartió una historia que te podría interesar."
-                                : $fromUser->getName() . " who you've given kokoro, shared a story you might be interested in.";
+                                ? $fromUser->getName() . ", a quien le has dado kokoro, compartió una historia que te podría interesar."
+                                : $fromUser->getName() . ", who you've given kokoro, shared a story you might be interested in.";
                         } elseif ($type === 'post') {
                             $text = $language == 'es'
-                                ? $fromUser->getName() . " a quien le has dado kokoro, compartió un post que te podría interesar."
-                                : $fromUser->getName() . " who you've given kokoro, shared a post you might be interested in.";
+                                ? $fromUser->getName() . ", a quien le has dado kokoro, compartió un post que te podría interesar."
+                                : $fromUser->getName() . ", who you've given kokoro, shared a post you might be interested in.";
                         }
                     }
 
