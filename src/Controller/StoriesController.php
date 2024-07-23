@@ -202,26 +202,26 @@ class StoriesController extends AbstractController
                 if ($toUser && $toUser->getId() !== $fromUser->getId()) {
                     $language = $userData['language'];
 
-                    $title = $fromUser->getName();
+                    $title = 'frikiradar';
                     if ($userData['interestType'] === 'slug') {
                         if ($type === 'story') {
                             $text = $language == 'es'
-                                ? "Compartió una historia sobre " . $slug . " que te podría interesar."
-                                : "Shared a story about " . $slug . " you might be interested in.";
+                                ? $fromUser->getName() . " compartió una historia sobre " . $slug . " que te podría interesar."
+                                : $fromUser->getName() . " shared a story about " . $slug . " you might be interested in.";
                         } elseif ($type === 'post') {
                             $text = $language == 'es'
-                                ? "Compartió un post sobre " . $slug . " que te podría interesar."
-                                : "Shared a post about " . $slug . " you might be interested in.";
+                                ? $fromUser->getName() . " compartió un post sobre " . $slug . " que te podría interesar."
+                                : $fromUser->getName() . " shared a post about " . $slug . " you might be interested in.";
                         }
                     } else { // 'like'
                         if ($type === 'story') {
                             $text = $language == 'es'
-                                ? "Alguien a quien le has dado kokoro compartió una historia que te podría interesar."
-                                : "Someone you've given kokoro to shared a story you might be interested in.";
+                                ? $fromUser->getName() . " a quien le has dado kokoro, compartió una historia que te podría interesar."
+                                : $fromUser->getName() . " who you've given kokoro, shared a story you might be interested in.";
                         } elseif ($type === 'post') {
                             $text = $language == 'es'
-                                ? "Alguien a quien le has dado kokoro compartió un post que te podría interesar."
-                                : "Someone you've given kokoro to shared a post you might be interested in.";
+                                ? $fromUser->getName() . " a quien le has dado kokoro, compartió un post que te podría interesar."
+                                : $fromUser->getName() . " who you've given kokoro, shared a post you might be interested in.";
                         }
                     }
 
