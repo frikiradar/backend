@@ -565,7 +565,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 if (
                     in_array($type, ['radar-cards', 'radar-list']) &&
                     isset($users[$key]['distance']) && $users[$key]['distance'] <= 50 &&
-                    $users[$key]['match'] > 0 &&
+                    $users[$key]['match'] >= 50 &&
                     (in_array($fromUser->getGender(), $u['lovegender']))
                 ) {
                     if (empty($this->em->getRepository(\App\Entity\Radar::class)->findById($fromUser->getId(), $u['id']))) {
