@@ -563,7 +563,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
                 if (
-                    $type == 'radar' &&
+                    in_array($type, ['radar-cards', 'radar-list']) &&
                     isset($users[$key]['distance']) && $users[$key]['distance'] <= 50 &&
                     $users[$key]['match'] > 0 &&
                     (in_array($fromUser->getGender(), $u['lovegender']))
