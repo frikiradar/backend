@@ -190,6 +190,7 @@ class PageRepository extends ServiceEntityRepository
             ->where('p.slug IN (:slugs)')
             ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_column($tags, 'slug'))
+            ->groupBy('p.slug')
             ->getQuery()
             ->getResult();
 
