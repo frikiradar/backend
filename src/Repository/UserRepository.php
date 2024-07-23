@@ -562,18 +562,26 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
             if (!$this->security->isGranted('ROLE_DEMO')) {
                 // Si distance es <= 5 y afinidad >= 90 y entonces enviamos notificacion
-                if ($type == 'radar' && isset($users[$key]['distance']) && $users[$key]['distance'] <= 50 && $users[$key]['match'] >= 75 && (in_array($fromUser->getGender(), $u['lovegender']))) {
+                if (
+                    $type == 'radar' &&
+                    isset($users[$key]['distance']) && $users[$key]['distance'] <= 50 &&
+                    $users[$key]['match'] > 0 &&
+                    (in_array($fromUser->getGender(), $u['lovegender']))
+                ) {
                     if (empty($this->em->getRepository(\App\Entity\Radar::class)->findById($fromUser->getId(), $u['id']))) {
                         $toUser = $this->findOneBy(array('id' => $u['id']));
-                        if (in_array('ROLE_PREMIUM', $toUser->getRoles()) || in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
+                        if (/*in_array('ROLE_PREMIUM', $toUser->getRoles()) || */in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
                             $radar = new Radar();
                             $radar->setFromUser($fromUser);
                             $radar->setToUser($toUser);
                             $this->em->persist($radar);
                             $this->em->flush();
 
+                            $language = $toUser->getLanguage() ? $toUser->getLanguage() : 'es';
+
                             $title = $fromUser->getUsername();
-                            $text = "💓Doki doki ¡El frikiradar ha detectado a alguien interesante cerca!";
+                            $text = $language == 'es' ? "💓Doki doki ¡El frikiradar ha detectado a alguien interesante cerca!" :
+                                "💓Doki doki! The frikiradar has detected someone interesting nearby!";
                             $url = "/profile/" . $fromUser->getId();
                             $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
                         }
