@@ -206,22 +206,22 @@ class StoriesController extends AbstractController
                     if ($userData['interestType'] === 'slug') {
                         if ($type === 'story') {
                             $text = $language == 'es'
-                                ? " compartió una historia sobre " . $slug
-                                : " shared a story about " . $slug;
+                                ? "Compartió una historia sobre " . $slug . " que te podría interesar."
+                                : "Shared a story about " . $slug . " you might be interested in.";
                         } elseif ($type === 'post') {
                             $text = $language == 'es'
-                                ? " compartió un post sobre " . $slug
-                                : " shared a post about " . $slug;
+                                ? "Compartió un post sobre " . $slug . " que te podría interesar."
+                                : "Shared a post about " . $slug . " you might be interested in.";
                         }
                     } else { // 'like'
                         if ($type === 'story') {
                             $text = $language == 'es'
-                                ? " compartió una historia que te podría interesar."
-                                : " shared a story you might be interested in.";
+                                ? "Alguien a quien le has dado kokoro compartió una historia que te podría interesar."
+                                : "Someone you've given kokoro to shared a story you might be interested in.";
                         } elseif ($type === 'post') {
                             $text = $language == 'es'
-                                ? " compartió un post que te podría interesar."
-                                : " shared a post you might be interested in.";
+                                ? "Alguien a quien le has dado kokoro compartió un post que te podría interesar."
+                                : "Someone you've given kokoro to shared a post you might be interested in.";
                         }
                     }
 
