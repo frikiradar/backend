@@ -70,7 +70,7 @@ class NotificationService extends AbstractController
             $notification = Notification::fromArray([
                 'title' => $title,
                 'body' => $text,
-                // 'image' => $fromUser->getAvatar()
+                'image' => $fromUser->getThumbnail()
             ]);
 
             $data = [
@@ -99,8 +99,7 @@ class NotificationService extends AbstractController
                     'tag' => $tag,
                     'channel_id' => $type,
                     'icon' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
-                    'color' => '#e91e63',
-                    'image' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                    'color' => '#e91e63'
                 ],
                 'collapse_key' => $tag
             ]);
