@@ -99,7 +99,8 @@ class NotificationService extends AbstractController
                     'tag' => $tag,
                     'channel_id' => $type,
                     'icon' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
-                    'color' => '#e91e63'
+                    'color' => '#e91e63',
+                    'image' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
                 ],
                 'collapse_key' => $tag
             ]);
