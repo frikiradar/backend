@@ -193,40 +193,42 @@ class StoriesController extends AbstractController
                 $url = "/post/" . $story->getId();
             }
 
-            // notificamos a personas interesadas: bien porque le han dado kokoro al usuario o porque tiene intereses en el slug
-            $users = $this->userRepository->getInterestedUsers($fromUser, $slug);
-            foreach ($users as $userData) {
-                $userId = $userData['id']; // Obten el ID del usuario del array
-                $toUser = $this->userRepository->find($userId); // Obten la entidad User
+            if ($fromUser->getId() !== 1) {
+                // notificamos a personas interesadas: bien porque le han dado kokoro al usuario o porque tiene intereses en el slug
+                $users = $this->userRepository->getInterestedUsers($fromUser, $slug);
+                foreach ($users as $userData) {
+                    $userId = $userData['id']; // Obten el ID del usuario del array
+                    $toUser = $this->userRepository->find($userId); // Obten la entidad User
 
-                if ($toUser && $toUser->getId() !== $fromUser->getId() && in_array($fromUser->getGender(), $toUser->getLovegender())) {
-                    $language = $userData['language'];
+                    if ($toUser && $toUser->getId() !== $fromUser->getId() && in_array($fromUser->getGender(), $toUser->getLovegender())) {
+                        $language = $userData['language'];
 
-                    $title = $fromUser->getName();
-                    if ($userData['interestType'] === 'slug') {
-                        if ($type === 'story') {
-                            $text = $language == 'es'
-                                ? $fromUser->getName() . " compartió una historia sobre " . $slug . " que te podría interesar."
-                                : $fromUser->getName() . " shared a story about " . $slug . " you might be interested in.";
-                        } elseif ($type === 'post') {
-                            $text = $language == 'es'
-                                ? $fromUser->getName() . " compartió un post sobre " . $slug . " que te podría interesar."
-                                : $fromUser->getName() . " shared a post about " . $slug . " you might be interested in.";
+                        $title = $fromUser->getName();
+                        if ($userData['interestType'] === 'slug') {
+                            if ($type === 'story') {
+                                $text = $language == 'es'
+                                    ? $fromUser->getName() . " compartió una historia sobre " . $slug . " que te podría interesar."
+                                    : $fromUser->getName() . " shared a story about " . $slug . " you might be interested in.";
+                            } elseif ($type === 'post') {
+                                $text = $language == 'es'
+                                    ? $fromUser->getName() . " compartió un post sobre " . $slug . " que te podría interesar."
+                                    : $fromUser->getName() . " shared a post about " . $slug . " you might be interested in.";
+                            }
+                        } else { // 'like'
+                            if ($type === 'story') {
+                                $text = $language == 'es'
+                                    ? $fromUser->getName() . ", a quien le has dado kokoro, compartió una historia que te podría interesar."
+                                    : $fromUser->getName() . ", who you've given kokoro, shared a story you might be interested in.";
+                            } elseif ($type === 'post') {
+                                $text = $language == 'es'
+                                    ? $fromUser->getName() . ", a quien le has dado kokoro, compartió un post que te podría interesar."
+                                    : $fromUser->getName() . ", who you've given kokoro, shared a post you might be interested in.";
+                            }
                         }
-                    } else { // 'like'
-                        if ($type === 'story') {
-                            $text = $language == 'es'
-                                ? $fromUser->getName() . ", a quien le has dado kokoro, compartió una historia que te podría interesar."
-                                : $fromUser->getName() . ", who you've given kokoro, shared a story you might be interested in.";
-                        } elseif ($type === 'post') {
-                            $text = $language == 'es'
-                                ? $fromUser->getName() . ", a quien le has dado kokoro, compartió un post que te podría interesar."
-                                : $fromUser->getName() . ", who you've given kokoro, shared a post you might be interested in.";
-                        }
+
+                        // Asegúrate de que $toUser es una instancia de App\Entity\User
+                        $this->notification->set($fromUser, $toUser, $title, $text, $url, "suggestions");
                     }
-
-                    // Asegúrate de que $toUser es una instancia de App\Entity\User
-                    $this->notification->set($fromUser, $toUser, $title, $text, $url, "suggestions");
                 }
             }
 

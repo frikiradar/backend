@@ -883,12 +883,14 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('u.id <> :fromUser')
             ->andWhere('ba.id IS NULL')
             ->andWhere('u.last_login > :days') // Condición para la fecha de última conexión
+            ->andWhere('u.roles NOT LIKE :roleDemo')
             ->groupBy('u.id')
             ->setParameters([
                 'fromUser' => $fromUser,
                 'slug' => $slug,
                 'currentUser' => $fromUser,
-                'days' => $days // Parámetro para la fecha de hace 5 días
+                'days' => $days, // Parámetro para la fecha de hace 5 días
+                'roleDemo' => '%ROLE_DEMO%'
             ])
             ->getQuery()
             ->getResult();
