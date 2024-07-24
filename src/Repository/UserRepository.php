@@ -866,7 +866,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function getInterestedUsers($fromUser, $slug)
     {
-        $week = new \DateTime('-7 days');
+        $days = new \DateTime('-5 days');
 
         return $this->createQueryBuilder('u')
             ->select([
@@ -882,13 +882,13 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->andWhere('u.banned <> 1')
             ->andWhere('u.id <> :fromUser')
             ->andWhere('ba.id IS NULL')
-            ->andWhere('u.last_login > :week') // Condición para la fecha de última conexión
+            ->andWhere('u.last_login > :days') // Condición para la fecha de última conexión
             ->groupBy('u.id')
             ->setParameters([
                 'fromUser' => $fromUser,
                 'slug' => $slug,
                 'currentUser' => $fromUser,
-                'week' => $week // Parámetro para la fecha de hace 5 días
+                'days' => $days // Parámetro para la fecha de hace 5 días
             ])
             ->getQuery()
             ->getResult();
