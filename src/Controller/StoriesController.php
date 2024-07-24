@@ -146,6 +146,22 @@ class StoriesController extends AbstractController
         }
     }
 
+    #[Route('/public-story/{id}', name: 'get_public_story', methods: ['GET'])]
+    public function getPublicStoryAction(int $id)
+    {
+        try {
+            $story = $this->storyRepository->findOneBy(array('id' => $id));
+
+            if (!is_null($story)) {
+                return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
+            } else {
+                throw new HttpException(400, "Historia no encontrada");
+            }
+        } catch (Exception $ex) {
+            throw new HttpException(400, "Historia no encontrada - Error: {$ex->getMessage()}");
+        }
+    }
+
 
     #[Route('/v1/story-upload', name: 'story_upload', methods: ['POST'])]
     public function upload(Request $request)
