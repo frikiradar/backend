@@ -77,13 +77,13 @@ class NotificationService extends AbstractController
                 'fromUser' => (string) $fromUser->getId(),
                 'toUser' => (string) $toUser->getId(),
                 'url' => $url,
-                'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
+                'icon' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png',
                 'badge' => 'https://api.frikiradar.com/images/notification/notification_icon.png',
                 'topic' => $type,
                 // 'notification_foreground' => "true",
                 'notification_body' => $text,
                 'notification_title' => $title,
-                'notification_image' => $fromUser->getAvatar(),
+                'notification_image' => $fromUser->getThumbnail(),
                 'notification_android_icon' => 'https://api.frikiradar.com/images/notification/logo_icon.png',
                 'message' => $message,
                 'notify' => "true"
@@ -98,7 +98,7 @@ class NotificationService extends AbstractController
                     'sound' => "default",
                     'tag' => $tag,
                     'channel_id' => $type,
-                    'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
+                    'icon' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/notification_icon.png',
                     'color' => '#e91e63'
                 ],
                 'collapse_key' => $tag
@@ -114,7 +114,7 @@ class NotificationService extends AbstractController
                     ],
                 ],
                 'fcm_options' => [
-                    'image' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                    'image' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
                 ]
             ]);
 
@@ -122,7 +122,7 @@ class NotificationService extends AbstractController
                 'notification' => [
                     'title' => $title,
                     'body' => $text,
-                    'icon' => $fromUser->getAvatar() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
+                    'icon' => $fromUser->getThumbnail() ?: 'https://api.frikiradar.com/images/notification/logo_icon.png'
                 ],
                 'fcm_options' => [
                     'link' => 'https://frikiradar.app' . $url
