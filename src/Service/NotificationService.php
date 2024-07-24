@@ -70,7 +70,7 @@ class NotificationService extends AbstractController
             $notification = Notification::fromArray([
                 'title' => $title,
                 'body' => $text,
-                'image' => $fromUser->getAvatar()
+                // 'image' => $fromUser->getAvatar()
             ]);
 
             $data = [
