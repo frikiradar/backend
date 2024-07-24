@@ -199,10 +199,10 @@ class StoriesController extends AbstractController
                 $userId = $userData['id']; // Obten el ID del usuario del array
                 $toUser = $this->userRepository->find($userId); // Obten la entidad User
 
-                if ($toUser && $toUser->getId() !== $fromUser->getId()) {
+                if ($toUser && $toUser->getId() !== $fromUser->getId() && in_array($fromUser->getGender(), $toUser->getLovegender())) {
                     $language = $userData['language'];
 
-                    $title = 'frikiradar';
+                    $title = $fromUser->getName();
                     if ($userData['interestType'] === 'slug') {
                         if ($type === 'story') {
                             $text = $language == 'es'

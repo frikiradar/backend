@@ -570,21 +570,21 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ) {
                     if (empty($this->em->getRepository(\App\Entity\Radar::class)->findById($fromUser->getId(), $u['id']))) {
                         $toUser = $this->findOneBy(array('id' => $u['id']));
-                        if (/*in_array('ROLE_PREMIUM', $toUser->getRoles()) || */in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
-                            $radar = new Radar();
-                            $radar->setFromUser($fromUser);
-                            $radar->setToUser($toUser);
-                            $this->em->persist($radar);
-                            $this->em->flush();
+                        // if (in_array('ROLE_PREMIUM', $toUser->getRoles()) || in_array('ROLE_ADMIN', $toUser->getRoles()) || in_array('ROLE_MASTER', $toUser->getRoles())) {
+                        $radar = new Radar();
+                        $radar->setFromUser($fromUser);
+                        $radar->setToUser($toUser);
+                        $this->em->persist($radar);
+                        $this->em->flush();
 
-                            $language = $toUser->getLanguage() ? $toUser->getLanguage() : 'es';
+                        $language = $toUser->getLanguage() ? $toUser->getLanguage() : 'es';
 
-                            $title = $fromUser->getUsername();
-                            $text = $language == 'es' ? "💓Doki doki ¡El frikiradar ha detectado a alguien interesante cerca!" :
-                                "💓Doki doki! The frikiradar has detected someone interesting nearby!";
-                            $url = "/profile/" . $fromUser->getId();
-                            $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
-                        }
+                        $title = $fromUser->getUsername();
+                        $text = $language == 'es' ? "💓Doki doki ¡El frikiradar ha detectado a alguien interesante cerca!" :
+                            "💓Doki doki! The frikiradar has detected someone interesting nearby!";
+                        $url = "/profile/" . $fromUser->getId();
+                        $this->notification->set($fromUser, $toUser, $title, $text, $url, "radar");
+                        // }
                     }
                 }
             }
