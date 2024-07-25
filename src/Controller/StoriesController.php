@@ -102,8 +102,9 @@ class StoriesController extends AbstractController
     public function getPostsAction(Request $request)
     {
         $page = $this->request->get($request, "page", false) ?? 1;
+        $filter = $this->request->get($request, "filter", false) ?? 'show-all';
 
-        $posts = $this->storyRepository->getPosts($page);
+        $posts = $this->storyRepository->getPosts($page, $filter);
 
         return new JsonResponse($this->serializer->serialize($posts, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
     }

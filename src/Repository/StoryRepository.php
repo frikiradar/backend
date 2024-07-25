@@ -188,7 +188,7 @@ class StoryRepository extends ServiceEntityRepository
         return $stories;
     }
 
-    public function getPosts($page = 1)
+    public function getPosts($page = 1, $filter = 'show-all')
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -197,20 +197,36 @@ class StoryRepository extends ServiceEntityRepository
         $firstResult = ($page - 1) * $postsPerPage; // Calcula el primer resultado de la página actual
 
         if (!$this->security->isGranted('ROLE_DEMO')) {
-            $dql = "SELECT s FROM App:Story s 
-            LEFT JOIN App:User u WITH s.user = u.id
-            LEFT JOIN App:BlockUser ba WITH (
-                (s.user = ba.block_user AND ba.from_user = :currentUser) OR
-                (s.user = ba.from_user AND ba.block_user = :currentUser)
-            )
-            WHERE s.type = 'post'
-            AND (u.banned != 1 AND u.roles NOT LIKE '%ROLE_DEMO%')
-            ORDER BY s.time_creation DESC";
-            $query = $this->getEntityManager()
-                ->createQuery($dql)
+            $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+
+            $queryBuilder->select('s')
+                ->from('App:Story', 's')
+                ->leftJoin('App:User', 'u', 'WITH', 's.user = u.id')
+                ->leftJoin('App:BlockUser', 'ba', 'WITH', '(s.user = ba.block_user AND ba.from_user = :currentUser) OR (s.user = ba.from_user AND ba.block_user = :currentUser)')
+                ->where('s.type = :postType')
+                ->andWhere('u.banned != 1')
+                ->andWhere('u.roles NOT LIKE :roleDemo')
+                ->andWhere('ba.id IS NULL')
+                ->setParameter('postType', 'post')
+                ->setParameter('roleDemo', '%ROLE_DEMO%')
                 ->setParameter('currentUser', $user)
                 ->setFirstResult($firstResult)
-                ->setMaxResults($postsPerPage);
+                ->setMaxResults($postsPerPage)
+                ->orderBy('s.time_creation', 'DESC');
+
+            if ($filter === "for-you") {
+                $subQuery = $this->getEntityManager()->createQueryBuilder()
+                    ->select('ut.slug')
+                    ->from('App:Tag', 'ut')
+                    ->where('ut.user = :currentUser')
+                    ->getDQL();
+
+                $queryBuilder->leftJoin('App:LikeUser', 'lu', 'WITH', 'lu.to_user = s.user AND lu.from_user = :currentUser')
+                    ->andWhere('lu.id IS NOT NULL OR s.user = :currentUser OR s.slug IN (' . $subQuery . ')');
+            }
+
+            $query = $queryBuilder->getQuery();
+            $posts = $query->getResult();
         } else {
             $dql = "SELECT s FROM App:Story s
             WHERE s.user IN (SELECT u.id FROM App:User u WHERE u.roles LIKE '%ROLE_DEMO%')
