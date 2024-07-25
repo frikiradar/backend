@@ -281,7 +281,7 @@ class StoriesController extends AbstractController
 
                 return new JsonResponse($this->serializer->serialize("Historia vista correctamente", "json"), Response::HTTP_OK, [], true);
             } else {
-                throw new HttpException(404, "No puedes marcar como vista tu propia historia o ver la misma historia dos veces.");
+                throw new HttpException(400, "No puedes marcar como vista tu propia historia o ver la misma historia dos veces.");
             }
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ver la historia - Error: {$ex->getMessage()}");
