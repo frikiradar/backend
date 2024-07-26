@@ -342,7 +342,7 @@ class PageRepository extends ServiceEntityRepository
                 }
             }
 
-            if (isset($game['summary'])) {
+            /*if (isset($game['summary'])) {
                 try {
                     $trans = new GoogleTranslate();
                     $text = strlen($game['summary']) > 2000 ? (substr($game['summary'], 0, 1999) . '...') : $game['summary'];
@@ -350,9 +350,9 @@ class PageRepository extends ServiceEntityRepository
                 } catch (Exception $ex) {
                     // Omitimos traducción si falla, lo metemos en inglés
                     // return false;
-                    // echo $ex->getMessage();
+                    echo $ex->getMessage();
                 }
-            }
+            }*/
 
             // Imágenes
             $server = "https://app.frikiradar.com";
