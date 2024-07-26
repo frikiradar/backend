@@ -350,7 +350,7 @@ class PageRepository extends ServiceEntityRepository
                 } catch (Exception $ex) {
                     // Omitimos traducción si falla, lo metemos en inglés
                     // return false;
-                    echo $ex->getMessage();
+                    // echo $ex->getMessage();
                 }
             }
 
