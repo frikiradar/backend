@@ -217,40 +217,33 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-
-        // recorremos todos los usuarios y le seteamos el país según su ultima ip
-        /**
-         * @var User[]
-         */
-        $users = $this->em->getRepository(\App\Entity\User::class)->findAll();
-        $count = 0;
-        foreach ($users as $user) {
-            $count++;
-            $gender = $user->getGender();
-            $lovegender = $user->getLoveGender();
-            $relationship = $user->getRelationship();
-            $orientation = $user->getOrientation();
-            $pronoun = $user->getPronoun();
-            $status = $user->getStatus();
-            $connection = $user->getConnection();
-
-            // mostramos la información
-            $this->o->writeln($user->getId() . " - " . $user->getUsername() . " - " . $gender . " - " . implode(', ', $lovegender) . " - " . $relationship . " - " . $orientation . " - " . $pronoun . " - " . $status . " - " . implode(', ', $connection));
-            // machacamos la información
-
-            $user->setGender($gender);
-            $user->setLoveGender($lovegender);
-            $user->setRelationship($relationship);
-            $user->setOrientation($orientation);
-            $user->setPronoun($pronoun);
-            $user->setStatus($status);
-            $user->setConnection($connection);
-            $this->em->persist($user);
-
-            // flush por cada 1000 usuarios
-            if ($count % 1000 == 0) {
-                $this->em->flush();
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['food', 'music', 'role', 'books', 'games', 'movies', 'hobbies']);
+        foreach ($tags as $a) {
+            $tag = $a['tag'];
+            $slug = $tag->getSlug();
+            if (!isset($slug)) {
+                try {
+                    $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
+                    if ($page) {
+                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+                    } else {
+                        $this->o->writeln("Error al generar página para: " . $tag->getName());
+                    }
+                } catch (Exception $ex) {
+                    $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
+                    // Reabrir el EntityManager
+                    $this->em = $this->resetEntityManager();
+                    $this->o->writeln("EntityManager reabierto.");
+                    sleep(10);
+                }
             }
         }
+    }
+
+    private function resetEntityManager()
+    {
+        $this->em->getConnection()->close();
+        $this->em->getConnection()->connect();
+        return $this->em;
     }
 }
