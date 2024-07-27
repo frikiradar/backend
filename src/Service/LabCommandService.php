@@ -217,7 +217,7 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['food', 'music', 'role', 'books', 'games', 'movies', 'hobbies']);
+        /*$tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['food', 'music', 'role', 'books', 'games', 'movies', 'hobbies']);
         foreach ($tags as $a) {
             $tag = $a['tag'];
             $slug = $tag->getSlug();
@@ -236,6 +236,39 @@ class LabCommandService
                     $this->o->writeln("EntityManager reabierto.");
                     sleep(10);
                 }
+            }
+        }*/
+
+        $pages = $this->em->getRepository(\App\Entity\Page::class)->findAll();
+        foreach ($pages as $page) {
+            // Obtener el slug y la categoría de la página
+            $pageSlug = $page->getSlug();
+            $categoryName = $page->getCategory();
+
+            // Crear una consulta personalizada para obtener las etiquetas con el mismo nombre de categoría pero un slug distinto al de la página
+            $query = $this->em->createQuery(
+                'SELECT t 
+                 FROM \App\Entity\Tag t 
+                 JOIN t.category c
+                 WHERE t.name = :name 
+                 AND c.name = :categoryName
+                 AND t.slug != :slug'
+            )->setParameters(array(
+                'name' => $page->getName(),
+                'categoryName' => $categoryName,
+                'slug' => $pageSlug
+            ));
+
+            // Ejecutar la consulta y obtener los resultados
+            $tags = $query->getResult();
+
+            if (count($tags) > 0) {
+                foreach ($tags as $tag) {
+                    $this->o->writeln("Tag actualizado: " . $tag->getName() . " (" . $tag->getSlug() . " -> " . $pageSlug . ")");
+                    $tag->setSlug($pageSlug);
+                    $this->em->persist($tag);
+                }
+                $this->em->flush();
             }
         }
     }
