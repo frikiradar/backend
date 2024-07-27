@@ -252,7 +252,8 @@ class LabCommandService
                  JOIN t.category c
                  WHERE t.name = :name 
                  AND c.name = :categoryName
-                 AND t.slug != :slug'
+                 AND t.slug != :slug
+                GROUP BY t.name, c.name'
             )->setParameters(array(
                 'name' => $page->getName(),
                 'categoryName' => $categoryName,
@@ -264,9 +265,8 @@ class LabCommandService
 
             if (count($tags) > 0) {
                 foreach ($tags as $tag) {
-                    $this->o->writeln("Tag actualizado: " . $tag->getName() . " (" . $tag->getSlug() . " -> " . $pageSlug . ")");
-                    $tag->setSlug($pageSlug);
-                    $this->em->persist($tag);
+                    $this->o->writeln("Tags actualizados: " . $tag->getName() . " - " . $categoryName . " (" . $tag->getSlug() . " -> " . $pageSlug . ")");
+                    $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $pageSlug);
                 }
                 $this->em->flush();
             }
