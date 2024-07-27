@@ -9,6 +9,7 @@ use App\Entity\ViewStory;
 use App\Repository\BlockUserRepository;
 use App\Repository\CommentRepository;
 use App\Repository\LikeStoryRepository;
+use App\Repository\NotificationRepository;
 use App\Repository\StoryRepository;
 use App\Repository\UserRepository;
 use App\Repository\ViewStoryRepository;
@@ -44,12 +45,14 @@ class StoriesController extends AbstractController
     private $likeStoryRepository;
     private $blockUserRepository;
     private $commentRepository;
+    private $notificationRepostory;
 
     public function __construct(
         SerializerInterface $serializer,
         RequestService $request,
         AccessCheckerService $accessChecker,
         NotificationService $notification,
+        NotificationRepository $notificationRepository,
         AuthorizationCheckerInterface $security,
         StoryRepository $storyRepository,
         UserRepository $userRepository,
@@ -69,6 +72,7 @@ class StoriesController extends AbstractController
         $this->likeStoryRepository = $likeStoryRepository;
         $this->blockUserRepository = $blockUserRepository;
         $this->commentRepository = $commentRepository;
+        $this->notificationRepostory = $notificationRepository;
     }
 
     #[Route('/v1/stories', name: 'get_stories', methods: ['GET'])]
@@ -296,6 +300,16 @@ class StoriesController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $story = $this->storyRepository->findOneBy(array('id' => $id));
+
+            if ($story->getType() == 'story') {
+                $url = "/story/" . $story->getId();
+            } else {
+                $url = "/post/" . $story->getId();
+            }
+
+            // Eliminamos las notificaciones asociadas a la historia
+            $this->notificationRepostory->removeByUrl($url);
+
             $cache = new FilesystemAdapter();
             $cache->deleteItem('stories.get.' . $story->getUser()->getId());
             if ($this->security->isGranted('ROLE_MASTER')) {

@@ -90,4 +90,13 @@ class NotificationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function removeByUrl(string $url)
+    {
+        $notifications = $this->findBy(array('url' => $url));
+        foreach ($notifications as $notification) {
+            $this->getEntityManager()->remove($notification);
+        }
+        $this->getEntityManager()->flush();
+    }
 }
