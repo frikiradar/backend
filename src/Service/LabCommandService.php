@@ -240,10 +240,13 @@ class LabCommandService
         }*/
 
         $pages = $this->em->getRepository(\App\Entity\Page::class)->findAll();
+        $this->o->writeln("Páginas obtenidas");
+
         foreach ($pages as $page) {
             // Obtener el slug y la categoría de la página
             $pageSlug = $page->getSlug();
             $categoryName = $page->getCategory();
+            $pageName = $page->getName();
 
             // Crear una consulta personalizada para obtener las etiquetas con el mismo nombre de categoría pero un slug distinto al de la página
             $query = $this->em->createQuery(
@@ -255,13 +258,14 @@ class LabCommandService
                  AND t.slug != :slug
                 GROUP BY t.name, c.name'
             )->setParameters(array(
-                'name' => $page->getName(),
+                'name' => $pageName,
                 'categoryName' => $categoryName,
                 'slug' => $pageSlug
             ));
 
             // Ejecutar la consulta y obtener los resultados
             $tags = $query->getResult();
+            $this->o->writeln("Tags de " . $pageName . " (" . $pageName . ") obtenidos.");
 
             if (count($tags) > 0) {
                 foreach ($tags as $tag) {
