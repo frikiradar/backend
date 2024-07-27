@@ -251,12 +251,12 @@ class LabCommandService
             // Crear una consulta personalizada para obtener las etiquetas con el mismo nombre de categoría pero un slug distinto al de la página
             $query = $this->em->createQuery(
                 'SELECT t 
-                 FROM \App\Entity\Tag t 
-                 JOIN t.category c
-                 WHERE t.name = :name 
-                 AND c.name = :categoryName
-                 AND t.slug != :slug
-                GROUP BY t.name, c.name'
+                    FROM \App\Entity\Tag t 
+                    JOIN t.category c
+                    WHERE t.name = :name 
+                    AND c.name = :categoryName
+                    AND t.slug != :slug
+                    GROUP BY t.name, c.name'
             )->setParameters(array(
                 'name' => $pageName,
                 'categoryName' => $categoryName,
@@ -266,6 +266,13 @@ class LabCommandService
             // Ejecutar la consulta y obtener los resultados
             $tags = $query->getResult();
             $this->o->writeln("Tags de " . $pageName . " (" . $pageName . ") obtenidos.");
+            $this->o->writeln("Número de tags obtenidos: " . count($tags));
+
+            // Depuración: Mostrar los parámetros utilizados en la consulta
+            $this->o->writeln("Parámetros de la consulta: ");
+            $this->o->writeln("Nombre: " . $pageName);
+            $this->o->writeln("Nombre de categoría: " . $categoryName);
+            $this->o->writeln("Slug: " . $pageSlug);
 
             if (count($tags) > 0) {
                 foreach ($tags as $tag) {
@@ -273,6 +280,8 @@ class LabCommandService
                     $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $pageSlug);
                 }
                 $this->em->flush();
+            } else {
+                $this->o->writeln("No se encontraron tags que coincidan con los criterios.");
             }
         }
     }
