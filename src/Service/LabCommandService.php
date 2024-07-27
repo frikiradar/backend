@@ -265,14 +265,7 @@ class LabCommandService
 
             // Ejecutar la consulta y obtener los resultados
             $tags = $query->getResult();
-            $this->o->writeln("Tags de " . $pageName . " (" . $pageName . ") obtenidos.");
-            $this->o->writeln("Número de tags obtenidos: " . count($tags));
-
-            // Depuración: Mostrar los parámetros utilizados en la consulta
-            $this->o->writeln("Parámetros de la consulta: ");
-            $this->o->writeln("Nombre: " . $pageName);
-            $this->o->writeln("Nombre de categoría: " . $categoryName);
-            $this->o->writeln("Slug: " . $pageSlug);
+            $this->o->writeln("Número de tags de " . $pageName . " (" . $categoryName . ") obtenidos: " . count($tags));
 
             if (count($tags) > 0) {
                 foreach ($tags as $tag) {
@@ -280,8 +273,6 @@ class LabCommandService
                     $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $pageSlug);
                 }
                 $this->em->flush();
-            } else {
-                $this->o->writeln("No se encontraron tags que coincidan con los criterios.");
             }
         }
     }

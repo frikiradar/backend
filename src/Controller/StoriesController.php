@@ -224,7 +224,7 @@ class StoriesController extends AbstractController
                     if ($toUser && $toUser->getId() !== $fromUser->getId() && in_array($fromUser->getGender(), $toUser->getLovegender())) {
                         $language = $userData['language'];
 
-                        $title = $fromUser->getName();
+                        $title = '@' . $fromUser->getUsername();
                         if ($userData['interestType'] === 'slug') {
                             if ($type === 'story') {
                                 $text = $language == 'es'
@@ -357,7 +357,7 @@ class StoriesController extends AbstractController
                 $this->likeStoryRepository->save($newLike);
 
                 if ($user->getId() !== $story->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
-                    $title = $user->getName();
+                    $title = '@' . $user->getUsername();
                     $language = $story->getUser()->getLanguage();
                     if ($language == 'es') {
                         $text = "A " . $user->getName() . " le ha gustado tu publicación.";
@@ -506,7 +506,7 @@ class StoriesController extends AbstractController
 
                 if ($user->getId() !== $comment->getUser()->getId() && !$this->security->isGranted('ROLE_DEMO')) {
                     $language = $comment->getUser()->getLanguage();
-                    $title = $user->getName();
+                    $title = '@' . $user->getUsername();
                     if ($language == 'es') {
                         $text = "A " . $user->getName() . " le ha gustado tu comentario.";
                     } else {
