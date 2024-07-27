@@ -120,7 +120,7 @@ class Page
     {
         $cover = $this->cover;
         if (!$cover) {
-            $cover = "https://api.frikiradar.com/images/pages/default-" . $this->getCategory() . "-page.jpg";
+            $cover = "https://api.frikiradar.com/images/pages/default-" . $this->getCategory() . "-page.svg";
         }
         $this->cover = $cover;
 
@@ -138,7 +138,7 @@ class Page
     {
         $artwork = $this->artwork;
         if (!$artwork) {
-            $artwork = "https://api.frikiradar.com/images/pages/default-" . $this->getCategory() . "-page.jpg";
+            $artwork = "https://api.frikiradar.com/images/pages/default-" . $this->getCategory() . "-page.svg";
         }
         $this->artwork = $artwork;
 
