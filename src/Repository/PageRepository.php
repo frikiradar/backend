@@ -663,6 +663,7 @@ class PageRepository extends ServiceEntityRepository
 
                     try {
                         print_r("test 1.2");
+                        print_r($page);
                         $this->em->persist($page);
                         $this->em->flush();
                     } catch (\Exception $ex) {
