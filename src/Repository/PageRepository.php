@@ -639,6 +639,7 @@ class PageRepository extends ServiceEntityRepository
                 $oldPage = $page;
 
                 if (empty($oldPage) || (null !== $oldPage && $oldPage->getCategory() !== $category)) {
+                    print_r("test 1.1");
                     /**
                      * @var Page
                      */
@@ -661,9 +662,11 @@ class PageRepository extends ServiceEntityRepository
                     $page->setArtwork($result['artwork']);
 
                     try {
+                        print_r("test 1.2");
                         $this->em->persist($page);
                         $this->em->flush();
                     } catch (\Exception $ex) {
+                        print_r("test 1.3");
                         // Si falla, es que ya existe, lo buscamos
                         $page = $this->findOneBy(array('slug' => $result['slug']));
                     }
