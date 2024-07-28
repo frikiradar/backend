@@ -604,9 +604,9 @@ class StoriesController extends AbstractController
             $story = $this->request->get($request, 'story', true);
             $note = $this->request->get($request, 'note', false);
 
-            $username = $story['user']['username'];
-            $text = $story['text'];
-            $id = $story['id'];
+            $username = $story->getUser()->getUsername();
+            $text = $story->getText();
+            $id = $story->getId();
 
             if ($story->getType() == 'story') {
                 $url = "/story/" . $id;
