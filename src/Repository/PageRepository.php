@@ -667,7 +667,7 @@ class PageRepository extends ServiceEntityRepository
                         $this->em->persist($page);
                         $this->em->flush();
                     } catch (\Exception $ex) {
-                        print_r("test 1.3");
+                        print_r("test 1.3: " . $ex->getMessage());
                         // Si falla, es que ya existe, lo buscamos
                         $page = $this->findOneBy(array('slug' => $result['slug']));
                     }
