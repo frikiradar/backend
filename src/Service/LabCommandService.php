@@ -217,7 +217,7 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        /*$tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['food', 'music', 'role', 'books', 'games', 'movies', 'hobbies']);
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['food', 'music', 'role', 'books', 'games', 'movies', 'hobbies']);
         foreach ($tags as $a) {
             $tag = $a['tag'];
             $slug = $tag->getSlug();
@@ -237,9 +237,9 @@ class LabCommandService
                     sleep(10);
                 }
             }
-        }*/
+        }
 
-        $pages = $this->em->getRepository(\App\Entity\Page::class)->findAll();
+        /*$pages = $this->em->getRepository(\App\Entity\Page::class)->findAll();
         $this->o->writeln("Páginas obtenidas");
 
         foreach ($pages as $page) {
@@ -274,7 +274,7 @@ class LabCommandService
                 }
                 $this->em->flush();
             }
-        }
+        }*/
     }
 
     private function resetEntityManager()
