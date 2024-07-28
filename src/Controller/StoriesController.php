@@ -621,7 +621,7 @@ class StoriesController extends AbstractController
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Historia reportada')
-                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='https://frikiradar.app/" . $url . ">" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
+                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='https://frikiradar.app/" . $url . "'>" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
 
             $mailer->send($email);
 
