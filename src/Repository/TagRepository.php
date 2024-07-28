@@ -129,13 +129,18 @@ class TagRepository extends ServiceEntityRepository
 
     public function setTagsSlug(Tag $tag, string $slug)
     {
-        $dql = "SELECT t FROM App:Tag t WHERE t.name = :name AND t.category = :category";
+        $dql = "SELECT t FROM App:Tag t WHERE t.name = :name AND t.category = :category AND t.slug <> :slug";
 
         $tags = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('name', $tag->getName())
             ->setParameter('category', $tag->getCategory()->getId())
+            ->setParameter('slug', $slug)
             ->getResult();
+
+        if (empty($tags)) {
+            return;
+        }
 
         foreach ($tags as $tag) {
             $tag->setSlug($slug);
