@@ -633,6 +633,7 @@ class PageRepository extends ServiceEntityRepository
             }
 
             if (!empty($result)) {
+                print_r("test 1");
                 $slug = $result['slug'];
                 $page = $this->findOneBy(array('slug' => $result['slug']));
                 $oldPage = $page;
@@ -668,7 +669,9 @@ class PageRepository extends ServiceEntityRepository
                     }
                 }
             } else {
+                print_r("test 2");
                 if (empty($page)) {
+                    print_r("test 4");
                     $page = new Page();
                     $page->setName($name);
                     $page->setSlug($slug);
@@ -707,7 +710,9 @@ class PageRepository extends ServiceEntityRepository
         }
 
         // actualizamos todas las etiquetas con este mismo nombre de esta categoria
+        print_r("test 4");
         $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
+        print_r("test 5");
 
         return $page;
     }
