@@ -661,9 +661,28 @@ class PageRepository extends ServiceEntityRepository
                     $page->setCover($result['cover']);
                     $page->setArtwork($result['artwork']);
 
+                    // Verificar si ya existe una página con el mismo slug
+                    $existingPage = $this->findOneBy(array('slug' => $slug));
+                    if (!empty($existingPage) && $existingPage->getCategory() !== $tag->getCategory()->getName()) {
+                        // Si ya existe en una categoría diferente, modificar el slug
+                        $slug = $slug . '-' . $tag->getCategory()->getName();
+
+                        // Verificar si ya existe una página con el nuevo slug
+                        $existingPage = $this->findOneBy(array('slug' => $slug));
+                        if (!empty($existingPage)) {
+                            // Si ya existe una página con el mismo slug y categoría, saltar la creación
+                            // Le ponemos el slug al tag
+                            $tag->setSlug($slug);
+                            $this->em->persist($tag);
+                            $this->em->flush();
+                            return $existingPage;
+                        } else {
+                            $page->setSlug($slug);
+                        }
+                    }
+
                     try {
                         print_r("test 1.2");
-                        print_r($page);
                         $this->em->persist($page);
                         $this->em->flush();
                     } catch (\Exception $ex) {
