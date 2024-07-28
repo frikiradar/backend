@@ -365,9 +365,14 @@ class PageRepository extends ServiceEntityRepository
                     unlink($absolutePath . $filename . '.jpg');
                 }
 
-                $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
-                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                try {
+                    $uploader = new FileUploaderService($absolutePath, $filename);
+                    $image = $uploader->uploadImage('https:' . $game['cover']['url'], false, 90, 300);
+                    $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                } catch (\Exception $ex) {
+                    // echo $ex->getMessage();
+                    $cover = null;
+                }
             }
 
             if (isset($game['artworks'][0])) {
@@ -378,9 +383,14 @@ class PageRepository extends ServiceEntityRepository
                     unlink($absolutePath . $filename . '.jpg');
                 }
 
-                $uploader = new FileUploaderService($absolutePath, $filename);
-                $image = $uploader->uploadImage('https:' . $game['artworks'][0]['url'], false, 90, 300);
-                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                try {
+                    $uploader = new FileUploaderService($absolutePath, $filename);
+                    $image = $uploader->uploadImage('https:' . $game['artworks'][0]['url'], false, 90, 300);
+                    $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                } catch (\Exception $ex) {
+                    // echo $ex->getMessage();
+                    $artwork = null;
+                }
             }
 
             if (isset($game['first_release_date'])) {
@@ -546,9 +556,14 @@ class PageRepository extends ServiceEntityRepository
                     unlink($path . $file . '.jpg');
                 }
 
-                $uploader = new FileUploaderService($path, $file);
-                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200' . $film['poster_path'], false, 90, 300);
-                $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                try {
+                    $uploader = new FileUploaderService($path, $file);
+                    $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w200' . $film['poster_path'], false, 90, 300);
+                    $cover = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                } catch (\Exception $ex) {
+                    // echo $ex->getMessage();
+                    $cover = null;
+                }
             }
 
             if (isset($film['backdrop_path']) || isset($film['poster_path'])) {
@@ -559,9 +574,14 @@ class PageRepository extends ServiceEntityRepository
                     unlink($path . $file . '.jpg');
                 }
 
-                $uploader = new FileUploaderService($path, $file);
-                $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
-                $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                try {
+                    $uploader = new FileUploaderService($path, $file);
+                    $image = $uploader->uploadImage('https://image.tmdb.org/t/p/w400' . (isset($film['backdrop_path']) ? $film['backdrop_path'] : $film['poster_path']), false, 90, 300);
+                    $artwork = str_replace("/var/www/vhosts/frikiradar.com/app.frikiradar.com", $server, $image);
+                } catch (\Exception $ex) {
+                    // echo $ex->getMessage();
+                    $artwork = null;
+                }
             }
 
             if (isset($film['release_date']) || isset($film['first_air_date'])) {
