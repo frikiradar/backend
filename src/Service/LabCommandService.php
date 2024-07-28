@@ -217,7 +217,7 @@ class LabCommandService
     public function testLab()
     {
         ini_set('memory_limit', '-1');
-        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags([/*'games', 'movies', */'food', 'music', 'role', 'books', 'hobbies']);
+        $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['games', 'movies', 'food', 'music', 'role', 'books', 'hobbies']);
 
         foreach ($tags as $a) {
             $tag = $a['tag'];

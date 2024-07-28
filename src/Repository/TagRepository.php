@@ -130,12 +130,22 @@ class TagRepository extends ServiceEntityRepository
     public function setTagsSlug(Tag $tag, string $slug)
     {
         $dql = "UPDATE App:Tag t SET t.slug = :slug WHERE t.name = :name AND t.category = :category";
-        return $this->getEntityManager()
+        $batchSize = 50;
+
+        $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('slug', $slug)
             ->setParameter('name', $tag->getName())
-            ->setParameter('category', $tag->getCategory()->getId())
-            ->execute();
+            ->setParameter('category', $tag->getCategory()->getId());
+
+        // Ejecutar la consulta en bloques más pequeños
+        $totalRows = $query->execute();
+        for ($i = 0; $i < $totalRows; $i += $batchSize) {
+            $query->setFirstResult($i)
+                ->setMaxResults($batchSize)
+                ->execute();
+        }
+        return $totalRows;
     }
 
     public function countTag(string $slug, string $name, string $category)
