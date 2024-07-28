@@ -218,23 +218,39 @@ class LabCommandService
     {
         ini_set('memory_limit', '-1');
         $tags = $this->em->getRepository(\App\Entity\Tag::class)->findAllGroupedTags(['games', 'movies'/*, 'food', 'music', 'role', 'books', 'hobbies'*/]);
+
+        $maxRetries = 3; // Número máximo de reintentos
+        $retryCount = 0;
+
         foreach ($tags as $a) {
             $tag = $a['tag'];
             $slug = $tag->getSlug();
             if (!isset($slug)) {
-                try {
-                    $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
-                    if ($page) {
-                        $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
-                    } else {
-                        $this->o->writeln("Error al generar página para: " . $tag->getName());
+                while ($retryCount < $maxRetries) {
+                    try {
+                        $page = $this->em->getRepository(\App\Entity\Page::class)->setPage($tag);
+                        if ($page) {
+                            $this->o->writeln("Página generada: " . $page->getName() . " (" . $page->getSlug() . ") - " . (!is_null($page->getDescription()) ? 'ok' : 'fail'));
+                        } else {
+                            $this->o->writeln("Error al generar página para: " . $tag->getName());
+                        }
+                        break; // Salir del bucle si la operación fue exitosa
+                    } catch (\Doctrine\DBAL\Exception\LockWaitTimeoutException $ex) {
+                        $retryCount++;
+                        $this->o->writeln("Error de bloqueo al generar página para: " . $tag->getName() . " - Reintentando ($retryCount/$maxRetries)");
+                        sleep(10); // Esperar antes de reintentar
+                        if ($retryCount >= $maxRetries) {
+                            $this->o->writeln("Error persistente al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
+                            throw $ex; // Lanzar la excepción si se excede el número de reintentos
+                        }
+                    } catch (Exception $ex) {
+                        $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
+                        // Reabrir el EntityManager
+                        $this->em = $this->resetEntityManager();
+                        $this->o->writeln("EntityManager reabierto.");
+                        sleep(10);
+                        break; // Salir del bucle en caso de otras excepciones
                     }
-                } catch (Exception $ex) {
-                    $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
-                    // Reabrir el EntityManager
-                    $this->em = $this->resetEntityManager();
-                    $this->o->writeln("EntityManager reabierto.");
-                    sleep(10);
                 }
             }
         }
