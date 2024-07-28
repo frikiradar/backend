@@ -233,6 +233,12 @@ class LabCommandService
                 } catch (\Doctrine\DBAL\Exception\LockWaitTimeoutException $ex) {
                     $this->o->writeln("Error persistente al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
                     continue; // Continuar con el siguiente tag
+                } catch (\Doctrine\ORM\Exception\EntityManagerClosed $ex) {
+                    $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
+                    // Reabrir el EntityManager
+                    $this->em = $this->resetEntityManager();
+                    $this->o->writeln("EntityManager reabierto.");
+                    sleep(10);
                 } catch (Exception $ex) {
                     $this->o->writeln("Error al generar página para: " . $tag->getName() . " - " . $ex->getMessage());
                     // Reabrir el EntityManager
