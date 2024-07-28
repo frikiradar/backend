@@ -604,11 +604,11 @@ class StoriesController extends AbstractController
             $story = $this->request->get($request, 'story', true);
             $note = $this->request->get($request, 'note', false);
 
-            $username = $story->getUser()->getUsername();
-            $text = $story->getText();
-            $id = $story->getId();
+            $username = $story['user']['username'];
+            $text = $story['text'];
+            $id = $story['id'];
 
-            if ($story->getType() == 'story') {
+            if ($story['type'] == 'story') {
                 $url = "/story/" . $id;
             } else {
                 $url = "/post/" . $id;
@@ -621,7 +621,7 @@ class StoriesController extends AbstractController
                 ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
                 ->to(new Address('hola@frikiradar.com', 'frikiradar'))
                 ->subject('Historia reportada')
-                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='" . $url . "'" . $id . "'>" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
+                ->html("El usuario " . $user->getUsername() . " ha reportado la historia <a href='https://frikiradar.app/" . $url . ">" . $id . "</a> del usuario <a href='https://frikiradar.app/" . urlencode($username) . "'>" . $username . "</a> por el siguiente motivo: " . $note . "<br><br>Texto de la historia: " . $text);
 
             $mailer->send($email);
 
