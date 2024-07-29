@@ -135,7 +135,12 @@ class StoriesController extends AbstractController
     public function getStoryAction(int $id)
     {
         try {
-            $story = $this->storyRepository->findOneStory($id);
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+
+            $story = $this->storyRepository->findOneBy(array('id' => $id));
+            $story->setLike($story->isLikedByUser($user));
+            $story->setViewed($story->isViewedByUser($user));
 
             if (!is_null($story)) {
                 return new JsonResponse($this->serializer->serialize($story, "json", ['groups' => ['story']]), Response::HTTP_OK, [], true);
