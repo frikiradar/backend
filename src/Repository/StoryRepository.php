@@ -263,12 +263,47 @@ class StoryRepository extends ServiceEntityRepository
                 ->setMaxResults($postsPerPage); // Limita el número de resultados a $postsPerPage
         }
 
+        /** @var Story[] $posts */
         $posts = $query->getResult();
 
+        // Marcar los posts con likes y visualizaciones por el usuario
         foreach ($posts as $post) {
             $post->setLike($post->isLikedByUser($user));
             $post->setViewed($post->isViewedByUser($user));
         }
+
+        // Separar los posts en dos grupos: vistos y no vistos
+        $notViewedPosts = [];
+        $viewedPosts = [];
+
+        foreach ($posts as $post) {
+            if ($post->isViewedByUser($user)) {
+                $viewedPosts[] = $post;
+            } else {
+                $notViewedPosts[] = $post;
+            }
+        }
+
+        // Función de comparación para ordenar los posts
+        $comparePosts = function (Story $a, Story $b) {
+            $likesA = count($a->getLikeStories());
+            $likesB = count($b->getLikeStories());
+            $viewsA = count($a->getViewStories());
+            $viewsB = count($b->getViewStories());
+
+            if ($likesA === $likesB) {
+                return $viewsB <=> $viewsA;
+            }
+
+            return $likesB <=> $likesA;
+        };
+
+        // Ordenar ambos grupos
+        usort($notViewedPosts, $comparePosts);
+        usort($viewedPosts, $comparePosts);
+
+        // Combinar los dos grupos, colocando los posts vistos al final
+        $posts = array_merge($notViewedPosts, $viewedPosts);
 
         return $posts;
     }
