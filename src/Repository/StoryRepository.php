@@ -115,12 +115,37 @@ class StoryRepository extends ServiceEntityRepository
         return $stories;
     }
 
+    public function findOneStory($id)
+    {
+        /** @var User $user */
+        $me = $this->security->getUser();
+        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+
+        $dql = "SELECT s FROM App:Story s
+            WHERE s.id = :id
+            AND s.time_creation > :yesterday
+            AND s.type = 'story'";
+        $query = $this->getEntityManager()
+            ->createQuery($dql)
+            ->setParameter('id', $id)
+            ->setParameter('yesterday', $yesterday);
+
+        $story = $query->getOneOrNullResult();
+
+        if ($story) {
+            $story->setLike($story->isLikedByUser($me));
+            $story->setViewed($story->isViewedByUser($me));
+        }
+
+        return $story;
+    }
+
     public function getUserStories(User $user)
     {
         /** @var User $user */
         $me = $this->security->getUser();
-
         $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+
         $dql = "SELECT s FROM App:Story s
             WHERE s.user = :id
             AND s.time_creation > :yesterday
