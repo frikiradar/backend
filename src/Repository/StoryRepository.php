@@ -119,16 +119,16 @@ class StoryRepository extends ServiceEntityRepository
     {
         /** @var User $user */
         $me = $this->security->getUser();
-        $yesterday = date('Y-m-d', strtotime('-' . 1 . ' days', strtotime(date("Y-m-d"))));
+        $now = date('Y-m-d');
 
         $dql = "SELECT s FROM App:Story s
             WHERE s.id = :id
-            AND s.time_creation > :yesterday
-            AND s.type = 'story'";
+            AND (s.time_end IS NULL OR s.time_end >= :now)";
+
         $query = $this->getEntityManager()
             ->createQuery($dql)
             ->setParameter('id', $id)
-            ->setParameter('yesterday', $yesterday);
+            ->setParameter('now', $now);
 
         $story = $query->getOneOrNullResult();
 
