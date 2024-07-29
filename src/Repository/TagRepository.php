@@ -139,6 +139,7 @@ class TagRepository extends ServiceEntityRepository
             ->getResult();
 
         if (empty($tags)) {
+            print_r("No tags found\n");
             return;
         }
 
