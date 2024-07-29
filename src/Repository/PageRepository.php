@@ -668,10 +668,7 @@ class PageRepository extends ServiceEntityRepository
                         // Verificar si ya existe una página con el nuevo slug
                         $existingPage = $this->findOneBy(array('slug' => $slug));
                         if (!empty($existingPage)) {
-                            // Si ya existe una página con el mismo slug y categoría, saltar la creación
-                            // Le ponemos el slug al tag
-                            $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
-                            return $existingPage;
+                            $page = $existingPage;
                         } else {
                             $page->setSlug($slug);
                         }
@@ -705,9 +702,7 @@ class PageRepository extends ServiceEntityRepository
                         $existingPage = $this->findOneBy(array('slug' => $slug));
                         if (!empty($existingPage)) {
                             // Si ya existe una página con el mismo slug y categoría, saltar la creación
-                            // Le ponemos el slug al tag
-                            $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
-                            return $existingPage;
+                            $page = $existingPage;
                         } else {
                             $page->setSlug($slug);
                         }

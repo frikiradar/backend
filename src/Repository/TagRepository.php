@@ -143,6 +143,7 @@ class TagRepository extends ServiceEntityRepository
         }
 
         foreach ($tags as $tag) {
+            print_r("Tag: " . $tag->getName() . " - " . $tag->getSlug() . "\n");
             $tag->setSlug($slug);
             $this->save($tag);
         }
