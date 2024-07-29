@@ -670,9 +670,7 @@ class PageRepository extends ServiceEntityRepository
                         if (!empty($existingPage)) {
                             // Si ya existe una página con el mismo slug y categoría, saltar la creación
                             // Le ponemos el slug al tag
-                            $tag->setSlug($slug);
-                            $this->em->persist($tag);
-                            $this->em->flush();
+                            $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
                             return $existingPage;
                         } else {
                             $page->setSlug($slug);
@@ -708,9 +706,7 @@ class PageRepository extends ServiceEntityRepository
                         if (!empty($existingPage)) {
                             // Si ya existe una página con el mismo slug y categoría, saltar la creación
                             // Le ponemos el slug al tag
-                            $tag->setSlug($slug);
-                            $this->em->persist($tag);
-                            $this->em->flush();
+                            $this->em->getRepository(\App\Entity\Tag::class)->setTagsSlug($tag, $slug);
                             return $existingPage;
                         } else {
                             $page->setSlug($slug);
