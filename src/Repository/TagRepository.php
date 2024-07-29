@@ -138,12 +138,10 @@ class TagRepository extends ServiceEntityRepository
             ->getResult();
 
         if (empty($tags)) {
-            print_r("No tags found\n");
             return;
         }
 
         foreach ($tags as $tag) {
-            print_r("Tag: " . $tag->getName() . " - " . $tag->getSlug() . "\n");
             $tag->setSlug($slug);
             $this->save($tag);
         }
