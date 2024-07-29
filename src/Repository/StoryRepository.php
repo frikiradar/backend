@@ -272,16 +272,16 @@ class StoryRepository extends ServiceEntityRepository
             $post->setViewed($post->isViewedByUser($user));
         }
 
-        // Separar los posts en dos grupos: vistos y no vistos
-        $notViewedPosts = [];
-        $viewedPosts = [];
+        $now = new \DateTime();
 
+        // Agrupar los posts por intervalos de 24 horas
+        $groupedPosts = [];
         foreach ($posts as $post) {
-            if ($post->isViewedByUser($user) || $post->getUser()->getId() === $user->getId()) {
-                $viewedPosts[] = $post;
-            } else {
-                $notViewedPosts[] = $post;
+            $interval = floor(($now->getTimestamp() - $post->getTimeCreation()->getTimestamp()) / (60 * 60 * 24));
+            if (!isset($groupedPosts[$interval])) {
+                $groupedPosts[$interval] = [];
             }
+            $groupedPosts[$interval][] = $post;
         }
 
         // Función de comparación para ordenar los posts
@@ -298,12 +298,34 @@ class StoryRepository extends ServiceEntityRepository
             return $likesB <=> $likesA;
         };
 
-        // Ordenar ambos grupos
-        usort($notViewedPosts, $comparePosts);
-        usort($viewedPosts, $comparePosts);
+        // Ordenar los posts dentro de cada grupo por likes y visualizaciones
+        foreach ($groupedPosts as &$group) {
+            usort($group, $comparePosts);
+        }
+        unset($group); // Desreferenciar el grupo para evitar problemas con referencias
 
-        // Combinar los dos grupos, colocando los posts vistos al final
-        $posts = array_merge($notViewedPosts, $viewedPosts);
+        // Combinar los grupos de intervalos en un solo array, colocando los más recientes primero
+        krsort($groupedPosts); // Ordenar los grupos de intervalos para que los más recientes aparezcan primero
+
+        // combinamos los posts en un solo array
+        /** @var Story[] $posts */
+        $posts = [];
+        foreach ($groupedPosts as $group) {
+            $posts = array_merge($posts, $group);
+        }
+
+        // ponemos primero los posts no vistos y despues los vistos
+        $notViewed = [];
+        $viewed = [];
+        foreach ($posts as $post) {
+            if ($post->isViewedByUser($user)) {
+                $viewed[] = $post;
+            } else {
+                $notViewed[] = $post;
+            }
+        }
+        // Combinar los no vistos primero y luego los vistos
+        $posts = array_merge($notViewed, $viewed);
 
         return $posts;
     }
