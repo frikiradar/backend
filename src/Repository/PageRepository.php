@@ -447,6 +447,10 @@ class PageRepository extends ServiceEntityRepository
             $name = 'ataque a los titanes';
         }
 
+        if ($name == 'kimetsu no yaiba' || $name == 'demon slayer' || $name == 'guardianes de la noche') {
+            $name = 'kimetsu no yaiba';
+        }
+
         if ($name == 'the lord of the rings' || $name == 'el señor de los anillos' || $name == 'el señor de los anillos trilogía') {
             $name = 'the lord of the rings';
             $collection = true;
