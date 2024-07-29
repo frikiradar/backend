@@ -304,9 +304,6 @@ class StoryRepository extends ServiceEntityRepository
         }
         unset($group); // Desreferenciar el grupo para evitar problemas con referencias
 
-        // Combinar los grupos de intervalos en un solo array, colocando los más recientes primero
-        krsort($groupedPosts); // Ordenar los grupos de intervalos para que los más recientes aparezcan primero
-
         // combinamos los posts en un solo array
         /** @var Story[] $posts */
         $posts = [];
