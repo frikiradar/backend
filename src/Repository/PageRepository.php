@@ -632,7 +632,7 @@ class PageRepository extends ServiceEntityRepository
                     break;
             }
 
-            if (!empty($result)) {
+            if (!empty($result) && isset($result['name'])) {
                 $slug = $result['slug'];
                 $page = $this->findOneBy(array('slug' => $result['slug']));
                 $oldPage = $page;
