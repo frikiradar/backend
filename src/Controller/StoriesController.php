@@ -277,13 +277,10 @@ class StoriesController extends AbstractController
                 $view->setDate(new \DateTime);
                 $view->setStory($story);
                 $view->setUser($user);
-
                 $this->viewStoryRepository->save($view);
-
-                return new JsonResponse($this->serializer->serialize("Historia vista correctamente", "json"), Response::HTTP_OK, [], true);
-            } else {
-                throw new HttpException(400, "No puedes marcar como vista tu propia historia o ver la misma historia dos veces.");
             }
+
+            return new JsonResponse($this->serializer->serialize("Historia vista correctamente", "json"), Response::HTTP_OK, [], true);
         } catch (Exception $ex) {
             throw new HttpException(400, "Error al ver la historia - Error: {$ex->getMessage()}");
         }
