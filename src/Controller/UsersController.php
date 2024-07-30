@@ -1037,43 +1037,22 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
             $language = $user->getLanguage();
 
-            if ($user->getUsername() == 'albertoi-test') {
-                /*$subject = 'test';
+            $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
 
-                $email = (new Email())
-                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                    ->to(new Address('alberto.eps@gmail.com', 'albertoi-test'))
-                    ->subject($subject)
-                    ->html($this->renderView(
-                        "emails/verification-code-es.html.twig",
-                        [
-                            'subject' => $subject,
-                            'username' => 'albertoi-test',
-                            'code' => 'test'
-                        ]
-                    ));
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($subject)
+                ->html($this->renderView(
+                    "emails/verification-code-" . $language . ".html.twig",
+                    [
+                        'subject' => $subject,
+                        'username' => $user->getUsername(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
 
-                $mailer->send($email);*/
-            }
-
-            if ($user->getUsername() !== 'albertoi-test') {
-                $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
-
-                $email = (new Email())
-                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                    ->to(new Address($user->getEmail(), $user->getUsername()))
-                    ->subject($subject)
-                    ->html($this->renderView(
-                        "emails/verification-code-" . $language . ".html.twig",
-                        [
-                            'subject' => $subject,
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ));
-
-                $mailer->send($email);
-            }
+            $mailer->send($email);
 
             $response = [
                 'code' => 200,
