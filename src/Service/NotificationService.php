@@ -163,6 +163,7 @@ class NotificationService extends AbstractController
                 }*/
             } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                 // echo "Error al enviar la notificación";
+                $sendEmail = true;
             }
         } else {
             $sendEmail = true;
