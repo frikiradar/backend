@@ -1037,22 +1037,22 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
             $language = $user->getLanguage();
 
-            if ($user->getUsername() /*!== 'albertoi-test'*/) {
-                $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
 
-                $email = (new Email())
-                    ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
-                    ->to(new Address($user->getEmail(), $user->getUsername()))
-                    ->subject($subject)
-                    ->html($this->renderView(
-                        "emails/verification-code-" . $language . ".html.twig",
-                        [
-                            'subject' => $subject,
-                            'username' => $user->getUsername(),
-                            'code' => $user->getVerificationCode()
-                        ]
-                    ));
+            $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
 
+            $email = (new Email())
+                ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
+                ->to(new Address($user->getEmail(), $user->getUsername()))
+                ->subject($subject)
+                ->html($this->renderView(
+                    "emails/verification-code-" . $language . ".html.twig",
+                    [
+                        'subject' => $subject,
+                        'username' => $user->getUsername(),
+                        'code' => $user->getVerificationCode()
+                    ]
+                ));
+            if ($user->getUsername() !== 'albertoi-test') {
                 $mailer->send($email);
             }
 
