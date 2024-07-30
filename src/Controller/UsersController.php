@@ -1059,17 +1059,23 @@ class UsersController extends AbstractController
                 'error' => false,
                 'data' => "Email enviado correctamente",
             ];
-        } catch (Exception $ex) {
-            /*$response = [
+        } catch (\Psr\Cache\CacheException $e) {
+            // Manejo de errores de caché
+            $response = [
                 'code' => 500,
                 'error' => true,
-                'data' => "Error al enviar el email de verificación - Error: {$ex->getMessage()}",
-            ];*/
-
-            throw new HttpException(400, "Error al enviar el email de verificación - Error: {$ex->getMessage()}");
+                'data' => "Error de caché: " . $e->getMessage(),
+            ];
+        } catch (\Exception $e) {
+            // Manejo de otros errores
+            $response = [
+                'code' => 500,
+                'error' => true,
+                'data' => "Ocurrió un error: " . $e->getMessage(),
+            ];
         }
 
-        return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
+        return new JsonResponse($response);
     }
 
 
