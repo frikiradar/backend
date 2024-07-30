@@ -1065,6 +1065,8 @@ class UsersController extends AbstractController
                 'error' => true,
                 'data' => "Error al enviar el email de verificación - Error: {$ex->getMessage()}",
             ];
+
+            return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
         }
 
         return new JsonResponse($this->serializer->serialize($response, "json"), Response::HTTP_OK, [], true);
