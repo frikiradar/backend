@@ -1038,7 +1038,7 @@ class UsersController extends AbstractController
             $language = $user->getLanguage();
 
             if ($user->getUsername() == 'albertoi-test') {
-                $subject = 'test';
+                /*$subject = 'test';
 
                 $email = (new Email())
                     ->from(new Address('noreply@mail.frikiradar.com', 'frikiradar'))
@@ -1053,7 +1053,7 @@ class UsersController extends AbstractController
                         ]
                     ));
 
-                $mailer->send($email);
+                $mailer->send($email);*/
             }
 
             if ($user->getUsername() !== 'albertoi-test') {
