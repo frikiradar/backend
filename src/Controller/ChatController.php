@@ -102,8 +102,11 @@ class ChatController extends AbstractController
             $this->chatRepository->save($chat);
             $fromUser->setLastLogin();
             $this->userRepository->save($fromUser);
-
-            $this->message->send($chat, $toUser, true);
+            try {
+                $this->message->send($chat, $toUser, true);
+            } catch (Exception $ex) {
+                // throw new HttpException(400, "Error al enviar el mensaje - Error: {$ex->getMessage()}");
+            }
 
             $cache->deleteItem('users.chat.' . $fromUser->getId());
 
