@@ -1037,7 +1037,7 @@ class UsersController extends AbstractController
             $this->userRepository->save($user);
             $language = $user->getLanguage();
 
-            if ($user->getUsername() !== 'albertoi-test') {
+            if ($user->getUsername() /*!== 'albertoi-test'*/) {
                 $subject = $user->getVerificationCode() . ($language == "es" ? ' es el código para verificar tu cuenta' : ' is the code to verify your account');
 
                 $email = (new Email())
@@ -1048,7 +1048,7 @@ class UsersController extends AbstractController
                         "emails/verification-code-" . $language . ".html.twig",
                         [
                             'subject' => $subject,
-                            'username' => $user->getUserIdentifier(),
+                            'username' => $user->getUsername(),
                             'code' => $user->getVerificationCode()
                         ]
                     ));
