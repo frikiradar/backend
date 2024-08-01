@@ -278,7 +278,7 @@ class StoryRepository extends ServiceEntityRepository
         $notViewed = [];
         $viewed = [];
         foreach ($posts as $post) {
-            if ($post->isViewedByUser($user)) {
+            if ($post->isViewedByUser($user) || $post->getUser()->getId() === $user->getId()) {
                 $viewed[] = $post;
             } else {
                 $notViewed[] = $post;
