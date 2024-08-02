@@ -191,10 +191,10 @@ class PageRepository extends ServiceEntityRepository
         foreach ($tags as $key => $tag) {
             $found = false;
             foreach ($pages as $page) {
-                if ($tag['slug'] == $page['slug']) {
-                    $tags[$key]['name'] = $page['name'];
-                    $tags[$key]['cover'] = $page['cover'];
-                    $tags[$key]['slug'] = $page['slug'];
+                if ($tag['slug'] == $page->getSlug()) {
+                    $tags[$key]['name'] = $page->getName();
+                    $tags[$key]['cover'] = $page->getCover();
+                    $tags[$key]['slug'] = $page->getSlug();
                     $found = true;
                     break;
                 }
