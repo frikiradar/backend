@@ -188,23 +188,7 @@ class PageRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        foreach ($tags as $key => $tag) {
-            $found = false;
-            foreach ($pages as $page) {
-                if ($tag['slug'] == $page->getSlug()) {
-                    $tags[$key]['name'] = $page->getName();
-                    $tags[$key]['cover'] = $page->getCover();
-                    $tags[$key]['slug'] = $page->getSlug();
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                $tags[$key]['slug'] = $this->nameToSlug($tag['name']);
-            }
-        }
-
-        return $tags;
+        return $pages;
     }
 
     public function getGamesApi($name)
