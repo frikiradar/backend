@@ -182,7 +182,6 @@ class PageRepository extends ServiceEntityRepository
         // Buscamos los tags en las páginas medainte el slug y añadimos la información extra
         $pages = $this->createQueryBuilder('p')
             ->where('p.slug IN (:slugs)')
-            ->andWhere('p.cover IS NOT NULL')
             ->setParameter('slugs', array_column($tags, 'slug'))
             ->groupBy('p.slug')
             ->getQuery()
