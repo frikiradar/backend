@@ -1,0 +1,4 @@
+kreait_firebase:
+    projects:
+        my_project:
+            credentials: '%kernel.project_dir%/config/frikiradar-1551914200548-firebase-adminsdk-d6l6d-47a9de86d5.json'
