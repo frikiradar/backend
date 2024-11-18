@@ -21,11 +21,16 @@ class NotificationService extends AbstractController
 {
     private $mailer;
     private $em;
+    private $messaging;
 
     public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
     {
         $this->mailer = $mailer;
         $this->em = $em;
+
+        // Inicializar Firebase Messaging
+        $factory = (new Factory())->withServiceAccount($_ENV['FIREBASE_CREDENTIALS']);
+        $this->messaging = $factory->createMessaging();
     }
 
     public function set(User $fromUser, User $toUser, string $title, string $text, string $url, string $type, string $message = '')
@@ -138,8 +143,8 @@ class NotificationService extends AbstractController
                 ->withApnsConfig($apnsConfig->withImmediatePriority());
 
             try {
-                $messaging = (new Factory())->createMessaging();
-                $report = $messaging->sendMulticast($message, $tokens);
+                $report = $this->messaging->sendMulticast($message, $tokens);
+
                 // echo 'Successful sends: ' . $report->successes()->count() . PHP_EOL;
                 // echo 'Failed sends: ' . $report->failures()->count() . PHP_EOL;
 
@@ -261,8 +266,7 @@ class NotificationService extends AbstractController
             ->withData($data);
 
         try {
-            $messaging = (new Factory())->createMessaging();
-            $messaging->send($message);
+            $this->messaging->send($message);
         } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
             // echo "Error al enviar la notificación";
         }
