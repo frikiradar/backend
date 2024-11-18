@@ -156,9 +156,6 @@
     "ipinfo/ipinfo": {
         "version": "v2.1.1"
     },
-    "kreait/clock": {
-        "version": "1.1.0"
-    },
     "kreait/firebase-bundle": {
         "version": "2.3.0"
     },
@@ -278,9 +275,6 @@
     },
     "ralouphie/getallheaders": {
         "version": "3.0.3"
-    },
-    "riverline/multipart-parser": {
-        "version": "2.0.8"
     },
     "rize/uri-template": {
         "version": "0.3.2"
