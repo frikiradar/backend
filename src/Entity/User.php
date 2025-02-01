@@ -388,7 +388,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $roles[] = 'ROLE_MASTER';
         }
 
-        if ($this->isPremium() && !in_array('ROLE_PREMIUM', $roles)) {
+        /*if ($this->isPremium() && !in_array('ROLE_PREMIUM', $roles)) {
             $roles[] = 'ROLE_PREMIUM';
         }
 
@@ -400,7 +400,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $today = new \DateTime;
         if ($today->format("m-d") >= "02-12" && $today->format("m-d") <= "02-18" && !in_array('ROLE_PREMIUM', $roles)) {
             $roles[] = 'ROLE_PREMIUM';
-        }
+        }*/
+
+        $roles[] = 'ROLE_PREMIUM';
 
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
