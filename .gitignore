@@ -18,3 +18,6 @@ src/Migrations
 migrations
 out/linecounter.txt
 out/linecounter.json
+frikiradar-1551914200548-firebase-adminsdk-d6l6d-47a9de86d5.json
+config/jwt/private.pem
+config/jwt/public.pem
