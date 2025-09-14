@@ -52,4 +52,4 @@ Puedes añadir aquí hasta 4 capturas representativas del proyecto en la carpeta
 
 ---
 
-> Este proyecto es solo para consulta y aprendizaje. No se recomienda su uso comercial ni productivo.
+> Este proyecto es solo para consulta y aprendizaje. No se permite su uso comercial ni productivo.
